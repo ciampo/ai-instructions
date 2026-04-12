@@ -4,34 +4,52 @@ Patterns for building and maintaining a design system component library. General
 
 ## Architecture
 
-- Stay close to the upstream API surface. Do not re-invent props that the primitive already exposes. Deviations need justification.
-- Compound component pattern: `Component.Root`, `Component.Header`, `Component.Content`, etc.
-- Use React Context for internal communication between sub-components (e.g., sharing IDs, state).
-- Private exports for internally shared utilities. Public API surface should be minimal.
+- **[RULE]** Stay close to the upstream API surface. Do not re-invent props that the primitive already exposes. Deviations need justification.
+- **[STRONG]** Compound component pattern: `Component.Root`, `Component.Header`, `Component.Content`, etc.
+- **[STRONG]** Use React Context for internal communication between sub-components (e.g., sharing IDs, state).
+- **[STRONG]** Private exports for internally shared utilities. Public API surface should be minimal.
+
+## Polymorphic Rendering
+
+- **[STRONG]** Use the `render` prop pattern (or equivalent like Ariakit's `render` / Radix's `asChild`) for component composition. This allows consumers to control the rendered element while the component provides behavior.
+- **[STRONG]** When exposing `render` props, ensure `ref` forwarding works correctly. The component's internal ref and the consumer's ref must be merged.
+- **[PREFER]** Type polymorphic props precisely. The rendered element's props should be available on the component (e.g., if rendering as `<a>`, `href` should be valid).
 
 ## Styling
 
-- All visual values from design tokens (CSS custom properties). No hardcoded colors, spacing, typography, or radii.
-- Typography through a shared `Text` component with semantic variants, not raw CSS font properties.
-- CSS layer organization when the system supports it (component styles vs composition styles).
+- **[RULE]** All visual values from design tokens (CSS custom properties). No hardcoded colors, spacing, typography, or radii.
+- **[STRONG]** Typography through a shared `Text` component with semantic variants, not raw CSS font properties.
+- **[PREFER]** CSS layer organization when the system supports it (component styles vs composition styles).
+
+## Theming and Tokens
+
+- **[STRONG]** Tokens are structured in layers: global primitives (colors, scales) -> semantic tokens (foreground, background, border) -> component-scoped tokens (button-bg, input-border).
+- **[STRONG]** Dark mode and other themes override semantic tokens, not component styles. Components should not need conditional logic for theming.
+- **[PREFER]** Expose component-scoped custom properties for controlled customization, rather than relying on consumers overriding internal class names.
 
 ## Storybook
 
-- Each component gets stories with working interactive examples.
-- JSDoc on the root component provides the Storybook description automatically -- do not duplicate.
-- For props accepting ReactElement or ReactNode, show a custom control accepting strings of text.
-- For props with complex types (eg objects), either disable the control or provide a custom choice across a prepared list of viable options.
-- Disable irrelevant controls for specific stories. Prefer systematic disabling over one-by-one exclusion.
-- Stories should use `args`/`controls` properly, thus linking them to Storybook controls.
+- **[STRONG]** Each component gets stories with working interactive examples.
+- **[STRONG]** JSDoc on the root component provides the Storybook description automatically -- do not duplicate.
+- **[PREFER]** For props accepting ReactElement or ReactNode, show a custom control accepting strings of text.
+- **[PREFER]** For props with complex types (eg objects), either disable the control or provide a custom choice across a prepared list of viable options.
+- **[PREFER]** Disable irrelevant controls for specific stories. Prefer systematic disabling over one-by-one exclusion.
+- **[PREFER]** Stories should use `args`/`controls` properly, thus linking them to Storybook controls.
 
 ## Testing
 
-- Unit tests with React Testing Library. Use semantic queries (`getByRole`, `getByLabelText`) over test IDs.
-- Type-level tests for complex prop types (`@ts-expect-error`, `satisfies`).
-- Test accessibility: roles, ARIA attributes, focus management, keyboard interaction.
+- **[STRONG]** Unit tests with React Testing Library. Use semantic queries (`getByRole`, `getByLabelText`) over test IDs.
+- **[PREFER]** Type-level tests for complex prop types (`@ts-expect-error`, `satisfies`).
+- **[RULE]** Test accessibility: roles, ARIA attributes, focus management, keyboard interaction.
+
+## Versioning and Deprecation
+
+- **[STRONG]** Deprecate props with a runtime warning in dev mode (e.g., ``console.warn( 'ComponentName: `oldProp` is deprecated. Use `newProp` instead.' )``). Keep the old prop working for at least one major version.
+- **[STRONG]** Document deprecations in the CHANGELOG and JSDoc. Include the migration path.
+- **[PREFER]** When removing a feature, check the codebase and downstream consumers for usage before removing. Provide a codemod or migration guide for non-trivial changes.
 
 ## Consistency
 
-- Sibling components must follow the same patterns. If Dialog has a `modal` prop, AlertDialog should too. If one component uses a `render` prop, all should.
-- When adding a pattern to one component, audit whether siblings need the same treatment.
-- Document deviations from upstream behavior explicitly.
+- **[RULE]** Sibling components must follow the same patterns. If Dialog has a `modal` prop, AlertDialog should too. If one component uses a `render` prop, all should.
+- **[STRONG]** When adding a pattern to one component, audit whether siblings need the same treatment.
+- **[STRONG]** Document deviations from upstream behavior explicitly.

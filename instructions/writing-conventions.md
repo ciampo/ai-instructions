@@ -4,34 +4,39 @@ How I expect written artifacts to be structured.
 
 ## PR Descriptions
 
-- Follow the repo's existing PR template. If no template exists, use: What / Why / How / Testing Instructions.
-- Keep the summary concise and human-scannable. A reviewer should understand the PR in 30 seconds.
-- Use `<details>` sections for implementation details, API comparison tables, and extended context that most readers can skip.
-- Include a "Testing Instructions" section with concrete steps.
-- Include a "Visual Preview" section (screenshots/videos) when the change is visual.
-- Add a "TODO / Follow-ups" section when there is deferred work.
-- When referencing related issues or PRs, put them at the top.
+- **[STRONG]** Follow the repo's existing PR template. If no template exists, use: What / Why / How / Testing Instructions.
+- **[STRONG]** Keep the summary concise and human-scannable. A reviewer should understand the PR in 30 seconds.
+- **[PREFER]** Use `<details>` sections for implementation details, API comparison tables, and extended context that most readers can skip.
+- **[STRONG]** Include a "Testing Instructions" section with concrete steps.
+- **[PREFER]** Include a "Visual Preview" section (screenshots/videos) when the change is visual.
+- **[PREFER]** Add a "TODO / Follow-ups" section when there is deferred work.
+- **[PREFER]** When referencing related issues or PRs, put them at the top.
 
 ## Commit Messages
 
-- Granular commits that group logically by concern. Each commit should be a coherent unit of change.
-- Format: `ComponentName: Short description of change` (or `area: description` for non-component work).
-- When squashing, the resulting message should still be meaningful.
+- **[STRONG]** Granular commits that group logically by concern. Each commit should be a coherent unit of change.
+- **[STRONG]** Format: `ComponentName: Short description of change` (or `area: description` for non-component work).
+- **[PREFER]** When squashing, the resulting message should still be meaningful.
 
 ## CHANGELOG Entries
 
-- Always include them for user-facing changes. Use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
-- Include PR link in `([#NNNNN](URL))` format.
-- Match the existing CHANGELOG format and conventions in the repo exactly.
+- **[RULE]** Always include them for user-facing changes. Use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
+- **[STRONG]** Include PR link in `([#NNNNN](URL))` format.
+- **[RULE]** Match the existing CHANGELOG format and conventions in the repo exactly.
+
+## Branch Names
+
+- **[PREFER]** Format: `type/short-description`. Examples: `fix/focus-trap-escape`, `add/date-picker`, `update/radix-tooltip-v2`.
+- Common prefixes: `add/`, `update/`, `fix/`, `remove/`, `try/`, `docs/`.
 
 ## JSDoc / API Documentation
 
-- Required on all exported components and public API surfaces.
-- Describe behavior and constraints, not implementation internals. Do not mention internal/upstream libraries in public-facing docs.
-- Include usage examples when the pattern is non-obvious.
-- Prefer guidance over prescription: "Most of the time you should do X because Y. If you do Z instead, the consequence is W" -- not "You must always X."
+- **[STRONG]** Required on all exported components and public API surfaces.
+- **[RULE]** Describe behavior and constraints, not implementation internals. Do not mention internal/upstream libraries in public-facing docs.
+- **[PREFER]** Include usage examples when the pattern is non-obvious.
+- **[PREFER]** Prefer guidance over prescription: "Most of the time you should do X because Y. If you do Z instead, the consequence is W" -- not "You must always X."
 
 ## Error Messages
 
-- Concise but informative. Format: `ComponentName: Summary. Detail sentence.`
-- Include accessibility context when the error relates to ARIA patterns or focus management.
+- **[STRONG]** Concise but informative. Format: `ComponentName: Summary. Detail sentence.`
+- **[PREFER]** Include accessibility context when the error relates to ARIA patterns or focus management.
