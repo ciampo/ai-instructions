@@ -13,6 +13,32 @@ How to handle errors, loading states, and failure scenarios in application code.
 - **[STRONG]** Use React error boundaries to prevent a single component failure from crashing the entire page. Place boundaries at meaningful UI seams (route level, panel level, widget level).
 - Error boundary fallback UI should be helpful: briefly explain what went wrong, offer a retry action when possible, and avoid exposing raw stack traces to users.
 
+<details>
+<summary>Example: Error boundary placement</summary>
+
+```tsx
+// Place boundaries at meaningful UI seams, not around every component.
+function App() {
+  return (
+    <ErrorBoundary fallback={ <PageError /> }>
+      <Header />
+      <main>
+        <ErrorBoundary fallback={ <PanelError /> }>
+          <Sidebar />
+        </ErrorBoundary>
+        <ErrorBoundary fallback={ <PanelError /> }>
+          <Content />
+        </ErrorBoundary>
+      </main>
+    </ErrorBoundary>
+  );
+}
+```
+
+If `Sidebar` throws, only the sidebar shows the error fallback. `Content` and `Header` continue working.
+
+</details>
+
 ## Loading and Empty States
 
 - **[STRONG]** Always handle loading states explicitly. Use skeleton screens or spinners -- never leave the user staring at a blank area.

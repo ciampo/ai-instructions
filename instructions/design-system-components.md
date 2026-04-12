@@ -27,6 +27,41 @@ Patterns for building and maintaining a design system component library. General
 - **[STRONG]** Dark mode and other themes override semantic tokens, not component styles. Components should not need conditional logic for theming.
 - **[PREFER]** Expose component-scoped custom properties for controlled customization, rather than relying on consumers overriding internal class names.
 
+<details>
+<summary>Examples: Token layers and theming</summary>
+
+```css
+/* Global primitives (design-tokens.css) */
+:root {
+  --color-gray-50: #fafafa;
+  --color-gray-900: #1a1a1a;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+}
+
+/* Semantic tokens (theme-light.css) */
+:root {
+  --ds-color-text-primary: var(--color-gray-900);
+  --ds-color-surface-primary: var(--color-gray-50);
+}
+
+/* Dark mode overrides semantic tokens, not components */
+:root[data-theme='dark'] {
+  --ds-color-text-primary: var(--color-gray-50);
+  --ds-color-surface-primary: var(--color-gray-900);
+}
+
+/* Component uses semantic tokens -- works in any theme automatically */
+.button {
+  --button-bg: var(--ds-color-surface-primary);
+  color: var(--ds-color-text-primary);
+  background: var(--button-bg);
+  padding: var(--spacing-4) var(--spacing-8);
+}
+```
+
+</details>
+
 ## Storybook
 
 - **[STRONG]** Each component gets stories with working interactive examples.

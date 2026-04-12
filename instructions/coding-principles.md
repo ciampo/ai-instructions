@@ -21,6 +21,50 @@ How I think about code. These principles apply across all projects.
 - **[STRONG]** Use discriminated unions for modeling states with mutually exclusive properties. Use exhaustive checks (`never` in the default case) to catch unhandled variants at compile time.
 - **[PREFER]** Use `const` type parameters and template literal types when they add real expressiveness (e.g., mapping string keys to related types). Do not use them just to be clever.
 
+<details>
+<summary>Examples: TypeScript patterns</summary>
+
+Discriminated union with exhaustive check:
+
+```ts
+type AsyncState<T> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: Error };
+
+function renderState( state: AsyncState<User> ) {
+  switch ( state.status ) {
+    case 'idle':      return null;
+    case 'loading':   return <Spinner />;
+    case 'success':   return <Profile data={ state.data } />;
+    case 'error':     return <ErrorNotice error={ state.error } />;
+    default: {
+      const _exhaustive: never = state;
+      return _exhaustive;
+    }
+  }
+}
+```
+
+Let inference work -- avoid redundant annotations:
+
+```ts
+// Bad: redundant annotation
+const isOpen: boolean = someCondition && anotherCondition;
+
+// Good: let TypeScript infer
+const isOpen = someCondition && anotherCondition;
+
+// Good: satisfies validates without widening
+const config = {
+  variant: 'primary',
+  size: 'large',
+} satisfies ButtonConfig;
+```
+
+</details>
+
 ## JavaScript
 
 - **[PREFER]** Write elegant, idiomatic code. Prefer `array.some()`, `Array.from()`, optional chaining, nullish coalescing -- use modern language features naturally.
@@ -35,6 +79,34 @@ How I think about code. These principles apply across all projects.
 - **[PREFER]** Use CSS layers (`@layer`) when the system supports it, to manage specificity between component styles and composition overrides.
 - **[PREFER]** Use container queries for component-level responsive behavior instead of viewport media queries where the component's container size is what matters.
 
+<details>
+<summary>Examples: CSS tokens and modern properties</summary>
+
+```css
+/* Bad: hardcoded values */
+.button {
+  padding: 8px 16px;
+  color: #1e1e1e;
+  background: #f0f0f0;
+  border-radius: 4px;
+  transform: translateY(-2px);
+}
+
+/* Good: tokens and modern properties */
+.button {
+  --button-bg: var(--ds-color-surface-secondary);
+  --button-fg: var(--ds-color-text-primary);
+
+  padding: var(--ds-spacing-sm) var(--ds-spacing-md);
+  color: var(--button-fg);
+  background: var(--button-bg);
+  border-radius: var(--ds-radius-sm);
+  translate: 0 -2px;
+}
+```
+
+</details>
+
 ## React
 
 - **[STRONG]** Compound component pattern (`Component.Root`, `Component.Title`) for complex UI.
@@ -44,6 +116,55 @@ How I think about code. These principles apply across all projects.
 - **[STRONG]** Use `forwardRef` on all components that render a DOM element consumers might need to reference. Type the ref precisely (e.g., `HTMLButtonElement`, not `HTMLElement`).
 - **[STRONG]** Extract custom hooks when logic is reused across components or when a component's body becomes difficult to follow. A hook should encapsulate a single concern.
 - **[PREFER]** Split a component when it handles multiple distinct responsibilities, or when a section of JSX grows complex enough to obscure the overall structure.
+
+<details>
+<summary>Examples: Compound component skeleton</summary>
+
+```tsx
+import { createContext, forwardRef, useContext } from 'react';
+import styles from './tabs.module.css';
+
+type TabsContextValue = { activeTab: string; setActiveTab: ( id: string ) => void };
+const TabsContext = createContext< TabsContextValue | undefined >( undefined );
+
+function useTabsContext() {
+  const ctx = useContext( TabsContext );
+  if ( ! ctx ) {
+    throw new Error( 'Tabs: sub-components must be used within Tabs.Root.' );
+  }
+  return ctx;
+}
+
+const Root = forwardRef< HTMLDivElement, React.ComponentProps< 'div' > >(
+  ( props, ref ) => {
+    const [ activeTab, setActiveTab ] = useState( '' );
+    return (
+      <TabsContext.Provider value={ { activeTab, setActiveTab } }>
+        <div ref={ ref } className={ styles.root } { ...props } />
+      </TabsContext.Provider>
+    );
+  }
+);
+
+const Trigger = forwardRef< HTMLButtonElement, { id: string } & React.ComponentProps< 'button' > >(
+  ( { id, ...props }, ref ) => {
+    const { activeTab, setActiveTab } = useTabsContext();
+    return (
+      <button
+        ref={ ref }
+        role="tab"
+        aria-selected={ activeTab === id }
+        onClick={ () => setActiveTab( id ) }
+        { ...props }
+      />
+    );
+  }
+);
+
+export const Tabs = { Root, Trigger, /* Panel, List */ };
+```
+
+</details>
 
 ## Module Organization
 

@@ -8,6 +8,26 @@ Baseline security practices for application code. Not an exhaustive security pol
 - **[RULE]** Never construct HTML strings by concatenating user input. Use DOM APIs or framework templating that escapes by default.
 - **[STRONG]** Treat all user-supplied data as untrusted: form inputs, URL parameters, API responses from third parties, database content that originated from user input.
 
+<details>
+<summary>Example: safe vs. unsafe HTML rendering</summary>
+
+```tsx
+// UNSAFE: raw user content injected as HTML
+<div dangerouslySetInnerHTML={ { __html: userComment } } />
+
+// SAFE: sanitize first, document why raw HTML is needed
+import DOMPurify from 'dompurify';
+
+// Raw HTML is required here because userComment contains rich text
+// formatting from the WYSIWYG editor.
+<div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( userComment ) } } />
+
+// BEST: avoid raw HTML entirely when possible
+<p>{ userComment }</p>
+```
+
+</details>
+
 ## Content Security
 
 - **[STRONG]** Use `rel="noopener noreferrer"` on external links opened with `target="_blank"`.
