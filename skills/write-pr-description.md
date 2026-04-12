@@ -2,6 +2,12 @@
 
 A workflow for writing or updating a PR description. Invoked when I say "write the PR description" or "update the PR description."
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/writing-conventions.md`
+
 ## Steps
 
 1. Detect the repo's PR template (look for `.github/PULL_REQUEST_TEMPLATE.md` or similar). If none exists, use the default structure: What / Why / How / Testing Instructions.

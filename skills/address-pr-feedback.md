@@ -2,6 +2,14 @@
 
 A workflow for systematically addressing review comments on a PR. Invoked when I say "address the feedback" or "work through the review comments."
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/interaction-preferences.md`
+- `instructions/code-review.md`
+- `instructions/writing-conventions.md`
+
 ## Steps
 
 1. **Gather feedback**: Fetch all review comments, PR conversation, and current CI status via `gh`. Identify which comments are resolved vs. outstanding.

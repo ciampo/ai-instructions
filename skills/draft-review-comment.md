@@ -2,6 +2,13 @@
 
 A workflow for crafting a review comment I can paste into GitHub. Invoked when I say "help me craft a comment" or "prepare a review comment."
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/interaction-preferences.md`
+- `instructions/writing-conventions.md`
+
 ## Steps
 
 1. Understand the context: what PR, what specific code or concern the comment addresses.

@@ -2,6 +2,14 @@
 
 A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/code-review.md`
+- `instructions/accessibility.md`
+- `instructions/interaction-preferences.md`
+
 ## Steps
 
 1. Fetch the PR metadata, diff, comments, and CI status via `gh`.
