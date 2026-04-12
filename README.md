@@ -8,7 +8,7 @@ AI assistants work better when they know how you think. Rather than repeating pr
 
 ## Structure
 
-```
+```text
 instructions/          Always-on rules loaded into every AI session
 skills/                On-demand workflows invoked by trigger phrases
 personas/              Specialized agent identities for focused tasks
@@ -18,7 +18,7 @@ setup.sh               Symlinks everything into Cursor / Claude Code
 ### Instructions
 
 | File | What it covers |
-|---|---|
+| --- | --- |
 | [coding-principles.md](instructions/coding-principles.md) | Engineering philosophy, TypeScript/JS/CSS/React style, dependencies, testing, comments |
 | [interaction-preferences.md](instructions/interaction-preferences.md) | Concise communication, intellectual honesty, verify from source, GitHub boundaries |
 | [writing-conventions.md](instructions/writing-conventions.md) | PR descriptions, commit messages, CHANGELOGs, JSDoc, error messages |
@@ -30,7 +30,7 @@ setup.sh               Symlinks everything into Cursor / Claude Code
 ### Skills
 
 | File | Trigger | What it does |
-|---|---|---|
+| --- | --- | --- |
 | [review-pr.md](skills/review-pr.md) | "review this PR" | Structured PR review against the checklist |
 | [self-review-pr.md](skills/self-review-pr.md) | "self-review" | Readonly subagent self-review to reduce bias |
 | [write-pr-description.md](skills/write-pr-description.md) | "write/update PR description" | PR description writer following repo template |
@@ -41,7 +41,7 @@ setup.sh               Symlinks everything into Cursor / Claude Code
 ### Personas
 
 | File | What it does |
-|---|---|
+| --- | --- |
 | [a11y-reviewer.md](personas/a11y-reviewer.md) | Senior accessibility engineer for deep a11y audits |
 
 ## Setup
@@ -58,7 +58,7 @@ cd ~/Code/ai-instructions
 Available flags:
 
 | Flag | What it does |
-|---|---|
+| --- | --- |
 | `--cursor` | Symlinks into `~/.cursor/rules/`, `~/.cursor/skills-cursor/`, `~/.cursor/agents/` |
 | `--claude` | Symlinks into `~/.claude/rules/`, `~/.claude/skills/` |
 | `--all` | Both of the above |
