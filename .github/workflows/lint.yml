@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DavidAnson/markdownlint-cli2-action@v19
+      - uses: actions/setup-node@v4
         with:
-          globs: "**/*.md"
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
