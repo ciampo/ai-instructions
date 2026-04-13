@@ -373,6 +373,7 @@ unlink_file() {
         log_dry "rm $dst"
       else
         rm "$dst"
+        rmdir "$(dirname "$dst")" 2>/dev/null || true
         log_remove "$(basename "$dst")"
       fi
       SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
@@ -388,6 +389,7 @@ unlink_file() {
       log_dry "rm $dst (copy)"
     else
       rm "$dst"
+      rmdir "$(dirname "$dst")" 2>/dev/null || true
       log_remove "$(basename "$dst") (copy)"
     fi
     SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
@@ -451,11 +453,24 @@ list_file() {
 }
 
 # ---------------------------------------------------------------------------
-# Stale symlink cleanup: remove symlinks pointing into SCRIPT_DIR whose
-# source no longer exists
+# Stale cleanup: remove symlinks/managed copies whose source no longer exists
 # ---------------------------------------------------------------------------
+remove_stale_entry() {
+  local path="$1" label="$2" parent_dir="${3:-}"
+  if $DRY_RUN; then
+    log_dry "rm stale $path"
+  else
+    rm "$path"
+    if [ -n "$parent_dir" ]; then
+      rmdir "$parent_dir" 2>/dev/null || true
+    fi
+    log_stale "$label"
+  fi
+  SUMMARY_STALE=$((SUMMARY_STALE + 1))
+}
+
 clean_stale_in_dir() {
-  local dir="$1" nested_file="${2:-}"
+  local dir="$1" src_dir="$2" nested_file="${3:-}"
   [ -d "$dir" ] || return 0
 
   for entry in "$dir"/*; do
@@ -467,35 +482,35 @@ clean_stale_in_dir() {
       case "$target" in
         "$SCRIPT_DIR"/*)
           if [ ! -e "$target" ]; then
-            if $DRY_RUN; then
-              log_dry "rm stale $entry -> $target"
-            else
-              rm "$entry"
-              log_stale "$(basename "$entry") -> $target"
-            fi
-            SUMMARY_STALE=$((SUMMARY_STALE + 1))
+            remove_stale_entry "$entry" "$(basename "$entry") -> $target"
           fi
           ;;
       esac
+    elif [ -f "$entry" ] && is_managed_copy "$entry"; then
+      local base_no_ext
+      base_no_ext="$(basename "$entry")"
+      base_no_ext="${base_no_ext%.*}"
+      if [ ! -e "$src_dir/${base_no_ext}.md" ]; then
+        remove_stale_entry "$entry" "$(basename "$entry") (managed copy)"
+      fi
     elif [ -d "$entry" ] && [ -n "$nested_file" ]; then
       local nested_path="$entry/$nested_file"
+      local skill_name
+      skill_name="$(basename "$entry")"
       if [ -L "$nested_path" ]; then
         local target
         target="$(readlink "$nested_path")"
         case "$target" in
           "$SCRIPT_DIR"/*)
             if [ ! -e "$target" ]; then
-              if $DRY_RUN; then
-                log_dry "rm stale $nested_path -> $target"
-              else
-                rm "$nested_path"
-                rmdir "$entry" 2>/dev/null || true
-                log_stale "$(basename "$entry")/$nested_file -> $target"
-              fi
-              SUMMARY_STALE=$((SUMMARY_STALE + 1))
+              remove_stale_entry "$nested_path" "$skill_name/$nested_file -> $target" "$entry"
             fi
             ;;
         esac
+      elif is_managed_copy "$nested_path"; then
+        if [ ! -e "$src_dir/${skill_name}.md" ]; then
+          remove_stale_entry "$nested_path" "$skill_name/$nested_file (managed copy)" "$entry"
+        fi
       fi
     fi
   done
@@ -575,16 +590,23 @@ clean_stale_agent() {
   skill_file="$(agent_skill_file "$agent")"
   personas_dir="$(agent_personas_dir "$agent")"
 
-  if [ -n "$instr_dir" ]; then clean_stale_in_dir "$instr_dir"; fi
-  if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir" "$skill_file"; fi
-  if [ -n "$personas_dir" ]; then clean_stale_in_dir "$personas_dir"; fi
+  if [ -n "$instr_dir" ]; then clean_stale_in_dir "$instr_dir" "$SCRIPT_DIR/instructions"; fi
+  if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir" "$SCRIPT_DIR/skills" "$skill_file"; fi
+  if [ -n "$personas_dir" ]; then clean_stale_in_dir "$personas_dir" "$SCRIPT_DIR/personas"; fi
 }
 
 # ---------------------------------------------------------------------------
-# Check for stale/broken symlinks pointing into SCRIPT_DIR (report only)
+# Check for stale/broken managed entries (report only)
 # ---------------------------------------------------------------------------
+report_stale_entry() {
+  local label="$1"
+  log_broken "$label"
+  BROKEN_COUNT=$((BROKEN_COUNT + 1))
+  SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+}
+
 check_stale_in_dir() {
-  local dir="$1" nested_file="${2:-}"
+  local dir="$1" src_dir="$2" nested_file="${3:-}"
   [ -d "$dir" ] || return 0
 
   for entry in "$dir"/*; do
@@ -596,26 +618,35 @@ check_stale_in_dir() {
       case "$target" in
         "$SCRIPT_DIR"/*)
           if [ ! -e "$target" ]; then
-            log_broken "$(basename "$entry") -> $target (stale)"
-            BROKEN_COUNT=$((BROKEN_COUNT + 1))
-            SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+            report_stale_entry "$(basename "$entry") -> $target (stale)"
           fi
           ;;
       esac
+    elif [ -f "$entry" ] && is_managed_copy "$entry"; then
+      local base_no_ext
+      base_no_ext="$(basename "$entry")"
+      base_no_ext="${base_no_ext%.*}"
+      if [ ! -e "$src_dir/${base_no_ext}.md" ]; then
+        report_stale_entry "$(basename "$entry") (stale managed copy)"
+      fi
     elif [ -d "$entry" ] && [ -n "$nested_file" ]; then
       local nested_path="$entry/$nested_file"
+      local skill_name
+      skill_name="$(basename "$entry")"
       if [ -L "$nested_path" ]; then
         local target
         target="$(readlink "$nested_path")"
         case "$target" in
           "$SCRIPT_DIR"/*)
             if [ ! -e "$target" ]; then
-              log_broken "$(basename "$entry")/$nested_file -> $target (stale)"
-              BROKEN_COUNT=$((BROKEN_COUNT + 1))
-              SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+              report_stale_entry "$skill_name/$nested_file -> $target (stale)"
             fi
             ;;
         esac
+      elif is_managed_copy "$nested_path"; then
+        if [ ! -e "$src_dir/${skill_name}.md" ]; then
+          report_stale_entry "$skill_name/$nested_file (stale managed copy)"
+        fi
       fi
     fi
   done
@@ -629,9 +660,9 @@ check_stale_agent() {
   skill_file="$(agent_skill_file "$agent")"
   personas_dir="$(agent_personas_dir "$agent")"
 
-  if [ -n "$instr_dir" ]; then check_stale_in_dir "$instr_dir"; fi
-  if [ -n "$skills_dir" ]; then check_stale_in_dir "$skills_dir" "$skill_file"; fi
-  if [ -n "$personas_dir" ]; then check_stale_in_dir "$personas_dir"; fi
+  if [ -n "$instr_dir" ]; then check_stale_in_dir "$instr_dir" "$SCRIPT_DIR/instructions"; fi
+  if [ -n "$skills_dir" ]; then check_stale_in_dir "$skills_dir" "$SCRIPT_DIR/skills" "$skill_file"; fi
+  if [ -n "$personas_dir" ]; then check_stale_in_dir "$personas_dir" "$SCRIPT_DIR/personas"; fi
 }
 
 # ---------------------------------------------------------------------------
