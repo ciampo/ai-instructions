@@ -290,17 +290,30 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    # During update, replace broken symlinks so users aren't stuck
+    # During update, repair broken symlinks that point into our repo
     if [ "$COMMAND" = "update" ] && ! [ -e "$dst" ]; then
-      if $DRY_RUN; then
-        log_dry "replace broken link $dst -> $src"
-      else
-        rm "$dst"
-        ln -s "$src" "$dst"
-        log_action "$(basename "$dst") (repaired)"
-      fi
-      SUMMARY_NEW=$((SUMMARY_NEW + 1))
-      return
+      case "$existing_target" in
+        "$SCRIPT_DIR"/*)
+          if $DRY_RUN; then
+            if $COPY_MODE; then
+              log_dry "replace broken link $dst with copy of $src"
+            else
+              log_dry "replace broken link $dst -> $src"
+            fi
+          else
+            rm "$dst"
+            if $COPY_MODE; then
+              { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
+              log_copy "$(basename "$dst") (repaired)"
+            else
+              ln -s "$src" "$dst"
+              log_action "$(basename "$dst") (repaired)"
+            fi
+          fi
+          SUMMARY_NEW=$((SUMMARY_NEW + 1))
+          return
+          ;;
+      esac
     fi
     log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
@@ -708,8 +721,13 @@ parse_args() {
 main() {
   parse_args "$@"
 
-  if [ -z "$SELECTED_AGENTS" ] && [ -z "$COPILOT_CONCAT_DIR" ]; then
-    prompt_agent_selection
+  if [ -z "$SELECTED_AGENTS" ]; then
+    if [ -n "$COPILOT_CONCAT_DIR" ]; then
+      # With --copilot-concat and no --agent, auto-detect silently (don't prompt)
+      SELECTED_AGENTS="$(detect_agents | xargs)"
+    else
+      prompt_agent_selection
+    fi
     SELECTED_AGENTS="$(dedupe_words "$SELECTED_AGENTS")"
   fi
 
