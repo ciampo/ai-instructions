@@ -178,6 +178,15 @@ contains_word() {
   return 1
 }
 
+is_managed_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -q "^# ai-instructions:managed$"
+}
+
+is_managed_copy_current() {
+  local src="$1" dst="$2"
+  is_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
+}
+
 # ---------------------------------------------------------------------------
 # Auto-detection
 # ---------------------------------------------------------------------------
@@ -218,7 +227,17 @@ prompt_agent_selection() {
   echo "  a) All detected"
   echo ""
 
-  read -rp "Select agents (numbers separated by spaces, or 'a' for all): " selection
+  if [ ! -t 0 ]; then
+    echo "Cannot prompt for agent selection because stdin is not interactive." >&2
+    echo "Re-run with --yes, --agent <name>, or --agent '*'." >&2
+    exit 1
+  fi
+
+  if ! read -rp "Select agents (numbers separated by spaces, or 'a' for all): " selection; then
+    echo "Failed to read agent selection from stdin." >&2
+    echo "Re-run with --yes, --agent <name>, or --agent '*'." >&2
+    exit 1
+  fi
 
   if [ "$selection" = "a" ] || [ "$selection" = "A" ]; then
     SELECTED_AGENTS="$detected"
@@ -264,17 +283,18 @@ install_file() {
   fi
 
   if [ -e "$dst" ]; then
-    if $COPY_MODE && cmp -s "$src" "$dst"; then
+    if $COPY_MODE && is_managed_copy_current "$src" "$dst"; then
       log_skip "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    # In copy+update mode, overwrite stale copies with fresh content
-    if $COPY_MODE && [ "$COMMAND" = "update" ]; then
+    # In copy+update mode, only overwrite files we previously installed
+    # (identified by the marker header added during copy)
+    if $COPY_MODE && [ "$COMMAND" = "update" ] && head -1 "$dst" 2>/dev/null | grep -q "^# ai-instructions:managed$"; then
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
-        cp "$src" "$dst"
+        { echo "# ai-instructions:managed"; cat "$src"; } > "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -297,7 +317,7 @@ install_file() {
 
   mkdir -p "$(dirname "$dst")"
   if $COPY_MODE; then
-    cp "$src" "$dst"
+    { echo "# ai-instructions:managed"; cat "$src"; } > "$dst"
     log_copy "$(basename "$dst")"
   else
     ln -s "$src" "$dst"
@@ -322,9 +342,12 @@ unlink_file() {
       SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
       return
     fi
+    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
   fi
 
-  if [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
+  if is_managed_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (copy)"
     else
@@ -333,6 +356,11 @@ unlink_file() {
     fi
     SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
     return
+  fi
+
+  if [ -e "$dst" ] && ! [ -L "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 
@@ -352,9 +380,14 @@ check_file() {
         SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
       fi
     fi
-  elif [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
-    log_ok "$(basename "$dst") (copy)"
-    SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+  elif is_managed_copy "$dst"; then
+    if is_managed_copy_current "$src" "$dst"; then
+      log_ok "$(basename "$dst") (copy)"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+    else
+      log_warn "$(basename "$dst") (copy, out of date)"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    fi
   fi
 }
 
@@ -371,8 +404,12 @@ list_file() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
-    log_ok "$dst (copy)"
+  elif is_managed_copy "$dst"; then
+    if is_managed_copy_current "$src" "$dst"; then
+      log_ok "$dst (copy)"
+    else
+      log_warn "$dst (copy, out of date)"
+    fi
   fi
 }
 
@@ -561,6 +598,7 @@ print_summary() {
       ;;
     remove)
       echo -e "  Removed: ${C_RED}${SUMMARY_REMOVED}${C_RESET}"
+      if [ "$SUMMARY_SKIPPED" -gt 0 ]; then echo -e "  Skipped (conflict):  ${C_YELLOW}${SUMMARY_SKIPPED}${C_RESET}"; fi
       ;;
     check)
       echo -e "  OK:     ${C_GREEN}${SUMMARY_UPTODATE}${C_RESET}"
