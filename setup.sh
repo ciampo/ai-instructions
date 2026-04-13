@@ -133,10 +133,10 @@ Wire ai-instructions into AI tool configurations via symlinks (or copies).
 
 Commands:
   install              Create symlinks/copies into agent config dirs (default)
-  list                 Show all installed symlinks grouped by agent
+  list                 Show all installed symlinks/copies grouped by agent
   remove               Remove symlinks/copies created by this script
-  update               Re-install, cleaning stale links for deleted source files
-  check                Verify existing symlinks are valid and targets exist
+  update               Re-install, cleaning stale symlinks for deleted source files
+  check                Verify existing symlinks/copies are valid and targets exist
 
 Options:
   --agent <name>       Target a specific agent (cursor, claude, codex, copilot, gemini)
@@ -290,6 +290,18 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
+    # During update, replace broken symlinks so users aren't stuck
+    if [ "$COMMAND" = "update" ] && ! [ -e "$dst" ]; then
+      if $DRY_RUN; then
+        log_dry "replace broken link $dst -> $src"
+      else
+        rm "$dst"
+        ln -s "$src" "$dst"
+        log_action "$(basename "$dst") (repaired)"
+      fi
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      return
+    fi
     log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     return
@@ -381,15 +393,13 @@ check_file() {
   if [ -L "$dst" ]; then
     local existing_target
     existing_target="$(readlink "$dst")"
-    if [ "$existing_target" = "$src" ]; then
-      if [ -e "$dst" ]; then
-        log_ok "$(basename "$dst")"
-        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-      else
-        log_broken "$(basename "$dst") -> $existing_target (target missing)"
-        BROKEN_COUNT=$((BROKEN_COUNT + 1))
-        SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
-      fi
+    if ! [ -e "$dst" ]; then
+      log_broken "$(basename "$dst") -> $existing_target (target missing)"
+      BROKEN_COUNT=$((BROKEN_COUNT + 1))
+      SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+    elif [ "$existing_target" = "$src" ]; then
+      log_ok "$(basename "$dst")"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
     else
       log_warn "$(basename "$dst") exists at $dst but points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
