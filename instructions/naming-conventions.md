@@ -6,8 +6,7 @@ Consistent naming reduces cognitive load and helps AI agents produce code that f
 
 - **[STRONG]** `kebab-case` for files and directories: `date-picker.tsx`, `use-resize-observer.ts`, `date-picker.module.css`.
 - **[STRONG]** `PascalCase` only when the file exports a single class or component and the project convention requires it. Follow whatever the project already does.
-- **[STRONG]** Test files live next to the source file or in a `test/` directory adjacent to it. Name: `<source-file>.test.ts` (or `.spec.ts` if the project uses that).
-- **[STRONG]** Story files: `<component-name>.stories.tsx`.
+- **[STRONG]** Test and Storybook files should follow the same conventions and naming scheme as the current project.
 - **[PREFER]** Index files (`index.ts`) for public API re-exports. Keep them thin -- only exports, no logic.
 
 ## Components
@@ -24,7 +23,7 @@ Consistent naming reduces cognitive load and helps AI agents produce code that f
 ## CSS
 
 - **[STRONG]** CSS Module class names in `camelCase`: `.datePickerHeader`, `.triggerButton`.
-- **[STRONG]** CSS custom properties (design tokens) use kebab-case with a namespace: `--wp--preset--color--primary`, `--ds-spacing-sm`.
+- **[STRONG]** CSS custom properties (design tokens) use kebab-case with a namespace: `--ds-color-primary`, `--ds-spacing-sm`.
 - **[PREFER]** Internal (component-scoped) custom properties should convey intent: `--button-padding` over `--p`.
 
 ## Variables and Functions
