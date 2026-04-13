@@ -2,6 +2,14 @@
 
 A workflow for thoroughly auditing a dependency update. Invoked when updating a package or reviewing a PR that updates dependencies.
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/coding-principles.md`
+- `instructions/security.md`
+- `instructions/tools-and-cli.md`
+
 ## Steps
 
 1. **Version comparison**: Compare the current resolved version (from lockfile), the target version in the PR/update, and the latest available version on npm. Note if the target is not the latest.

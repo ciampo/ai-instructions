@@ -4,6 +4,14 @@ A workflow for reviewing your own PR before marking it ready. Invoked when I say
 
 The key technique: delegate the review to a **readonly subagent** to reduce confirmation bias. The agent that wrote the code should not be the one reviewing it.
 
+## Dependencies
+
+Load these instruction files before executing this skill:
+
+- `instructions/code-review.md`
+- `instructions/accessibility.md`
+- `instructions/coding-principles.md`
+
 ## Steps
 
 1. Gather context: full diff against the base branch, commit log, CI status, and the PR description.
