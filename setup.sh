@@ -133,8 +133,8 @@ Wire ai-instructions into AI tool configurations via symlinks (or copies).
 
 Commands:
   install              Create symlinks/copies into agent config dirs (default)
-  list                 Show all installed symlinks/copies grouped by agent
-  remove               Remove symlinks/copies created by this script
+  list                 Show all installed symlinks/copies grouped by agent (includes stale)
+  remove               Remove symlinks/copies created by this script (includes stale cleanup)
   update               Re-install, cleaning stale symlinks for deleted source files
   check                Verify existing symlinks/copies are valid and targets exist
 
@@ -801,11 +801,13 @@ main() {
     list)
       for agent in $SELECTED_AGENTS; do
         process_agent "$agent" list_file
+        check_stale_agent "$agent"
       done
       ;;
     remove)
       for agent in $SELECTED_AGENTS; do
         process_agent "$agent" unlink_file
+        clean_stale_agent "$agent"
       done
       print_summary
       ;;

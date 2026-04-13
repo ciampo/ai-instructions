@@ -92,8 +92,8 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | Command | What it does |
 | --- | --- |
 | `install` (default) | Create symlinks (or copies) into agent config directories |
-| `list` | Show all installed symlinks/copies grouped by agent |
-| `remove` | Remove symlinks/copies created by this script |
+| `list` | Show all installed symlinks/copies grouped by agent (includes stale entries) |
+| `remove` | Remove symlinks/copies created by this script (includes stale cleanup) |
 | `update` | Re-install + clean stale symlinks for deleted source files |
 | `check` | Verify existing symlinks/copies are valid and detect stale/broken links (exits non-zero if any found) |
 
