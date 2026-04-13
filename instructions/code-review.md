@@ -36,7 +36,7 @@ To avoid noise, do not raise comments on:
 - Pure stylistic preferences that have no functional impact and no existing convention either way.
 - Import ordering (unless the project has an explicit sorting config).
 - Minor whitespace or formatting differences handled by automated formatters.
-- Choices that are clearly intentional and well-reasoned, even if you would have done it differently.
+- Choices that are clearly intentional and well-reasoned, unless there's an objectively better way of implementing them.
 
 ## Review Priorities (in order)
 
