@@ -102,7 +102,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | Flag | What it does |
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
-| `--only <category>` | Only install specific categories (`instructions`, `skills`, `personas`). Repeatable. |
+| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `personas`). Repeatable. |
 | `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
@@ -123,7 +123,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
 
-The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied files include a `# ai-instructions:managed` marker so `update --copy` only overwrites files the script previously installed.
+The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied files include a `<!-- ai-instructions:managed -->` marker so `update --copy` only overwrites files the script previously installed.
 
 ### Manual integration
 

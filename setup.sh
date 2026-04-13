@@ -141,7 +141,7 @@ Commands:
 Options:
   --agent <name>       Target a specific agent (cursor, claude, codex, copilot, gemini)
                        Can be repeated. Use --agent '*' for all agents.
-  --only <category>    Only install specific categories (instructions, skills, personas)
+  --only <category>    Only process specific categories (instructions, skills, personas)
                        Can be repeated.
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
                           in DIR (default: current directory). Can run standalone.
@@ -178,12 +178,22 @@ contains_word() {
 }
 
 is_managed_copy() {
-  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -q "^# ai-instructions:managed$"
+  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -q "^<!-- ai-instructions:managed -->$"
 }
 
 is_managed_copy_current() {
   local src="$1" dst="$2"
   is_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
+}
+
+dedupe_words() {
+  local input="$1" result=""
+  for w in $input; do
+    if ! contains_word "$result" "$w"; then
+      result="$result $w"
+    fi
+  done
+  echo "$result" | xargs
 }
 
 # ---------------------------------------------------------------------------
@@ -295,7 +305,7 @@ install_file() {
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
-        { echo "# ai-instructions:managed"; cat "$src"; } > "$dst"
+        { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -318,7 +328,7 @@ install_file() {
 
   mkdir -p "$(dirname "$dst")"
   if $COPY_MODE; then
-    { echo "# ai-instructions:managed"; cat "$src"; } > "$dst"
+    { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
     log_copy "$(basename "$dst")"
   else
     ln -s "$src" "$dst"
@@ -671,14 +681,7 @@ parse_args() {
   SELECTED_AGENTS="$(echo "$SELECTED_AGENTS" | xargs)"
   ONLY_CATEGORIES="$(echo "$ONLY_CATEGORIES" | xargs)"
 
-  # Deduplicate agents while preserving order
-  local deduped=""
-  for a in $SELECTED_AGENTS; do
-    if ! contains_word "$deduped" "$a"; then
-      deduped="$deduped $a"
-    fi
-  done
-  SELECTED_AGENTS="$(echo "$deduped" | xargs)"
+  SELECTED_AGENTS="$(dedupe_words "$SELECTED_AGENTS")"
 
   # --copilot-concat is only valid with install/update
   if [ -n "$COPILOT_CONCAT_DIR" ]; then
@@ -697,6 +700,7 @@ main() {
 
   if [ -z "$SELECTED_AGENTS" ] && [ -z "$COPILOT_CONCAT_DIR" ]; then
     prompt_agent_selection
+    SELECTED_AGENTS="$(dedupe_words "$SELECTED_AGENTS")"
   fi
 
   echo -e "${C_BOLD}ai-instructions${C_RESET} (source: $SCRIPT_DIR)"
