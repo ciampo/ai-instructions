@@ -13,11 +13,74 @@ How to handle errors, loading states, and failure scenarios in application code.
 - **[STRONG]** Use React error boundaries to prevent a single component failure from crashing the entire page. Place boundaries at meaningful UI seams (route level, panel level, widget level).
 - Error boundary fallback UI should be helpful: briefly explain what went wrong, offer a retry action when possible, and avoid exposing raw stack traces to users.
 
+<details>
+<summary>Example: error boundary with fallback UI</summary>
+
+```tsx
+import { Component } from 'react';
+
+class PanelErrorBoundary extends Component< {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+} > {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if ( this.state.hasError ) {
+      return this.props.fallback ?? (
+        <div role="alert">
+          <p>Something went wrong loading this section.</p>
+          <button onClick={ () => this.setState( { hasError: false } ) }>
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+</details>
+
 ## Loading and Empty States
 
 - **[STRONG]** Always handle loading states explicitly. Use skeleton screens or spinners -- never leave the user staring at a blank area.
 - **[PREFER]** Design meaningful empty states. "No items found" with a clear call to action is better than an empty container.
 - Avoid layout shift when transitioning between loading, empty, and populated states. Reserve space for content.
+
+<details>
+<summary>Example: handling loading, error, and success states</summary>
+
+```tsx
+function UserProfile( { userId }: { userId: string } ) {
+  const { data, error, isLoading } = useFetchUser( userId );
+
+  if ( isLoading ) {
+    return <UserProfileSkeleton />;
+  }
+
+  if ( error ) {
+    return (
+      <div role="alert">
+        <p>Could not load profile. Please try again later.</p>
+      </div>
+    );
+  }
+
+  if ( ! data ) {
+    return <p>No profile found.</p>;
+  }
+
+  return <UserProfileCard user={ data } />;
+}
+```
+
+</details>
 
 ## Error Messages
 
