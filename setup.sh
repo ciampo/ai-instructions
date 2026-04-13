@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ -z "${HOME:-}" ]; then
+  echo "Error: \$HOME is not set. Cannot determine agent config directories." >&2
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---------------------------------------------------------------------------
@@ -24,11 +29,18 @@ fi
 log()        { echo "  $1"; }
 log_action() { echo -e "  ${C_GREEN}[+]${C_RESET} $1"; }
 log_skip()   {
-  if $COPY_MODE; then
-    echo -e "  ${C_DIM}[=] $1 (already installed)${C_RESET}"
+  local msg="$1" dst="${2:-}"
+  local status
+  if [ -n "$dst" ] && [ -L "$dst" ]; then
+    status="already linked"
+  elif [ -n "$dst" ] && [ -f "$dst" ] && ! [ -L "$dst" ]; then
+    status="already installed"
+  elif $COPY_MODE; then
+    status="already installed"
   else
-    echo -e "  ${C_DIM}[=] $1 (already linked)${C_RESET}"
+    status="already linked"
   fi
+  echo -e "  ${C_DIM}[=] $msg ($status)${C_RESET}"
 }
 log_warn()   { echo -e "  ${C_YELLOW}[!]${C_RESET} $1" >&2; }
 log_dry()    { echo -e "  ${C_CYAN}[dry-run]${C_RESET} $1"; }
@@ -286,7 +298,7 @@ install_file() {
     local existing_target
     existing_target="$(readlink "$dst")"
     if [ "$existing_target" = "$src" ]; then
-      log_skip "$(basename "$dst")"
+      log_skip "$(basename "$dst")" "$dst"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
@@ -322,7 +334,7 @@ install_file() {
 
   if [ -e "$dst" ]; then
     if $COPY_MODE && is_managed_copy_current "$src" "$dst"; then
-      log_skip "$(basename "$dst")"
+      log_skip "$(basename "$dst")" "$dst"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
@@ -373,7 +385,6 @@ unlink_file() {
         log_dry "rm $dst"
       else
         rm "$dst"
-        rmdir "$(dirname "$dst")" 2>/dev/null || true
         log_remove "$(basename "$dst")"
       fi
       SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
@@ -389,7 +400,6 @@ unlink_file() {
       log_dry "rm $dst (copy)"
     else
       rm "$dst"
-      rmdir "$(dirname "$dst")" 2>/dev/null || true
       log_remove "$(basename "$dst") (copy)"
     fi
     SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
@@ -562,6 +572,9 @@ process_agent() {
         mkdir -p "$sdir"
       fi
       "$action" "$f" "$sdir/$skill_file"
+      if [ "$action" = "unlink_file" ] && ! $DRY_RUN; then
+        rmdir "$sdir" 2>/dev/null || true
+      fi
     done
   fi
 
