@@ -4,7 +4,6 @@ Patterns for building and maintaining a design system component library. General
 
 ## Architecture
 
-- Wrap headless/unstyled primitives (e.g., Base UI, Radix, Ariakit) with thin, styled layers.
 - Stay close to the upstream API surface. Do not re-invent props that the primitive already exposes. Deviations need justification.
 - Compound component pattern: `Component.Root`, `Component.Header`, `Component.Content`, etc.
 - Use React Context for internal communication between sub-components (e.g., sharing IDs, state).
@@ -12,7 +11,6 @@ Patterns for building and maintaining a design system component library. General
 
 ## Styling
 
-- CSS Modules for component styles. One `.module.css` file per component.
 - All visual values from design tokens (CSS custom properties). No hardcoded colors, spacing, typography, or radii.
 - Typography through a shared `Text` component with semantic variants, not raw CSS font properties.
 - CSS layer organization when the system supports it (component styles vs composition styles).
@@ -21,8 +19,10 @@ Patterns for building and maintaining a design system component library. General
 
 - Each component gets stories with working interactive examples.
 - JSDoc on the root component provides the Storybook description automatically -- do not duplicate.
+- For props accepting ReactElement or ReactNode, show a custom control accepting strings of text.
+- For props with complex types (eg objects), either disable the control or provide a custom choice across a prepared list of viable options.
 - Disable irrelevant controls for specific stories. Prefer systematic disabling over one-by-one exclusion.
-- Stories should use `args`/`controls` properly.
+- Stories should use `args`/`controls` properly, thus linking them to Storybook controls.
 
 ## Testing
 

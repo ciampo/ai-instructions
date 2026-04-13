@@ -9,6 +9,8 @@ How I think about code. These principles apply across all projects.
 - **Root-cause fixes over patches.** When something breaks, find the real cause. Prefer the structural fix over the workaround.
 - **Scope awareness.** Keep the end goal in focus. During feature implementation, it is fine to include related changes in the same PR even if they touch adjacent concerns -- extracting to a separate PR is a decision I will make later if needed.
 - **Think before coding.** For non-trivial work, plan the approach before writing code. Understand the problem, identify the moving parts, and outline the strategy. This avoids wasted implementation cycles.
+- **Modern code.** Prefer platform-native APIs (especially HTML tags/attributes, CSS properties) over custom JavaScript implementations.
+- **Feature support.** Always rely on up-to-date, official data (MDN, caniuse.com) to check support for a given HTML/CSS/JS API. Choose only APIs supported by evergreen browsers, or APIs that are mostly supported and for which a reasonable fallback is available.
 
 ## TypeScript
 
@@ -21,10 +23,10 @@ How I think about code. These principles apply across all projects.
 
 - Write elegant, idiomatic code. Prefer `array.some()`, `Array.from()`, optional chaining, nullish coalescing -- use modern language features naturally.
 - Prefer `throw new Error()` (gated to dev mode when appropriate) over `console.warn()` or silent fallbacks. Errors should be concise: `ComponentName: Summary. Detail.`
+- Prefer named exports / imports over default exports / imports.
 
 ## CSS
 
-- Use CSS Modules (`.module.css`).
 - Use design tokens and CSS custom properties over hardcoded values. Name internal variables to convey intent (self-documenting).
 - Prefer modern CSS properties (`translate`, `rotate` over `transform`).
 - DRY up shared styles. If a pattern repeats across sibling components, extract it.
