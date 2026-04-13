@@ -19,7 +19,7 @@ setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini
 ### Instructions
 
 | File | What it covers |
-|---|---|
+| --- | --- |
 | [coding-principles.md](instructions/coding-principles.md) | Engineering philosophy, TypeScript/JS/CSS/React style, module organization, dependencies, testing, comments |
 | [interaction-preferences.md](instructions/interaction-preferences.md) | Concise communication, intellectual honesty, verify from source, GitHub boundaries, context switching, collaboration |
 | [writing-conventions.md](instructions/writing-conventions.md) | PR descriptions, commit messages, CHANGELOGs, branch names, JSDoc, error messages |
@@ -36,7 +36,7 @@ setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini
 ### Skills
 
 | File | Trigger | What it does |
-|---|---|---|
+| --- | --- | --- |
 | [review-pr.md](skills/review-pr.md) | "review this PR" | Structured PR review against the checklist |
 | [self-review-pr.md](skills/self-review-pr.md) | "self-review" | Readonly subagent self-review to reduce bias |
 | [write-pr-description.md](skills/write-pr-description.md) | "write/update PR description" | PR description writer following repo template |
@@ -51,7 +51,7 @@ setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini
 ### Personas
 
 | File | What it does |
-|---|---|
+| --- | --- |
 | [a11y-reviewer.md](personas/a11y-reviewer.md) | Senior accessibility engineer for deep a11y audits |
 | [performance-reviewer.md](personas/performance-reviewer.md) | Senior performance engineer for bundle, rendering, and runtime reviews |
 | [api-design-reviewer.md](personas/api-design-reviewer.md) | API design specialist for surface area, consistency, and ergonomics |
@@ -80,7 +80,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ### Supported agents
 
 | Agent | Detection | Instructions | Skills | Personas |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
 | Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
 | Codex | `~/.codex/` | `~/.codex/instructions/*.md` | -- | -- |
@@ -90,7 +90,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ### Commands
 
 | Command | What it does |
-|---|---|
+| --- | --- |
 | `install` (default) | Create symlinks (or copies) into agent config directories |
 | `list` | Show all installed symlinks grouped by agent |
 | `remove` | Remove symlinks/copies created by this script |
@@ -100,7 +100,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ### Options
 
 | Flag | What it does |
-|---|---|
+| --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
 | `--only <category>` | Only install specific categories (`instructions`, `skills`, `personas`). Repeatable. |
 | `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory |
