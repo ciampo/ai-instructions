@@ -158,7 +158,8 @@ Options:
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
                           in DIR (default: current directory). Skips user-maintained files.
                           Can run standalone.
-  --copy               Copy files instead of symlinking
+  --copy               Copy files instead of symlinking (skills are always
+                       copies because instruction paths are resolved per agent)
   -y, --yes            Skip all prompts (non-interactive mode)
   --dry-run            Show what would be done without making changes
   -h, --help           Show this help message
@@ -468,9 +469,14 @@ list_file() {
 #
 # Skills reference instructions as `instructions/<name>.md`.  At install time
 # we replace those references with the absolute installed path for the target
-# agent (directory + extension).  This means skills are always written as
-# managed copies — even in symlink mode — because their content is
-# agent-specific.
+# agent (directory + extension).  Because that content is agent-specific,
+# skills are always installed as managed copies, even when the rest of the
+# setup is using symlinks.  As a result, changes to source skill files do not
+# propagate immediately in symlink mode; skills must be reinstalled.
+#
+# For agents that do not have an instruction directory (e.g. copilot, gemini),
+# references are resolved to the source repo path so they remain usable as
+# long as the repo is present on disk.
 # ---------------------------------------------------------------------------
 sed_escape_replacement() {
   printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
@@ -482,9 +488,10 @@ resolved_skill_content() {
   instr_dir="$(agent_instr_dir "$agent")"
   instr_ext="$(agent_instr_ext "$agent")"
 
+  # Fall back to source repo paths for agents without an instruction directory
   if [ -z "$instr_dir" ]; then
-    cat "$src"
-    return
+    instr_dir="$SCRIPT_DIR/instructions"
+    instr_ext=".md"
   fi
 
   local sed_script=""
