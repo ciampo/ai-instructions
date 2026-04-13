@@ -13,7 +13,7 @@ instructions/          Always-on rules loaded into every AI session
 skills/                On-demand workflows invoked by trigger phrases
 personas/              Specialized agent identities for focused tasks
 CONVENTIONS.md         Meta-conventions (severity tags, cross-references)
-setup.sh               Symlinks everything into Cursor / Claude Code / Copilot
+setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini CLI
 ```
 
 ### Instructions
@@ -65,28 +65,65 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 
 ## Setup
 
-Clone the repo and run the setup script to symlink files into your AI tools:
+Clone the repo and run the setup script:
 
 ```bash
 git clone <repo-url> ~/Code/ai-instructions
 cd ~/Code/ai-instructions
-./setup.sh --all --dry-run   # Preview what will be linked
-./setup.sh --all             # Link into Cursor + Claude Code
+./setup.sh                   # Auto-detect installed agents, interactively select
+./setup.sh --yes --dry-run   # Auto-detect, select all, preview changes
+./setup.sh --agent cursor    # Target a specific agent
 ```
 
-Available flags:
+The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones.
+
+### Supported agents
+
+| Agent | Detection | Instructions | Skills | Personas |
+|---|---|---|---|---|
+| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
+| Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
+| Codex | `~/.codex/` | `~/.codex/instructions/*.md` | -- | -- |
+| GitHub Copilot | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | -- |
+| Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | -- |
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `install` (default) | Create symlinks (or copies) into agent config directories |
+| `list` | Show all installed symlinks grouped by agent |
+| `remove` | Remove symlinks/copies created by this script |
+| `update` | Re-install + clean stale symlinks for deleted source files |
+| `check` | Verify existing symlinks are valid and targets exist |
+
+### Options
 
 | Flag | What it does |
 |---|---|
-| `--cursor` | Symlinks into `~/.cursor/rules/`, `~/.cursor/skills-cursor/`, `~/.cursor/agents/` |
-| `--claude` | Symlinks into `~/.claude/rules/`, `~/.claude/skills/` |
-| `--copilot [DIR]` | Concatenates instructions into `.github/copilot-instructions.md` in the target directory |
-| `--all` | Cursor + Claude Code (use `--copilot` separately since it targets a specific repo) |
-| `--unlink` | Remove symlinks created by this script (combine with `--cursor`, `--claude`, or `--all`) |
-| `--check` | Verify existing symlinks are valid and targets exist |
+| `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
+| `--only <category>` | Only install specific categories (`instructions`, `skills`, `personas`). Repeatable. |
+| `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory |
+| `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI) |
+| `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
 
-The script is non-destructive (never overwrites existing files) and idempotent (safe to re-run).
+### Examples
+
+```bash
+./setup.sh                                        # Interactive: detect + prompt
+./setup.sh --yes                                   # Non-interactive: all detected agents
+./setup.sh --agent cursor --agent claude           # Target specific agents
+./setup.sh --agent '*' --dry-run                   # Preview for all agents
+./setup.sh --only skills --only personas           # Only install skills + personas
+./setup.sh remove --agent cursor                   # Remove Cursor symlinks
+./setup.sh update --agent '*'                      # Re-install + clean stale links
+./setup.sh check --agent cursor                    # Verify Cursor symlinks
+./setup.sh install --copy --yes                    # Copy mode for CI
+./setup.sh --copilot-concat ~/Code/my-project      # Generate concatenated Copilot file
+```
+
+The script is non-destructive (never overwrites existing files), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS).
 
 ### Manual integration
 
@@ -94,7 +131,9 @@ If you prefer to set things up manually or use a different tool:
 
 - **Cursor**: Instructions to `~/.cursor/rules/` (as `.mdc`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
 - **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/<name>/SKILL.md`, reference from `CLAUDE.md`
-- **GitHub Copilot**: Concatenate instruction files into `.github/copilot-instructions.md`
+- **Codex**: Instructions to `~/.codex/instructions/`
+- **GitHub Copilot**: Skills to `~/.copilot/skills/<name>/SKILL.md`, or use `--copilot-concat` for a single instructions file
+- **Gemini CLI**: Skills to `~/.gemini/skills/<name>/SKILL.md`
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
 
 ### Per-project overrides
@@ -107,7 +146,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. Edit the source files here -- symlinks ensure every tool picks up changes immediately. Commit and push to keep history and sync across machines.
+These are living documents. Edit the source files here -- symlinks ensure every tool picks up changes immediately. Run `./setup.sh update` to re-install and clean up stale links after adding or removing files. Commit and push to keep history and sync across machines.
 
 ## License
 
