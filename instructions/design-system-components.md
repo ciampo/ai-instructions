@@ -28,7 +28,7 @@ Patterns for building and maintaining a design system component library. General
 - **[PREFER]** Expose component-scoped custom properties for controlled customization, rather than relying on consumers overriding internal class names.
 
 <details>
-<summary>Examples: Token layers and theming</summary>
+<summary>Example: Token layers and theming</summary>
 
 ```css
 /* Global primitives (design-tokens.css) */

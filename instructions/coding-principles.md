@@ -80,7 +80,7 @@ const config = {
 - **[PREFER]** Use container queries for component-level responsive behavior instead of viewport media queries where the component's container size is what matters.
 
 <details>
-<summary>Examples: CSS tokens and modern properties</summary>
+<summary>Example: CSS tokens and modern properties</summary>
 
 ```css
 /* Bad: hardcoded values */
@@ -118,7 +118,7 @@ const config = {
 - **[PREFER]** Split a component when it handles multiple distinct responsibilities, or when a section of JSX grows complex enough to obscure the overall structure.
 
 <details>
-<summary>Examples: Compound component skeleton</summary>
+<summary>Example: Compound component skeleton</summary>
 
 ```tsx
 import { createContext, forwardRef, useContext, useState } from 'react';

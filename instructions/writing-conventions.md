@@ -19,23 +19,13 @@ How I expect written artifacts to be structured.
 - **[PREFER]** When squashing, the resulting message should still be meaningful.
 
 <details>
-<summary>Examples: commit messages and CHANGELOG</summary>
-
-Commit messages:
+<summary>Example: commit messages</summary>
 
 ```text
 Dialog: Fix focus not returning to trigger on close
 Tooltip: Add `delayDuration` prop
 build: Update Radix Tooltip from v1 to v2
 docs: Add migration guide for Button API changes
-```
-
-CHANGELOG entry:
-
-```md
-## Bug Fix
-
-- `Dialog`: Fix focus not returning to the trigger element when the dialog is closed via Escape key. ([#1234](https://github.com/org/repo/pull/1234))
 ```
 
 </details>
@@ -45,6 +35,17 @@ CHANGELOG entry:
 - **[RULE]** Always include them for user-facing changes. Use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
 - **[STRONG]** Include PR link in `([#NNNNN](URL))` format.
 - **[RULE]** Match the existing CHANGELOG format and conventions in the repo exactly.
+
+<details>
+<summary>Example: CHANGELOG entry</summary>
+
+```md
+## Bug Fix
+
+- `Dialog`: Fix focus not returning to the trigger element when the dialog is closed via Escape key. ([#1234](https://github.com/org/repo/pull/1234))
+```
+
+</details>
 
 ## Branch Names
 
