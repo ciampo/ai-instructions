@@ -158,7 +158,8 @@ Options:
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
                           in DIR (default: current directory). Skips user-maintained files.
                           Can run standalone.
-  --copy               Copy files instead of symlinking
+  --copy               Copy files instead of symlinking (skills are always
+                       copies because instruction paths are resolved per agent)
   -y, --yes            Skip all prompts (non-interactive mode)
   --dry-run            Show what would be done without making changes
   -h, --help           Show this help message
@@ -464,6 +465,184 @@ list_file() {
 }
 
 # ---------------------------------------------------------------------------
+# Instruction-reference resolution
+#
+# Skills and personas reference instructions as `instructions/<name>.md`.
+# At install time we replace those references with the absolute installed
+# path for the target agent (directory + extension).  Because that content
+# is agent-specific, any file that contains instruction references is always
+# installed as a managed copy, even when the rest of the setup uses symlinks.
+# Changes to such source files do not propagate immediately; they must be
+# reinstalled via `update`.
+#
+# For agents that do not have an instruction directory (e.g. copilot, gemini),
+# references are resolved to the source repo path so they remain usable as
+# long as the repo is present on disk.
+# ---------------------------------------------------------------------------
+sed_escape_replacement() {
+  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
+
+resolve_instruction_refs() {
+  local src="$1" agent="$2"
+  local instr_dir instr_ext
+  instr_dir="$(agent_instr_dir "$agent")"
+  instr_ext="$(agent_instr_ext "$agent")"
+
+  # Fall back to source repo paths for agents without an instruction directory
+  if [ -z "$instr_dir" ]; then
+    instr_dir="$SCRIPT_DIR/instructions"
+    instr_ext=".md"
+  fi
+
+  local sed_script=""
+  for instr_file in "$SCRIPT_DIR"/instructions/*.md; do
+    [ -e "$instr_file" ] || continue
+    local name replacement
+    name="$(basename "$instr_file" .md)"
+    replacement="$(sed_escape_replacement "${instr_dir}/${name}${instr_ext}")"
+    sed_script="${sed_script}s|instructions/${name}\\.md|${replacement}|g;"
+  done
+
+  if [ -n "$sed_script" ]; then
+    sed "$sed_script" "$src"
+  else
+    cat "$src"
+  fi
+}
+
+is_resolved_copy_current() {
+  local src="$1" dst="$2" agent="$3"
+  is_managed_copy "$dst" || return 1
+  cmp -s <(resolve_instruction_refs "$src" "$agent") <(tail -n +2 "$dst")
+}
+
+install_resolved() {
+  local src="$1" dst="$2" agent="$3"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    if [ "$existing_target" = "$src" ]; then
+      if $DRY_RUN; then
+        log_dry "resolve deps: $(basename "$dst")"
+      else
+        rm "$dst"
+        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+        log_copy "$(basename "$dst") (resolved deps)"
+      fi
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      return
+    fi
+    if [ "$COMMAND" = "update" ] && ! [ -e "$dst" ]; then
+      case "$existing_target" in
+        "$SCRIPT_DIR"/*)
+          if $DRY_RUN; then
+            log_dry "replace broken link: $(basename "$dst")"
+          else
+            rm "$dst"
+            { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+            log_copy "$(basename "$dst") (repaired, resolved deps)"
+          fi
+          SUMMARY_NEW=$((SUMMARY_NEW + 1))
+          return
+          ;;
+      esac
+    fi
+    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if [ -e "$dst" ]; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
+      log_skip "$(basename "$dst")" "$dst"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      return
+    fi
+    if is_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
+      if $DRY_RUN; then
+        log_dry "update: $(basename "$dst")"
+      else
+        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+        log_copy "$(basename "$dst") (updated)"
+      fi
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      return
+    fi
+    if is_managed_copy "$dst"; then
+      log_warn "$(basename "$dst") is outdated; run update to refresh"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      return
+    fi
+    log_warn "$(basename "$dst") already exists at $dst -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if $DRY_RUN; then
+    log_dry "cp (resolved deps) -> $dst"
+    SUMMARY_NEW=$((SUMMARY_NEW + 1))
+    return
+  fi
+
+  mkdir -p "$(dirname "$dst")"
+  { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+  log_copy "$(basename "$dst") (resolved deps)"
+  SUMMARY_NEW=$((SUMMARY_NEW + 1))
+}
+
+check_resolved() {
+  local src="$1" dst="$2" agent="$3"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    if ! [ -e "$dst" ]; then
+      log_broken "$(basename "$dst") -> $existing_target (target missing)"
+      BROKEN_COUNT=$((BROKEN_COUNT + 1))
+      SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+    elif [ "$existing_target" = "$src" ]; then
+      log_warn "$(basename "$dst") symlinked — instruction deps not resolved; run update"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    else
+      log_warn "$(basename "$dst") points to $existing_target (expected $src)"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    fi
+  elif is_managed_copy "$dst"; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
+      log_ok "$(basename "$dst")"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+    else
+      log_warn "$(basename "$dst") (out of date)"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    fi
+  fi
+}
+
+list_resolved() {
+  local src="$1" dst="$2" agent="$3"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    if [ "$existing_target" = "$src" ]; then
+      if [ -e "$dst" ]; then
+        log_warn "$dst (symlinked, deps not resolved)"
+      else
+        log_broken "$dst (target missing)"
+      fi
+    fi
+  elif is_managed_copy "$dst"; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
+      log_ok "$dst (copy, deps resolved)"
+    else
+      log_warn "$dst (copy, out of date)"
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Stale cleanup: remove symlinks/managed copies whose source no longer exists
 # ---------------------------------------------------------------------------
 remove_stale_entry() {
@@ -569,13 +748,22 @@ process_agent() {
       local skill_name
       skill_name="$(basename "$f" .md)"
       local sdir="$skills_dir/$skill_name"
-      if [ "$action" = "install_file" ] && ! $DRY_RUN; then
-        mkdir -p "$sdir"
-      fi
-      "$action" "$f" "$sdir/$skill_file"
-      if [ "$action" = "unlink_file" ] && ! $DRY_RUN; then
-        rmdir "$sdir" 2>/dev/null || true
-      fi
+      case "$action" in
+        install_file)
+          if ! $DRY_RUN; then mkdir -p "$sdir"; fi
+          install_resolved "$f" "$sdir/$skill_file" "$agent"
+          ;;
+        check_file)
+          check_resolved "$f" "$sdir/$skill_file" "$agent"
+          ;;
+        list_file)
+          list_resolved "$f" "$sdir/$skill_file" "$agent"
+          ;;
+        unlink_file)
+          "$action" "$f" "$sdir/$skill_file"
+          if ! $DRY_RUN; then rmdir "$sdir" 2>/dev/null || true; fi
+          ;;
+      esac
     done
   fi
 
@@ -583,7 +771,21 @@ process_agent() {
     log "Personas -> $personas_dir/"
     for f in "$SCRIPT_DIR"/personas/*.md; do
       [ -e "$f" ] || continue
-      "$action" "$f" "$personas_dir/$(basename "$f")"
+      local pdst="$personas_dir/$(basename "$f")"
+      case "$action" in
+        install_file)
+          install_resolved "$f" "$pdst" "$agent"
+          ;;
+        check_file)
+          check_resolved "$f" "$pdst" "$agent"
+          ;;
+        list_file)
+          list_resolved "$f" "$pdst" "$agent"
+          ;;
+        unlink_file)
+          "$action" "$f" "$pdst"
+          ;;
+      esac
     done
   fi
 
