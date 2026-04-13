@@ -12,7 +12,7 @@ Consistent naming reduces cognitive load and helps AI agents produce code that f
 <details>
 <summary>Example: component directory structure</summary>
 
-```
+```text
 date-picker/
   index.ts                    # public exports
   date-picker.tsx             # main component

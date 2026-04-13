@@ -34,7 +34,7 @@ Use these consistently in review output:
 
 Good review comment (actionable, specific, references the code):
 
-> **[major]** The `onClose` callback is not called when the user presses Escape (`dialog.tsx:42`). The `Dialog` component in the same package handles this via `onKeyDown` — this should match that pattern.
+> **[major]** The `onClose` callback is not called when the user presses Escape (`dialog.tsx:42`). The `Dialog` component in the same package handles this via `onKeyDown` -- this should match that pattern.
 
 Noisy comment (vague, opinion-based, no impact):
 

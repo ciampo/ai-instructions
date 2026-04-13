@@ -121,7 +121,7 @@ const config = {
 <summary>Examples: Compound component skeleton</summary>
 
 ```tsx
-import { createContext, forwardRef, useContext } from 'react';
+import { createContext, forwardRef, useContext, useState } from 'react';
 import styles from './tabs.module.css';
 
 type TabsContextValue = { activeTab: string; setActiveTab: ( id: string ) => void };

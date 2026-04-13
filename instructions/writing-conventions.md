@@ -23,7 +23,7 @@ How I expect written artifacts to be structured.
 
 Commit messages:
 
-```
+```text
 Dialog: Fix focus not returning to trigger on close
 Tooltip: Add `delayDuration` prop
 build: Update Radix Tooltip from v1 to v2
