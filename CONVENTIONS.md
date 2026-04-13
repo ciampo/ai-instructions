@@ -19,7 +19,7 @@ Skills and personas that depend on instruction files must declare their dependen
 ```markdown
 ## Dependencies
 
-Load these instruction files before executing this skill:
+Load these instruction files before executing this skill/persona:
 
 - `instructions/code-review.md`
 - `instructions/accessibility.md`

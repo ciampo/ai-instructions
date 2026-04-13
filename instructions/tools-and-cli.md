@@ -11,7 +11,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 ## Git
 
-- **[STRONG]** Granular commits grouped logically by concern. Each commit should be a self-contained unit of change.
+- **[STRONG]** Commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
 - **[RULE]** Use `--force-with-lease` for force pushes, never `--force`.
 - **[PREFER]** Prefer `git rebase` for integrating upstream changes on feature branches.
 - **[PREFER]** Draft PRs first during development, convert to ready when polished.
