@@ -472,6 +472,10 @@ list_file() {
 # managed copies — even in symlink mode — because their content is
 # agent-specific.
 # ---------------------------------------------------------------------------
+sed_escape_replacement() {
+  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
+}
+
 resolved_skill_content() {
   local src="$1" agent="$2"
   local instr_dir instr_ext
@@ -486,9 +490,10 @@ resolved_skill_content() {
   local sed_script=""
   for instr_file in "$SCRIPT_DIR"/instructions/*.md; do
     [ -e "$instr_file" ] || continue
-    local name
+    local name replacement
     name="$(basename "$instr_file" .md)"
-    sed_script="${sed_script}s|instructions/${name}\\.md|${instr_dir}/${name}${instr_ext}|g;"
+    replacement="$(sed_escape_replacement "${instr_dir}/${name}${instr_ext}")"
+    sed_script="${sed_script}s|instructions/${name}\\.md|${replacement}|g;"
   done
 
   if [ -n "$sed_script" ]; then
@@ -501,10 +506,7 @@ resolved_skill_content() {
 is_resolved_skill_current() {
   local src="$1" dst="$2" agent="$3"
   is_managed_copy "$dst" || return 1
-  local expected actual
-  expected="$(resolved_skill_content "$src" "$agent")"
-  actual="$(tail -n +2 "$dst")"
-  [ "$expected" = "$actual" ]
+  cmp -s <(resolved_skill_content "$src" "$agent") <(tail -n +2 "$dst")
 }
 
 install_skill() {
