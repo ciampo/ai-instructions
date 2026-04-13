@@ -485,9 +485,11 @@ sed_escape_replacement() {
 
 resolve_instruction_refs() {
   local src="$1" agent="$2"
-  local instr_dir instr_ext
+  local instr_dir instr_ext skills_dir skill_file
   instr_dir="$(agent_instr_dir "$agent")"
   instr_ext="$(agent_instr_ext "$agent")"
+  skills_dir="$(agent_skills_dir "$agent")"
+  skill_file="$(agent_skill_file "$agent")"
 
   # Fall back to source repo paths for agents without an instruction directory
   if [ -z "$instr_dir" ]; then
@@ -503,6 +505,17 @@ resolve_instruction_refs() {
     replacement="$(sed_escape_replacement "${instr_dir}/${name}${instr_ext}")"
     sed_script="${sed_script}s|instructions/${name}\\.md|${replacement}|g;"
   done
+
+  # Resolve skills/ cross-references (e.g. skills/foo.md -> <skills_dir>/foo/SKILL.md)
+  if [ -n "$skills_dir" ]; then
+    for skill_src in "$SCRIPT_DIR"/skills/*.md; do
+      [ -e "$skill_src" ] || continue
+      local sname sreplacement
+      sname="$(basename "$skill_src" .md)"
+      sreplacement="$(sed_escape_replacement "${skills_dir}/${sname}/${skill_file}")"
+      sed_script="${sed_script}s|skills/${sname}\\.md|${sreplacement}|g;"
+    done
+  fi
 
   if [ -n "$sed_script" ]; then
     sed "$sed_script" "$src"
