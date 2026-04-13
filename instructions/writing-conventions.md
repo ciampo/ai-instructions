@@ -49,8 +49,7 @@ docs: Add migration guide for Button API changes
 
 ## Branch Names
 
-- **[PREFER]** Format: `type/short-description`. Examples: `fix/focus-trap-escape`, `add/date-picker`, `update/radix-tooltip-v2`.
-- Common prefixes: `add/`, `update/`, `fix/`, `remove/`, `try/`, `docs/`.
+See `naming-conventions.md` (Branches section) for the canonical branch naming convention.
 
 ## JSDoc / API Documentation
 
