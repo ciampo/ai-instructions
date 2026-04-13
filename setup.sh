@@ -114,7 +114,6 @@ SELECTED_AGENTS=""
 ONLY_CATEGORIES=""
 COPILOT_CONCAT_DIR=""
 BROKEN_COUNT=0
-STALE_COUNT=0
 
 SUMMARY_NEW=0
 SUMMARY_UPTODATE=0
@@ -246,11 +245,15 @@ prompt_agent_selection() {
     # shellcheck disable=SC2206
     detected_arr=($detected)
     for num in $selection; do
+      if ! [[ "$num" =~ ^[0-9]+$ ]]; then
+        log_warn "Invalid selection (not a number): $num"
+        continue
+      fi
       local idx=$((num - 1))
       if [ $idx -ge 0 ] && [ $idx -lt ${#detected_arr[@]} ]; then
         SELECTED_AGENTS="$SELECTED_AGENTS ${detected_arr[$idx]}"
       else
-        log_warn "Invalid selection: $num"
+        log_warn "Invalid selection (out of range): $num"
       fi
     done
   fi
@@ -288,9 +291,7 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    # In copy+update mode, only overwrite files we previously installed
-    # (identified by the marker header added during copy)
-    if $COPY_MODE && [ "$COMMAND" = "update" ] && head -1 "$dst" 2>/dev/null | grep -q "^# ai-instructions:managed$"; then
+    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_managed_copy "$dst"; then
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
@@ -379,6 +380,9 @@ check_file() {
         BROKEN_COUNT=$((BROKEN_COUNT + 1))
         SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
       fi
+    else
+      log_warn "$(basename "$dst") exists at $dst but points to $existing_target (expected $src)"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
   elif is_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
@@ -418,7 +422,7 @@ list_file() {
 # source no longer exists
 # ---------------------------------------------------------------------------
 clean_stale_in_dir() {
-  local dir="$1"
+  local dir="$1" nested_file="${2:-}"
   [ -d "$dir" ] || return 0
 
   for entry in "$dir"/*; do
@@ -436,27 +440,25 @@ clean_stale_in_dir() {
               rm "$entry"
               log_stale "$(basename "$entry") -> $target"
             fi
-            STALE_COUNT=$((STALE_COUNT + 1))
             SUMMARY_STALE=$((SUMMARY_STALE + 1))
           fi
           ;;
       esac
-    elif [ -d "$entry" ]; then
-      local skill_file="$entry/SKILL.md"
-      if [ -L "$skill_file" ]; then
+    elif [ -d "$entry" ] && [ -n "$nested_file" ]; then
+      local nested_path="$entry/$nested_file"
+      if [ -L "$nested_path" ]; then
         local target
-        target="$(readlink "$skill_file")"
+        target="$(readlink "$nested_path")"
         case "$target" in
           "$SCRIPT_DIR"/*)
             if [ ! -e "$target" ]; then
               if $DRY_RUN; then
-                log_dry "rm stale $skill_file -> $target"
+                log_dry "rm stale $nested_path -> $target"
               else
-                rm "$skill_file"
+                rm "$nested_path"
                 rmdir "$entry" 2>/dev/null || true
-                log_stale "$(basename "$entry")/SKILL.md -> $target"
+                log_stale "$(basename "$entry")/$nested_file -> $target"
               fi
-              STALE_COUNT=$((STALE_COUNT + 1))
               SUMMARY_STALE=$((SUMMARY_STALE + 1))
             fi
             ;;
@@ -534,13 +536,14 @@ process_agent() {
 # ---------------------------------------------------------------------------
 clean_stale_agent() {
   local agent="$1"
-  local instr_dir skills_dir personas_dir
+  local instr_dir skills_dir personas_dir skill_file
   instr_dir="$(agent_instr_dir "$agent")"
   skills_dir="$(agent_skills_dir "$agent")"
+  skill_file="$(agent_skill_file "$agent")"
   personas_dir="$(agent_personas_dir "$agent")"
 
   if [ -n "$instr_dir" ]; then clean_stale_in_dir "$instr_dir"; fi
-  if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir"; fi
+  if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir" "$skill_file"; fi
   if [ -n "$personas_dir" ]; then clean_stale_in_dir "$personas_dir"; fi
 }
 
@@ -602,6 +605,7 @@ print_summary() {
       ;;
     check)
       echo -e "  OK:     ${C_GREEN}${SUMMARY_UPTODATE}${C_RESET}"
+      if [ "$SUMMARY_SKIPPED" -gt 0 ]; then echo -e "  Conflict: ${C_YELLOW}${SUMMARY_SKIPPED}${C_RESET}"; fi
       if [ "$SUMMARY_BROKEN" -gt 0 ]; then echo -e "  Broken: ${C_RED}${SUMMARY_BROKEN}${C_RESET}"; fi
       ;;
   esac
@@ -645,7 +649,7 @@ parse_args() {
         ;;
       --copilot-concat)
         shift
-        if [ $# -gt 0 ] && [[ ! "$1" =~ ^-- ]]; then
+        if [ $# -gt 0 ] && [[ "$1" != -* ]]; then
           COPILOT_CONCAT_DIR="$1"
           shift
         else
