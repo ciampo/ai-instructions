@@ -263,7 +263,7 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    log_warn "$(basename "$dst") exists at $dst and differs from source -- skipping"
+    log_warn "$(basename "$dst") already exists at $dst -- skipping"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     return
   fi
@@ -335,6 +335,9 @@ check_file() {
         SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
       fi
     fi
+  elif [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
+    log_ok "$(basename "$dst") (copy)"
+    SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
   fi
 }
 
@@ -482,9 +485,9 @@ clean_stale_agent() {
   skills_dir="$(agent_skills_dir "$agent")"
   personas_dir="$(agent_personas_dir "$agent")"
 
-  [ -n "$instr_dir" ] && clean_stale_in_dir "$instr_dir"
-  [ -n "$skills_dir" ] && clean_stale_in_dir "$skills_dir"
-  [ -n "$personas_dir" ] && clean_stale_in_dir "$personas_dir"
+  if [ -n "$instr_dir" ]; then clean_stale_in_dir "$instr_dir"; fi
+  if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir"; fi
+  if [ -n "$personas_dir" ]; then clean_stale_in_dir "$personas_dir"; fi
 }
 
 # ---------------------------------------------------------------------------
@@ -639,7 +642,7 @@ main() {
       for agent in $SELECTED_AGENTS; do
         process_agent "$agent" install_file
       done
-      [ -n "$COPILOT_CONCAT_DIR" ] && copilot_concat
+      if [ -n "$COPILOT_CONCAT_DIR" ]; then copilot_concat; fi
       print_summary
       ;;
     list)
@@ -658,7 +661,7 @@ main() {
         clean_stale_agent "$agent"
         process_agent "$agent" install_file
       done
-      [ -n "$COPILOT_CONCAT_DIR" ] && copilot_concat
+      if [ -n "$COPILOT_CONCAT_DIR" ]; then copilot_concat; fi
       print_summary
       ;;
     check)
