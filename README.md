@@ -146,7 +146,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. If you installed with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In both modes, `update` cleans up stale links for files that were removed from the repo. Commit and push to keep history and sync across machines.
+These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. If you installed with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In symlink mode, `update` also cleans up stale links for source files that were removed from the repo. Commit and push to keep history and sync across machines.
 
 ## License
 
