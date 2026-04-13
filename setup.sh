@@ -170,9 +170,9 @@ EOF
 # Helpers
 # ---------------------------------------------------------------------------
 contains_word() {
-  local list="$1" word="$2"
-  for w in $list; do
-    [ "$w" = "$word" ] && return 0
+  local list="$1" word="$2" _cw
+  for _cw in $list; do
+    [ "$_cw" = "$word" ] && return 0
   done
   return 1
 }
@@ -581,6 +581,60 @@ clean_stale_agent() {
 }
 
 # ---------------------------------------------------------------------------
+# Check for stale/broken symlinks pointing into SCRIPT_DIR (report only)
+# ---------------------------------------------------------------------------
+check_stale_in_dir() {
+  local dir="$1" nested_file="${2:-}"
+  [ -d "$dir" ] || return 0
+
+  for entry in "$dir"/*; do
+    [ -e "$entry" ] || [ -L "$entry" ] || continue
+
+    if [ -L "$entry" ]; then
+      local target
+      target="$(readlink "$entry")"
+      case "$target" in
+        "$SCRIPT_DIR"/*)
+          if [ ! -e "$target" ]; then
+            log_broken "$(basename "$entry") -> $target (stale)"
+            BROKEN_COUNT=$((BROKEN_COUNT + 1))
+            SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+          fi
+          ;;
+      esac
+    elif [ -d "$entry" ] && [ -n "$nested_file" ]; then
+      local nested_path="$entry/$nested_file"
+      if [ -L "$nested_path" ]; then
+        local target
+        target="$(readlink "$nested_path")"
+        case "$target" in
+          "$SCRIPT_DIR"/*)
+            if [ ! -e "$target" ]; then
+              log_broken "$(basename "$entry")/$nested_file -> $target (stale)"
+              BROKEN_COUNT=$((BROKEN_COUNT + 1))
+              SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+            fi
+            ;;
+        esac
+      fi
+    fi
+  done
+}
+
+check_stale_agent() {
+  local agent="$1"
+  local instr_dir skills_dir personas_dir skill_file
+  instr_dir="$(agent_instr_dir "$agent")"
+  skills_dir="$(agent_skills_dir "$agent")"
+  skill_file="$(agent_skill_file "$agent")"
+  personas_dir="$(agent_personas_dir "$agent")"
+
+  if [ -n "$instr_dir" ]; then check_stale_in_dir "$instr_dir"; fi
+  if [ -n "$skills_dir" ]; then check_stale_in_dir "$skills_dir" "$skill_file"; fi
+  if [ -n "$personas_dir" ]; then check_stale_in_dir "$personas_dir"; fi
+}
+
+# ---------------------------------------------------------------------------
 # Copilot concatenation (targets a specific repo directory, separate flow)
 # ---------------------------------------------------------------------------
 copilot_concat() {
@@ -766,6 +820,7 @@ main() {
     check)
       for agent in $SELECTED_AGENTS; do
         process_agent "$agent" check_file
+        check_stale_agent "$agent"
       done
       print_summary
       if [ "$BROKEN_COUNT" -gt 0 ]; then

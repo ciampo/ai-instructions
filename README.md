@@ -75,7 +75,7 @@ cd ~/Code/ai-instructions
 ./setup.sh --agent cursor    # Target a specific agent
 ```
 
-The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones.
+The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected agents alongside generating the concatenated file.
 
 ### Supported agents
 
@@ -95,7 +95,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | `list` | Show all installed symlinks/copies grouped by agent |
 | `remove` | Remove symlinks/copies created by this script |
 | `update` | Re-install + clean stale symlinks for deleted source files |
-| `check` | Verify existing symlinks/copies are valid and targets exist |
+| `check` | Verify existing symlinks/copies are valid and detect stale/broken links (exits non-zero if any found) |
 
 ### Options
 
