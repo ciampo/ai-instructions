@@ -123,7 +123,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --copilot-concat ~/Code/my-project      # Generate concatenated Copilot file
 ```
 
-The script is non-destructive (never overwrites existing files), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS).
+The script is non-destructive (skips existing files that conflict), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS).
 
 ### Manual integration
 

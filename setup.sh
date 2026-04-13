@@ -252,20 +252,20 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
+    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
   fi
 
-  if [ -e "$dst" ] && ! [ -L "$dst" ]; then
-    if $COPY_MODE; then
-      if cmp -s "$src" "$dst"; then
-        log_skip "$(basename "$dst")"
-        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-        return
-      fi
-    else
-      log_warn "$(basename "$dst") exists at $dst and is not a symlink -- skipping"
-      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+  if [ -e "$dst" ]; then
+    if $COPY_MODE && cmp -s "$src" "$dst"; then
+      log_skip "$(basename "$dst")"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
+    log_warn "$(basename "$dst") exists at $dst and differs from source -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
   fi
 
   if $DRY_RUN; then
@@ -307,17 +307,15 @@ unlink_file() {
     fi
   fi
 
-  if $COPY_MODE && [ -e "$dst" ] && ! [ -L "$dst" ]; then
-    if cmp -s "$src" "$dst"; then
-      if $DRY_RUN; then
-        log_dry "rm $dst"
-      else
-        rm "$dst"
-        log_remove "$(basename "$dst")"
-      fi
-      SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
-      return
+  if [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
+    if $DRY_RUN; then
+      log_dry "rm $dst (copy)"
+    else
+      rm "$dst"
+      log_remove "$(basename "$dst") (copy)"
     fi
+    SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+    return
   fi
 }
 
@@ -353,10 +351,8 @@ list_file() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif $COPY_MODE && [ -e "$dst" ] && ! [ -L "$dst" ]; then
-    if cmp -s "$src" "$dst"; then
-      log_ok "$dst (copy)"
-    fi
+  elif [ -e "$dst" ] && ! [ -L "$dst" ] && cmp -s "$src" "$dst"; then
+    log_ok "$dst (copy)"
   fi
 }
 
@@ -612,6 +608,15 @@ parse_args() {
 
   SELECTED_AGENTS="$(echo "$SELECTED_AGENTS" | xargs)"
   ONLY_CATEGORIES="$(echo "$ONLY_CATEGORIES" | xargs)"
+
+  # Deduplicate agents while preserving order
+  local deduped=""
+  for a in $SELECTED_AGENTS; do
+    if ! contains_word "$deduped" "$a"; then
+      deduped="$deduped $a"
+    fi
+  done
+  SELECTED_AGENTS="$(echo "$deduped" | xargs)"
 }
 
 # ---------------------------------------------------------------------------
