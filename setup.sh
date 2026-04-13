@@ -719,6 +719,8 @@ copilot_concat() {
     echo ""
     for f in "$SCRIPT_DIR"/instructions/*.md; do
       [ -e "$f" ] || continue
+      echo "<!-- source: $(basename "$f") -->"
+      echo ""
       cat "$f"
       echo ""
       echo "---"
