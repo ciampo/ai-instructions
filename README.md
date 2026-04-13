@@ -12,20 +12,26 @@ AI assistants work better when they know how you think. Rather than repeating pr
 instructions/          Always-on rules loaded into every AI session
 skills/                On-demand workflows invoked by trigger phrases
 personas/              Specialized agent identities for focused tasks
-setup.sh               Symlinks everything into Cursor / Claude Code
+CONVENTIONS.md         Meta-conventions (severity tags, cross-references)
+setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini CLI
 ```
 
 ### Instructions
 
 | File | What it covers |
 | --- | --- |
-| [coding-principles.md](instructions/coding-principles.md) | Engineering philosophy, TypeScript/JS/CSS/React style, dependencies, testing, comments |
-| [interaction-preferences.md](instructions/interaction-preferences.md) | Concise communication, intellectual honesty, verify from source, GitHub boundaries |
-| [writing-conventions.md](instructions/writing-conventions.md) | PR descriptions, commit messages, CHANGELOGs, JSDoc, error messages |
-| [code-review.md](instructions/code-review.md) | Multi-round review process, structured output, prioritized checklist |
-| [accessibility.md](instructions/accessibility.md) | WAI-ARIA/WCAG standards, focus management, keyboard interaction, visual a11y |
-| [design-system-components.md](instructions/design-system-components.md) | Component library patterns: architecture, styling, Storybook, consistency |
-| [tools-and-cli.md](instructions/tools-and-cli.md) | GitHub CLI, git workflow, verify-before-push, shell conventions |
+| [coding-principles.md](instructions/coding-principles.md) | Engineering philosophy, TypeScript/JS/CSS/React style, module organization, dependencies, testing, comments |
+| [interaction-preferences.md](instructions/interaction-preferences.md) | Concise communication, intellectual honesty, verify from source, GitHub boundaries, context switching, collaboration |
+| [writing-conventions.md](instructions/writing-conventions.md) | PR descriptions, commit messages, CHANGELOGs, branch names, JSDoc, error messages |
+| [code-review.md](instructions/code-review.md) | Multi-round review process, severity labels, structured output, prioritized checklist, "do not flag" list |
+| [accessibility.md](instructions/accessibility.md) | WAI-ARIA/WCAG standards, focus management, live regions, keyboard interaction, motion, visual and touch a11y |
+| [design-system-components.md](instructions/design-system-components.md) | Component library patterns: architecture, polymorphic rendering, styling, theming, Storybook, versioning |
+| [tools-and-cli.md](instructions/tools-and-cli.md) | GitHub CLI, git workflow, package managers, MCP tools, verify-before-push, shell conventions |
+| [performance.md](instructions/performance.md) | Bundle size, lazy loading, rendering optimization, CSS performance, images, measuring |
+| [i18n.md](instructions/i18n.md) | Translatable strings, RTL support, locale-aware formatting, i18n testing |
+| [security.md](instructions/security.md) | XSS prevention, content security, dependencies, server-side, secrets |
+| [error-handling.md](instructions/error-handling.md) | Error boundaries, loading/empty/error states, retry/recovery, logging |
+| [naming-conventions.md](instructions/naming-conventions.md) | Files, components, hooks, CSS, variables, types, branches |
 
 ### Skills
 
@@ -37,34 +43,87 @@ setup.sh               Symlinks everything into Cursor / Claude Code
 | [draft-review-comment.md](skills/draft-review-comment.md) | "craft a comment" | GitHub review comment drafter (copy-paste snippets) |
 | [audit-dependency-update.md](skills/audit-dependency-update.md) | updating a dependency | Full audit: changelog, codebase impact, compatibility, security |
 | [address-pr-feedback.md](skills/address-pr-feedback.md) | "address the feedback" | Systematic workflow for review comments |
+| [investigate-debug.md](skills/investigate-debug.md) | "debug this" | Structured debugging: reproduce, isolate, fix, verify |
+| [refactor.md](skills/refactor.md) | "refactor X" | Systematic codebase-wide refactoring workflow |
+| [resume-session.md](skills/resume-session.md) | "continue where we left off" | Pick up work from a previous session |
+| [release-publish.md](skills/release-publish.md) | "prepare a release" | Version bump, CHANGELOG, publish, post-publish checks |
 
 ### Personas
 
 | File | What it does |
 | --- | --- |
 | [a11y-reviewer.md](personas/a11y-reviewer.md) | Senior accessibility engineer for deep a11y audits |
+| [performance-reviewer.md](personas/performance-reviewer.md) | Senior performance engineer for bundle, rendering, and runtime reviews |
+| [api-design-reviewer.md](personas/api-design-reviewer.md) | API design specialist for surface area, consistency, and ergonomics |
+
+## Conventions
+
+See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
+
+- **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
+- **Cross-references**: Skills and personas declare `## Dependencies` listing the instruction files they need.
 
 ## Setup
 
-Clone the repo and run the setup script to symlink files into your AI tools:
+Clone the repo and run the setup script:
 
 ```bash
 git clone <repo-url> ~/Code/ai-instructions
 cd ~/Code/ai-instructions
-./setup.sh --all --dry-run   # Preview what will be linked
-./setup.sh --all             # Link into Cursor + Claude Code
+./setup.sh                   # Auto-detect installed agents, interactively select
+./setup.sh --yes --dry-run   # Auto-detect, select all, preview changes
+./setup.sh --agent cursor    # Target a specific agent
 ```
 
-Available flags:
+The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected agents alongside generating the concatenated file.
+
+### Supported agents
+
+| Agent | Detection | Instructions | Skills | Personas |
+| --- | --- | --- | --- | --- |
+| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
+| Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
+| Codex | `~/.codex/` | `~/.codex/instructions/*.md` | -- | -- |
+| GitHub Copilot | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | -- |
+| Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | -- |
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `install` (default) | Create symlinks (or copies) into agent config directories |
+| `list` | Show all installed symlinks/copies grouped by agent (includes stale entries) |
+| `remove` | Remove symlinks/copies created by this script (includes stale cleanup) |
+| `update` | Re-install + clean stale symlinks/copies for deleted source files |
+| `check` | Verify existing symlinks/copies are valid and detect stale/broken links (exits non-zero if any found) |
+
+### Options
 
 | Flag | What it does |
 | --- | --- |
-| `--cursor` | Symlinks into `~/.cursor/rules/`, `~/.cursor/skills-cursor/`, `~/.cursor/agents/` |
-| `--claude` | Symlinks into `~/.claude/rules/`, `~/.claude/skills/` |
-| `--all` | Both of the above |
+| `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
+| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `personas`). Repeatable. |
+| `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
+| `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
+| `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
 
-The script is non-destructive (never overwrites existing files) and idempotent (safe to re-run).
+### Examples
+
+```bash
+./setup.sh                                        # Interactive: detect + prompt
+./setup.sh --yes                                   # Non-interactive: all detected agents
+./setup.sh --agent cursor --agent claude           # Target specific agents
+./setup.sh --agent '*' --dry-run                   # Preview for all agents
+./setup.sh --only skills --only personas           # Only install skills + personas
+./setup.sh remove --agent cursor                   # Remove Cursor symlinks
+./setup.sh update --agent '*'                      # Re-install + clean stale links
+./setup.sh check --agent cursor                    # Verify Cursor symlinks
+./setup.sh install --copy --yes                    # Copy mode for CI
+./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
+```
+
+The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied files include a `<!-- ai-instructions:managed -->` marker so `update --copy` only overwrites files the script previously installed.
 
 ### Manual integration
 
@@ -72,9 +131,23 @@ If you prefer to set things up manually or use a different tool:
 
 - **Cursor**: Instructions to `~/.cursor/rules/` (as `.mdc`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
 - **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/<name>/SKILL.md`, reference from `CLAUDE.md`
-- **GitHub Copilot**: Concatenate instruction files into `.github/copilot-instructions.md`
-- **Other tools**: Include as system prompt context
+- **Codex**: Instructions to `~/.codex/instructions/`
+- **GitHub Copilot**: Skills to `~/.copilot/skills/<name>/SKILL.md`, or use `--copilot-concat` for a single instructions file
+- **Gemini CLI**: Skills to `~/.gemini/skills/<name>/SKILL.md`
+- **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
+
+### Per-project overrides
+
+These instructions are global defaults. To override for a specific project:
+
+- **Cursor**: Add project-specific `.cursor/rules/*.mdc` files in the repo. They take precedence over global rules.
+- **Claude Code**: Add project-specific rules in the repo's `CLAUDE.md` or `.claude/rules/`.
+- Use the project-level config to relax global rules (e.g., "this project uses Tailwind instead of CSS Modules") or add project-specific conventions.
 
 ## Updating
 
-These are living documents. Edit the source files here -- symlinks ensure every tool picks up changes immediately. Commit and push to keep history and sync across machines.
+These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. If you installed with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In both modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
+
+## License
+
+[MIT](LICENSE)
