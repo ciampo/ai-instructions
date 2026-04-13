@@ -63,6 +63,46 @@ Patterns AI agents get wrong frequently -- watch for these:
 - Using `aria-hidden="true"` on focusable elements. This creates a disconnect where screen readers cannot see the element but keyboard users can focus it.
 - Relying on `placeholder` text as the only label for form inputs. Placeholders disappear on input and are not reliably announced as labels.
 
+<details>
+<summary>Examples: Common mistakes with fixes</summary>
+
+```tsx
+// Bad: div with role="button" -- missing keyboard handling, no implicit focus
+<div role="button" onClick={ handleClick }>Save</div>
+
+// Good: use a <button>
+<button onClick={ handleClick }>Save</button>
+```
+
+```tsx
+// Bad: aria-label on a non-interactive <div>
+<div aria-label="User profile">{ user.name }</div>
+
+// Good: use a heading or landmark with aria-label
+<section aria-label="User profile">
+  <h2>{ user.name }</h2>
+</section>
+```
+
+```tsx
+// Bad: placeholder as the only label
+<input placeholder="Email address" type="email" />
+
+// Good: visible label (or visually-hidden label if design requires it)
+<label htmlFor="email">Email address</label>
+<input id="email" type="email" />
+```
+
+```tsx
+// Bad: live region added at the same time as content
+{ showStatus && <div aria-live="polite">Saved successfully</div> }
+
+// Good: live region always in DOM, content injected into it
+<div aria-live="polite">{ showStatus ? 'Saved successfully' : '' }</div>
+```
+
+</details>
+
 ## Testing
 
 - **[STRONG]** Manually verify screen reader behavior for complex interactive patterns.

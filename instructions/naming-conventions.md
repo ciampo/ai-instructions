@@ -9,6 +9,22 @@ Consistent naming reduces cognitive load and helps AI agents produce code that f
 - **[STRONG]** Test and Storybook files should follow the same conventions and naming scheme as the current project.
 - **[PREFER]** Index files (`index.ts`) for public API re-exports. Keep them thin -- only exports, no logic.
 
+<details>
+<summary>Example: component directory structure</summary>
+
+```text
+date-picker/
+  index.ts                    # public exports
+  date-picker.tsx             # main component
+  date-picker.module.css      # styles
+  date-picker.stories.tsx     # Storybook stories
+  date-picker.test.tsx        # tests
+  context.tsx                 # React Context (if compound)
+  types.ts                    # shared types (if complex)
+```
+
+</details>
+
 ## Components
 
 - **[RULE]** `PascalCase` for React component names: `DatePicker`, `AlertDialog`.

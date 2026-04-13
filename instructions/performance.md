@@ -21,6 +21,25 @@ How I think about performance. Not premature optimization -- informed awareness 
 - Avoid creating new objects, arrays, or functions inline in JSX when they are passed to memoized children.
 - **[STRONG]** Virtualize long lists. Do not render hundreds of DOM nodes when only a few are visible.
 
+<details>
+<summary>Example: memoization -- when it helps vs. when it's noise</summary>
+
+```tsx
+// Bad: useMemo on a trivial operation -- adds complexity for no gain
+const label = useMemo( () => `${ firstName } ${ lastName }`, [ firstName, lastName ] );
+
+// Good: no memoization needed for cheap computations
+const label = `${ firstName } ${ lastName }`;
+
+// Good: useMemo for genuinely expensive work passed to a memoized child
+const sorted = useMemo(
+  () => [ ...items ].sort( ( a, b ) => a.score - b.score ),
+  [ items ]
+);
+```
+
+</details>
+
 ## CSS Performance
 
 - **[PREFER]** Use `contain` (layout, paint, size) on isolated UI regions to limit browser layout/paint scope.

@@ -13,10 +13,10 @@ How I review PRs, and how I expect AI to assist with reviews.
 
 Use these consistently in review output:
 
-- **critical** — Must be fixed before merge. Correctness bugs, a11y violations, security issues, data loss risks.
-- **major** — Should be fixed before merge. Consistency violations, missing tests for new behavior, API design concerns.
-- **minor** — Worth addressing but not blocking. Naming improvements, small simplifications, minor doc gaps.
-- **nit** — Trivial or stylistic. Take it or leave it. Import ordering, slightly better variable name, etc.
+- **[critical]** — Must be fixed before merge. Correctness bugs, a11y violations, security issues, data loss risks.
+- **[major]** — Should be fixed before merge. Consistency violations, missing tests for new behavior, API design concerns.
+- **[minor]** — Worth addressing but not blocking. Naming improvements, small simplifications, minor doc gaps.
+- **[nit]** — Trivial or stylistic. Take it or leave it. Import ordering, slightly better variable name, etc.
 
 ## Output Format
 
@@ -28,6 +28,23 @@ Use these consistently in review output:
 
 - When you suspect something is wrong but cannot confirm, flag it as **"Possible issue"** with your reasoning. Ask the author to verify rather than stating it as a definitive problem.
 - Do not suppress uncertain findings entirely -- surface them with appropriate hedging.
+
+<details>
+<summary>Examples: review comment quality</summary>
+
+Good review comment (actionable, specific, references the code):
+
+> **[major]** The `onClose` callback is not called when the user presses Escape (`dialog.tsx:42`). The `Dialog` component in the same package handles this via `onKeyDown` -- this should match that pattern.
+
+Noisy comment (vague, opinion-based, no impact):
+
+> **[nit]** I would name this variable differently.
+
+Uncertain finding (hedged, asks for verification):
+
+> **[Possible issue]** I'm not certain, but it looks like `ref` might be null when `useEffect` runs on first render (`tooltip.tsx:28`). Could you verify whether the ref is guaranteed to be attached by that point?
+
+</details>
 
 ## Do NOT Flag
 
