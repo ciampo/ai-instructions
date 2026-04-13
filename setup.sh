@@ -465,14 +465,15 @@ list_file() {
 }
 
 # ---------------------------------------------------------------------------
-# Skill dependency resolution
+# Instruction-reference resolution
 #
-# Skills reference instructions as `instructions/<name>.md`.  At install time
-# we replace those references with the absolute installed path for the target
-# agent (directory + extension).  Because that content is agent-specific,
-# skills are always installed as managed copies, even when the rest of the
-# setup is using symlinks.  As a result, changes to source skill files do not
-# propagate immediately in symlink mode; skills must be reinstalled.
+# Skills and personas reference instructions as `instructions/<name>.md`.
+# At install time we replace those references with the absolute installed
+# path for the target agent (directory + extension).  Because that content
+# is agent-specific, any file that contains instruction references is always
+# installed as a managed copy, even when the rest of the setup uses symlinks.
+# Changes to such source files do not propagate immediately; they must be
+# reinstalled via `update`.
 #
 # For agents that do not have an instruction directory (e.g. copilot, gemini),
 # references are resolved to the source repo path so they remain usable as
@@ -482,7 +483,7 @@ sed_escape_replacement() {
   printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
 }
 
-resolved_skill_content() {
+resolve_instruction_refs() {
   local src="$1" agent="$2"
   local instr_dir instr_ext
   instr_dir="$(agent_instr_dir "$agent")"
@@ -510,13 +511,13 @@ resolved_skill_content() {
   fi
 }
 
-is_resolved_skill_current() {
+is_resolved_copy_current() {
   local src="$1" dst="$2" agent="$3"
   is_managed_copy "$dst" || return 1
-  cmp -s <(resolved_skill_content "$src" "$agent") <(tail -n +2 "$dst")
+  cmp -s <(resolve_instruction_refs "$src" "$agent") <(tail -n +2 "$dst")
 }
 
-install_skill() {
+install_resolved() {
   local src="$1" dst="$2" agent="$3"
 
   if [ -L "$dst" ]; then
@@ -527,7 +528,7 @@ install_skill() {
         log_dry "resolve deps: $(basename "$dst")"
       else
         rm "$dst"
-        { echo "<!-- ai-instructions:managed -->"; resolved_skill_content "$src" "$agent"; } > "$dst"
+        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
         log_copy "$(basename "$dst") (resolved deps)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -540,7 +541,7 @@ install_skill() {
             log_dry "replace broken link: $(basename "$dst")"
           else
             rm "$dst"
-            { echo "<!-- ai-instructions:managed -->"; resolved_skill_content "$src" "$agent"; } > "$dst"
+            { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
             log_copy "$(basename "$dst") (repaired, resolved deps)"
           fi
           SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -554,7 +555,7 @@ install_skill() {
   fi
 
   if [ -e "$dst" ]; then
-    if is_resolved_skill_current "$src" "$dst" "$agent"; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_skip "$(basename "$dst")" "$dst"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
@@ -563,7 +564,7 @@ install_skill() {
       if $DRY_RUN; then
         log_dry "update: $(basename "$dst")"
       else
-        { echo "<!-- ai-instructions:managed -->"; resolved_skill_content "$src" "$agent"; } > "$dst"
+        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -586,12 +587,12 @@ install_skill() {
   fi
 
   mkdir -p "$(dirname "$dst")"
-  { echo "<!-- ai-instructions:managed -->"; resolved_skill_content "$src" "$agent"; } > "$dst"
+  { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
   log_copy "$(basename "$dst") (resolved deps)"
   SUMMARY_NEW=$((SUMMARY_NEW + 1))
 }
 
-check_skill() {
+check_resolved() {
   local src="$1" dst="$2" agent="$3"
 
   if [ -L "$dst" ]; then
@@ -609,7 +610,7 @@ check_skill() {
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
   elif is_managed_copy "$dst"; then
-    if is_resolved_skill_current "$src" "$dst" "$agent"; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
     else
@@ -619,7 +620,7 @@ check_skill() {
   fi
 }
 
-list_skill() {
+list_resolved() {
   local src="$1" dst="$2" agent="$3"
 
   if [ -L "$dst" ]; then
@@ -633,7 +634,7 @@ list_skill() {
       fi
     fi
   elif is_managed_copy "$dst"; then
-    if is_resolved_skill_current "$src" "$dst" "$agent"; then
+    if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$dst (copy, deps resolved)"
     else
       log_warn "$dst (copy, out of date)"
@@ -750,13 +751,13 @@ process_agent() {
       case "$action" in
         install_file)
           if ! $DRY_RUN; then mkdir -p "$sdir"; fi
-          install_skill "$f" "$sdir/$skill_file" "$agent"
+          install_resolved "$f" "$sdir/$skill_file" "$agent"
           ;;
         check_file)
-          check_skill "$f" "$sdir/$skill_file" "$agent"
+          check_resolved "$f" "$sdir/$skill_file" "$agent"
           ;;
         list_file)
-          list_skill "$f" "$sdir/$skill_file" "$agent"
+          list_resolved "$f" "$sdir/$skill_file" "$agent"
           ;;
         unlink_file)
           "$action" "$f" "$sdir/$skill_file"
@@ -770,7 +771,21 @@ process_agent() {
     log "Personas -> $personas_dir/"
     for f in "$SCRIPT_DIR"/personas/*.md; do
       [ -e "$f" ] || continue
-      "$action" "$f" "$personas_dir/$(basename "$f")"
+      local pdst="$personas_dir/$(basename "$f")"
+      case "$action" in
+        install_file)
+          install_resolved "$f" "$pdst" "$agent"
+          ;;
+        check_file)
+          check_resolved "$f" "$pdst" "$agent"
+          ;;
+        list_file)
+          list_resolved "$f" "$pdst" "$agent"
+          ;;
+        unlink_file)
+          "$action" "$f" "$pdst"
+          ;;
+      esac
     done
   fi
 
