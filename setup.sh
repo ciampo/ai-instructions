@@ -147,8 +147,8 @@ Commands:
   install              Create symlinks/copies into agent config dirs (default)
   list                 Show all installed symlinks/copies grouped by agent (includes stale)
   remove               Remove symlinks/copies created by this script (includes stale cleanup)
-  update               Re-install, cleaning stale symlinks for deleted source files
-  check                Verify existing symlinks/copies are valid and targets exist
+  update               Re-install, cleaning stale symlinks/copies for deleted source files
+  check                Verify existing symlinks/copies and detect stale/broken entries
 
 Options:
   --agent <name>       Target a specific agent (cursor, claude, codex, copilot, gemini)
@@ -156,7 +156,8 @@ Options:
   --only <category>    Only process specific categories (instructions, skills, personas)
                        Can be repeated.
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
-                          in DIR (default: current directory). Can run standalone.
+                          in DIR (default: current directory). Skips user-maintained files.
+                          Can run standalone.
   --copy               Copy files instead of symlinking
   -y, --yes            Skip all prompts (non-interactive mode)
   --dry-run            Show what would be done without making changes
