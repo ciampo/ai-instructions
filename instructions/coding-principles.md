@@ -41,7 +41,7 @@ How I think about code. These principles apply across all projects.
 - **[STRONG]** React Context for internal component communication.
 - **[STRONG]** Thin wrappers around headless/unstyled primitives. Stay close to the upstream API surface -- easier to maintain, less complex to implement.
 - **[PREFER]** Composition via `render` prop pattern when crossing component boundaries.
-- **[STRONG]** Use `forwardRef` on all components that render a DOM element consumers might need to reference. Type the ref precisely (e.g., `HTMLButtonElement`, not `HTMLElement`).
+- **[STRONG]** All components that render a DOM element consumers might need to reference must accept a `ref`. In React 18, use `forwardRef`; in React 19+, accept `ref` as a regular prop. Type the ref precisely (e.g., `HTMLButtonElement`, not `HTMLElement`).
 - **[STRONG]** Extract custom hooks when logic is reused across components or when a component's body becomes difficult to follow. A hook should encapsulate a single concern.
 - **[PREFER]** Split a component when it handles multiple distinct responsibilities, or when a section of JSX grows complex enough to obscure the overall structure.
 
@@ -79,4 +79,4 @@ How I think about code. These principles apply across all projects.
 
 - **[STRONG]** Well-written code should be as self-explanatory as possible. Prefer meaningful names that convey intent.
 - **[RULE]** Do not narrate what the code does. But do leave comments for the important things: trade-offs, constraints, non-obvious reasoning, and context that future maintainers (including LLM agents inspecting the codebase) will benefit from. Good comments are an investment in long-term readability.
-- **[STRONG]** JSDoc on all exported/public APIs. Describe behavior and constraints, not implementation internals.
+- **[STRONG]** JSDoc on all exported/public APIs. See `writing-conventions.md` (JSDoc section) for detailed guidance.
