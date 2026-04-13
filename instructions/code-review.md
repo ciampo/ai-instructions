@@ -13,10 +13,10 @@ How I review PRs, and how I expect AI to assist with reviews.
 
 Use these consistently in review output:
 
-- **critical** — Must be fixed before merge. Correctness bugs, a11y violations, security issues, data loss risks.
-- **major** — Should be fixed before merge. Consistency violations, missing tests for new behavior, API design concerns.
-- **minor** — Worth addressing but not blocking. Naming improvements, small simplifications, minor doc gaps.
-- **nit** — Trivial or stylistic. Take it or leave it. Import ordering, slightly better variable name, etc.
+- **[critical]** — Must be fixed before merge. Correctness bugs, a11y violations, security issues, data loss risks.
+- **[major]** — Should be fixed before merge. Consistency violations, missing tests for new behavior, API design concerns.
+- **[minor]** — Worth addressing but not blocking. Naming improvements, small simplifications, minor doc gaps.
+- **[nit]** — Trivial or stylistic. Take it or leave it. Import ordering, slightly better variable name, etc.
 
 ## Output Format
 

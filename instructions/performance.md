@@ -33,7 +33,7 @@ const label = `${ firstName } ${ lastName }`;
 
 // Good: useMemo for genuinely expensive work passed to a memoized child
 const sorted = useMemo(
-  () => items.toSorted( ( a, b ) => a.score - b.score ),
+  () => [ ...items ].sort( ( a, b ) => a.score - b.score ),
   [ items ]
 );
 ```

@@ -12,12 +12,12 @@ Baseline security practices for application code. Not an exhaustive security pol
 <summary>Example: safe vs. unsafe HTML rendering</summary>
 
 ```tsx
+import DOMPurify from 'dompurify';
+
 // UNSAFE: raw user content injected as HTML
 <div dangerouslySetInnerHTML={ { __html: userComment } } />
 
-// SAFE: sanitize first, document why raw HTML is needed
-import DOMPurify from 'dompurify';
-
+// SAFE: sanitize first, document why raw HTML is needed.
 // Raw HTML is required here because userComment contains rich text
 // formatting from the WYSIWYG editor.
 <div dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( userComment ) } } />
