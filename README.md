@@ -103,8 +103,8 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
 | `--only <category>` | Only install specific categories (`instructions`, `skills`, `personas`). Repeatable. |
-| `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory |
-| `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI) |
+| `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Can run standalone. |
+| `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
 
@@ -120,7 +120,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
 ./setup.sh check --agent cursor                    # Verify Cursor symlinks
 ./setup.sh install --copy --yes                    # Copy mode for CI
-./setup.sh --copilot-concat ~/Code/my-project      # Generate concatenated Copilot file
+./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
 
 The script is non-destructive (skips existing files that conflict), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS).
@@ -146,7 +146,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. Edit the source files here -- symlinks ensure every tool picks up changes immediately. Run `./setup.sh update` to re-install and clean up stale links after adding or removing files. Commit and push to keep history and sync across machines.
+These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. If you installed with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In both modes, `update` cleans up stale links for files that were removed from the repo. Commit and push to keep history and sync across machines.
 
 ## License
 

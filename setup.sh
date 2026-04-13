@@ -23,7 +23,13 @@ fi
 # ---------------------------------------------------------------------------
 log()        { echo "  $1"; }
 log_action() { echo -e "  ${C_GREEN}[+]${C_RESET} $1"; }
-log_skip()   { echo -e "  ${C_DIM}[=] $1 (already linked)${C_RESET}"; }
+log_skip()   {
+  if $COPY_MODE; then
+    echo -e "  ${C_DIM}[=] $1 (already installed)${C_RESET}"
+  else
+    echo -e "  ${C_DIM}[=] $1 (already linked)${C_RESET}"
+  fi
+}
 log_warn()   { echo -e "  ${C_YELLOW}[!]${C_RESET} $1" >&2; }
 log_dry()    { echo -e "  ${C_CYAN}[dry-run]${C_RESET} $1"; }
 log_header() { echo -e "\n${C_BOLD}==> $1${C_RESET}"; }
@@ -139,7 +145,7 @@ Options:
   --only <category>    Only install specific categories (instructions, skills, personas)
                        Can be repeated.
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
-                          in DIR (default: current directory)
+                          in DIR (default: current directory). Can run standalone.
   --copy               Copy files instead of symlinking
   -y, --yes            Skip all prompts (non-interactive mode)
   --dry-run            Show what would be done without making changes
@@ -261,6 +267,17 @@ install_file() {
     if $COPY_MODE && cmp -s "$src" "$dst"; then
       log_skip "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      return
+    fi
+    # In copy+update mode, overwrite stale copies with fresh content
+    if $COPY_MODE && [ "$COMMAND" = "update" ]; then
+      if $DRY_RUN; then
+        log_dry "cp (update) $src -> $dst"
+      else
+        cp "$src" "$dst"
+        log_copy "$(basename "$dst") (updated)"
+      fi
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
       return
     fi
     log_warn "$(basename "$dst") already exists at $dst -- skipping"
@@ -620,6 +637,14 @@ parse_args() {
     fi
   done
   SELECTED_AGENTS="$(echo "$deduped" | xargs)"
+
+  # --copilot-concat is only valid with install/update
+  if [ -n "$COPILOT_CONCAT_DIR" ]; then
+    case "$COMMAND" in
+      install|update) ;;
+      *) echo "Error: --copilot-concat can only be used with install or update" >&2; exit 1 ;;
+    esac
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -628,14 +653,14 @@ parse_args() {
 main() {
   parse_args "$@"
 
-  if [ -z "$SELECTED_AGENTS" ]; then
+  if [ -z "$SELECTED_AGENTS" ] && [ -z "$COPILOT_CONCAT_DIR" ]; then
     prompt_agent_selection
   fi
 
   echo -e "${C_BOLD}ai-instructions${C_RESET} (source: $SCRIPT_DIR)"
   if $DRY_RUN; then echo -e "${C_CYAN}(dry-run mode -- no changes will be made)${C_RESET}"; fi
   if $COPY_MODE; then echo "(copy mode -- files will be copied instead of symlinked)"; fi
-  echo "Agents: $SELECTED_AGENTS"
+  if [ -n "$SELECTED_AGENTS" ]; then echo "Agents: $SELECTED_AGENTS"; fi
 
   case "$COMMAND" in
     install)
