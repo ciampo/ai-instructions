@@ -12,7 +12,7 @@ Baseline security practices for application code. Not an exhaustive security pol
 
 - **[STRONG]** Use `rel="noopener noreferrer"` on external links opened with `target="_blank"`.
 - **[PREFER]** Avoid inline event handlers (`onclick="..."`) and inline styles injected from user data. These conflict with strict CSP policies.
-- **[STRONG]** Do not embed secrets, API keys, or credentials in client-side code. Use environment variables and server-side proxies.
+- **[STRONG]** Do not embed secrets, API keys, or credentials in client-side code. Keep secrets server-side only (server-only environment variables or a secret management service). Only explicitly public configuration values may be exposed to client code. Use server-side proxies for secret-backed operations.
 
 ## Dependencies
 

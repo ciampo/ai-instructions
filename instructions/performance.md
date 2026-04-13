@@ -4,7 +4,7 @@ How I think about performance. Not premature optimization -- informed awareness 
 
 ## Bundle Size
 
-- **[RULE]** Be aware of what you import. Prefer named imports from subpaths when available over importing from the package root (e.g., `import Button from '@pkg/button'` over `import { Button } from '@pkg'`).
+- **[RULE]** Be aware of what you import. Import only what you need and follow the package's documented entrypoints. Avoid pulling in the whole package when it is not tree-shakeable.
 - **[STRONG]** Do not add large dependencies without discussing the size trade-off. Check bundle size impact with tools like `bundlephobia` or the project's bundle analyzer.
 - **[PREFER]** Favor tree-shakeable libraries. Avoid libraries that require importing the entire package for a single utility.
 
