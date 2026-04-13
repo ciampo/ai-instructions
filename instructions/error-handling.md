@@ -17,13 +17,13 @@ How to handle errors, loading states, and failure scenarios in application code.
 <summary>Example: error boundary with fallback UI</summary>
 
 ```tsx
-import { Component } from 'react';
+import { Component, type ReactNode } from 'react';
 
-class PanelErrorBoundary extends Component< {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-} > {
-  state = { hasError: false };
+class PanelErrorBoundary extends Component<
+  { children: ReactNode; fallback?: ReactNode },
+  { hasError: boolean }
+> {
+  state: { hasError: boolean } = { hasError: false };
 
   static getDerivedStateFromError() {
     return { hasError: true };
