@@ -21,7 +21,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 ### zsh and `--jq`
 
-- **[RULE]** Do not use `gh api --jq` with expressions containing `!=` — zsh interprets `!` as history expansion and breaks the filter. Pipe to `jq` separately instead, and check the exit code before passing to `jq` to avoid confusing errors on non-JSON responses (e.g., 404).
+- **[RULE]** In interactive zsh, `!` triggers history expansion inside double-quoted strings and unquoted arguments. This breaks both `gh api --jq` filters and piped `jq` expressions containing `!=`. Either escape the `!` (e.g., `\!=`), disable history expansion with `set +H`, or capture the `gh api` output into a variable first and then pass it to `jq` with the filter in single quotes. When checking whether `gh api` succeeded before parsing, capture output first — a simple pipe does not let you inspect `gh api`'s exit code before `jq` runs.
 
 ## Git
 
