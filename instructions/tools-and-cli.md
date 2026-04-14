@@ -9,6 +9,20 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
 - **[STRONG]** When accessing a GitHub Enterprise instance (e.g., `github.a8c.com`), always include the full URL in the command. This triggers shell-level overrides (proxy routing, host config) that the user has set up. Do NOT explicitly include `HTTPS_PROXY` or similar environment variables in the command -- the user's `gh` wrapper handles this automatically as long as the Enterprise URL is present.
 
+## GitHub API Patterns
+
+### Repository Identification
+
+- **[RULE]** Before any `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, prefer the PR's base repository (e.g., `gh pr view <N> --json baseRepository --jq '.baseRepository.nameWithOwner'`). Otherwise, prefer `gh repo view --json nameWithOwner`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
+
+### Fetching PR Review Comments
+
+- **[STRONG]** Use a two-step approach — the `pulls/{number}/comments` endpoint can return 404. Instead: first get review IDs via `repos/{owner}/{repo}/pulls/{number}/reviews`, then get comments per review via `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments`.
+
+### zsh and `--jq`
+
+- **[RULE]** In interactive zsh, `!` triggers history expansion inside double-quoted strings and unquoted arguments. This breaks both `gh api --jq` filters and piped `jq` expressions containing `!=`. Either escape the `!` (e.g., `\!=`), disable history expansion with `set +H`, or capture the `gh api` output into a variable first and then pass it to `jq` with the filter in single quotes. When checking whether `gh api` succeeded before parsing, capture output first — a simple pipe does not let you inspect `gh api`'s exit code before `jq` runs.
+
 ## Git
 
 - **[STRONG]** Commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
