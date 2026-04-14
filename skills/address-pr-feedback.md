@@ -9,6 +9,7 @@ Load these instruction files before executing this skill:
 - `instructions/interaction-preferences.md`
 - `instructions/code-review.md`
 - `instructions/writing-conventions.md`
+- `instructions/tools-and-cli.md`
 
 Chain into this skill when drafting reply snippets:
 
@@ -16,8 +17,8 @@ Chain into this skill when drafting reply snippets:
 
 ## Steps
 
-1. **Identify the repository**: Extract `owner/repo` from `git remote get-url origin` — do not guess the repository path.
-2. **Gather feedback**: Fetch all review comments, PR conversation, and current CI status via `gh`. Identify which comments are resolved vs. outstanding. Use a two-step approach for fetching review comments — the `pulls/{number}/comments` endpoint can return 404. Instead: first get review IDs via `repos/{owner}/{repo}/pulls/{number}/reviews`, then get comments per review via `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments`. **zsh pitfall:** do not use `--jq` with expressions containing `!=` — zsh interprets `!` as history expansion. Pipe to `jq` separately and check the exit code before passing to `jq` to avoid confusing errors on non-JSON responses.
+1. **Identify the repository**: per `tools-and-cli.md` (GitHub API Patterns).
+2. **Gather feedback**: Fetch all review comments, PR conversation, and current CI status via `gh`. Identify which comments are resolved vs. outstanding. Follow `tools-and-cli.md` for the two-step review comment fetching approach and the zsh `--jq` pitfall.
 3. **Categorize each comment**: Classify as must-fix (blocking), should-address (non-blocking but valid), or won't-fix (disagree — needs discussion). For each, evaluate whether the suggestion is actually correct before acting on it (per `interaction-preferences.md`: never follow feedback blindly). Take into account issues that were already resolved in previous rounds.
 4. **Make granular commits**: One commit per review comment or tightly related group. Keep code changes, test changes, and config changes in separate commits when practical. No AI-attribution footers (e.g., "Co-Authored-By: Claude") in commit messages.
 5. **Verify**: Run the project's verification suite before pushing.

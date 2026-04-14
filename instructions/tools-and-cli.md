@@ -9,6 +9,20 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
 - **[STRONG]** When accessing a GitHub Enterprise instance (e.g., `github.a8c.com`), always include the full URL in the command. This triggers shell-level overrides (proxy routing, host config) that the user has set up. Do NOT explicitly include `HTTPS_PROXY` or similar environment variables in the command -- the user's `gh` wrapper handles this automatically as long as the Enterprise URL is present.
 
+## GitHub API Patterns
+
+### Repository Identification
+
+- **[RULE]** Before any `gh api` call, extract `owner/repo` from `git remote get-url origin`. Do not guess or hardcode the repository path — forks and renamed repos will break.
+
+### Fetching PR Review Comments
+
+- **[STRONG]** Use a two-step approach — the `pulls/{number}/comments` endpoint can return 404. Instead: first get review IDs via `repos/{owner}/{repo}/pulls/{number}/reviews`, then get comments per review via `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments`.
+
+### zsh and `--jq`
+
+- **[RULE]** Do not use `gh api --jq` with expressions containing `!=` — zsh interprets `!` as history expansion and breaks the filter. Pipe to `jq` separately instead, and check the exit code before passing to `jq` to avoid confusing errors on non-JSON responses (e.g., 404).
+
 ## Git
 
 - **[STRONG]** Commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
