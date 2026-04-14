@@ -1,6 +1,6 @@
 # Guardrails
 
-Critical rules that apply to every coding session. These are extracted from `tools-and-cli.md` and `writing-conventions.md` for visibility — they are non-negotiable.
+Critical rules that apply to every coding session. These are extracted from `tools-and-cli.md`, `writing-conventions.md`, and `security.md` for visibility — they are non-negotiable.
 
 ## Before Pushing
 

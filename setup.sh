@@ -521,12 +521,13 @@ HEADER
       resolved_path="${SCRIPT_DIR}/skills/${sname}.md"
     fi
 
+    # Newline after backtick terminates the entry; closing quote is on the next line
     entries="${entries}${order}|**${severity}** ${description} — read \`${resolved_path}\`
-"
+"  # <- do not indent this line; the newline above is part of the string
   done
 
   # Sort by severity tier then alphabetically, strip the sort key
-  printf '%s' "$entries" | sort | sed 's/^[0-9]|/- /'
+  printf '%s' "$entries" | LC_ALL=C sort | sed 's/^[0-9]|/- /'
 
   cat <<'FOOTER'
 
