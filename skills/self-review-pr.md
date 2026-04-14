@@ -20,7 +20,7 @@ Chain into this skill when presenting findings:
 
 1. Gather context: full diff against the base branch, commit log, CI status, and the PR description.
 2. Launch a readonly subagent with the captured context. Ask it to perform a structured review covering: summary, correctness, consistency with codebase patterns, completeness (missing tests, docs, changelog), risks, and suggestions.
-3. Present the subagent's review to me as a brief summary plus **individual copy-pasteable GitHub comment snippets** (one per finding), formatted following the `draft-review-comment` skill. This way findings are ready to post if the PR is being reviewed by others, or serve as a structured checklist for self-fixes.
+3. Write the subagent's review to a markdown document in the OS temporary directory, following the `draft-review-comment` skill: a brief summary plus individual comment sections (one per finding), each referencing the exact file path and line range. The file is named `<pr-number>-self-review.md` and opened in the editor — nothing is printed inline in the chat beyond a one-line confirmation. Findings are ready to post if the PR is being reviewed by others, or serve as a structured checklist for self-fixes.
 4. Let me decide what to act on.
 5. For each accepted finding, fix with a granular commit. Prefer simple, elegant solutions.
 6. Run the project's verification suite after all fixes.
