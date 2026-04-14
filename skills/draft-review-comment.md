@@ -13,9 +13,10 @@ Load these instruction files before executing this skill:
 
 All review output goes into a **single markdown document** — never inline in the chat.
 
-1. Write findings to a file at `.ai-reviews/<pr-number>-review.md` (or `.ai-reviews/review-<timestamp>.md` when no PR number is available).
-2. Open the file in the current editor so I can read it immediately.
-3. In the chat, only print a one-line confirmation with the file path — nothing else.
+1. Ensure the `.ai-reviews/` directory exists (create it if missing).
+2. Write findings to a file at `.ai-reviews/<pr-number>-review.md` (or `.ai-reviews/review-<timestamp>.md` when no PR number is available). Calling skills may override this filename (e.g., `-self-review.md`, `-replies.md`).
+3. Open the file in the current editor so I can read it immediately.
+4. In the chat, only print a one-line confirmation with the file path — nothing else.
 
 ## Steps
 
