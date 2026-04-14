@@ -499,10 +499,18 @@ HEADER
     local payload
     payload="$(printf '%s' "$trigger_line" | sed 's/^<!-- routing: //' | sed 's/ -->$//')"
     local severity description
-    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]*\]' || true)"
+    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]\{1,\}\]' || true)"
     [ -z "$severity" ] && continue
     description="$(printf '%s' "$payload" | sed 's/^\[[A-Z]*\] //')"
     [ -z "$description" ] && continue
+
+    local order
+    case "$severity" in
+      "[RULE]")   order=1 ;;
+      "[STRONG]") order=2 ;;
+      "[PREFER]") order=3 ;;
+      *) log_warn "Unknown routing severity $severity in $sname — skipping"; continue ;;
+    esac
 
     local resolved_path
     if [ "$path_mode" = "relative" ]; then
@@ -513,13 +521,6 @@ HEADER
       resolved_path="${SCRIPT_DIR}/skills/${sname}.md"
     fi
 
-    local order
-    case "$severity" in
-      "[RULE]")   order=1 ;;
-      "[STRONG]") order=2 ;;
-      "[PREFER]") order=3 ;;
-      *)          order=9 ;;
-    esac
     entries="${entries}${order}|**${severity}** ${description} — read \`${resolved_path}\`
 "
   done

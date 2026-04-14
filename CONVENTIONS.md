@@ -19,13 +19,13 @@ Skills and personas that depend on instruction files must declare their dependen
 ```markdown
 ## Dependencies
 
-Load these instruction files before executing this skill/persona:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/code-review.md`
 - `instructions/accessibility.md`
 ```
 
-This tells the agent which context to load. If a dependency is not available, the agent should still proceed but note the gap.
+This tells the agent which context to load. The `[RULE]` tag signals that loading dependencies is non-negotiable. If a dependency is not available, the agent should still proceed but note the gap.
 
 ## Workflow Routing
 
