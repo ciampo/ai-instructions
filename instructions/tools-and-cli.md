@@ -13,7 +13,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 ### Repository Identification
 
-- **[RULE]** Before any `gh api` call, extract `owner/repo` from `git remote get-url origin`. Do not guess or hardcode the repository path — forks and renamed repos will break.
+- **[RULE]** Before any `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, prefer the PR's base repository (e.g., `gh pr view <N> --json baseRepository --jq '.baseRepository.nameWithOwner'`). Otherwise, prefer `gh repo view --json nameWithOwner`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
 
 ### Fetching PR Review Comments
 
