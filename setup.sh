@@ -550,7 +550,7 @@ process_routing() {
   case "$action" in
     install_file)
       local content_file
-      content_file="$(mktemp)"
+      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
       generate_routing_content "$agent" > "$content_file"
 
       if is_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
@@ -595,7 +595,7 @@ process_routing() {
     check_file)
       if is_managed_copy "$dst"; then
         local content_file
-        content_file="$(mktemp)"
+        content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
         generate_routing_content "$agent" > "$content_file"
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$(basename "$dst") (auto-generated)"
@@ -614,7 +614,7 @@ process_routing() {
     list_file)
       if is_managed_copy "$dst"; then
         local content_file
-        content_file="$(mktemp)"
+        content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
         generate_routing_content "$agent" > "$content_file"
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$dst (auto-generated)"
