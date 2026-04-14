@@ -49,3 +49,8 @@ import DOMPurify from 'dompurify';
 
 - **[RULE]** Never commit secrets, tokens, or credentials to the repository. Use `.env` files (gitignored) or a secret management service.
 - **[RULE]** If a secret is accidentally committed, rotate it immediately. Removing it from git history alone is not sufficient.
+
+## Internal Links and Information
+
+- **[RULE]** Never include internal or private links in public-facing content (PR descriptions, commit messages, CHANGELOGs, comments on public repos). Internal links include: Linear issues, Slack links/channels, P2 posts, private GitHub repositories or issues, and any URL containing `a8c` or other internal Automattic domains.
+- **[RULE]** Before including any link in public content, verify it is publicly accessible. When in doubt, omit the link and describe the context instead.
