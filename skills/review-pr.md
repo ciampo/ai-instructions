@@ -20,7 +20,7 @@ Chain into this skill for final output formatting:
 2. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 3. Perform structured analysis against the review checklist from `instructions/code-review.md`, with accessibility as the first priority.
 4. Cross-reference changes against how sibling modules/components handle the same patterns.
-5. Ensure `.ai-reviews/` exists (create it if missing). Write the full review to a markdown document following the `draft-review-comment` skill (see **Output Format** below). The file is written to `.ai-reviews/<pr-number>-review.md` and opened in the editor — nothing is printed inline in the chat beyond a one-line confirmation.
+5. Write the full review to a markdown document in the OS temporary directory, following the `draft-review-comment` skill (see **Output Format** below). The file is named `<pr-number>-review.md` and opened in the editor — nothing is printed inline in the chat beyond a one-line confirmation.
 6. Do NOT post anything to GitHub.
 7. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Update the same review document.
 
