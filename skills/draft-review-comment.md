@@ -2,9 +2,11 @@
 
 A workflow for crafting review comments ready to paste into GitHub. Invoked when I say "help me craft a comment" or "prepare a review comment."
 
+This is a supporting skill — typically chained into by `review-pr`, `self-review-pr`, and `address-pr-feedback` rather than invoked directly.
+
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/interaction-preferences.md`
 - `instructions/writing-conventions.md`

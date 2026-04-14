@@ -1,10 +1,14 @@
 # Skill: Refactor
 
+<!-- routing: [PREFER] Codebase-wide refactors or renames -->
+
+**[PREFER]** Recommended for codebase-wide refactors, renames, or migrations.
+
 A systematic workflow for codebase-wide refactors. Invoked when I say "refactor X", "rename across codebase", "migrate from A to B", or "replace all uses of X with Y."
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/coding-principles.md`
 - `instructions/tools-and-cli.md`

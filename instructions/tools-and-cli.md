@@ -28,7 +28,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 - **[STRONG]** Commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
 - **[RULE]** Use `--force-with-lease` for force pushes, never `--force`.
 - **[PREFER]** Prefer `git rebase` for integrating upstream changes on feature branches.
-- **[PREFER]** Draft PRs first during development, convert to ready when polished.
+- **[RULE]** Open PRs as drafts. Convert to ready only when polished and verified.
 - **[PREFER]** Support stacked PRs: comfortable rebasing on top of other PRs.
 - **[RULE]** When amending, only amend commits that have not been pushed or that were just created in the current session.
 

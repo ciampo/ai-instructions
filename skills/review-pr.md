@@ -1,17 +1,21 @@
 # Skill: Review PR
 
+<!-- routing: [STRONG] Reviewing someone else's GitHub PR -->
+
+**[STRONG]** This skill should be used when reviewing someone else's GitHub PR.
+
 A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/code-review.md`
 - `instructions/accessibility.md`
 - `instructions/interaction-preferences.md`
 - `instructions/tools-and-cli.md`
 
-Chain into this skill for final output formatting:
+**[RULE]** Chain into this skill for final output formatting:
 
 - `skills/draft-review-comment.md`
 
