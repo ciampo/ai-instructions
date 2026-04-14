@@ -14,7 +14,7 @@ Load these instruction files before executing this skill:
 All review output goes into a **single markdown document** — never inline in the chat.
 
 1. Ensure the `.ai-reviews/` directory exists (create it if missing) and is listed in the project's `.gitignore` so review artifacts don't dirty the working tree.
-2. Write findings to a file at `.ai-reviews/<pr-number>-review.md` (or `.ai-reviews/review-<timestamp>.md` when no PR number is available). Calling skills may override this filename (e.g., `-self-review.md`, `-replies.md`).
+2. Write findings to a file at `.ai-reviews/<pr-number>-review.md` (or `.ai-reviews/review-<timestamp>.md` when no PR number is available). Calling skills may override this filename (e.g., `-self-review.md`, `-replies.md`). On update (e.g., multi-round reviews), **overwrite the file** with the full revised content — do not append.
 3. Open the file in the current editor so I can read it immediately.
 4. In the chat, only print a one-line confirmation with the file path — nothing else.
 
