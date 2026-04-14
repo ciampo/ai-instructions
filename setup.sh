@@ -474,6 +474,7 @@ list_file() {
 # ---------------------------------------------------------------------------
 generate_routing_content() {
   local agent="$1"
+  local path_mode="${2:-resolve}"  # "resolve" (default) or "relative" (source-repo paths)
   local skills_dir skill_file
   skills_dir="$(agent_skills_dir "$agent")"
   skill_file="$(agent_skill_file "$agent")"
@@ -502,7 +503,9 @@ HEADER
     description="$(printf '%s' "$payload" | sed 's/^\[[A-Z]*\] //')"
 
     local resolved_path
-    if [ -n "$skills_dir" ]; then
+    if [ "$path_mode" = "relative" ]; then
+      resolved_path="skills/${sname}.md"
+    elif [ -n "$skills_dir" ]; then
       resolved_path="${skills_dir}/${sname}/${skill_file}"
     else
       resolved_path="${SCRIPT_DIR}/skills/${sname}.md"
@@ -1129,7 +1132,7 @@ copilot_concat() {
         # Replace placeholder with auto-generated routing table
         echo "<!-- source: workflow-routing.md (auto-generated) -->"
         echo ""
-        generate_routing_content "copilot"
+        generate_routing_content "copilot" "relative"
       else
         echo "<!-- source: $(basename "$f") -->"
         echo ""
