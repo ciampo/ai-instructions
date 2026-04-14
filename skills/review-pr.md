@@ -45,6 +45,6 @@ The review document should contain a summary followed by individual comment sect
 
 After the summary, one section per finding. Each section must:
 
-- State the **exact file path and line range** it applies to (e.g., `**`src/components/Button.tsx:42-45`**`) so I know where to leave the comment on GitHub.
+- State the **exact file path and line range** it applies to (e.g., **`src/components/Button.tsx:42-45`**) so I know where to leave the comment on GitHub.
 - Be self-contained and copy-pasteable into a GitHub review thread.
 - Follow the formatting rules from the `draft-review-comment` skill: concise, collaborative tone, `<details>` for extended content, concrete alternatives or clarifying questions.
