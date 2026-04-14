@@ -465,6 +465,192 @@ list_file() {
 }
 
 # ---------------------------------------------------------------------------
+# Workflow routing (auto-generated from skill trigger comments)
+#
+# Each skill may contain a routing comment: <!-- routing: [SEVERITY] desc -->
+# This function scans all skill files, extracts those comments, resolves
+# skill paths for the target agent, and emits a routing instruction file.
+# The file is installed as a managed copy into the agent's instruction dir.
+# ---------------------------------------------------------------------------
+generate_routing_content() {
+  local agent="$1"
+  local skills_dir skill_file
+  skills_dir="$(agent_skills_dir "$agent")"
+  skill_file="$(agent_skill_file "$agent")"
+
+  cat <<'HEADER'
+# Workflow Routing
+
+**[RULE]** Before starting work, check if the current task matches a pattern below. If it does, read the linked skill file AND every file in its Dependencies section BEFORE writing any code or running any commands.
+
+HEADER
+
+  # Collect entries with a sort key: 1=[RULE], 2=[STRONG], 3=[PREFER]
+  local entries=""
+  for f in "$SCRIPT_DIR"/skills/*.md; do
+    [ -e "$f" ] || continue
+    local sname trigger_line
+    sname="$(basename "$f" .md)"
+    trigger_line="$(grep -m1 '^<!-- routing:' "$f" 2>/dev/null || true)"
+    [ -z "$trigger_line" ] && continue
+
+    # Parse: <!-- routing: [SEVERITY] description -->
+    local payload
+    payload="$(printf '%s' "$trigger_line" | sed 's/^<!-- routing: //' | sed 's/ -->$//')"
+    local severity description
+    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]*\]')"
+    description="$(printf '%s' "$payload" | sed 's/^\[[A-Z]*\] //')"
+
+    local resolved_path
+    if [ -n "$skills_dir" ]; then
+      resolved_path="${skills_dir}/${sname}/${skill_file}"
+    else
+      resolved_path="${SCRIPT_DIR}/skills/${sname}.md"
+    fi
+
+    local order
+    case "$severity" in
+      "[RULE]")   order=1 ;;
+      "[STRONG]") order=2 ;;
+      "[PREFER]") order=3 ;;
+      *)          order=9 ;;
+    esac
+    entries="${entries}${order}|**${severity}** ${description} — read \`${resolved_path}\`
+"
+  done
+
+  # Sort by severity tier then alphabetically, strip the sort key
+  printf '%s' "$entries" | sort | sed 's/^[0-9]|/- /'
+
+  cat <<'FOOTER'
+
+## Skill Loading Protocol
+
+1. Read the skill file.
+2. Read EVERY file listed in its "Dependencies" section. Do not skip any.
+3. Follow the skill's steps in order. Do not skip steps.
+4. If the skill chains into another skill, read and follow that too.
+FOOTER
+}
+
+process_routing() {
+  local agent="$1" action="$2"
+  local instr_dir instr_ext dst
+  instr_dir="$(agent_instr_dir "$agent")"
+  instr_ext="$(agent_instr_ext "$agent")"
+  [ -n "$instr_dir" ] || return 0
+
+  dst="$instr_dir/workflow-routing${instr_ext}"
+
+  case "$action" in
+    install_file)
+      local content_file
+      content_file="$(mktemp)"
+      generate_routing_content "$agent" > "$content_file"
+
+      if is_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
+        log_skip "$(basename "$dst")" "$dst"
+        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+        rm "$content_file"
+        return
+      fi
+
+      # Replace existing symlink from a previous version
+      if [ -L "$dst" ]; then
+        if $DRY_RUN; then
+          log_dry "generate routing -> $(basename "$dst")"
+          SUMMARY_NEW=$((SUMMARY_NEW + 1))
+          rm "$content_file"
+          return
+        fi
+        rm "$dst"
+      fi
+
+      if [ -e "$dst" ] && ! is_managed_copy "$dst"; then
+        log_warn "$(basename "$dst") exists but was not installed by this script -- skipping"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        rm "$content_file"
+        return
+      fi
+
+      if $DRY_RUN; then
+        log_dry "generate routing -> $(basename "$dst")"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+        rm "$content_file"
+        return
+      fi
+
+      mkdir -p "$(dirname "$dst")"
+      { echo "<!-- ai-instructions:managed -->"; cat "$content_file"; } > "$dst"
+      log_copy "$(basename "$dst") (auto-generated)"
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      rm "$content_file"
+      ;;
+
+    check_file)
+      if is_managed_copy "$dst"; then
+        local content_file
+        content_file="$(mktemp)"
+        generate_routing_content "$agent" > "$content_file"
+        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
+          log_ok "$(basename "$dst") (auto-generated)"
+          SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+        else
+          log_warn "$(basename "$dst") (auto-generated, out of date)"
+          SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        fi
+        rm "$content_file"
+      elif [ -L "$dst" ]; then
+        log_warn "$(basename "$dst") is symlinked — should be auto-generated; run update"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      fi
+      ;;
+
+    list_file)
+      if is_managed_copy "$dst"; then
+        local content_file
+        content_file="$(mktemp)"
+        generate_routing_content "$agent" > "$content_file"
+        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
+          log_ok "$dst (auto-generated)"
+        else
+          log_warn "$dst (auto-generated, out of date)"
+        fi
+        rm "$content_file"
+      elif [ -L "$dst" ]; then
+        log_warn "$dst (symlinked, should be auto-generated)"
+      fi
+      ;;
+
+    unlink_file)
+      if is_managed_copy "$dst"; then
+        if $DRY_RUN; then
+          log_dry "rm $dst (auto-generated)"
+        else
+          rm "$dst"
+          log_remove "$(basename "$dst") (auto-generated)"
+        fi
+        SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+      elif [ -L "$dst" ]; then
+        local existing_target
+        existing_target="$(readlink "$dst")"
+        case "$existing_target" in
+          "$SCRIPT_DIR"/*)
+            if $DRY_RUN; then
+              log_dry "rm $dst"
+            else
+              rm "$dst"
+              log_remove "$(basename "$dst")"
+            fi
+            SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+            ;;
+        esac
+      fi
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
 # Instruction-reference resolution
 #
 # Skills and personas reference instructions as `instructions/<name>.md`.
@@ -750,8 +936,11 @@ process_agent() {
       [ -e "$f" ] || continue
       local basename_no_ext
       basename_no_ext="$(basename "$f" .md)"
+      # workflow-routing is auto-generated from skill files; skip the placeholder
+      [ "$basename_no_ext" = "workflow-routing" ] && continue
       "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
     done
+    process_routing "$agent" "$action"
   fi
 
   if should_process_category "skills" && [ -n "$skills_dir" ]; then
@@ -934,9 +1123,18 @@ copilot_concat() {
     echo ""
     for f in "$SCRIPT_DIR"/instructions/*.md; do
       [ -e "$f" ] || continue
-      echo "<!-- source: $(basename "$f") -->"
-      echo ""
-      cat "$f"
+      local bname
+      bname="$(basename "$f" .md)"
+      if [ "$bname" = "workflow-routing" ]; then
+        # Replace placeholder with auto-generated routing table
+        echo "<!-- source: workflow-routing.md (auto-generated) -->"
+        echo ""
+        generate_routing_content "copilot"
+      else
+        echo "<!-- source: $(basename "$f") -->"
+        echo ""
+        cat "$f"
+      fi
       echo ""
       echo "---"
       echo ""

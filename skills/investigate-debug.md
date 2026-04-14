@@ -1,10 +1,14 @@
 # Skill: Investigate / Debug
 
+<!-- routing: [PREFER] Debugging issues or investigating errors -->
+
+**[PREFER]** Recommended for structured debugging and investigation.
+
 A structured workflow for debugging issues. Invoked when I say "debug this", "investigate why X", "this is broken", or share an error message.
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/interaction-preferences.md`
 - `instructions/coding-principles.md`

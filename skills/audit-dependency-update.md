@@ -1,10 +1,14 @@
 # Skill: Audit Dependency Update
 
+<!-- routing: [RULE] Adding, removing, or updating a dependency -->
+
+**[RULE]** This skill MUST be used for any task that adds, removes, or updates a dependency. Do not proceed without completing every step.
+
 A workflow for thoroughly auditing a dependency update. Invoked when updating a package or reviewing a PR that updates dependencies.
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/coding-principles.md`
 - `instructions/security.md`

@@ -1,10 +1,14 @@
 # Skill: Release / Publish
 
+<!-- routing: [PREFER] Preparing or publishing a release -->
+
+**[PREFER]** Recommended when preparing or publishing a package release.
+
 A workflow for preparing and publishing a package release. Invoked when I say "prepare a release", "publish the package", "cut a release", or "bump the version."
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/writing-conventions.md`
 - `instructions/tools-and-cli.md`

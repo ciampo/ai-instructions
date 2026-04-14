@@ -1,18 +1,22 @@
 # Skill: Self-Review PR
 
+<!-- routing: [STRONG] Reviewing your own PR before marking it ready -->
+
+**[STRONG]** This skill should be used before marking any PR as ready for review.
+
 A workflow for reviewing your own PR before marking it ready. Invoked when I say "self-review" or "review before shipping."
 
 The key technique: delegate the review to a **readonly subagent** to reduce confirmation bias. The agent that wrote the code should not be the one reviewing it.
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/code-review.md`
 - `instructions/accessibility.md`
 - `instructions/coding-principles.md`
 
-Chain into this skill when presenting findings:
+**[RULE]** Chain into this skill when presenting findings:
 
 - `skills/draft-review-comment.md`
 

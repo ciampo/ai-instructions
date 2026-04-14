@@ -1,10 +1,14 @@
 # Skill: Resume Session
 
+<!-- routing: [PREFER] Continuing work from a previous session -->
+
+**[PREFER]** Recommended when continuing work from a previous session.
+
 A workflow for picking up work from a previous session. Invoked when I say "continue where we left off", "pick up from last time", "resume", or reference a previous conversation.
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/interaction-preferences.md`
 

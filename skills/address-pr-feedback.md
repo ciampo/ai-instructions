@@ -1,17 +1,21 @@
 # Skill: Address PR Feedback
 
+<!-- routing: [STRONG] Addressing review comments on a PR -->
+
+**[STRONG]** This skill should be used when addressing review feedback on a PR.
+
 A workflow for systematically addressing review comments on a PR. Invoked when I say "address the feedback" or "work through the review comments."
 
 ## Dependencies
 
-Load these instruction files before executing this skill:
+**[RULE]** Read each of these files before proceeding. Do not skip this section.
 
 - `instructions/interaction-preferences.md`
 - `instructions/code-review.md`
 - `instructions/writing-conventions.md`
 - `instructions/tools-and-cli.md`
 
-Chain into this skill when drafting reply snippets:
+**[RULE]** Chain into this skill when drafting reply snippets:
 
 - `skills/draft-review-comment.md`
 
