@@ -17,7 +17,7 @@ Chain into this skill for final output formatting:
 
 ## Steps
 
-1. **Identify the repository and diff base**: Identify `owner/repo` per `tools-and-cli.md`. Determine the actual base branch with `PAGER=cat gh pr view <N> --json baseRefName` — PRs can be stacked, do NOT assume they all target `trunk` or `main`. Diff against the correct base: `git diff <base_branch>...HEAD`. Only review files in the PR (`gh pr diff <N> --name-only`). Do not comment on changes from parent PRs or other branches.
+1. **Identify the repository and diff base**: Identify `owner/repo` per `tools-and-cli.md`. Determine the actual base branch with `PAGER=cat gh pr view <N> --json baseRefName --jq '.baseRefName'` — this outputs the plain ref name. PRs can be stacked, do NOT assume they all target `trunk` or `main`. Fetch and diff against the up-to-date remote base: `git fetch origin <base_branch>` then `git diff origin/<base_branch>...HEAD`. Only review files in the PR (`gh pr diff <N> --name-only`). Do not comment on changes from parent PRs or other branches.
 2. Fetch the PR metadata, diff, comments, existing reviews, and CI status via `gh`.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
