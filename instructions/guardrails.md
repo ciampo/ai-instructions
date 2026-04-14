@@ -10,6 +10,6 @@ Critical rules that apply to every coding session. These are extracted from `too
 
 ## Commits and CHANGELOGs
 
-- **[STRONG]** Commit format: `area: Short description` (e.g., `Tooltip: Add delayDuration prop`).
+- **[STRONG]** Commit format: `ComponentName: Short description` or `area: description` (e.g., `Tooltip: Add delayDuration prop`, `build: Update Radix from v1 to v2`).
 - **[RULE]** Include CHANGELOG entries for user-facing changes, matching the repo's existing format.
 - **[STRONG]** Always commit lockfile changes.

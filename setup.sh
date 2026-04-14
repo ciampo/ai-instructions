@@ -499,8 +499,10 @@ HEADER
     local payload
     payload="$(printf '%s' "$trigger_line" | sed 's/^<!-- routing: //' | sed 's/ -->$//')"
     local severity description
-    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]*\]')"
+    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]*\]' || true)"
+    [ -z "$severity" ] && continue
     description="$(printf '%s' "$payload" | sed 's/^\[[A-Z]*\] //')"
+    [ -z "$description" ] && continue
 
     local resolved_path
     if [ "$path_mode" = "relative" ]; then
