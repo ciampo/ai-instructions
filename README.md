@@ -81,7 +81,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 | Agent | Detection | Instructions | Skills | Personas |
 | --- | --- | --- | --- | --- |
-| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
+| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` (generated copies with YAML frontmatter) | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
 | Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
 | Codex | `~/.codex/` | `~/.codex/instructions/*.md` | -- | -- |
 | GitHub Copilot | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | -- |
@@ -95,14 +95,14 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | `list` | Show all installed symlinks/copies grouped by agent (includes stale entries) |
 | `remove` | Remove symlinks/copies created by this script (includes stale cleanup) |
 | `update` | Re-install + clean stale symlinks/copies for deleted source files |
-| `check` | Verify existing symlinks/copies are valid and detect stale/broken links (exits non-zero if any found) |
+| `check` | Verify existing symlinks/copies are valid, detect stale/broken links, and confirm `workflow-routing` targets resolve for the selected agent (exits non-zero if any found) |
 
 ### Options
 
 | Flag | What it does |
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
-| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `personas`). Repeatable. |
+| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `personas`). Repeatable. For agents with `workflow-routing`, `--only instructions` is a partial install: `check` will still flag missing skill targets until the matching skills are installed. |
 | `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
@@ -118,7 +118,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --only skills --only personas           # Only install skills + personas
 ./setup.sh remove --agent cursor                   # Remove Cursor symlinks
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
-./setup.sh check --agent cursor                    # Verify Cursor symlinks
+./setup.sh check --agent cursor                    # Verify generated Cursor rules and routing targets
 ./setup.sh install --copy --yes                    # Copy mode for CI
 ./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
@@ -129,7 +129,7 @@ The script is non-destructive (skips files it did not install), idempotent (safe
 
 If you prefer to set things up manually or use a different tool:
 
-- **Cursor**: Instructions to `~/.cursor/rules/` (as `.mdc`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
+- **Cursor**: Instructions to `~/.cursor/rules/` as `.mdc` files with YAML frontmatter (`description`, `alwaysApply`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
 - **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/<name>/SKILL.md`, reference from `CLAUDE.md`
 - **Codex**: Instructions to `~/.codex/instructions/`
 - **GitHub Copilot**: Skills to `~/.copilot/skills/<name>/SKILL.md`, or use `--copilot-concat` for a single instructions file
@@ -146,7 +146,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. If you installed with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In both modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
+These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. Cursor instructions are the exception: they are always emitted as managed `.mdc` copies so the installer can add the YAML frontmatter Cursor requires. Re-run `./setup.sh update --agent cursor` to refresh those generated rule files after source changes. If you installed other agents with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In all modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
 
 ## License
 
