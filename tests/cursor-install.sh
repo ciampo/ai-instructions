@@ -28,7 +28,7 @@ assert_file_contains() {
   grep -Fq "$needle" "$path" || fail "Expected '$needle' in $path"
 }
 
-TMP_ROOT="$(mktemp -d)"
+TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/cursor-install.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
 TMP_HOME_FULL="$TMP_ROOT/full"
