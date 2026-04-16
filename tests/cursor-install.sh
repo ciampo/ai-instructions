@@ -81,6 +81,10 @@ fi
 
 assert_file_contains "$TMP_HOME_PARTIAL/check.log" "workflow-routing target missing"
 
+TMP_HOME_CLEAN="$TMP_ROOT/clean"
+mkdir -p "$TMP_HOME_CLEAN/.cursor"
+HOME="$TMP_HOME_CLEAN" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
+
 TMP_HOME_MIGRATION="$TMP_ROOT/migration"
 mkdir -p "$TMP_HOME_MIGRATION/.cursor/rules"
 ln -s "$REPO_DIR/instructions/coding-principles.md" "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
@@ -89,6 +93,20 @@ HOME="$TMP_HOME_MIGRATION" "$REPO_DIR/setup.sh" --agent cursor --yes >/dev/null
 
 assert_file_exists "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 assert_not_symlink "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
+assert_file_contains "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" "alwaysApply: true"
+
+cat > "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" <<'EOF'
+---
+description: 'Custom Coding Principles'
+globs: '**/*.sh'
+alwaysApply: true
+---
+<!-- ai-instructions:managed -->
+# Old content
+EOF
+
+HOME="$TMP_HOME_MIGRATION" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null
+assert_file_contains "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" "# Coding Principles"
 assert_file_contains "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" "alwaysApply: true"
 
 TMP_HOME_UNMANAGED="$TMP_ROOT/unmanaged"

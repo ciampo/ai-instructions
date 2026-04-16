@@ -200,12 +200,15 @@ is_standard_managed_copy() {
 is_cursor_rule_copy() {
   [ -f "$1" ] && ! [ -L "$1" ] || return 1
 
-  local line1 line4 line5
+  local line1 closing_line marker_line
   line1="$(sed -n '1p' "$1" 2>/dev/null)"
-  line4="$(sed -n '4p' "$1" 2>/dev/null)"
-  line5="$(sed -n '5p' "$1" 2>/dev/null)"
+  [ "$line1" = "---" ] || return 1
 
-  [ "$line1" = "---" ] && [ "$line4" = "---" ] && [ "$line5" = "$MANAGED_MARKER" ]
+  closing_line="$(awk 'NR > 1 && $0 == "---" { print NR; exit }' "$1" 2>/dev/null)"
+  [ -n "$closing_line" ] || return 1
+
+  marker_line="$(sed -n "$((closing_line + 1))p" "$1" 2>/dev/null)"
+  [ "$marker_line" = "$MANAGED_MARKER" ]
 }
 
 is_managed_copy() {
@@ -1116,9 +1119,12 @@ list_resolved() {
 
 check_routing_targets() {
   local agent="$1" action="$2"
-  local skills_dir skill_file
+  local skills_dir skill_file instr_dir instr_ext routing_dst
   skills_dir="$(agent_skills_dir "$agent")"
   skill_file="$(agent_skill_file "$agent")"
+  instr_dir="$(agent_instr_dir "$agent")"
+  instr_ext="$(agent_instr_ext "$agent")"
+  routing_dst="$instr_dir/workflow-routing${instr_ext}"
 
   [ -n "$skills_dir" ] || return 0
   if [ "$action" = "unlink_file" ]; then
@@ -1126,6 +1132,18 @@ check_routing_targets() {
   fi
   if [ "$action" = "install_file" ] && $DRY_RUN; then
     return 0
+  fi
+  if [ "$action" != "install_file" ]; then
+    if [ -L "$routing_dst" ]; then
+      local existing_target
+      existing_target="$(readlink "$routing_dst")"
+      case "$existing_target" in
+        "$SCRIPT_DIR"/*) ;;
+        *) return 0 ;;
+      esac
+    elif ! is_standard_managed_copy "$routing_dst" && ! is_cursor_rule_copy "$routing_dst"; then
+      return 0
+    fi
   fi
 
   for f in "$SCRIPT_DIR"/skills/*.md; do
