@@ -197,9 +197,15 @@ is_managed_copy() {
   [ -f "$1" ] && ! [ -L "$1" ] && grep -Fqx "$MANAGED_MARKER" "$1" 2>/dev/null
 }
 
+is_standard_managed_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -Fqx "$MANAGED_MARKER"
+}
+
 is_managed_copy_current() {
   local src="$1" dst="$2"
-  is_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
+  # Standard managed copies start with the marker on line 1.
+  # Cursor rules use is_cursor_rule_current() because they add YAML frontmatter.
+  is_standard_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
 }
 
 dedupe_words() {
@@ -441,6 +447,9 @@ check_file() {
       log_warn "$(basename "$dst") (copy, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 
@@ -609,6 +618,9 @@ check_cursor_rule() {
       log_warn "$(basename "$dst") (cursor rule, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 
@@ -959,7 +971,7 @@ resolve_instruction_refs() {
 
 is_resolved_copy_current() {
   local src="$1" dst="$2" agent="$3"
-  is_managed_copy "$dst" || return 1
+  is_standard_managed_copy "$dst" || return 1
   cmp -s <(resolve_instruction_refs "$src" "$agent") <(tail -n +2 "$dst")
 }
 
@@ -1063,6 +1075,9 @@ check_resolved() {
       log_warn "$(basename "$dst") (out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 

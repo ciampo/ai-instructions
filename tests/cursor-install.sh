@@ -13,6 +13,11 @@ assert_file_exists() {
   [ -f "$path" ] || fail "Expected file to exist: $path"
 }
 
+assert_path_missing() {
+  local path="$1"
+  [ ! -e "$path" ] || fail "Expected path to be absent: $path"
+}
+
 assert_not_symlink() {
   local path="$1"
   [ ! -L "$path" ] || fail "Expected regular file, found symlink: $path"
@@ -51,6 +56,8 @@ assert_file_contains "$ROUTING_FILE" "$SKILL_FILE"
 assert_file_exists "$SKILL_FILE"
 
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
+HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" list --agent cursor --yes >"$TMP_HOME_FULL/list.log"
+assert_file_contains "$TMP_HOME_FULL/list.log" "$RULE_FILE (cursor rule)"
 
 rm "$SKILL_FILE"
 
@@ -83,5 +90,17 @@ HOME="$TMP_HOME_MIGRATION" "$REPO_DIR/setup.sh" --agent cursor --yes >/dev/null
 assert_file_exists "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 assert_not_symlink "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 assert_file_contains "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" "alwaysApply: true"
+
+TMP_HOME_COPY="$TMP_ROOT/copy"
+mkdir -p "$TMP_HOME_COPY/.cursor"
+
+HOME="$TMP_HOME_COPY" "$REPO_DIR/setup.sh" --agent cursor --copy --yes >/dev/null
+assert_file_exists "$TMP_HOME_COPY/.cursor/rules/coding-principles.mdc"
+assert_not_symlink "$TMP_HOME_COPY/.cursor/rules/coding-principles.mdc"
+HOME="$TMP_HOME_COPY" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
+HOME="$TMP_HOME_COPY" "$REPO_DIR/setup.sh" remove --agent cursor --yes >/dev/null
+assert_path_missing "$TMP_HOME_COPY/.cursor/rules/coding-principles.mdc"
+assert_path_missing "$TMP_HOME_COPY/.cursor/rules/workflow-routing.mdc"
+assert_path_missing "$TMP_HOME_COPY/.cursor/skills-cursor/investigate-debug/SKILL.md"
 
 echo "cursor installer regression test passed"
