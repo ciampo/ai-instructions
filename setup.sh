@@ -193,12 +193,23 @@ contains_word() {
   return 1
 }
 
-is_managed_copy() {
-  [ -f "$1" ] && ! [ -L "$1" ] && grep -Fqx "$MANAGED_MARKER" "$1" 2>/dev/null
-}
-
 is_standard_managed_copy() {
   [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -Fqx "$MANAGED_MARKER"
+}
+
+is_cursor_rule_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] || return 1
+
+  local line1 line4 line5
+  line1="$(sed -n '1p' "$1" 2>/dev/null)"
+  line4="$(sed -n '4p' "$1" 2>/dev/null)"
+  line5="$(sed -n '5p' "$1" 2>/dev/null)"
+
+  [ "$line1" = "---" ] && [ "$line4" = "---" ] && [ "$line5" = "$MANAGED_MARKER" ]
+}
+
+is_managed_copy() {
+  is_standard_managed_copy "$1" || is_cursor_rule_copy "$1"
 }
 
 is_managed_copy_current() {
@@ -348,7 +359,7 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_managed_copy "$dst"; then
+    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_standard_managed_copy "$dst"; then
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
@@ -405,7 +416,7 @@ unlink_file() {
     return
   fi
 
-  if is_managed_copy "$dst"; then
+  if is_standard_managed_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (copy)"
     else
@@ -439,7 +450,7 @@ check_file() {
       log_warn "$(basename "$dst") exists at $dst but points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$(basename "$dst") (copy)"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -513,7 +524,7 @@ write_cursor_rule_file() {
 
 is_cursor_rule_current() {
   local src="$1" dst="$2" content_file="${3:-}" generated
-  is_managed_copy "$dst" || return 1
+  is_cursor_rule_copy "$dst" || return 1
 
   generated="$(mktemp "${TMPDIR:-/tmp}/ai-cursor-rule.XXXXXX")"
   write_cursor_rule_file "$src" "$generated" "$content_file"
@@ -559,7 +570,7 @@ install_cursor_rule() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if [ "$COMMAND" = "update" ] && is_managed_copy "$dst"; then
+    if [ "$COMMAND" = "update" ] && is_cursor_rule_copy "$dst"; then
       if $DRY_RUN; then
         log_dry "generate cursor rule -> $dst"
       else
@@ -569,7 +580,7 @@ install_cursor_rule() {
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
       return
     fi
-    if is_managed_copy "$dst"; then
+    if is_cursor_rule_copy "$dst"; then
       log_warn "$(basename "$dst") is outdated; run update to refresh Cursor frontmatter"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       return
@@ -610,7 +621,7 @@ check_cursor_rule() {
     return
   fi
 
-  if is_managed_copy "$dst"; then
+  if is_cursor_rule_copy "$dst"; then
     if is_cursor_rule_current "$src" "$dst" "$content_file"; then
       log_ok "$(basename "$dst") (cursor rule)"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -640,7 +651,7 @@ list_cursor_rule() {
         return
         ;;
     esac
-  elif is_managed_copy "$dst"; then
+  elif is_cursor_rule_copy "$dst"; then
     if is_cursor_rule_current "$src" "$dst" "$content_file"; then
       log_ok "$dst (cursor rule)"
     else
@@ -673,7 +684,7 @@ unlink_cursor_rule() {
     return
   fi
 
-  if is_managed_copy "$dst"; then
+  if is_cursor_rule_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (cursor rule)"
     else
@@ -841,7 +852,7 @@ process_routing() {
       generate_routing_content "$agent" > "$content_file"
       if [ "$agent" = "cursor" ]; then
         apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
-      elif is_managed_copy "$dst"; then
+      elif is_standard_managed_copy "$dst"; then
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$(basename "$dst") (auto-generated)"
           SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -862,7 +873,7 @@ process_routing() {
       generate_routing_content "$agent" > "$content_file"
       if [ "$agent" = "cursor" ]; then
         apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
-      elif is_managed_copy "$dst"; then
+      elif is_standard_managed_copy "$dst"; then
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$dst (auto-generated)"
         else
@@ -877,7 +888,7 @@ process_routing() {
     unlink_file)
       if [ "$agent" = "cursor" ]; then
         apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst"
-      elif is_managed_copy "$dst"; then
+      elif is_standard_managed_copy "$dst"; then
         if $DRY_RUN; then
           log_dry "rm $dst (auto-generated)"
         else
@@ -1018,7 +1029,7 @@ install_resolved() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if is_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
+    if is_standard_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
       if $DRY_RUN; then
         log_dry "update: $(basename "$dst")"
       else
@@ -1028,7 +1039,7 @@ install_resolved() {
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
       return
     fi
-    if is_managed_copy "$dst"; then
+    if is_standard_managed_copy "$dst"; then
       log_warn "$(basename "$dst") is outdated; run update to refresh"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       return
@@ -1067,7 +1078,7 @@ check_resolved() {
       log_warn "$(basename "$dst") points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -1094,7 +1105,7 @@ list_resolved() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$dst (copy, deps resolved)"
     else

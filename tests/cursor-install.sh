@@ -91,6 +91,20 @@ assert_file_exists "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 assert_not_symlink "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 assert_file_contains "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc" "alwaysApply: true"
 
+TMP_HOME_UNMANAGED="$TMP_ROOT/unmanaged"
+mkdir -p "$TMP_HOME_UNMANAGED/.cursor/rules"
+
+cat > "$TMP_HOME_UNMANAGED/.cursor/rules/coding-principles.mdc" <<'EOF'
+# Custom rule
+
+This file mentions the management marker in its body.
+<!-- ai-instructions:managed -->
+EOF
+
+HOME="$TMP_HOME_UNMANAGED" "$REPO_DIR/setup.sh" update --agent cursor --yes >"$TMP_HOME_UNMANAGED/update.log" 2>&1
+assert_file_contains "$TMP_HOME_UNMANAGED/.cursor/rules/coding-principles.mdc" "# Custom rule"
+assert_file_contains "$TMP_HOME_UNMANAGED/update.log" "coding-principles.mdc already exists"
+
 TMP_HOME_COPY="$TMP_ROOT/copy"
 mkdir -p "$TMP_HOME_COPY/.cursor"
 
