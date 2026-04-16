@@ -1139,7 +1139,7 @@ check_routing_targets() {
 
     case "$action" in
       install_file)
-        log_warn "workflow-routing references missing skill target $expected -- run ./setup.sh --agent $agent --only skills"
+        log_warn "workflow-routing references missing skill target $expected -- run \"$SCRIPT_DIR/setup.sh\" --agent $agent --only skills"
         ;;
       check_file)
         log_broken "workflow-routing target missing: $expected"
