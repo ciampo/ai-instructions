@@ -480,7 +480,7 @@ list_file() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$dst (copy)"
     else
@@ -573,7 +573,7 @@ install_cursor_rule() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if [ "$COMMAND" = "update" ] && is_cursor_rule_copy "$dst"; then
+    if [ "$COMMAND" = "update" ] && { is_cursor_rule_copy "$dst" || is_standard_managed_copy "$dst"; }; then
       if $DRY_RUN; then
         log_dry "generate cursor rule -> $dst"
       else
@@ -585,6 +585,11 @@ install_cursor_rule() {
     fi
     if is_cursor_rule_copy "$dst"; then
       log_warn "$(basename "$dst") is outdated; run update to refresh Cursor frontmatter"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      return
+    fi
+    if is_standard_managed_copy "$dst"; then
+      log_warn "$(basename "$dst") is a legacy managed copy without Cursor frontmatter; run update to regenerate"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       return
     fi
@@ -632,6 +637,9 @@ check_cursor_rule() {
       log_warn "$(basename "$dst") (cursor rule, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif is_standard_managed_copy "$dst"; then
+    log_warn "$(basename "$dst") is a legacy managed copy without Cursor frontmatter; run update to regenerate"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   elif [ -e "$dst" ]; then
     log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
@@ -660,6 +668,8 @@ list_cursor_rule() {
     else
       log_warn "$dst (cursor rule, out of date)"
     fi
+  elif is_standard_managed_copy "$dst"; then
+    log_warn "$dst (legacy managed copy, missing Cursor frontmatter)"
   fi
 }
 
@@ -687,7 +697,7 @@ unlink_cursor_rule() {
     return
   fi
 
-  if is_cursor_rule_copy "$dst"; then
+  if is_cursor_rule_copy "$dst" || is_standard_managed_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (cursor rule)"
     else
@@ -810,7 +820,7 @@ process_routing() {
         return
       fi
 
-      if is_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
+      if is_standard_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
         log_skip "$(basename "$dst")" "$dst"
         SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
         rm "$content_file"
@@ -828,7 +838,7 @@ process_routing() {
         rm "$dst"
       fi
 
-      if [ -e "$dst" ] && ! is_managed_copy "$dst"; then
+      if [ -e "$dst" ] && ! is_standard_managed_copy "$dst"; then
         log_warn "$(basename "$dst") exists but was not installed by this script -- skipping"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         rm "$content_file"

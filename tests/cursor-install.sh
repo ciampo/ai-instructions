@@ -123,6 +123,32 @@ HOME="$TMP_HOME_UNMANAGED" "$REPO_DIR/setup.sh" update --agent cursor --yes >"$T
 assert_file_contains "$TMP_HOME_UNMANAGED/.cursor/rules/coding-principles.mdc" "# Custom rule"
 assert_file_contains "$TMP_HOME_UNMANAGED/update.log" "coding-principles.mdc already exists"
 
+TMP_HOME_LEGACY="$TMP_ROOT/legacy"
+mkdir -p "$TMP_HOME_LEGACY/.cursor/rules"
+LEGACY_FILE="$TMP_HOME_LEGACY/.cursor/rules/coding-principles.mdc"
+{
+  echo "<!-- ai-instructions:managed -->"
+  cat "$REPO_DIR/instructions/coding-principles.md"
+} > "$LEGACY_FILE"
+
+HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" --agent cursor --yes >"$TMP_HOME_LEGACY/install.log" 2>&1
+assert_file_contains "$TMP_HOME_LEGACY/install.log" "legacy managed copy without Cursor frontmatter"
+
+if HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_LEGACY/check.log" 2>&1; then :; fi
+assert_file_contains "$TMP_HOME_LEGACY/check.log" "legacy managed copy without Cursor frontmatter"
+
+HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null
+assert_file_contains "$LEGACY_FILE" "alwaysApply: true"
+assert_file_contains "$LEGACY_FILE" "description: 'Coding Principles'"
+
+{
+  echo "<!-- ai-instructions:managed -->"
+  cat "$REPO_DIR/instructions/coding-principles.md"
+} > "$LEGACY_FILE"
+
+HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" remove --agent cursor --yes >/dev/null
+assert_path_missing "$LEGACY_FILE"
+
 TMP_HOME_COPY="$TMP_ROOT/copy"
 mkdir -p "$TMP_HOME_COPY/.cursor"
 
