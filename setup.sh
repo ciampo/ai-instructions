@@ -26,6 +26,8 @@ fi
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
+MANAGED_MARKER='<!-- ai-instructions:managed -->'
+
 log()        { echo "  $1"; }
 log_action() { echo -e "  ${C_GREEN}[+]${C_RESET} $1"; }
 log_skip()   {
@@ -191,13 +193,33 @@ contains_word() {
   return 1
 }
 
+is_standard_managed_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -Fqx "$MANAGED_MARKER"
+}
+
+is_cursor_rule_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] || return 1
+
+  local line1 closing_line marker_line
+  line1="$(sed -n '1p' "$1" 2>/dev/null)"
+  [ "$line1" = "---" ] || return 1
+
+  closing_line="$(awk 'NR > 1 && $0 == "---" { print NR; exit }' "$1" 2>/dev/null)"
+  [ -n "$closing_line" ] || return 1
+
+  marker_line="$(sed -n "$((closing_line + 1))p" "$1" 2>/dev/null)"
+  [ "$marker_line" = "$MANAGED_MARKER" ]
+}
+
 is_managed_copy() {
-  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -q "^<!-- ai-instructions:managed -->$"
+  is_standard_managed_copy "$1" || is_cursor_rule_copy "$1"
 }
 
 is_managed_copy_current() {
   local src="$1" dst="$2"
-  is_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
+  # Standard managed copies start with the marker on line 1.
+  # Cursor rules use is_cursor_rule_current() because they add YAML frontmatter.
+  is_standard_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
 }
 
 dedupe_words() {
@@ -317,7 +339,7 @@ install_file() {
           else
             rm "$dst"
             if $COPY_MODE; then
-              { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
+              { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
               log_copy "$(basename "$dst") (repaired)"
             else
               ln -s "$src" "$dst"
@@ -340,11 +362,11 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_managed_copy "$dst"; then
+    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_standard_managed_copy "$dst"; then
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
-        { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
+        { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -367,7 +389,7 @@ install_file() {
 
   mkdir -p "$(dirname "$dst")"
   if $COPY_MODE; then
-    { echo "<!-- ai-instructions:managed -->"; cat "$src"; } > "$dst"
+    { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
     log_copy "$(basename "$dst")"
   else
     ln -s "$src" "$dst"
@@ -397,7 +419,7 @@ unlink_file() {
     return
   fi
 
-  if is_managed_copy "$dst"; then
+  if is_standard_managed_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (copy)"
     else
@@ -431,7 +453,7 @@ check_file() {
       log_warn "$(basename "$dst") exists at $dst but points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$(basename "$dst") (copy)"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -439,6 +461,9 @@ check_file() {
       log_warn "$(basename "$dst") (copy, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 
@@ -455,13 +480,249 @@ list_file() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$dst (copy)"
     else
       log_warn "$dst (copy, out of date)"
     fi
   fi
+}
+
+yaml_single_quote() {
+  printf '%s' "$1" | sed "s/'/''/g"
+}
+
+cursor_rule_description() {
+  local src="$1" heading fallback
+  heading="$(awk '/^# / { sub(/^# /, ""); print; exit }' "$src")"
+  if [ -n "$heading" ]; then
+    printf '%s' "$heading"
+    return
+  fi
+
+  fallback="$(basename "$src")"
+  fallback="${fallback%.*}"
+  printf '%s' "$fallback" | tr '-' ' '
+}
+
+write_cursor_rule_file() {
+  local src="$1" dst="$2" content_file="${3:-}"
+  local description
+  description="$(yaml_single_quote "$(cursor_rule_description "$src")")"
+
+  {
+    echo "---"
+    printf "description: '%s'\n" "$description"
+    echo "alwaysApply: true"
+    echo "---"
+    echo "$MANAGED_MARKER"
+    if [ -n "$content_file" ]; then
+      cat "$content_file"
+    else
+      cat "$src"
+    fi
+  } > "$dst"
+}
+
+is_cursor_rule_current() {
+  local src="$1" dst="$2" content_file="${3:-}" generated
+  is_cursor_rule_copy "$dst" || return 1
+
+  generated="$(mktemp "${TMPDIR:-/tmp}/ai-cursor-rule.XXXXXX")"
+  write_cursor_rule_file "$src" "$generated" "$content_file"
+
+  if cmp -s "$generated" "$dst"; then
+    rm "$generated"
+    return 0
+  fi
+
+  rm "$generated"
+  return 1
+}
+
+install_cursor_rule() {
+  local src="$1" dst="$2" content_file="${3:-}"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    case "$existing_target" in
+      "$SCRIPT_DIR"/*)
+        if $DRY_RUN; then
+          log_dry "generate cursor rule -> $dst"
+        else
+          rm "$dst"
+          mkdir -p "$(dirname "$dst")"
+          write_cursor_rule_file "$src" "$dst" "$content_file"
+          log_copy "$(basename "$dst") (cursor rule)"
+        fi
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+        return
+        ;;
+    esac
+
+    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if [ -e "$dst" ]; then
+    if is_cursor_rule_current "$src" "$dst" "$content_file"; then
+      log_skip "$(basename "$dst")" "$dst"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      return
+    fi
+    if [ "$COMMAND" = "update" ] && { is_cursor_rule_copy "$dst" || is_standard_managed_copy "$dst"; }; then
+      if $DRY_RUN; then
+        log_dry "generate cursor rule -> $dst"
+      else
+        write_cursor_rule_file "$src" "$dst" "$content_file"
+        log_copy "$(basename "$dst") (cursor rule, updated)"
+      fi
+      SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      return
+    fi
+    if is_cursor_rule_copy "$dst"; then
+      log_warn "$(basename "$dst") is outdated; run update to refresh Cursor frontmatter"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      return
+    fi
+    if is_standard_managed_copy "$dst"; then
+      log_warn "$(basename "$dst") is a legacy managed copy without Cursor frontmatter; run update to regenerate"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      return
+    fi
+    log_warn "$(basename "$dst") already exists at $dst -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if $DRY_RUN; then
+    log_dry "generate cursor rule -> $dst"
+    SUMMARY_NEW=$((SUMMARY_NEW + 1))
+    return
+  fi
+
+  mkdir -p "$(dirname "$dst")"
+  write_cursor_rule_file "$src" "$dst" "$content_file"
+  log_copy "$(basename "$dst") (cursor rule)"
+  SUMMARY_NEW=$((SUMMARY_NEW + 1))
+}
+
+check_cursor_rule() {
+  local src="$1" dst="$2" content_file="${3:-}"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    case "$existing_target" in
+      "$SCRIPT_DIR"/*)
+        log_warn "$(basename "$dst") is symlinked — missing Cursor frontmatter; run update"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        return
+        ;;
+    esac
+
+    log_warn "$(basename "$dst") exists at $dst but points to $existing_target"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if is_cursor_rule_copy "$dst"; then
+    if is_cursor_rule_current "$src" "$dst" "$content_file"; then
+      log_ok "$(basename "$dst") (cursor rule)"
+      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+    else
+      log_warn "$(basename "$dst") (cursor rule, out of date)"
+      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    fi
+  elif is_standard_managed_copy "$dst"; then
+    log_warn "$(basename "$dst") is a legacy managed copy without Cursor frontmatter; run update to regenerate"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+  fi
+}
+
+list_cursor_rule() {
+  local src="$1" dst="$2" content_file="${3:-}"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    case "$existing_target" in
+      "$SCRIPT_DIR"/*)
+        if [ -e "$dst" ]; then
+          log_warn "$dst (symlinked, missing Cursor frontmatter)"
+        else
+          log_broken "$dst (target missing)"
+        fi
+        return
+        ;;
+    esac
+  elif is_cursor_rule_copy "$dst"; then
+    if is_cursor_rule_current "$src" "$dst" "$content_file"; then
+      log_ok "$dst (cursor rule)"
+    else
+      log_warn "$dst (cursor rule, out of date)"
+    fi
+  elif is_standard_managed_copy "$dst"; then
+    log_warn "$dst (legacy managed copy, missing Cursor frontmatter)"
+  fi
+}
+
+unlink_cursor_rule() {
+  local src="$1" dst="$2"
+
+  if [ -L "$dst" ]; then
+    local existing_target
+    existing_target="$(readlink "$dst")"
+    case "$existing_target" in
+      "$SCRIPT_DIR"/*)
+        if $DRY_RUN; then
+          log_dry "rm $dst"
+        else
+          rm "$dst"
+          log_remove "$(basename "$dst")"
+        fi
+        SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+        return
+        ;;
+    esac
+
+    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    return
+  fi
+
+  if is_cursor_rule_copy "$dst" || is_standard_managed_copy "$dst"; then
+    if $DRY_RUN; then
+      log_dry "rm $dst (cursor rule)"
+    else
+      rm "$dst"
+      log_remove "$(basename "$dst") (cursor rule)"
+    fi
+    SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+    return
+  fi
+
+  if [ -e "$dst" ] && ! [ -L "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script -- skipping"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+  fi
+}
+
+apply_cursor_rule_action() {
+  local action="$1" src="$2" dst="$3" content_file="${4:-}"
+
+  case "$action" in
+    install_file) install_cursor_rule "$src" "$dst" "$content_file" ;;
+    check_file)   check_cursor_rule "$src" "$dst" "$content_file" ;;
+    list_file)    list_cursor_rule "$src" "$dst" "$content_file" ;;
+    unlink_file)  unlink_cursor_rule "$src" "$dst" ;;
+  esac
 }
 
 # ---------------------------------------------------------------------------
@@ -553,7 +814,13 @@ process_routing() {
       content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
       generate_routing_content "$agent" > "$content_file"
 
-      if is_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
+      if [ "$agent" = "cursor" ]; then
+        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
+        rm "$content_file"
+        return
+      fi
+
+      if is_standard_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
         log_skip "$(basename "$dst")" "$dst"
         SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
         rm "$content_file"
@@ -571,7 +838,7 @@ process_routing() {
         rm "$dst"
       fi
 
-      if [ -e "$dst" ] && ! is_managed_copy "$dst"; then
+      if [ -e "$dst" ] && ! is_standard_managed_copy "$dst"; then
         log_warn "$(basename "$dst") exists but was not installed by this script -- skipping"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         rm "$content_file"
@@ -586,17 +853,19 @@ process_routing() {
       fi
 
       mkdir -p "$(dirname "$dst")"
-      { echo "<!-- ai-instructions:managed -->"; cat "$content_file"; } > "$dst"
+      { echo "$MANAGED_MARKER"; cat "$content_file"; } > "$dst"
       log_copy "$(basename "$dst") (auto-generated)"
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
       rm "$content_file"
       ;;
 
     check_file)
-      if is_managed_copy "$dst"; then
-        local content_file
-        content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
-        generate_routing_content "$agent" > "$content_file"
+      local content_file
+      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
+      generate_routing_content "$agent" > "$content_file"
+      if [ "$agent" = "cursor" ]; then
+        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
+      elif is_standard_managed_copy "$dst"; then
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$(basename "$dst") (auto-generated)"
           SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -604,31 +873,35 @@ process_routing() {
           log_warn "$(basename "$dst") (auto-generated, out of date)"
           SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         fi
-        rm "$content_file"
       elif [ -L "$dst" ]; then
         log_warn "$(basename "$dst") is symlinked — should be auto-generated; run update"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       fi
+      rm "$content_file"
       ;;
 
     list_file)
-      if is_managed_copy "$dst"; then
-        local content_file
-        content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
-        generate_routing_content "$agent" > "$content_file"
+      local content_file
+      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
+      generate_routing_content "$agent" > "$content_file"
+      if [ "$agent" = "cursor" ]; then
+        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
+      elif is_standard_managed_copy "$dst"; then
         if cmp -s "$content_file" <(tail -n +2 "$dst"); then
           log_ok "$dst (auto-generated)"
         else
           log_warn "$dst (auto-generated, out of date)"
         fi
-        rm "$content_file"
       elif [ -L "$dst" ]; then
         log_warn "$dst (symlinked, should be auto-generated)"
       fi
+      rm "$content_file"
       ;;
 
     unlink_file)
-      if is_managed_copy "$dst"; then
+      if [ "$agent" = "cursor" ]; then
+        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst"
+      elif is_standard_managed_copy "$dst"; then
         if $DRY_RUN; then
           log_dry "rm $dst (auto-generated)"
         else
@@ -676,7 +949,7 @@ sed_escape_replacement() {
 
 resolve_instruction_refs() {
   local src="$1" agent="$2"
-  local instr_dir instr_ext skills_dir skill_file
+  local instr_dir instr_ext skills_dir skill_file sed_file
   instr_dir="$(agent_instr_dir "$agent")"
   instr_ext="$(agent_instr_ext "$agent")"
   skills_dir="$(agent_skills_dir "$agent")"
@@ -688,13 +961,13 @@ resolve_instruction_refs() {
     instr_ext=".md"
   fi
 
-  local sed_script=""
+  sed_file="$(mktemp "${TMPDIR:-/tmp}/ai-instruction-refs.XXXXXX")"
   for instr_file in "$SCRIPT_DIR"/instructions/*.md; do
     [ -e "$instr_file" ] || continue
     local name replacement
     name="$(basename "$instr_file" .md)"
     replacement="$(sed_escape_replacement "${instr_dir}/${name}${instr_ext}")"
-    sed_script="${sed_script}s|instructions/${name}\\.md|${replacement}|g;"
+    printf 's|instructions/%s\\.md|%s|g\n' "$name" "$replacement" >> "$sed_file"
   done
 
   # Resolve skills/ cross-references (e.g. skills/foo.md -> <skills_dir>/foo/SKILL.md)
@@ -704,20 +977,25 @@ resolve_instruction_refs() {
       local sname sreplacement
       sname="$(basename "$skill_src" .md)"
       sreplacement="$(sed_escape_replacement "${skills_dir}/${sname}/${skill_file}")"
-      sed_script="${sed_script}s|skills/${sname}\\.md|${sreplacement}|g;"
+      printf 's|skills/%s\\.md|%s|g\n' "$sname" "$sreplacement" >> "$sed_file"
     done
   fi
 
-  if [ -n "$sed_script" ]; then
-    sed "$sed_script" "$src"
+  if [ -s "$sed_file" ]; then
+    if ! sed -f "$sed_file" "$src"; then
+      rm "$sed_file"
+      return 1
+    fi
   else
     cat "$src"
   fi
+
+  rm "$sed_file"
 }
 
 is_resolved_copy_current() {
   local src="$1" dst="$2" agent="$3"
-  is_managed_copy "$dst" || return 1
+  is_standard_managed_copy "$dst" || return 1
   cmp -s <(resolve_instruction_refs "$src" "$agent") <(tail -n +2 "$dst")
 }
 
@@ -732,7 +1010,7 @@ install_resolved() {
         log_dry "resolve deps: $(basename "$dst")"
       else
         rm "$dst"
-        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+        { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
         log_copy "$(basename "$dst") (resolved deps)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -745,7 +1023,7 @@ install_resolved() {
             log_dry "replace broken link: $(basename "$dst")"
           else
             rm "$dst"
-            { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+            { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
             log_copy "$(basename "$dst") (repaired, resolved deps)"
           fi
           SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -764,17 +1042,17 @@ install_resolved() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if is_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
+    if is_standard_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
       if $DRY_RUN; then
         log_dry "update: $(basename "$dst")"
       else
-        { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+        { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
       return
     fi
-    if is_managed_copy "$dst"; then
+    if is_standard_managed_copy "$dst"; then
       log_warn "$(basename "$dst") is outdated; run update to refresh"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       return
@@ -791,7 +1069,7 @@ install_resolved() {
   fi
 
   mkdir -p "$(dirname "$dst")"
-  { echo "<!-- ai-instructions:managed -->"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
+  { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
   log_copy "$(basename "$dst") (resolved deps)"
   SUMMARY_NEW=$((SUMMARY_NEW + 1))
 }
@@ -813,7 +1091,7 @@ check_resolved() {
       log_warn "$(basename "$dst") points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -821,6 +1099,9 @@ check_resolved() {
       log_warn "$(basename "$dst") (out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
     fi
+  elif [ -e "$dst" ]; then
+    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
   fi
 }
 
@@ -837,13 +1118,67 @@ list_resolved() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif is_managed_copy "$dst"; then
+  elif is_standard_managed_copy "$dst"; then
     if is_resolved_copy_current "$src" "$dst" "$agent"; then
       log_ok "$dst (copy, deps resolved)"
     else
       log_warn "$dst (copy, out of date)"
     fi
   fi
+}
+
+check_routing_targets() {
+  local agent="$1" action="$2"
+  local skills_dir skill_file instr_dir instr_ext routing_dst
+  skills_dir="$(agent_skills_dir "$agent")"
+  skill_file="$(agent_skill_file "$agent")"
+  instr_dir="$(agent_instr_dir "$agent")"
+  instr_ext="$(agent_instr_ext "$agent")"
+  routing_dst="$instr_dir/workflow-routing${instr_ext}"
+
+  [ -n "$skills_dir" ] || return 0
+  if [ "$action" = "unlink_file" ]; then
+    return 0
+  fi
+  if [ "$action" = "install_file" ] && $DRY_RUN; then
+    return 0
+  fi
+  if [ "$action" != "install_file" ]; then
+    if [ -L "$routing_dst" ]; then
+      local existing_target
+      existing_target="$(readlink "$routing_dst")"
+      case "$existing_target" in
+        "$SCRIPT_DIR"/*) ;;
+        *) return 0 ;;
+      esac
+    elif ! is_standard_managed_copy "$routing_dst" && ! is_cursor_rule_copy "$routing_dst"; then
+      return 0
+    fi
+  fi
+
+  for f in "$SCRIPT_DIR"/skills/*.md; do
+    [ -e "$f" ] || continue
+    grep -q '^<!-- routing:' "$f" 2>/dev/null || continue
+
+    local skill_name expected
+    skill_name="$(basename "$f" .md)"
+    expected="$skills_dir/$skill_name/$skill_file"
+    [ -e "$expected" ] && continue
+
+    case "$action" in
+      install_file)
+        log_warn "workflow-routing references missing skill target $expected -- run \"$SCRIPT_DIR/setup.sh\" --agent $agent --only skills"
+        ;;
+      check_file)
+        log_broken "workflow-routing target missing: $expected"
+        BROKEN_COUNT=$((BROKEN_COUNT + 1))
+        SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+        ;;
+      list_file)
+        log_warn "$expected (workflow-routing target missing)"
+        ;;
+    esac
+  done
 }
 
 # ---------------------------------------------------------------------------
@@ -943,7 +1278,11 @@ process_agent() {
       basename_no_ext="$(basename "$f" .md)"
       # workflow-routing is auto-generated from skill files; skip the placeholder
       [ "$basename_no_ext" = "workflow-routing" ] && continue
-      "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
+      if [ "$agent" = "cursor" ]; then
+        apply_cursor_rule_action "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
+      else
+        "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
+      fi
     done
     process_routing "$agent" "$action"
   fi
@@ -994,6 +1333,10 @@ process_agent() {
           ;;
       esac
     done
+  fi
+
+  if should_process_category "instructions" && [ -n "$instr_dir" ]; then
+    check_routing_targets "$agent" "$action"
   fi
 
   if [ "$action" = "install_file" ] && [ "$agent" = "claude" ]; then
