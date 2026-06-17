@@ -25,7 +25,7 @@ assert_not_symlink() {
 
 assert_file_contains() {
   local path="$1" needle="$2"
-  grep -Fq "$needle" "$path" || fail "Expected '$needle' in $path"
+  grep -Fq -- "$needle" "$path" || fail "Expected '$needle' in $path"
 }
 
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/cursor-install.XXXXXX")"
