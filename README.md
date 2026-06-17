@@ -83,7 +83,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | --- | --- | --- | --- | --- |
 | Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` (generated copies with YAML frontmatter) | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
 | Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
-| Codex | `~/.codex/` | `~/.codex/instructions/*.md` | -- | -- |
+| Codex | `~/.codex/` | `~/.codex/AGENTS.md` (single concatenated, managed file) | -- | -- |
 | GitHub Copilot | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | -- |
 | Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | -- |
 
@@ -131,7 +131,7 @@ If you prefer to set things up manually or use a different tool:
 
 - **Cursor**: Instructions to `~/.cursor/rules/` as `.mdc` files with YAML frontmatter (`description`, `alwaysApply`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
 - **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/<name>/SKILL.md`, reference from `CLAUDE.md`
-- **Codex**: Instructions to `~/.codex/instructions/`
+- **Codex**: All instructions concatenated into `~/.codex/AGENTS.md` (the global file Codex loads on startup). The script generates it as a managed file and refuses to overwrite a user-maintained `~/.codex/AGENTS.md`. Re-run `./setup.sh update --agent codex` to refresh after source changes.
 - **GitHub Copilot**: Skills to `~/.copilot/skills/<name>/SKILL.md`, or use `--copilot-concat` for a single instructions file
 - **Gemini CLI**: Skills to `~/.gemini/skills/<name>/SKILL.md`
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
@@ -146,7 +146,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. Cursor instructions are the exception: they are always emitted as managed `.mdc` copies so the installer can add the YAML frontmatter Cursor requires. Re-run `./setup.sh update --agent cursor` to refresh those generated rule files after source changes. If you installed other agents with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In all modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
+These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. Two agents are exceptions because they need generated, managed files rather than symlinks: Cursor instructions are always emitted as managed `.mdc` copies so the installer can add the YAML frontmatter Cursor requires, and Codex instructions are always concatenated into a single managed `~/.codex/AGENTS.md`. Re-run `./setup.sh update --agent cursor` or `./setup.sh update --agent codex` to refresh those generated files after source changes. If you installed other agents with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In all modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
 
 ## License
 

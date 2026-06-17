@@ -79,14 +79,24 @@ agent_detect_dir() {
   esac
 }
 
+# Codex is intentionally absent here: it loads a single global instructions
+# file (~/.codex/AGENTS.md), not a directory of separate files. It is handled
+# specially via codex_agents_md() / codex_agents_file().
 agent_instr_dir() {
   case "$1" in
     cursor)  echo "$HOME/.cursor/rules" ;;
     claude)  echo "$HOME/.claude/rules" ;;
-    codex)   echo "$HOME/.codex/instructions" ;;
+    codex)   echo "" ;;
     copilot) echo "" ;;
     gemini)  echo "" ;;
   esac
+}
+
+# Path to Codex's global instructions file. Codex reads ~/.codex/AGENTS.md
+# (or AGENTS.override.md) on startup; we generate the former as a single
+# concatenated, managed file.
+codex_agents_file() {
+  echo "$HOME/.codex/AGENTS.md"
 }
 
 agent_instr_ext() {
@@ -1270,21 +1280,26 @@ process_agent() {
   skill_file="$(agent_skill_file "$agent")"
   personas_dir="$(agent_personas_dir "$agent")"
 
-  if should_process_category "instructions" && [ -n "$instr_dir" ]; then
-    log "Instructions -> $instr_dir/"
-    for f in "$SCRIPT_DIR"/instructions/*.md; do
-      [ -e "$f" ] || continue
-      local basename_no_ext
-      basename_no_ext="$(basename "$f" .md)"
-      # workflow-routing is auto-generated from skill files; skip the placeholder
-      [ "$basename_no_ext" = "workflow-routing" ] && continue
-      if [ "$agent" = "cursor" ]; then
-        apply_cursor_rule_action "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
-      else
-        "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
-      fi
-    done
-    process_routing "$agent" "$action"
+  if should_process_category "instructions"; then
+    if [ "$agent" = "codex" ]; then
+      log "Instructions -> $(codex_agents_file) (concatenated)"
+      codex_agents_md "$action"
+    elif [ -n "$instr_dir" ]; then
+      log "Instructions -> $instr_dir/"
+      for f in "$SCRIPT_DIR"/instructions/*.md; do
+        [ -e "$f" ] || continue
+        local basename_no_ext
+        basename_no_ext="$(basename "$f" .md)"
+        # workflow-routing is auto-generated from skill files; skip the placeholder
+        [ "$basename_no_ext" = "workflow-routing" ] && continue
+        if [ "$agent" = "cursor" ]; then
+          apply_cursor_rule_action "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
+        else
+          "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
+        fi
+      done
+      process_routing "$agent" "$action"
+    fi
   fi
 
   if should_process_category "skills" && [ -n "$skills_dir" ]; then
@@ -1432,6 +1447,160 @@ check_stale_agent() {
 }
 
 # ---------------------------------------------------------------------------
+# Concatenated instructions (shared by Codex AGENTS.md and Copilot)
+#
+# Some agents load a single instructions file rather than a directory of
+# separate files. This emits every instruction file (plus the auto-generated
+# routing table) to stdout, with source markers between sections.
+#   path_mode: "relative" -> routing references skills/<name>.md (repo-relative)
+#              "resolve"  -> routing references resolved per-agent skill paths
+# ---------------------------------------------------------------------------
+emit_concat_instructions() {
+  local agent="$1" path_mode="$2"
+  for f in "$SCRIPT_DIR"/instructions/*.md; do
+    [ -e "$f" ] || continue
+    local bname
+    bname="$(basename "$f" .md)"
+    if [ "$bname" = "workflow-routing" ]; then
+      # Replace placeholder with auto-generated routing table
+      echo "<!-- source: workflow-routing.md (auto-generated) -->"
+      echo ""
+      generate_routing_content "$agent" "$path_mode"
+    else
+      echo "<!-- source: $(basename "$f") -->"
+      echo ""
+      cat "$f"
+    fi
+    echo ""
+    echo "---"
+    echo ""
+  done
+}
+
+# ---------------------------------------------------------------------------
+# Codex global instructions (~/.codex/AGENTS.md)
+#
+# Codex reads a single global instructions file on startup, not a directory of
+# separate files. We generate ~/.codex/AGENTS.md as a managed, concatenated
+# copy (marked with MANAGED_MARKER on line 1, like the auto-generated routing
+# file) so install/update/check/remove can own it without clobbering a
+# user-maintained AGENTS.md.
+# ---------------------------------------------------------------------------
+codex_agents_md() {
+  local action="$1"
+  local dst
+  dst="$(codex_agents_file)"
+
+  # Migrate away from the old per-file install location (~/.codex/instructions).
+  codex_clean_legacy_instructions "$action"
+
+  local content_file
+  content_file="$(mktemp "${TMPDIR:-/tmp}/ai-codex.XXXXXX")"
+  emit_concat_instructions "codex" "resolve" > "$content_file"
+
+  case "$action" in
+    install_file)
+      if is_standard_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
+        log_skip "$(basename "$dst")" "$dst"
+        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      elif [ -e "$dst" ] && ! is_standard_managed_copy "$dst"; then
+        log_warn "$(basename "$dst") exists at $dst but was not generated by this script -- skipping"
+        log_warn "Back up your global instructions, then re-run, or add the marker: $MANAGED_MARKER"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      elif $DRY_RUN; then
+        log_dry "generate concatenated instructions -> $dst"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      else
+        mkdir -p "$(dirname "$dst")"
+        { echo "$MANAGED_MARKER"; cat "$content_file"; } > "$dst"
+        log_copy "$(basename "$dst") (concatenated, $(wc -l < "$dst" | tr -d ' ') lines)"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      fi
+      ;;
+
+    check_file)
+      if is_standard_managed_copy "$dst"; then
+        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
+          log_ok "$(basename "$dst") (concatenated)"
+          SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+        else
+          log_warn "$(basename "$dst") (concatenated, out of date) -- run update"
+          SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        fi
+      elif [ -e "$dst" ]; then
+        log_warn "$(basename "$dst") at $dst was not generated by this script"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      fi
+      ;;
+
+    list_file)
+      if is_standard_managed_copy "$dst"; then
+        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
+          log_ok "$dst (concatenated)"
+        else
+          log_warn "$dst (concatenated, out of date)"
+        fi
+      fi
+      ;;
+
+    unlink_file)
+      if is_standard_managed_copy "$dst"; then
+        if $DRY_RUN; then
+          log_dry "rm $dst (concatenated)"
+        else
+          rm "$dst"
+          log_remove "$(basename "$dst") (concatenated)"
+        fi
+        SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+      elif [ -e "$dst" ] && ! [ -L "$dst" ]; then
+        log_warn "$(basename "$dst") at $dst was not generated by this script -- skipping"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      fi
+      ;;
+  esac
+
+  rm "$content_file"
+}
+
+# Remove managed entries left behind by the previous Codex layout
+# (~/.codex/instructions/*). Runs on install/update/remove so upgrading users
+# do not accumulate dead files. Only touches our own symlinks and managed
+# copies; user-authored files are left alone.
+codex_clean_legacy_instructions() {
+  local action="$1"
+  case "$action" in
+    install_file|unlink_file) ;;  # install, update, remove
+    *) return 0 ;;
+  esac
+
+  local legacy_dir="$HOME/.codex/instructions"
+  [ -d "$legacy_dir" ] || return 0
+
+  local removed_any=false entry
+  for entry in "$legacy_dir"/*; do
+    [ -e "$entry" ] || [ -L "$entry" ] || continue
+    local is_ours=false
+    if [ -L "$entry" ]; then
+      case "$(readlink "$entry")" in "$SCRIPT_DIR"/*) is_ours=true ;; esac
+    elif is_standard_managed_copy "$entry"; then
+      is_ours=true
+    fi
+    $is_ours || continue
+    if $DRY_RUN; then
+      log_dry "rm $entry (legacy Codex instructions)"
+    else
+      rm "$entry"
+      log_remove "$(basename "$entry") (legacy Codex instructions)"
+    fi
+    removed_any=true
+  done
+
+  if $removed_any && ! $DRY_RUN; then
+    rmdir "$legacy_dir" 2>/dev/null || true
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Copilot concatenation (targets a specific repo directory, separate flow)
 # ---------------------------------------------------------------------------
 COPILOT_CONCAT_MARKER="<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->"
@@ -1469,24 +1638,7 @@ copilot_concat() {
     echo "$COPILOT_CONCAT_MARKER"
     echo "<!-- Do not edit manually. Re-run setup.sh to update. -->"
     echo ""
-    for f in "$SCRIPT_DIR"/instructions/*.md; do
-      [ -e "$f" ] || continue
-      local bname
-      bname="$(basename "$f" .md)"
-      if [ "$bname" = "workflow-routing" ]; then
-        # Replace placeholder with auto-generated routing table
-        echo "<!-- source: workflow-routing.md (auto-generated) -->"
-        echo ""
-        generate_routing_content "copilot" "relative"
-      else
-        echo "<!-- source: $(basename "$f") -->"
-        echo ""
-        cat "$f"
-      fi
-      echo ""
-      echo "---"
-      echo ""
-    done
+    emit_concat_instructions "copilot" "relative"
   } > "$output_file"
 
   log_action "$(basename "$output_file") ($(wc -l < "$output_file" | tr -d ' ') lines)"
