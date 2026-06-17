@@ -1453,7 +1453,10 @@ check_stale_agent() {
 # separate files. This emits every instruction file (plus the auto-generated
 # routing table) to stdout, with source markers between sections.
 #   path_mode: "relative" -> routing references skills/<name>.md (repo-relative)
-#              "resolve"  -> routing references resolved per-agent skill paths
+#              "resolve"  -> routing references the agent's installed skill
+#                            paths, falling back to source-repo paths
+#                            ($SCRIPT_DIR/skills/...) when the agent has no
+#                            skills dir (e.g. Codex)
 # ---------------------------------------------------------------------------
 emit_concat_instructions() {
   local agent="$1" path_mode="$2"
