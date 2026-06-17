@@ -101,6 +101,18 @@ assert_path_missing "$TMP_LEGACY/.codex/instructions/security.md"
 assert_file_exists "$TMP_LEGACY/.codex/instructions/my-notes.md"
 assert_file_exists "$TMP_LEGACY/.codex/AGENTS.md"
 
+# --- Recovers when AGENTS.md is a broken symlink ----------------------------
+TMP_BROKEN="$TMP_ROOT/broken"
+mkdir -p "$TMP_BROKEN/.codex"
+ln -s "$TMP_BROKEN/.codex/does-not-exist.md" "$TMP_BROKEN/.codex/AGENTS.md"
+[ -L "$TMP_BROKEN/.codex/AGENTS.md" ] || fail "Expected a broken symlink seed"
+
+HOME="$TMP_BROKEN" "$REPO_DIR/setup.sh" --agent codex --yes >/dev/null
+assert_file_exists "$TMP_BROKEN/.codex/AGENTS.md"
+assert_not_symlink "$TMP_BROKEN/.codex/AGENTS.md"
+assert_path_missing "$TMP_BROKEN/.codex/does-not-exist.md"
+assert_file_contains "$TMP_BROKEN/.codex/AGENTS.md" "# Workflow Routing"
+
 # --- --copy mode still produces a managed file (no symlink) -----------------
 TMP_COPY="$TMP_ROOT/copy"
 mkdir -p "$TMP_COPY/.codex"

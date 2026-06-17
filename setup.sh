@@ -1514,6 +1514,12 @@ codex_agents_md() {
         log_dry "generate concatenated instructions -> $dst"
         SUMMARY_NEW=$((SUMMARY_NEW + 1))
       else
+        # A dangling symlink slips past the conflict check above (it relies on
+        # -e, which follows the link). Remove it so the redirection writes a
+        # real file instead of writing through it or aborting under set -e.
+        if [ -L "$dst" ]; then
+          rm "$dst"
+        fi
         mkdir -p "$(dirname "$dst")"
         { echo "$MANAGED_MARKER"; cat "$content_file"; } > "$dst"
         log_copy "$(basename "$dst") (concatenated, $(wc -l < "$dst" | tr -d ' ') lines)"
