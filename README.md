@@ -6,6 +6,8 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and get loaded automatically via symlinks into each tool's config.
 
+See the [modernization plan](modernization-plan.md) for the current architecture audit and implementation roadmap.
+
 ## Structure
 
 ```text
@@ -147,6 +149,17 @@ These instructions are global defaults. To override for a specific project:
 ## Updating
 
 These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. Two agents are exceptions because they need generated, managed files rather than symlinks: Cursor instructions are always emitted as managed `.mdc` copies so the installer can add the YAML frontmatter Cursor requires, and Codex instructions are always concatenated into a single managed `~/.codex/AGENTS.md`. Re-run `./setup.sh update --agent cursor` or `./setup.sh update --agent codex` to refresh those generated files after source changes. If you installed other agents with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In all modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
+
+## Development
+
+Development requires Node.js 22 or newer and npm.
+
+```bash
+npm ci
+npm run lint
+npm test
+npm audit --audit-level=high
+```
 
 ## License
 
