@@ -27,5 +27,10 @@ A workflow for systematically addressing review comments on a PR. Invoked when I
 4. **Make granular commits**: One commit per review comment or tightly related group. Keep code changes, test changes, and config changes in separate commits when practical. No AI-attribution footers (e.g., "Co-Authored-By: Claude") in commit messages.
 5. **Verify**: Run the project's verification suite before pushing.
 6. **Verify fixes against actual code**: When checking whether previously raised issues have been addressed, pull the latest branch, read the review comments, then check the actual code to confirm the fix is correct — do not just trust that a commit exists. Report which issues are properly fixed and which still need work.
-7. **Prepare reply document**: For each addressed comment, draft a short reply explaining what was done. For won't-fix items, draft a respectful explanation of why. Follow the `draft-review-comment` skill for structure and quality — each reply section must reference the exact file path and line range of the original comment, be self-contained, and be copy-pasteable — but override the default filename. Write all replies to `<pr-number>-replies.md` in the OS temporary directory and open the file in the editor (per `interaction-preferences.md`: never post to GitHub directly).
+7. **Prepare reply document**:
+   - For each addressed comment, draft a short, plain-language reply that starts with the outcome or reason before any code-level detail.
+   - When practical, include brief steps the reviewer can use to reproduce or verify the result.
+   - For won't-fix items, explain the high-level trade-off respectfully.
+   - Follow the `draft-review-comment` skill for structure and quality. Each reply section must reference the exact file path and line range of the original comment, be self-contained, and be copy-pasteable.
+   - Override the default filename: write all replies to `<pr-number>-replies.md` in the OS temporary directory and open the file in the editor (per `interaction-preferences.md`: never post to GitHub directly).
 8. **Update PR metadata**: If the scope or approach shifted based on feedback, update the PR description accordingly.

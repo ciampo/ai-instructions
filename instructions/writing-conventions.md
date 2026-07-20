@@ -5,9 +5,11 @@ How I expect written artifacts to be structured.
 ## PR Descriptions
 
 - **[STRONG]** Follow the repo's existing PR template. If no template exists, use: What / Why / How / Testing Instructions.
-- **[STRONG]** Keep the summary concise and human-scannable. A reviewer should understand the PR in 30 seconds.
-- **[PREFER]** Use `<details>` sections for implementation details, API comparison tables, and extended context that most readers can skip.
-- **[STRONG]** Include a "Testing Instructions" section with concrete steps.
+- **[RULE]** Optimize the What / Why / How sections for human comprehension. Start with the high-level outcome or reason, use plain language, and avoid low-level implementation details unless they are necessary to understand the change. Prefer one or two sentences per section when possible.
+- **[STRONG]** Keep the summary concise and easy to scan. A reviewer should understand the change in 30 seconds without needing deep knowledge of the code.
+- **[PREFER]** Put implementation details, API comparison tables, migration guides, and other secondary context in `<details>` sections.
+- **[RULE]** Prioritize manual, behavior-focused testing instructions. Point reviewers to the real app or relevant Storybook example and describe the exact interactions and expected result for user-facing changes.
+- **[RULE]** Do not clutter testing instructions with routine lint, type-check, build, or automated test commands that already run in git hooks or CI. Include commands when the PR changes that infrastructure or when they are necessary to reproduce or validate the change; put secondary verification details in `<details>` when useful.
 - **[PREFER]** Include a "Visual Preview" section (screenshots/videos) when the change is visual.
 - **[PREFER]** Add a "TODO / Follow-ups" section when there is deferred work.
 - **[PREFER]** When referencing related issues or PRs, put them at the top.

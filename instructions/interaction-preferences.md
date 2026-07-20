@@ -37,7 +37,10 @@ Ground rules for any AI assistant working with me.
 ## GitHub Comment Writing Style
 
 - Short, essential, concise -- same standard as PR descriptions.
-- Put extended details (including diffs with implementation suggestions) inside `<details>` tags.
+- Lead with a high-level explanation in plain language. Explain what changed, what is wrong, or why a choice was made before discussing code-level details.
+- Avoid jargon and dense implementation language when a simpler explanation works. The comment or reply should be understandable without reconstructing the code first.
+- When the behavior can be observed, include brief reproduction or verification steps from the user's perspective: where to go, what to do, and what to expect.
+- Put extended technical details (including diffs with implementation suggestions) inside `<details>` tags.
 - Tone: collaborative and polite, but always aimed at stimulating change for the better. Not passive, not vague -- constructive and direct. Frame suggestions as improvements, not complaints.
 
 ## Debugging and Troubleshooting
