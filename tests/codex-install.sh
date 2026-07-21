@@ -99,7 +99,7 @@ TMP_LEGACY="$TMP_ROOT/legacy"
 mkdir -p "$TMP_LEGACY/.codex/instructions"
 # A managed copy and a symlink into the repo are both ours and should go.
 printf '<!-- ai-instructions:managed -->\n# old\n' > "$TMP_LEGACY/.codex/instructions/coding-principles.md"
-ln -s "$REPO_DIR/instructions/security.md" "$TMP_LEGACY/.codex/instructions/security.md"
+ln -s "$REPO_DIR/instructions/core.md" "$TMP_LEGACY/.codex/instructions/security.md"
 # A user-authored file in the legacy dir must be preserved.
 printf '# keep me\n' > "$TMP_LEGACY/.codex/instructions/my-notes.md"
 # A user symlink pointing outside the repo must also be preserved.
