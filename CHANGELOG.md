@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Preserve upgrades from pre-modernization default and copy-mode installations, and retain the former `release-publish` skill as a deprecated compatibility route. ([#24](https://github.com/ciampo/ai-instructions/pull/24))
 - Add guidance for clear, phase-aware task titles across supported AI runtimes. ([#23](https://github.com/ciampo/ai-instructions/pull/23))
 - Reduce universal instructions to a product-neutral core, route domain guidance through skills with bundled references, and add migration and support-maintenance contracts. ([#22](https://github.com/ciampo/ai-instructions/pull/22))
 - Replace the monolithic installer with a validated platform manifest, native format adapters, staged ownership-safe writes, generated support documentation, and a cross-platform contract test suite. ([#21](https://github.com/ciampo/ai-instructions/pull/21))
