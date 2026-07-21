@@ -1,4 +1,4 @@
-# Design System Components
+# Design System Components Reference
 
 Patterns for building and maintaining a design system component library. Generalized from my work but applicable to any component library wrapping headless primitives.
 

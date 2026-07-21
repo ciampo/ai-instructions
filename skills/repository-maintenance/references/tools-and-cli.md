@@ -1,4 +1,4 @@
-# Tools and CLI Conventions
+# Tools and CLI Reference
 
 How AI agents should use command-line tools, especially `gh` and `git`.
 

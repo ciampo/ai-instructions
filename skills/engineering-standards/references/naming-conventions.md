@@ -1,4 +1,4 @@
-# Naming Conventions
+# Naming Conventions Reference
 
 Consistent naming reduces cognitive load and helps AI agents produce code that fits the codebase.
 

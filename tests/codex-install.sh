@@ -44,8 +44,8 @@ assert_not_symlink "$AGENTS_FILE"
 [ "$(head -1 "$AGENTS_FILE")" = "<!-- ai-instructions:managed -->" ] \
   || fail "Expected managed marker on line 1 of $AGENTS_FILE"
 # Concatenated instruction sources are present.
-assert_file_contains "$AGENTS_FILE" "<!-- source: coding-principles.md -->"
-assert_file_contains "$AGENTS_FILE" "# Accessibility Standards"
+assert_file_contains "$AGENTS_FILE" "<!-- source: core.md -->"
+assert_file_contains "$AGENTS_FILE" "# Core Instructions"
 # Skills use Codex's standard user-level Agent Skills directory.
 CODEX_SKILL="$TMP_HOME/.agents/skills/write-pr-description/SKILL.md"
 assert_file_exists "$CODEX_SKILL"
@@ -69,7 +69,7 @@ fi
 assert_file_contains "$TMP_HOME/stale-check.log" "out of date"
 # update brings it back in sync.
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" update --agent codex --yes >/dev/null
-assert_file_contains "$AGENTS_FILE" "# Accessibility Standards"
+assert_file_contains "$AGENTS_FILE" "# Core Instructions"
 
 # --- Remove only deletes the managed file ----------------------------------
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" remove --agent codex --yes >/dev/null

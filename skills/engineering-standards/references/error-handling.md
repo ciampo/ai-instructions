@@ -1,4 +1,4 @@
-# Error Handling
+# Error Handling Reference
 
 How to handle errors, loading states, and failure scenarios in application code.
 

@@ -86,7 +86,7 @@ for agent in "$REPO_DIR"/agents/*.md; do
   assert_frontmatter_file "$agent" "$agent_name"
 done
 
-if grep -R -E -q '^## Dependencies|/Users/|skills/[^/[:space:]]+\.md' "$REPO_DIR/skills"; then
+if grep -E -q '^## Dependencies|/Users/|skills/[^/[:space:]]+\.md' "$REPO_DIR"/skills/*/SKILL.md; then
   fail "Skills must be self-contained and portable"
 fi
 
@@ -100,6 +100,7 @@ CLAUDE_SKILL="$TMP_HOME/.claude/skills/review-pr/SKILL.md"
 CODEX_SKILL="$TMP_HOME/.agents/skills/review-pr/SKILL.md"
 COPILOT_SKILL="$TMP_HOME/.copilot/skills/review-pr/SKILL.md"
 GEMINI_SKILL="$TMP_HOME/.gemini/skills/review-pr/SKILL.md"
+ENGINEERING_REFERENCE="$TMP_HOME/.agents/skills/engineering-standards/references/accessibility.md"
 
 for installed_skill in "$CURSOR_SKILL" "$CLAUDE_SKILL" "$CODEX_SKILL" "$COPILOT_SKILL" "$GEMINI_SKILL"; do
   assert_frontmatter_file "$installed_skill" "review-pr"
@@ -107,6 +108,9 @@ for installed_skill in "$CURSOR_SKILL" "$CLAUDE_SKILL" "$CODEX_SKILL" "$COPILOT_
     fail "Installed skill contains an absolute source path: $installed_skill"
   fi
 done
+assert_file_exists "$ENGINEERING_REFERENCE"
+assert_file_contains "$ENGINEERING_REFERENCE" "# Accessibility Reference"
+assert_file_contains "$TMP_HOME/.agents/skills/engineering-standards/.ai-instructions-managed" "ai-instructions:managed-skill"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/dev/null
 
@@ -382,6 +386,7 @@ HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent '*' --only skills --only age
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" remove --agent '*' --only skills --only agents --copy --yes >/dev/null
 assert_path_missing "$CURSOR_SKILL"
 assert_path_missing "$CODEX_SKILL"
+assert_path_missing "$ENGINEERING_REFERENCE"
 assert_path_missing "$CODEX_AGENT"
 
 LEGACY_HOME="$TMP_ROOT/legacy"

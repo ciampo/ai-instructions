@@ -14,6 +14,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { validateContent } from '../scripts/validate-content.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
@@ -73,12 +74,20 @@ function artifactPath( platform, category, home ) {
 	if ( category === 'instructions' ) {
 		return capability.strategy === 'concat'
 			? base
-			: path.join( base, `coding-principles${ capability.extension }` );
+			: path.join( base, `core${ capability.extension }` );
 	}
 	if ( category === 'skills' ) {
 		return path.join( base, 'review-pr', 'SKILL.md' );
 	}
 	return path.join( base, `a11y-reviewer${ capability.extension }` );
+}
+
+function skillPath( platform, home, skillName, relative = 'SKILL.md' ) {
+	return path.join(
+		destination( home, platform.capabilities.skills.userPath ),
+		skillName,
+		relative
+	);
 }
 
 async function createDetectedHome( platform ) {
@@ -344,6 +353,12 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 	assert.equal( await readFile( removable, 'utf8' ), '# Original file\n' );
 } );
 
+test( 'content contracts enforce the universal instruction budget', async () => {
+	const result = await validateContent( repoDir );
+	assert.ok( result.universal.lines <= 150 );
+	assert.ok( result.universal.bytes <= 8 * 1024 );
+} );
+
 for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: copy lifecycle and category isolation`, async ( t ) => {
 		const home = await createDetectedHome( platform );
@@ -445,10 +460,18 @@ for ( const platform of manifest.platforms ) {
 				? '# ai-instructions:managed\nname = "removed-agent"\n'
 				: `---\nname: removed-agent\ndescription: stale\n---\n${ managedMarker }\n`
 		);
+		const staleSkill = skillPath( platform, home, 'removed-skill', 'SKILL.md' );
+		await mkdir( path.dirname( staleSkill ), { recursive: true } );
+		await writeFile( staleSkill, '---\nname: removed-skill\ndescription: stale\n---\n' );
+		await writeFile(
+			path.join( path.dirname( staleSkill ), '.ai-instructions-managed' ),
+			'ai-instructions:managed\n'
+		);
 
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ], 1 );
 		runInstaller( home, [ 'update', '--agent', platform.id, '--copy', '--yes' ] );
 		assert.equal( await pathExists( stalePath ), false );
+		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
 	} );
 }
 
@@ -475,14 +498,14 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'instructions', 'coding-principles.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
 	);
 	assert.equal(
-		await readFile( destination( home, '.cursor/rules/coding-principles.mdc' ), 'utf8' ),
-		`---\ndescription: 'Coding Principles'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
+		await readFile( destination( home, '.cursor/rules/core.mdc' ), 'utf8' ),
+		`---\ndescription: 'Core Instructions'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
 	);
 	assert.equal(
-		await readFile( destination( home, '.claude/rules/coding-principles.md' ), 'utf8' ),
+		await readFile( destination( home, '.claude/rules/core.md' ), 'utf8' ),
 		`${ managedMarker }\n${ instructionSource }`
 	);
 	const concatenatedInstructions = await expectedConcatenatedInstructions();
@@ -501,6 +524,23 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		assert.equal(
 			await readFile( artifactPath( platform, 'skills', home ), 'utf8' ),
 			`${ skillSource }${ managedMarker }\n`
+		);
+		assert.equal(
+			await readFile( path.join( path.dirname( artifactPath( platform, 'skills', home ) ), '.ai-instructions-managed' ), 'utf8' ),
+			'ai-instructions:managed\n'
+		);
+	}
+	const accessibilityReference = await readFile(
+		path.join( repoDir, 'skills', 'engineering-standards', 'references', 'accessibility.md' ),
+		'utf8'
+	);
+	for ( const platform of manifest.platforms ) {
+		assert.equal(
+			await readFile(
+				skillPath( platform, home, 'engineering-standards', 'references/accessibility.md' ),
+				'utf8'
+			),
+			accessibilityReference
 		);
 	}
 

@@ -1,17 +1,17 @@
-# Accessibility Standards
+# Accessibility Reference
 
 Accessibility is non-negotiable in my work. These are the standards I apply.
 
 ## Principles
 
 - **[RULE]** Accessibility is reviewed in every PR, not as an afterthought. It is the first item on the review checklist.
-- **[RULE]** Always refer to **WAI-ARIA Authoring Practices Guide (APG)** and the **ARIA specification** as the source of truth. Do not paraphrase from memory -- look up the actual pattern, read the actual spec section. Only cite real specifications by their actual names and URLs. Never fabricate spec citations.
+- **[RULE]** Always refer to the [WAI-ARIA Authoring Practices Guide (APG)](https://www.w3.org/WAI/ARIA/apg/) and the [ARIA specification](https://www.w3.org/TR/wai-aria-1.2/) as the source of truth. Do not paraphrase from memory -- look up the actual pattern and specification section.
 - **[RULE]** Semantic HTML first. Use the right element before reaching for ARIA attributes.
 
 ## Focus Management
 
 - **[STRONG]** Review initial focus placement for all overlay/modal components (dialogs, drawers, popovers).
-- **[STRONG]** Close buttons should not receive initial focus unless there is no better target.
+- **[STRONG]** Choose initial focus from the dialog's content and purpose. A close button can be appropriate, but do not use it as a universal default.
 - **[STRONG]** Verify `initialFocus` and `finalFocus` (return focus) behavior.
 - **[STRONG]** Tab order should be logical and predictable.
 
@@ -26,14 +26,14 @@ Accessibility is non-negotiable in my work. These are the standards I apply.
 - **[STRONG]** Use `aria-live` regions for dynamic content updates that users need to know about (notifications, status changes, async operation results).
 - **[STRONG]** Choose the right assertiveness: `aria-live="polite"` for non-urgent updates (status messages, search result counts), `aria-live="assertive"` only for time-sensitive information (errors, alerts).
 - **[PREFER]** Prefer `role="status"` (implicitly `aria-live="polite"`) and `role="alert"` (implicitly `aria-live="assertive"`) over raw `aria-live` attributes when the semantics match.
-- **[RULE]** Live regions must exist in the DOM before content is injected. Adding a live region and its content simultaneously will not be announced.
+- **[STRONG]** Mount live regions before injecting changing content when practical. Browser and assistive-technology behavior differs when a live region and its first message appear together.
 
 ## Keyboard Interaction
 
 - **[RULE]** Every interactive component must be fully operable via keyboard.
-- **[STRONG]** Verify the expected key bindings for the ARIA pattern (refer to the APG pattern page): arrow keys for tabs/menus, Escape to close overlays, Enter/Space to activate, etc.
-- **[RULE]** Escape should always work to dismiss overlays -- do not block or override it without a strong reason.
-- **[RULE]** Focus trapping in modals: Tab and Shift+Tab must cycle within the modal. Focus must not escape to the page behind.
+- **[STRONG]** Verify the expected key bindings against the applicable APG pattern: arrow keys for tabs and menus, Enter or Space for activation, and Escape where the pattern defines dismissal.
+- **[RULE]** Modal dialogs must close on Escape unless a documented exceptional interaction temporarily consumes it, matching the [APG modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+- **[RULE]** In modal dialogs, Tab and Shift+Tab cycle within the dialog and do not move focus to the page behind it.
 
 ## Motion and Animation
 

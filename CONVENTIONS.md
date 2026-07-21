@@ -41,6 +41,8 @@ Keep required metadata as single-line plain or quoted scalars. The portable Code
 
 The Markdown body is the canonical prompt for Markdown-based products. Codex TOML is generated from the same name, description, and body. Never add a platform-only field to the shared frontmatter unless every direct consumer supports it.
 
-## Guardrails
+## Universal Instructions
 
-`instructions/guardrails.md` extracts the most commonly violated rules from other instruction files into always-on context. It must stay **under 30 lines** — only promote rules that are violated repeatedly and universally. The source of truth remains the original instruction files; the guardrails file is intentionally duplicated for visibility.
+`instructions/core.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
+
+The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, agent metadata, bundled-reference, and manifest contracts.

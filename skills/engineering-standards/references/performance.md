@@ -1,4 +1,4 @@
-# Performance
+# Performance Reference
 
 How I think about performance. Not premature optimization -- informed awareness of cost.
 
