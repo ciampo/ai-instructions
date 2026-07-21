@@ -371,6 +371,49 @@ test( 'content contracts reject invalid review dates', () => {
 	);
 } );
 
+test( 'content contracts reject unsupported agent keys with CRLF frontmatter', async ( t ) => {
+	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-content-crlf-' ) );
+	t.after( () => rm( fixture, { recursive: true, force: true } ) );
+	for ( const directory of [
+		'agents',
+		'docs',
+		'instructions',
+		'platforms',
+		'skills/example-skill',
+	] ) {
+		await mkdir( path.join( fixture, directory ), { recursive: true } );
+	}
+
+	const today = new Date().toISOString().slice( 0, 10 );
+	const fixtureManifest = structuredClone( manifest );
+	fixtureManifest.lastReviewed = today;
+	for ( const platform of fixtureManifest.platforms ) {
+		platform.lastVerified = today;
+	}
+	await writeFile(
+		path.join( fixture, 'platforms', 'manifest.json' ),
+		`${ JSON.stringify( fixtureManifest, null, 2 ) }\n`
+	);
+	await writeFile(
+		path.join( fixture, 'skills', 'example-skill', 'SKILL.md' ),
+		'---\nname: example-skill\ndescription: Example skill.\n---\n'
+	);
+	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
+	await writeFile(
+		path.join( fixture, 'docs', 'standards-index.md' ),
+		`| Standard | Last reviewed |\n| --- | --- |\n| Example | ${ today } |\n`
+	);
+	await writeFile(
+		path.join( fixture, 'agents', 'example-agent.md' ),
+		'---\r\nname: example-agent\r\ndescription: Example agent.\r\ntools: Read\r\n---\r\n'
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/shared agents support only name and description frontmatter/
+	);
+} );
+
 test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skill-lines-' ) );
 	t.after( () => rm( fixture, { recursive: true, force: true } ) );

@@ -4,7 +4,12 @@ import { lstat, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { concatInstructions, concatenatedInstructions, parseFrontmatter } from './lib/formats.mjs';
+import {
+	concatInstructions,
+	concatenatedInstructions,
+	normalizeMarkdown,
+	parseFrontmatter,
+} from './lib/formats.mjs';
 import { isInside } from './lib/files.mjs';
 import { loadManifest } from './lib/manifest.mjs';
 
@@ -35,6 +40,7 @@ async function collectFiles( root, current = '' ) {
 }
 
 function frontmatterKeys( content ) {
+	content = normalizeMarkdown( content );
 	const closing = content.indexOf( '\n---\n', 4 );
 	if ( ! content.startsWith( '---\n' ) || closing < 0 ) {
 		return [];
