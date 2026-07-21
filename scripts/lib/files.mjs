@@ -78,28 +78,43 @@ async function capturePath( target ) {
 
 async function restoreCapturedPath( captured, target ) {
 	const stats = await lstat( captured );
-	if ( stats.isFile() ) {
-		await link( captured, target );
-		await rm( captured, { force: true } );
-		return;
-	}
-	if ( stats.isSymbolicLink() ) {
-		const linkTarget = await readlink( captured );
-		const targetStats = await lstatSafe( path.resolve( path.dirname( captured ), linkTarget ) );
-		await symlink(
-			linkTarget,
-			target,
-			process.platform === 'win32'
-				? ( targetStats?.isDirectory() ? 'dir' : 'file' )
-				: undefined
+	try {
+		if ( stats.isFile() ) {
+			await link( captured, target );
+		} else if ( stats.isSymbolicLink() ) {
+			const linkTarget = await readlink( captured );
+			const targetStats = await lstatSafe( path.resolve( path.dirname( captured ), linkTarget ) );
+			await symlink(
+				linkTarget,
+				target,
+				process.platform === 'win32'
+					? ( targetStats?.isDirectory() ? 'dir' : 'file' )
+					: undefined
+			);
+		} else if ( stats.isDirectory() ) {
+			await cp( captured, target, {
+				recursive: true,
+				preserveTimestamps: true,
+				verbatimSymlinks: true,
+				force: false,
+				errorOnExist: true,
+			} );
+		} else {
+			throw new Error( `Cannot restore unsupported path type at ${ target }.` );
+		}
+	} catch ( error ) {
+		if ( await lstatSafe( target ) ) {
+			throw destinationExistsError( target, captured );
+		}
+		const recoveryError = new Error(
+			`Cannot restore ${ target }. The original remains at ${ captured }.`,
+			{ cause: error }
 		);
-		await rm( captured, { force: true } );
-		return;
+		recoveryError.code = error.code;
+		recoveryError.backupPath = captured;
+		throw recoveryError;
 	}
-	if ( await lstatSafe( target ) ) {
-		throw new Error( `Cannot restore ${ target } because another path appeared. The original remains at ${ captured }.` );
-	}
-	await rename( captured, target );
+	await rm( captured, { recursive: stats.isDirectory(), force: true } );
 }
 
 function destinationExistsError( destination, backupPath ) {
@@ -112,29 +127,31 @@ function destinationExistsError( destination, backupPath ) {
 	return error;
 }
 
-async function replaceTemporaryPath( temporary, destination, canReplace ) {
+async function publishDirectoryNoClobber( temporary, destination, canReplace ) {
 	const destinationStats = await lstatSafe( destination );
-	if ( ! destinationStats ) {
-		await rename( temporary, destination );
-		return;
-	}
-	if ( ! canReplace ) {
-		throw destinationExistsError( destination );
-	}
+	let backup;
+	if ( destinationStats ) {
+		if ( ! canReplace ) {
+			throw destinationExistsError( destination );
+		}
 
-	const backup = temporaryPath( `${ destination }.backup` );
-	await rename( destination, backup );
-	if ( ! await canReplace( backup ) ) {
-		await restoreCapturedPath( backup, destination );
-		throw new Error( `Refusing to replace ${ destination } because its ownership changed.` );
+		backup = await capturePath( destination );
+		if ( backup && ! await canReplace( backup ) ) {
+			await restoreCapturedPath( backup, destination );
+			backup = null;
+			throw new Error( `Refusing to replace ${ destination } because its ownership changed.` );
+		}
 	}
 	try {
-		if ( await lstatSafe( destination ) ) {
-			throw destinationExistsError( destination, backup );
-		}
-		await rename( temporary, destination );
+		await cp( temporary, destination, {
+			recursive: true,
+			preserveTimestamps: true,
+			verbatimSymlinks: true,
+			force: false,
+			errorOnExist: true,
+		} );
 	} catch ( error ) {
-		if ( await lstatSafe( backup ) ) {
+		if ( backup && await lstatSafe( backup ) ) {
 			if ( await lstatSafe( destination ) ) {
 				throw error.backupPath === backup
 					? error
@@ -145,7 +162,9 @@ async function replaceTemporaryPath( temporary, destination, canReplace ) {
 		}
 		throw error;
 	}
-	await rm( backup, { recursive: true, force: true } );
+	if ( backup ) {
+		await rm( backup, { recursive: true, force: true } );
+	}
 }
 
 export async function writeAtomic( destination, content ) {
@@ -184,7 +203,9 @@ export async function writeOwnedFileAtomic( destination, content, repoDir ) {
 	} catch ( error ) {
 		if ( captured ) {
 			if ( await lstatSafe( destination ) ) {
-				await rm( captured, { recursive: true, force: true } );
+				throw error.backupPath === captured
+					? error
+					: destinationExistsError( destination, captured );
 			} else {
 				await restoreCapturedPath( captured, destination );
 			}
@@ -218,7 +239,9 @@ export async function symlinkAtomic( source, destination, type = 'file', canRepl
 	} catch ( error ) {
 		if ( captured ) {
 			if ( await lstatSafe( destination ) ) {
-				await rm( captured, { recursive: true, force: true } );
+				throw error.backupPath === captured
+					? error
+					: destinationExistsError( destination, captured );
 			} else {
 				await restoreCapturedPath( captured, destination );
 			}
@@ -229,6 +252,14 @@ export async function symlinkAtomic( source, destination, type = 'file', canRepl
 
 export async function writeSkillDirectoryAtomic( source, destination, entrypointContent, canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
+	const entrypoint = path.join( source, 'SKILL.md' );
+	const entrypointStats = await lstatSafe( entrypoint );
+	if ( ! entrypointStats?.isFile() || entrypointStats.isSymbolicLink() ) {
+		throw new Error( `${ source }: source SKILL.md must be a regular file.` );
+	}
+	if ( await lstatSafe( path.join( source, SKILL_DIRECTORY_MARKER ) ) ) {
+		throw new Error( `${ source }: ${ SKILL_DIRECTORY_MARKER } is reserved for installed skill copies.` );
+	}
 	const temporary = temporaryPath( destination );
 	try {
 		await cp( source, temporary, {
@@ -236,14 +267,20 @@ export async function writeSkillDirectoryAtomic( source, destination, entrypoint
 			preserveTimestamps: true,
 			verbatimSymlinks: true,
 		} );
-		await writeFile( path.join( temporary, 'SKILL.md' ), entrypointContent, { mode: 0o644 } );
+		await rm( path.join( temporary, 'SKILL.md' ), { recursive: true, force: true } );
+		await rm( path.join( temporary, SKILL_DIRECTORY_MARKER ), { recursive: true, force: true } );
+		await writeFile(
+			path.join( temporary, 'SKILL.md' ),
+			entrypointContent,
+			{ flag: 'wx', mode: 0o644 }
+		);
 		await writeFile(
 			path.join( temporary, SKILL_DIRECTORY_MARKER ),
 			SKILL_DIRECTORY_MARKER_CONTENT,
-			{ mode: 0o644 }
+			{ flag: 'wx', mode: 0o644 }
 		);
 
-		await replaceTemporaryPath( temporary, destination, canReplace );
+		await publishDirectoryNoClobber( temporary, destination, canReplace );
 	} finally {
 		await rm( temporary, { recursive: true, force: true } );
 	}

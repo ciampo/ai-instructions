@@ -17,7 +17,7 @@ import {
 	writeOwnedFileAtomic,
 	writeSkillDirectoryAtomic,
 } from './files.mjs';
-import { resolveUserPath } from './manifest.mjs';
+import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 
 export function createPlatformInstaller( { repoDir, home, state } ) {
 	const { buildArtifacts } = createArtifactBuilder( { repoDir } );
@@ -599,7 +599,12 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			if ( legacy.layout === 'nested' ) {
 				for ( const entry of await directoryEntries( root ) ) {
 					if ( entry.isDirectory() ) {
-						const candidate = path.join( root, entry.name, legacy.fileName );
+						const candidate = resolveUserChildPath(
+							home,
+							legacy.userPath,
+							entry.name,
+							legacy.fileName
+						);
 						if (
 							legacy.category === 'skills' &&
 							[ 'install', 'update' ].includes( state.options.command ) &&

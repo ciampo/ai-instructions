@@ -8,8 +8,8 @@ import {
 	managedMarkdown,
 	parseFrontmatter,
 } from './formats.mjs';
-import { lstatSafe } from './files.mjs';
-import { resolveUserPath } from './manifest.mjs';
+import { lstatSafe, SKILL_DIRECTORY_MARKER } from './files.mjs';
+import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 
 export function createArtifactBuilder( { repoDir } ) {
 	const instructionsDir = path.join( repoDir, 'instructions' );
@@ -35,7 +35,14 @@ export function createArtifactBuilder( { repoDir } ) {
 		for ( const entry of entries ) {
 			const source = path.join( skillsDir, entry.name );
 			const entrypoint = path.join( source, 'SKILL.md' );
-			if ( await lstatSafe( entrypoint ) ) {
+			const entrypointStats = await lstatSafe( entrypoint );
+			if ( entrypointStats?.isSymbolicLink() || ( entrypointStats && ! entrypointStats.isFile() ) ) {
+				fail( `${ entrypoint }: source SKILL.md must be a regular file.` );
+			}
+			if ( await lstatSafe( path.join( source, SKILL_DIRECTORY_MARKER ) ) ) {
+				fail( `${ source }: ${ SKILL_DIRECTORY_MARKER } is reserved for installed skill copies.` );
+			}
+			if ( entrypointStats ) {
 				result.push( { name: entry.name, source, entrypoint } );
 			}
 		}
@@ -80,8 +87,9 @@ export function createArtifactBuilder( { repoDir } ) {
 				for ( const name of await sourceMarkdownFiles( instructionsDir ) ) {
 					const source = path.join( instructionsDir, name );
 					const content = await readFile( source, 'utf8' );
-					const destination = path.join(
-						resolveUserPath( home, capability.userPath ),
+					const destination = resolveUserChildPath(
+						home,
+						capability.userPath,
 						`${ path.basename( name, '.md' ) }${ capability.extension }`
 					);
 					artifacts.push( {
@@ -106,8 +114,9 @@ export function createArtifactBuilder( { repoDir } ) {
 					if ( metadata.name !== name ) {
 						fail( `${ entrypoint }: frontmatter name must match its directory.` );
 					}
-					const destination = path.join(
-						resolveUserPath( home, capability.userPath ),
+					const destination = resolveUserChildPath(
+						home,
+						capability.userPath,
 						name
 					);
 					artifacts.push( {
@@ -132,8 +141,9 @@ export function createArtifactBuilder( { repoDir } ) {
 				if ( metadata.name !== expectedName ) {
 					fail( `${ source }: frontmatter name must match its filename.` );
 				}
-				const destination = path.join(
-					resolveUserPath( home, capability.userPath ),
+				const destination = resolveUserChildPath(
+					home,
+					capability.userPath,
 					`${ expectedName }${ capability.extension }`
 				);
 				artifacts.push( {

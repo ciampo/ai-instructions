@@ -27,6 +27,18 @@ function validateRelativePath( value, field ) {
 	}
 }
 
+function validatePortableFileName( value, field ) {
+	assertString( value, field );
+	if (
+		[ '.', '..' ].includes( value ) ||
+		/[<>:"/\\|?*\u0000-\u001f]/.test( value ) ||
+		/[. ]$/.test( value ) ||
+		/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test( value )
+	) {
+		throw new Error( `Platform manifest: ${ field } must be a portable file name without path syntax.` );
+	}
+}
+
 function validateCapability( platform, category ) {
 	const capability = platform.capabilities?.[ category ];
 	if ( ! capability || typeof capability.supported !== 'boolean' ) {
@@ -45,11 +57,17 @@ function validateCapability( platform, category ) {
 	validateRelativePath( capability.projectPath, `${ platform.id }.${ category }.projectPath` );
 	assertString( capability.precedence, `${ platform.id }.${ category }.precedence` );
 
-	if ( capability.strategy === 'files' && ! capability.extension ) {
-		throw new Error( `Platform manifest: ${ platform.id }.${ category }.extension is required.` );
+	if ( capability.strategy === 'files' ) {
+		validatePortableFileName(
+			capability.extension,
+			`${ platform.id }.${ category }.extension`
+		);
 	}
-	if ( capability.strategy === 'directories' && ! capability.fileName ) {
-		throw new Error( `Platform manifest: ${ platform.id }.${ category }.fileName is required.` );
+	if ( capability.strategy === 'directories' ) {
+		validatePortableFileName(
+			capability.fileName,
+			`${ platform.id }.${ category }.fileName`
+		);
 	}
 	if ( capability.blockingPath ) {
 		validateRelativePath( capability.blockingPath, `${ platform.id }.${ category }.blockingPath` );
@@ -68,7 +86,7 @@ function validateLegacyDestination( platform, legacy, index ) {
 		throw new Error( `Platform manifest: ${ field }.layout is invalid.` );
 	}
 	if ( legacy.layout === 'nested' ) {
-		assertString( legacy.fileName, `${ field }.fileName` );
+		validatePortableFileName( legacy.fileName, `${ field }.fileName` );
 	}
 }
 
@@ -123,6 +141,15 @@ export function resolveUserPath( home, relativePath ) {
 	const resolved = path.resolve( resolvedHome, ...relativePath.split( '/' ) );
 	if ( resolved !== resolvedHome && ! resolved.startsWith( `${ resolvedHome }${ path.sep }` ) ) {
 		throw new Error( `Installer: destination escapes HOME: ${ relativePath }` );
+	}
+	return resolved;
+}
+
+export function resolveUserChildPath( home, relativePath, ...children ) {
+	const resolvedHome = path.resolve( home );
+	const resolved = path.resolve( resolveUserPath( home, relativePath ), ...children );
+	if ( resolved !== resolvedHome && ! resolved.startsWith( `${ resolvedHome }${ path.sep }` ) ) {
+		throw new Error( `Installer: destination escapes HOME: ${ [ relativePath, ...children ].join( '/' ) }` );
 	}
 	return resolved;
 }

@@ -14,9 +14,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validateManifest } from '../scripts/lib/manifest.mjs';
+import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
+	symlinkAtomic,
 	writeNewFileAtomic,
 	writeOwnedFileAtomic,
 	writeSkillDirectoryAtomic,
@@ -149,6 +150,27 @@ test( 'manifest rejects platform-dependent path separators', () => {
 	);
 } );
 
+test( 'manifest rejects path syntax in generated file names', () => {
+	const invalidExtension = structuredClone( manifest );
+	invalidExtension.platforms[ 0 ].capabilities.instructions.extension = '/../../outside.md';
+	assert.throws(
+		() => validateManifest( invalidExtension ),
+		/cursor\.instructions\.extension must be a portable file name/
+	);
+
+	const invalidLegacyFileName = structuredClone( manifest );
+	invalidLegacyFileName.platforms[ 0 ].legacyDestinations[ 0 ].fileName = '../../outside.md';
+	assert.throws(
+		() => validateManifest( invalidLegacyFileName ),
+		/cursor\.legacyDestinations\[0\]\.fileName must be a portable file name/
+	);
+
+	assert.throws(
+		() => resolveUserChildPath( '/tmp/example-home', '.cursor/rules', '/tmp/outside.md' ),
+		/destination escapes HOME/
+	);
+} );
+
 test( 'manifest rejects support tiers outside the documented contract', () => {
 	const invalidManifest = structuredClone( manifest );
 	invalidManifest.platforms[ 0 ].supportTier = 'experimental';
@@ -178,6 +200,66 @@ test( 'file mutations fail closed when ownership changes after inspection', asyn
 		( error ) => error.code === 'EEXIST'
 	);
 	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+} );
+
+test( 'failed ownership restoration preserves the captured user file', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-restore-race-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const source = path.join( directory, 'source.md' );
+	const target = path.join( directory, 'managed.md' );
+	await writeFile( source, '# source\n' );
+	await writeFile( target, '# user-owned replacement\n' );
+
+	let captured;
+	await assert.rejects(
+		symlinkAtomic(
+			source,
+			target,
+			'file',
+			async ( candidate ) => {
+				captured = candidate;
+				await writeFile( target, '# competing file\n' );
+				return false;
+			}
+		),
+		( error ) => error.code === 'EEXIST' && error.backupPath === captured
+	);
+	assert.equal( await readFile( target, 'utf8' ), '# competing file\n' );
+	assert.equal( await readFile( captured, 'utf8' ), '# user-owned replacement\n' );
+} );
+
+test( 'skill copies reject source control-file symlinks', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skill-source-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const source = path.join( directory, 'source' );
+	const destination = path.join( directory, 'installed-skill' );
+	const external = path.join( directory, 'external.md' );
+	await mkdir( source );
+	await writeFile( external, '# User file\n' );
+	await symlink( '../external.md', path.join( source, 'SKILL.md' ) );
+
+	await assert.rejects(
+		writeSkillDirectoryAtomic( source, destination, '# Managed skill\n' ),
+		/source SKILL\.md must be a regular file/
+	);
+	assert.equal( await readFile( external, 'utf8' ), '# User file\n' );
+	assert.equal( await pathExists( destination ), false );
+} );
+
+test( 'skill copies reject a source ownership marker', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skill-marker-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const source = path.join( directory, 'source' );
+	const destination = path.join( directory, 'installed-skill' );
+	await mkdir( source );
+	await writeFile( path.join( source, 'SKILL.md' ), '# Skill\n' );
+	await writeFile( path.join( source, '.ai-instructions-managed' ), 'user content\n' );
+
+	await assert.rejects(
+		writeSkillDirectoryAtomic( source, destination, '# Managed skill\n' ),
+		/\.ai-instructions-managed is reserved/
+	);
+	assert.equal( await pathExists( destination ), false );
 } );
 
 test( 'directory replacement preserves its backup when the destination reappears', async ( t ) => {
