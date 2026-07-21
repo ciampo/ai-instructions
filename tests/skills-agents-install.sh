@@ -106,7 +106,7 @@ HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/d
 for agent_path in \
   "$TMP_HOME/.cursor/agents/a11y-reviewer.md" \
   "$TMP_HOME/.claude/agents/a11y-reviewer.md" \
-  "$TMP_HOME/.copilot/agents/a11y-reviewer.md" \
+  "$TMP_HOME/.copilot/agents/a11y-reviewer.agent.md" \
   "$TMP_HOME/.gemini/agents/a11y-reviewer.md"; do
   assert_frontmatter_file "$agent_path" "a11y-reviewer"
 done

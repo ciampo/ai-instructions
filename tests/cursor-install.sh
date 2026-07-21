@@ -51,7 +51,7 @@ assert_file_contains "$SKILL_FILE" "name: investigate-debug"
 
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" list --agent cursor --yes >"$TMP_HOME_FULL/list.log"
-assert_file_contains "$TMP_HOME_FULL/list.log" "$RULE_FILE (cursor rule)"
+assert_file_contains "$TMP_HOME_FULL/list.log" "coding-principles.mdc (cursor rule)"
 
 printf '\n# stale\n' >> "$RULE_FILE"
 
@@ -73,7 +73,9 @@ HOME="$TMP_HOME_PARTIAL" "$REPO_DIR/setup.sh" check --agent cursor --only instru
 
 TMP_HOME_CLEAN="$TMP_ROOT/clean"
 mkdir -p "$TMP_HOME_CLEAN/.cursor"
-HOME="$TMP_HOME_CLEAN" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
+if HOME="$TMP_HOME_CLEAN" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null 2>&1; then
+  fail "Expected check to fail when managed Cursor artifacts are missing"
+fi
 
 TMP_HOME_MIGRATION="$TMP_ROOT/migration"
 mkdir -p "$TMP_HOME_MIGRATION/.cursor/rules"
