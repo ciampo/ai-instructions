@@ -930,7 +930,9 @@ process_skill_directory() {
         else
           if skill_directory_is_legacy_managed "$dst" && legacy_skill_directory_has_unknown_entries "$dst"; then
             log_warn "$label contains files not installed by this script; preserving the legacy directory"
-          elif { skill_directory_is_managed_copy "$dst" || skill_directory_is_legacy_managed "$dst"; } && ! $COPY_MODE; then
+          elif skill_directory_is_legacy_managed "$dst" && ! $COPY_MODE; then
+            log_warn "$label is a legacy managed copy; run update --copy to migrate it without changing install mode"
+          elif skill_directory_is_managed_copy "$dst" && ! $COPY_MODE; then
             log_warn "$label is a managed copy; run update --copy to refresh it"
           else
             log_warn "$label exists at $dst but is out of date or was not installed by this script -- skipping"

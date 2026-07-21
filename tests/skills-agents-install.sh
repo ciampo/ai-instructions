@@ -248,6 +248,24 @@ HOME="$RESOURCE_LINK_HOME" "$RESOURCE_REPO/setup.sh" check --agent codex --only 
 HOME="$RESOURCE_LINK_HOME" "$RESOURCE_REPO/setup.sh" remove --agent codex --only skills --yes >/dev/null
 assert_path_missing "$RESOURCE_LINK_HOME/.agents/skills/resource-skill"
 
+LEGACY_SAFE_COPY_HOME="$TMP_ROOT/legacy-safe-copy-home"
+LEGACY_SAFE_COPY_SKILL="$LEGACY_SAFE_COPY_HOME/.agents/skills/resource-skill"
+mkdir -p "$LEGACY_SAFE_COPY_SKILL" "$LEGACY_SAFE_COPY_HOME/.codex"
+{
+  cat "$RESOURCE_REPO/skills/resource-skill/SKILL.md"
+  printf '<!-- ai-instructions:managed -->\n'
+} > "$LEGACY_SAFE_COPY_SKILL/SKILL.md"
+
+HOME="$LEGACY_SAFE_COPY_HOME" "$RESOURCE_REPO/setup.sh" update --agent codex --only skills --yes >"$LEGACY_SAFE_COPY_HOME/update-without-copy.log" 2>&1
+assert_file_contains "$LEGACY_SAFE_COPY_HOME/update-without-copy.log" "run update --copy to migrate it without changing install mode"
+[ ! -L "$LEGACY_SAFE_COPY_SKILL" ] || fail "Expected default update to preserve legacy copy mode"
+assert_path_missing "$LEGACY_SAFE_COPY_SKILL/.ai-instructions-managed"
+assert_path_missing "$LEGACY_SAFE_COPY_SKILL/references/example.md"
+
+HOME="$LEGACY_SAFE_COPY_HOME" "$RESOURCE_REPO/setup.sh" update --agent codex --only skills --copy --yes >/dev/null
+assert_file_contains "$LEGACY_SAFE_COPY_SKILL/.ai-instructions-managed" "ai-instructions:managed"
+assert_file_contains "$LEGACY_SAFE_COPY_SKILL/references/example.md" "# Updated bundled reference"
+
 LEGACY_COPY_HOME="$TMP_ROOT/legacy-copy-home"
 LEGACY_COPY_SKILL="$LEGACY_COPY_HOME/.agents/skills/resource-skill"
 mkdir -p "$LEGACY_COPY_SKILL" "$LEGACY_COPY_HOME/.codex"
