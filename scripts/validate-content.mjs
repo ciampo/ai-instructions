@@ -48,7 +48,7 @@ function frontmatterKeys( content ) {
 	return content
 		.slice( 4, closing )
 		.split( '\n' )
-		.map( ( line ) => line.match( /^([a-zA-Z][a-zA-Z0-9-]*):/ )?.[ 1 ] )
+		.map( ( line ) => line.match( /^\s*([a-zA-Z][a-zA-Z0-9-]*)\s*:/ )?.[ 1 ] )
 		.filter( Boolean );
 }
 
@@ -66,14 +66,35 @@ function validateNameAndDescription( content, source, expectedName ) {
 	return metadata;
 }
 
+function markdownProse( content ) {
+	let fence;
+	return normalizeMarkdown( content )
+		.split( '\n' )
+		.map( ( line ) => {
+			const marker = line.match( /^\s*(`{3,}|~{3,})/ )?.[ 1 ];
+			if ( fence ) {
+				if ( marker?.[ 0 ] === fence[ 0 ] && marker.length >= fence.length ) {
+					fence = undefined;
+				}
+				return '';
+			}
+			if ( marker ) {
+				fence = marker;
+				return '';
+			}
+			return line.replace( /`+[^`]*`+/g, '' );
+		} )
+		.join( '\n' );
+}
+
 async function validateSkillLinks( content, skillDirectory, source ) {
-	for ( const match of content.matchAll( /\[[^\]]+\]\(([^)]+)\)/g ) ) {
+	for ( const match of markdownProse( content ).matchAll( /\[[^\]]+\]\(([^)]+)\)/g ) ) {
 		const link = match[ 1 ].trim().replace( /^<|>$/g, '' );
 		if ( /^(?:https?:|mailto:|#)/.test( link ) ) {
 			continue;
 		}
 		const linkPath = link.split( '#', 1 )[ 0 ];
-		const target = path.resolve( skillDirectory, linkPath );
+		const target = path.resolve( path.dirname( source ), linkPath );
 		if ( ! isInside( target, skillDirectory ) ) {
 			throw new Error( `${ source }: bundled reference escapes its skill directory: ${ link }.` );
 		}
@@ -97,12 +118,20 @@ async function validateSkills( repoDir ) {
 		}
 		const skillDirectory = path.join( skillsDirectory, entry.name );
 		const skillFile = path.join( skillDirectory, 'SKILL.md' );
-		if ( ( await collectFiles( skillDirectory ) ).includes( '.ai-instructions-managed' ) ) {
+		const bundledFiles = await collectFiles( skillDirectory );
+		if ( bundledFiles.includes( '.ai-instructions-managed' ) ) {
 			throw new Error( `${ skillDirectory }: .ai-instructions-managed is reserved for installed copies.` );
 		}
 		const content = await readFile( skillFile, 'utf8' );
 		validateNameAndDescription( content, skillFile, entry.name );
-		await validateSkillLinks( content, skillDirectory, skillFile );
+		for ( const relative of bundledFiles.filter( ( file ) => file.endsWith( '.md' ) ) ) {
+			const source = path.join( skillDirectory, relative );
+			await validateSkillLinks(
+				relative === 'SKILL.md' ? content : await readFile( source, 'utf8' ),
+				skillDirectory,
+				source
+			);
+		}
 		count++;
 	}
 	return count;
@@ -179,13 +208,21 @@ async function validateReviewDates( repoDir, manifest ) {
 		assertRecentDate( platform.lastVerified, `platforms/manifest.json ${ platform.id }.lastVerified` );
 	}
 	const standardsPath = path.join( repoDir, 'docs', 'standards-index.md' );
-	const standards = await readFile( standardsPath, 'utf8' );
-	const dates = [ ...standards.matchAll( /\| (\d{4}-\d{2}-\d{2}) \|/g ) ].map( ( match ) => match[ 1 ] );
-	if ( dates.length === 0 ) {
+	const standards = normalizeMarkdown( await readFile( standardsPath, 'utf8' ) );
+	const lines = standards.split( '\n' );
+	const header = lines.indexOf( '| Source | Affected guidance | Last reviewed |' );
+	const rows = header < 0
+		? []
+		: lines.slice( header + 2 ).filter( ( line ) => line.startsWith( '| ' ) );
+	if ( rows.length === 0 ) {
 		throw new Error( `${ standardsPath }: no review dates found.` );
 	}
-	for ( const date of dates ) {
-		assertRecentDate( date, standardsPath );
+	for ( const row of rows ) {
+		const cells = row.split( '|' ).slice( 1, -1 ).map( ( cell ) => cell.trim() );
+		if ( cells.length !== 3 ) {
+			throw new Error( `${ standardsPath }: standards rows must contain source, guidance, and review date.` );
+		}
+		assertRecentDate( cells[ 2 ], standardsPath );
 	}
 }
 

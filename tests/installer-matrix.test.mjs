@@ -116,6 +116,51 @@ async function expectedConcatenatedInstructions() {
 	return `${ managedMarker }\n${ sections.join( '\n' ) }\n`;
 }
 
+async function createContentFixture( t, {
+	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
+	referenceContent,
+} = {} ) {
+	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-content-' ) );
+	t.after( () => rm( fixture, { recursive: true, force: true } ) );
+	for ( const directory of [
+		'agents',
+		'docs',
+		'instructions',
+		'platforms',
+		'skills/example-skill/references',
+	] ) {
+		await mkdir( path.join( fixture, directory ), { recursive: true } );
+	}
+
+	const today = new Date().toISOString().slice( 0, 10 );
+	const fixtureManifest = structuredClone( manifest );
+	fixtureManifest.lastReviewed = today;
+	for ( const platform of fixtureManifest.platforms ) {
+		platform.lastVerified = today;
+	}
+	await writeFile(
+		path.join( fixture, 'platforms', 'manifest.json' ),
+		`${ JSON.stringify( fixtureManifest, null, 2 ) }\n`
+	);
+	await writeFile(
+		path.join( fixture, 'skills', 'example-skill', 'SKILL.md' ),
+		`---\nname: example-skill\ndescription: Example skill.\n---\n${ referenceContent === undefined ? '' : '\nRead [the reference](references/example.md).\n' }`
+	);
+	if ( referenceContent !== undefined ) {
+		await writeFile(
+			path.join( fixture, 'skills', 'example-skill', 'references', 'example.md' ),
+			referenceContent
+		);
+	}
+	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
+	await writeFile(
+		path.join( fixture, 'docs', 'standards-index.md' ),
+		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Example](https://example.com) | Example | ${ today } |\n`
+	);
+	await writeFile( path.join( fixture, 'agents', 'example-agent.md' ), agentContent );
+	return { fixture, today };
+}
+
 test( 'manifest declares complete, current platform contracts', () => {
 	assert.equal( manifest.schemaVersion, 1 );
 	assert.deepEqual(
@@ -372,45 +417,45 @@ test( 'content contracts reject invalid review dates', () => {
 } );
 
 test( 'content contracts reject unsupported agent keys with CRLF frontmatter', async ( t ) => {
-	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-content-crlf-' ) );
-	t.after( () => rm( fixture, { recursive: true, force: true } ) );
-	for ( const directory of [
-		'agents',
-		'docs',
-		'instructions',
-		'platforms',
-		'skills/example-skill',
-	] ) {
-		await mkdir( path.join( fixture, directory ), { recursive: true } );
-	}
-
-	const today = new Date().toISOString().slice( 0, 10 );
-	const fixtureManifest = structuredClone( manifest );
-	fixtureManifest.lastReviewed = today;
-	for ( const platform of fixtureManifest.platforms ) {
-		platform.lastVerified = today;
-	}
-	await writeFile(
-		path.join( fixture, 'platforms', 'manifest.json' ),
-		`${ JSON.stringify( fixtureManifest, null, 2 ) }\n`
-	);
-	await writeFile(
-		path.join( fixture, 'skills', 'example-skill', 'SKILL.md' ),
-		'---\nname: example-skill\ndescription: Example skill.\n---\n'
-	);
-	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
-	await writeFile(
-		path.join( fixture, 'docs', 'standards-index.md' ),
-		`| Standard | Last reviewed |\n| --- | --- |\n| Example | ${ today } |\n`
-	);
-	await writeFile(
-		path.join( fixture, 'agents', 'example-agent.md' ),
-		'---\r\nname: example-agent\r\ndescription: Example agent.\r\ntools: Read\r\n---\r\n'
-	);
+	const { fixture } = await createContentFixture( t, {
+		agentContent: '---\r\n  name: example-agent\r\n  description: Example agent.\r\n  tools: Read\r\n---\r\n',
+	} );
 
 	await assert.rejects(
 		validateContent( fixture ),
 		/shared agents support only name and description frontmatter/
+	);
+} );
+
+test( 'content contracts validate links in bundled skill references', async ( t ) => {
+	const { fixture } = await createContentFixture( t, {
+		referenceContent: 'Read [the missing detail](missing.md).\n',
+	} );
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/bundled reference does not exist: missing\.md/
+	);
+} );
+
+test( 'content contracts ignore link-shaped examples in inline code', async ( t ) => {
+	const { fixture } = await createContentFixture( t, {
+		referenceContent: 'Use `([#123](URL))` as the changelog link format.\n',
+	} );
+
+	await assert.doesNotReject( validateContent( fixture ) );
+} );
+
+test( 'content contracts reject every invalid standards review date', async ( t ) => {
+	const { fixture, today } = await createContentFixture( t );
+	await writeFile(
+		path.join( fixture, 'docs', 'standards-index.md' ),
+		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Valid](https://example.com/valid) | Example | ${ today } |\n| [Invalid](https://example.com/invalid) | Example | not-a-date |\n`
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/expected an ISO date with a valid calendar date/
 	);
 } );
 
