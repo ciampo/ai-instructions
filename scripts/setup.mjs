@@ -224,7 +224,9 @@ async function processCopilotExport( directory, state ) {
 		state.skipped++;
 		return;
 	}
-	if ( ! state.options.dryRun ) {
+	if ( state.options.dryRun ) {
+		console.log( `  [dry-run] write ${ destination }` );
+	} else {
 		if ( stats ) {
 			await writeOwnedFileAtomic( destination, expectedContent, repoDir );
 		} else {
