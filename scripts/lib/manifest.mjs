@@ -22,6 +22,9 @@ function validateRelativePath( value, field ) {
 	) {
 		throw new Error( `Platform manifest: ${ field } must stay within the selected home directory.` );
 	}
+	if ( value.includes( '\\' ) ) {
+		throw new Error( `Platform manifest: ${ field } must use forward-slash separators.` );
+	}
 }
 
 function validateCapability( platform, category ) {

@@ -140,6 +140,15 @@ test( 'manifest rejects Windows-style path traversal', () => {
 	);
 } );
 
+test( 'manifest rejects platform-dependent path separators', () => {
+	const invalidManifest = structuredClone( manifest );
+	invalidManifest.platforms[ 0 ].capabilities.agents.userPath = '.cursor\\agents';
+	assert.throws(
+		() => validateManifest( invalidManifest ),
+		/cursor\.agents\.userPath must use forward-slash separators/
+	);
+} );
+
 test( 'manifest rejects support tiers outside the documented contract', () => {
 	const invalidManifest = structuredClone( manifest );
 	invalidManifest.platforms[ 0 ].supportTier = 'experimental';
