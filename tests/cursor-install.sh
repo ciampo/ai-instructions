@@ -59,6 +59,15 @@ HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" list --agent cursor --yes >"$TMP_HOME_FULL/list.log"
 assert_file_contains "$TMP_HOME_FULL/list.log" "$RULE_FILE (cursor rule)"
 
+printf '\n# stale\n' >> "$RULE_FILE"
+
+if HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_FULL/stale-check.log" 2>&1; then
+  fail "Expected check to fail when a generated Cursor rule is out of date"
+fi
+
+assert_file_contains "$TMP_HOME_FULL/stale-check.log" "coding-principles.mdc (cursor rule, out of date)"
+HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null
+
 rm "$SKILL_FILE"
 
 if HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_FULL/check.log" 2>&1; then
@@ -134,7 +143,9 @@ LEGACY_FILE="$TMP_HOME_LEGACY/.cursor/rules/coding-principles.mdc"
 HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" --agent cursor --yes >"$TMP_HOME_LEGACY/install.log" 2>&1
 assert_file_contains "$TMP_HOME_LEGACY/install.log" "legacy managed copy without Cursor frontmatter"
 
-if HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_LEGACY/check.log" 2>&1; then :; fi
+if HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_LEGACY/check.log" 2>&1; then
+  fail "Expected check to fail for a legacy managed Cursor rule"
+fi
 assert_file_contains "$TMP_HOME_LEGACY/check.log" "legacy managed copy without Cursor frontmatter"
 
 HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null

@@ -1,11 +1,16 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "lint": "markdownlint-cli2 \"**/*.md\"",
     "lint:fix": "markdownlint-cli2 --fix \"**/*.md\"",
-    "test:installer": "bash tests/cursor-install.sh && bash tests/codex-install.sh"
+    "test": "npm run test:shell && npm run test:installer",
+    "test:installer": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh",
+    "test:shell": "bash -n setup.sh tests/*.sh"
   },
   "devDependencies": {
-    "markdownlint-cli2": "^0.22.0"
+    "markdownlint-cli2": "^0.23.1"
   }
 }

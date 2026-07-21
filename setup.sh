@@ -138,6 +138,7 @@ SELECTED_AGENTS=""
 ONLY_CATEGORIES=""
 COPILOT_CONCAT_DIR=""
 BROKEN_COUNT=0
+CHECK_FAILURE_COUNT=0
 
 SUMMARY_NEW=0
 SUMMARY_UPTODATE=0
@@ -145,6 +146,10 @@ SUMMARY_SKIPPED=0
 SUMMARY_REMOVED=0
 SUMMARY_STALE=0
 SUMMARY_BROKEN=0
+
+record_check_failure() {
+  CHECK_FAILURE_COUNT=$((CHECK_FAILURE_COUNT + 1))
+}
 
 # ---------------------------------------------------------------------------
 # Usage
@@ -456,12 +461,14 @@ check_file() {
       log_broken "$(basename "$dst") -> $existing_target (target missing)"
       BROKEN_COUNT=$((BROKEN_COUNT + 1))
       SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+      record_check_failure
     elif [ "$existing_target" = "$src" ]; then
       log_ok "$(basename "$dst")"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
     else
       log_warn "$(basename "$dst") exists at $dst but points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     fi
   elif is_standard_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
@@ -470,10 +477,12 @@ check_file() {
     else
       log_warn "$(basename "$dst") (copy, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     fi
   elif [ -e "$dst" ]; then
     log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    record_check_failure
   fi
 }
 
@@ -630,12 +639,14 @@ check_cursor_rule() {
       "$SCRIPT_DIR"/*)
         log_warn "$(basename "$dst") is symlinked — missing Cursor frontmatter; run update"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        record_check_failure
         return
         ;;
     esac
 
     log_warn "$(basename "$dst") exists at $dst but points to $existing_target"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    record_check_failure
     return
   fi
 
@@ -646,13 +657,16 @@ check_cursor_rule() {
     else
       log_warn "$(basename "$dst") (cursor rule, out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     fi
   elif is_standard_managed_copy "$dst"; then
     log_warn "$(basename "$dst") is a legacy managed copy without Cursor frontmatter; run update to regenerate"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    record_check_failure
   elif [ -e "$dst" ]; then
     log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    record_check_failure
   fi
 }
 
@@ -882,10 +896,16 @@ process_routing() {
         else
           log_warn "$(basename "$dst") (auto-generated, out of date)"
           SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+          record_check_failure
         fi
       elif [ -L "$dst" ]; then
         log_warn "$(basename "$dst") is symlinked — should be auto-generated; run update"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        record_check_failure
+      elif [ -e "$dst" ]; then
+        log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        record_check_failure
       fi
       rm "$content_file"
       ;;
@@ -1094,12 +1114,15 @@ check_resolved() {
       log_broken "$(basename "$dst") -> $existing_target (target missing)"
       BROKEN_COUNT=$((BROKEN_COUNT + 1))
       SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+      record_check_failure
     elif [ "$existing_target" = "$src" ]; then
       log_warn "$(basename "$dst") symlinked — instruction deps not resolved; run update"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     else
       log_warn "$(basename "$dst") points to $existing_target (expected $src)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     fi
   elif is_standard_managed_copy "$dst"; then
     if is_resolved_copy_current "$src" "$dst" "$agent"; then
@@ -1108,10 +1131,12 @@ check_resolved() {
     else
       log_warn "$(basename "$dst") (out of date)"
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      record_check_failure
     fi
   elif [ -e "$dst" ]; then
     log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
     SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+    record_check_failure
   fi
 }
 
@@ -1183,6 +1208,7 @@ check_routing_targets() {
         log_broken "workflow-routing target missing: $expected"
         BROKEN_COUNT=$((BROKEN_COUNT + 1))
         SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+        record_check_failure
         ;;
       list_file)
         log_warn "$expected (workflow-routing target missing)"
@@ -1384,6 +1410,7 @@ report_stale_entry() {
   log_broken "$label"
   BROKEN_COUNT=$((BROKEN_COUNT + 1))
   SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
+  record_check_failure
 }
 
 check_stale_in_dir() {
@@ -1534,10 +1561,12 @@ codex_agents_md() {
         else
           log_warn "$(basename "$dst") (concatenated, out of date) -- run update"
           SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+          record_check_failure
         fi
       elif [ -e "$dst" ] || [ -L "$dst" ]; then
         log_warn "$(basename "$dst") at $dst was not generated by this script"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        record_check_failure
       fi
       ;;
 
@@ -1808,7 +1837,7 @@ main() {
         check_stale_agent "$agent"
       done
       print_summary
-      if [ "$BROKEN_COUNT" -gt 0 ]; then
+      if [ "$CHECK_FAILURE_COUNT" -gt 0 ]; then
         exit 1
       fi
       ;;

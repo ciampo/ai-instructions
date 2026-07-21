@@ -50,7 +50,8 @@ Accessibility is non-negotiable in my work. These are the standards I apply.
 
 ## Touch and Mobile
 
-- **[STRONG]** Touch targets should be at least 44x44 CSS pixels (WCAG 2.5.5).
+- **[RULE]** Meet [WCAG 2.2 Success Criterion 2.5.8: Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum) (Level AA): pointer targets must be at least 24x24 CSS pixels or satisfy one of the criterion's exceptions, including sufficient spacing.
+- **[STRONG]** Aim for targets of at least 44x44 CSS pixels, the enhanced Level AAA size defined by [WCAG 2.2 Success Criterion 2.5.5](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced), especially for frequently used or difficult-to-undo controls.
 - **[PREFER]** Provide alternatives for complex gestures (drag, multi-finger) -- a simple tap or click alternative should always exist.
 - **[PREFER]** Ensure content is usable at 200% zoom without horizontal scrolling.
 
