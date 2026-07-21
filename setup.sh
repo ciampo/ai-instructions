@@ -799,7 +799,7 @@ skill_directory_is_managed_copy() {
   local dst="$1" marker
   [ -d "$dst" ] && ! [ -L "$dst" ] || return 1
   marker="$dst/$SKILL_DIR_MANAGED_MARKER"
-  [ -f "$marker" ] && grep -Fqx 'ai-instructions:managed' "$marker"
+  [ -f "$marker" ] && ! [ -L "$marker" ] && grep -Fqx 'ai-instructions:managed' "$marker"
 }
 
 skill_directory_is_legacy_managed() {
@@ -1113,18 +1113,20 @@ emit_codex_agent() {
     return 1
   fi
 
-  if grep -Fq '"""' "$body_file"; then
-    rm "$body_file"
-    echo "Error: Codex agent body cannot contain a TOML triple-quote sequence: $src" >&2
-    return 1
-  fi
-
   echo "name = \"$name\""
   echo "description = \"$description\""
   echo 'developer_instructions = """'
-  sed 's/\\/\\\\/g' "$body_file"
+  sed 's/\\/\\\\/g; s/"/\\"/g' "$body_file"
   echo '"""'
   rm "$body_file"
+}
+
+validate_agent_sources() {
+  local src
+  for src in "$SCRIPT_DIR"/agents/*.md; do
+    [ -e "$src" ] || continue
+    emit_codex_agent "$src" >/dev/null || return 1
+  done
 }
 
 is_codex_agent_copy() {
@@ -1796,6 +1798,14 @@ main() {
   if $DRY_RUN; then echo -e "${C_CYAN}(dry-run mode -- no changes will be made)${C_RESET}"; fi
   if $COPY_MODE; then echo "(copy mode -- files will be copied instead of symlinked)"; fi
   if [ -n "$SELECTED_AGENTS" ]; then echo "Agents: $SELECTED_AGENTS"; fi
+
+  case "$COMMAND" in
+    install|update)
+      if [ -n "$SELECTED_AGENTS" ] && should_process_category "agents"; then
+        validate_agent_sources || exit 1
+      fi
+      ;;
+  esac
 
   case "$COMMAND" in
     install)

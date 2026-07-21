@@ -92,6 +92,7 @@ cat > "$QUOTED_REPO/agents/quoted-agent.md" <<'EOF'
 Review quoted metadata.
 
 Match \d+ and inspect C:\temp.
+Document the TOML delimiter """ without changing it.
 EOF
 
 HOME="$QUOTED_HOME" "$QUOTED_REPO/setup.sh" --agent codex --only agents --copy --yes >/dev/null
@@ -99,10 +100,17 @@ QUOTED_AGENT="$QUOTED_HOME/.codex/agents/quoted-agent.toml"
 assert_file_contains "$QUOTED_AGENT" 'name = "quoted-agent"'
 assert_file_contains "$QUOTED_AGENT" 'description = "Quoted description: it'\''s portable."'
 assert_file_contains "$QUOTED_AGENT" 'Match \\d+ and inspect C:\\temp.'
+assert_file_contains "$QUOTED_AGENT" 'Document the TOML delimiter \"\"\" without changing it.'
 
 INVALID_REPO="$TMP_ROOT/invalid-repo"
 INVALID_HOME="$TMP_ROOT/invalid-home"
-mkdir -p "$INVALID_REPO/agents" "$INVALID_HOME/.codex"
+mkdir -p \
+  "$INVALID_REPO/agents" \
+  "$INVALID_HOME/.cursor" \
+  "$INVALID_HOME/.claude" \
+  "$INVALID_HOME/.codex" \
+  "$INVALID_HOME/.copilot" \
+  "$INVALID_HOME/.gemini"
 cp "$REPO_DIR/setup.sh" "$INVALID_REPO/setup.sh"
 cat > "$INVALID_REPO/agents/invalid-agent.md" <<'EOF'
 ---
@@ -111,6 +119,18 @@ name: invalid-agent
 
 This agent has no description.
 EOF
+
+if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent claude --only agents --copy --yes >"$INVALID_HOME/claude-install.log" 2>&1; then
+  fail "Expected direct agent installation to reject missing frontmatter"
+fi
+assert_file_contains "$INVALID_HOME/claude-install.log" "missing required frontmatter field 'description'"
+assert_path_missing "$INVALID_HOME/.claude/agents/invalid-agent.md"
+
+if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent '*' --only agents --copy --yes >"$INVALID_HOME/all-install.log" 2>&1; then
+  fail "Expected all-platform agent installation to reject missing frontmatter"
+fi
+assert_file_contains "$INVALID_HOME/all-install.log" "missing required frontmatter field 'description'"
+assert_path_missing "$INVALID_HOME/.cursor/agents/invalid-agent.md"
 
 if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent codex --only agents --copy --yes >"$INVALID_HOME/install.log" 2>&1; then
   fail "Expected Codex agent generation to reject missing frontmatter"
@@ -189,6 +209,17 @@ HOME="$RESOURCE_HOME" "$RESOURCE_REPO/setup.sh" check --agent '*' --only skills 
 HOME="$RESOURCE_HOME" "$RESOURCE_REPO/setup.sh" remove --agent '*' --only skills --copy --yes >/dev/null
 assert_path_missing "$RESOURCE_HOME/.cursor/skills/resource-skill"
 assert_path_missing "$RESOURCE_HOME/.agents/skills/resource-skill"
+
+MARKER_LINK_HOME="$TMP_ROOT/marker-link-home"
+MARKER_LINK_SKILL="$MARKER_LINK_HOME/.agents/skills/resource-skill"
+mkdir -p "$MARKER_LINK_SKILL" "$MARKER_LINK_HOME/.codex"
+printf 'ai-instructions:managed\n' > "$MARKER_LINK_HOME/marker-target"
+ln -s "$MARKER_LINK_HOME/marker-target" "$MARKER_LINK_SKILL/.ai-instructions-managed"
+printf '# User-owned sibling\n' > "$MARKER_LINK_SKILL/user-reference.md"
+
+HOME="$MARKER_LINK_HOME" "$RESOURCE_REPO/setup.sh" remove --agent codex --only skills --copy --yes >"$MARKER_LINK_HOME/remove.log" 2>&1
+assert_file_contains "$MARKER_LINK_SKILL/user-reference.md" "# User-owned sibling"
+assert_file_contains "$MARKER_LINK_HOME/remove.log" "was not installed by this script"
 
 RESOURCE_LINK_HOME="$TMP_ROOT/resource-link-home"
 mkdir -p "$RESOURCE_LINK_HOME/.codex"
