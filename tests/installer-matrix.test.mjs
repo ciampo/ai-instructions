@@ -15,6 +15,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { assertRecentDate, validateContent } from '../scripts/validate-content.mjs';
+import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
@@ -370,6 +371,22 @@ test( 'content contracts reject invalid review dates', () => {
 	);
 } );
 
+test( 'copied skill artifacts preserve source line endings', async ( t ) => {
+	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skill-lines-' ) );
+	t.after( () => rm( fixture, { recursive: true, force: true } ) );
+	const skillDirectory = path.join( fixture, 'skills', 'example-skill' );
+	await mkdir( skillDirectory, { recursive: true } );
+	const source = '---\r\nname: example-skill\r\ndescription: Example skill.\r\n---\r\n\r\n# Example\r\n';
+	await writeFile( path.join( skillDirectory, 'SKILL.md' ), source );
+
+	const [ artifact ] = await createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
+		manifest.platforms[ 0 ],
+		[ 'skills' ],
+		fixture
+	);
+	assert.equal( artifact.expectedContent, source );
+} );
+
 for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: copy lifecycle and category isolation`, async ( t ) => {
 		const home = await createDetectedHome( platform );
@@ -535,7 +552,7 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	for ( const platform of manifest.platforms ) {
 		assert.equal(
 			await readFile( artifactPath( platform, 'skills', home ), 'utf8' ),
-			`${ skillSource }${ managedMarker }\n`
+			skillSource
 		);
 		assert.equal(
 			await readFile( path.join( path.dirname( artifactPath( platform, 'skills', home ) ), '.ai-instructions-managed' ), 'utf8' ),
