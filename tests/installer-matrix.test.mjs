@@ -14,7 +14,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { validateContent } from '../scripts/validate-content.mjs';
+import { assertRecentDate, validateContent } from '../scripts/validate-content.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
@@ -357,6 +357,17 @@ test( 'content contracts enforce the universal instruction budget', async () => 
 	const result = await validateContent( repoDir );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
+} );
+
+test( 'content contracts reject invalid review dates', () => {
+	assert.throws(
+		() => assertRecentDate( '2026-02-29', 'standards index' ),
+		/valid calendar date/
+	);
+	assert.throws(
+		() => assertRecentDate( 'not-a-date', 'standards index' ),
+		/valid calendar date/
+	);
 } );
 
 for ( const platform of manifest.platforms ) {

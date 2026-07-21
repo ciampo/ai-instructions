@@ -143,11 +143,21 @@ async function validateUniversalInstructions( repoDir ) {
 	return { bytes, lines };
 }
 
-function assertRecentDate( value, source ) {
-	if ( ! /^\d{4}-\d{2}-\d{2}$/.test( value ) ) {
-		throw new Error( `${ source }: expected an ISO date.` );
+export function assertRecentDate( value, source ) {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec( value );
+	if ( ! match ) {
+		throw new Error( `${ source }: expected an ISO date with a valid calendar date.` );
 	}
-	const reviewedAt = Date.parse( `${ value }T00:00:00Z` );
+	const [ year, month, day ] = match.slice( 1 ).map( Number );
+	const reviewedAt = Date.UTC( year, month - 1, day );
+	const parsed = new Date( reviewedAt );
+	if (
+		parsed.getUTCFullYear() !== year ||
+		parsed.getUTCMonth() !== month - 1 ||
+		parsed.getUTCDate() !== day
+	) {
+		throw new Error( `${ source }: expected an ISO date with a valid calendar date.` );
+	}
 	const ageInDays = ( Date.now() - reviewedAt ) / 86_400_000;
 	if ( ageInDays < -1 ) {
 		throw new Error( `${ source }: review date cannot be in the future.` );
