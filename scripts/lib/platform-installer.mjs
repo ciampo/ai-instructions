@@ -280,9 +280,14 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 				logSkillConflict( artifact, state, `${ artifact.label } contains files not installed by this script; preserving the legacy directory` );
 				return;
 			}
-			if ( ( ( status.kind === 'directory' && status.owned ) || status.legacyCopy ) && ! state.options.copy ) {
-				const action = status.legacyCopy ? 'migrate it without changing install mode' : 'refresh it';
-				logSkillConflict( artifact, state, `${ artifact.label } is a ${ status.legacyCopy ? 'legacy ' : '' }managed copy; run update --copy to ${ action }` );
+			if ( status.legacyCopy && ! state.options.copy ) {
+				await installSkillArtifact( artifact, state, status, true );
+				console.log( `  [+] ${ artifact.label } (migrated legacy managed copy)` );
+				state.new++;
+				return;
+			}
+			if ( status.kind === 'directory' && status.owned && ! state.options.copy ) {
+				logSkillConflict( artifact, state, `${ artifact.label } is a managed copy; run update --copy to refresh it` );
 				return;
 			}
 			if ( status.owned || status.legacySafe || ( status.kind === 'symlink' && status.owned ) ) {

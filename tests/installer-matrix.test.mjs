@@ -29,6 +29,8 @@ const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), 
 const setupScript = path.join( repoDir, 'scripts', 'setup.mjs' );
 const manifestPath = path.join( repoDir, 'platforms', 'manifest.json' );
 const manifest = validateManifest( JSON.parse( await readFile( manifestPath, 'utf8' ) ) );
+const legacyFixturePath = path.join( repoDir, 'tests', 'fixtures', 'pre-modernization-install.json' );
+const legacyFixture = JSON.parse( await readFile( legacyFixturePath, 'utf8' ) );
 const managedMarker = '<!-- ai-instructions:managed -->';
 const categories = [ 'instructions', 'skills', 'agents' ];
 const partialCategorySelections = categories
@@ -161,6 +163,63 @@ async function createContentFixture( t, {
 	return { fixture, today };
 }
 
+function legacyManagedContent( format, label ) {
+	if ( format === 'cursor-rule' ) {
+		return `---\ndescription: 'Legacy ${ label }'\nalwaysApply: true\n---\n${ legacyFixture.managedMarker }\n# Legacy ${ label }\n`;
+	}
+	return `${ legacyFixture.managedMarker }\n# Legacy ${ label }\n`;
+}
+
+async function seedLegacyInstallation( home, copy ) {
+	for ( const platform of manifest.platforms ) {
+		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
+		const legacyPlatform = legacyFixture.platforms[ platform.id ];
+		const legacyInstructions = legacyPlatform.instructions;
+		if ( legacyInstructions?.kind === 'single' ) {
+			const target = destination( home, legacyInstructions.userPath );
+			await mkdir( path.dirname( target ), { recursive: true } );
+			await writeFile( target, legacyManagedContent( 'markdown', `${ platform.id } instructions` ) );
+		} else if ( legacyInstructions ) {
+			for ( const name of legacyFixture.instructions ) {
+				const target = path.join(
+					destination( home, legacyInstructions.userPath ),
+					`${ path.basename( name, '.md' ) }${ legacyInstructions.extension }`
+				);
+				await mkdir( path.dirname( target ), { recursive: true } );
+				if (
+					copy ||
+					legacyInstructions.format === 'cursor-rule' ||
+					name === 'workflow-routing.md'
+				) {
+					await writeFile( target, legacyManagedContent( legacyInstructions.format, name ) );
+				} else {
+					await symlink( path.join( repoDir, 'instructions', name ), target );
+				}
+			}
+		}
+
+		if ( legacyPlatform.skillsPath ) {
+			for ( const name of legacyFixture.skills ) {
+				const target = path.join(
+					destination( home, legacyPlatform.skillsPath ),
+					name,
+					'SKILL.md'
+				);
+				await mkdir( path.dirname( target ), { recursive: true } );
+				await writeFile( target, legacyManagedContent( 'markdown', `${ name } skill` ) );
+			}
+		}
+
+		if ( legacyPlatform.personasPath ) {
+			for ( const name of legacyFixture.personas ) {
+				const target = path.join( destination( home, legacyPlatform.personasPath ), name );
+				await mkdir( path.dirname( target ), { recursive: true } );
+				await writeFile( target, legacyManagedContent( 'markdown', `${ name } persona` ) );
+			}
+		}
+	}
+}
+
 test( 'manifest declares complete, current platform contracts', () => {
 	assert.equal( manifest.schemaVersion, 1 );
 	assert.deepEqual(
@@ -176,6 +235,13 @@ test( 'manifest declares complete, current platform contracts', () => {
 			assert.equal( typeof platform.capabilities[ category ].supported, 'boolean' );
 		}
 	}
+} );
+
+test( 'legacy upgrade fixture is frozen at the pre-modernization revision', () => {
+	assert.equal( legacyFixture.sourceRevision, '66fcb79ade8c32bfd9a2f8848438ccb9a716f4e1' );
+	assert.equal( legacyFixture.instructions.length, 14 );
+	assert.equal( legacyFixture.skills.length, 10 );
+	assert.equal( legacyFixture.personas.length, 3 );
 } );
 
 test( 'manifest rejects unsafe legacy migration paths', () => {
@@ -473,6 +539,42 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 		fixture
 	);
 	assert.equal( artifact.expectedContent, source );
+} );
+
+async function verifyLegacyUpgrade( t, copy ) {
+	const home = await mkdtemp( path.join( os.tmpdir(), `ai-instructions-legacy-${ copy ? 'copy' : 'default' }-` ) );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	await seedLegacyInstallation( home, copy );
+	const userFile = destination( home, '.claude/rules/user-owned.md' );
+	await writeFile( userFile, '# User-owned rule\n' );
+
+	const modeArguments = copy ? [ '--copy' ] : [];
+	const updateOutput = runInstaller( home, [ 'update', '--agent', '*', ...modeArguments, '--yes' ] );
+	assert.match( updateOutput, /migrated legacy managed copy/ );
+	runInstaller( home, [ 'check', '--agent', '*', ...modeArguments, '--yes' ] );
+
+	assert.equal( await readFile( userFile, 'utf8' ), '# User-owned rule\n' );
+	assert.equal(
+		await pathExists( destination( home, '.cursor/skills-cursor/review-pr/SKILL.md' ) ),
+		false
+	);
+	for ( const platform of manifest.platforms ) {
+		assert.equal(
+			await pathExists( skillPath( platform, home, 'release-publish' ) ),
+			true,
+			`${ platform.id } did not retain the legacy release-publish entrypoint`
+		);
+	}
+}
+
+test( 'pre-modernization default installations upgrade in place', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	await verifyLegacyUpgrade( t, false );
+} );
+
+test( 'pre-modernization copy installations upgrade in place', async ( t ) => {
+	await verifyLegacyUpgrade( t, true );
 } );
 
 for ( const platform of manifest.platforms ) {

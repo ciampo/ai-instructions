@@ -45,6 +45,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [resume-session](skills/resume-session/SKILL.md) | "continue where we left off" | Recover and verify previous work |
 | [prepare-release](skills/prepare-release/SKILL.md) | "prepare a release" | Local release preparation without remote publication |
 | [publish-release](skills/publish-release/SKILL.md) | "publish the release" | Explicitly authorized release publication |
+| [release-publish](skills/release-publish/SKILL.md) | legacy `release-publish` invocation | Deprecated compatibility route to the two release workflows |
 
 ### Agents
 
