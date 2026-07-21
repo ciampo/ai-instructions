@@ -22,6 +22,7 @@ jobs:
       - run: npm run lint
       - run: npm run docs:check
       - run: npm run test:shell
+      - run: npm run test:node
 
   installer:
     name: Installer (${{ matrix.os }})
