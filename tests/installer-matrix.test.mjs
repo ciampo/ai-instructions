@@ -439,7 +439,7 @@ test( 'POSIX compatibility wrapper delegates to the Node CLI', {
 		encoding: 'utf8',
 	} );
 	assert.equal( result.status, 0, result.stderr );
-	assert.match( result.stdout, /Usage: setup\.sh/ );
+	assert.match( result.stdout, /Usage: ai-instructions/ );
 } );
 
 test( 'POSIX compatibility wrapper explains the missing Node requirement', {
@@ -466,7 +466,7 @@ test( 'the Node entrypoint discovers the platform home when HOME is unset', () =
 		encoding: 'utf8',
 	} );
 	assert.equal( result.status, 0, result.stderr );
-	assert.match( result.stdout, /Usage: setup\.sh/ );
+	assert.match( result.stdout, /Usage: ai-instructions/ );
 } );
 
 test( 'broken repository-owned symlinks are repairable for every platform', {

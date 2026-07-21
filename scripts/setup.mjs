@@ -114,7 +114,7 @@ function parseArguments( argv, platformIds ) {
 }
 
 function printUsage( platformIds ) {
-	console.log( `Usage: setup.sh [COMMAND] [OPTIONS]
+	console.log( `Usage: ai-instructions [COMMAND] [OPTIONS]
 
 Wire ai-instructions into supported AI tool configurations.
 
