@@ -27,6 +27,7 @@ fi
 # Logging
 # ---------------------------------------------------------------------------
 MANAGED_MARKER='<!-- ai-instructions:managed -->'
+TOML_MANAGED_MARKER='# ai-instructions:managed'
 
 log()        { echo "  $1"; }
 log_action() { echo -e "  ${C_GREEN}[+]${C_RESET} $1"; }
@@ -65,7 +66,7 @@ log_copy()   { echo -e "  ${C_GREEN}[cp]${C_RESET} $1"; }
 #   instr_ext      — file extension for instructions (.md default)
 #   skills_dir     — where skill dirs go (empty = not supported)
 #   skill_file     — filename inside each skill dir (SKILL.md default)
-#   personas_dir   — where persona files go (empty = not supported)
+#   agents_dir     — where custom agent files go (empty = not supported)
 # ---------------------------------------------------------------------------
 ALL_AGENTS="cursor claude codex copilot gemini"
 
@@ -108,9 +109,9 @@ agent_instr_ext() {
 
 agent_skills_dir() {
   case "$1" in
-    cursor)  echo "$HOME/.cursor/skills-cursor" ;;
+    cursor)  echo "$HOME/.cursor/skills" ;;
     claude)  echo "$HOME/.claude/skills" ;;
-    codex)   echo "" ;;
+    codex)   echo "$HOME/.agents/skills" ;;
     copilot) echo "$HOME/.copilot/skills" ;;
     gemini)  echo "$HOME/.gemini/skills" ;;
   esac
@@ -120,10 +121,20 @@ agent_skill_file() {
   echo "SKILL.md"
 }
 
-agent_personas_dir() {
+agent_agents_dir() {
   case "$1" in
-    cursor) echo "$HOME/.cursor/agents" ;;
-    *)      echo "" ;;
+    cursor)  echo "$HOME/.cursor/agents" ;;
+    claude)  echo "$HOME/.claude/agents" ;;
+    codex)   echo "$HOME/.codex/agents" ;;
+    copilot) echo "$HOME/.copilot/agents" ;;
+    gemini)  echo "$HOME/.gemini/agents" ;;
+  esac
+}
+
+agent_agent_ext() {
+  case "$1" in
+    codex) echo ".toml" ;;
+    *)     echo ".md" ;;
   esac
 }
 
@@ -170,13 +181,12 @@ Commands:
 Options:
   --agent <name>       Target a specific agent (cursor, claude, codex, copilot, gemini)
                        Can be repeated. Use --agent '*' for all agents.
-  --only <category>    Only process specific categories (instructions, skills, personas)
+  --only <category>    Only process specific categories (instructions, skills, agents)
                        Can be repeated.
   --copilot-concat [DIR]  Concatenate instructions into .github/copilot-instructions.md
                           in DIR (default: current directory). Skips user-maintained files.
                           Can run standalone.
-  --copy               Copy files instead of symlinking (skills are always
-                       copies because instruction paths are resolved per agent)
+  --copy               Copy files instead of symlinking
   -y, --yes            Skip all prompts (non-interactive mode)
   --dry-run            Show what would be done without making changes
   -h, --help           Show this help message
@@ -187,7 +197,7 @@ Examples:
   $(basename "$0")                              # Auto-detect agents, install all
   $(basename "$0") --agent cursor               # Install into Cursor only
   $(basename "$0") --agent '*' --dry-run        # Preview install for all agents
-  $(basename "$0") --only skills --only personas
+  $(basename "$0") --only skills --only agents
   $(basename "$0") remove --agent claude
   $(basename "$0") list
   $(basename "$0") update --agent '*'
@@ -212,6 +222,12 @@ is_standard_managed_copy() {
   [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -Fqx "$MANAGED_MARKER"
 }
 
+is_portable_managed_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] || return 1
+  [ "$(sed -n '1p' "$1" 2>/dev/null)" = "---" ] || return 1
+  tail -1 "$1" 2>/dev/null | grep -Fqx "$MANAGED_MARKER"
+}
+
 is_cursor_rule_copy() {
   [ -f "$1" ] && ! [ -L "$1" ] || return 1
 
@@ -227,14 +243,27 @@ is_cursor_rule_copy() {
 }
 
 is_managed_copy() {
-  is_standard_managed_copy "$1" || is_cursor_rule_copy "$1"
+  is_standard_managed_copy "$1" || is_portable_managed_copy "$1" || is_cursor_rule_copy "$1" || is_codex_agent_copy "$1"
 }
 
 is_managed_copy_current() {
   local src="$1" dst="$2"
-  # Standard managed copies start with the marker on line 1.
-  # Cursor rules use is_cursor_rule_current() because they add YAML frontmatter.
-  is_standard_managed_copy "$dst" && tail -n +2 "$dst" | cmp -s "$src" -
+  if is_standard_managed_copy "$dst"; then
+    tail -n +2 "$dst" | cmp -s "$src" -
+  elif is_portable_managed_copy "$dst"; then
+    sed '$d' "$dst" | cmp -s "$src" -
+  else
+    return 1
+  fi
+}
+
+write_managed_copy() {
+  local src="$1" dst="$2"
+  if [ "$(sed -n '1p' "$src")" = "---" ]; then
+    { cat "$src"; echo "$MANAGED_MARKER"; } > "$dst"
+  else
+    { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
+  fi
 }
 
 dedupe_words() {
@@ -354,7 +383,7 @@ install_file() {
           else
             rm "$dst"
             if $COPY_MODE; then
-              { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
+              write_managed_copy "$src" "$dst"
               log_copy "$(basename "$dst") (repaired)"
             else
               ln -s "$src" "$dst"
@@ -377,11 +406,11 @@ install_file() {
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       return
     fi
-    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_standard_managed_copy "$dst"; then
+    if $COPY_MODE && [ "$COMMAND" = "update" ] && is_managed_copy "$dst"; then
       if $DRY_RUN; then
         log_dry "cp (update) $src -> $dst"
       else
-        { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
+        write_managed_copy "$src" "$dst"
         log_copy "$(basename "$dst") (updated)"
       fi
       SUMMARY_NEW=$((SUMMARY_NEW + 1))
@@ -404,7 +433,7 @@ install_file() {
 
   mkdir -p "$(dirname "$dst")"
   if $COPY_MODE; then
-    { echo "$MANAGED_MARKER"; cat "$src"; } > "$dst"
+    write_managed_copy "$src" "$dst"
     log_copy "$(basename "$dst")"
   else
     ln -s "$src" "$dst"
@@ -434,7 +463,7 @@ unlink_file() {
     return
   fi
 
-  if is_standard_managed_copy "$dst"; then
+  if is_managed_copy "$dst"; then
     if $DRY_RUN; then
       log_dry "rm $dst (copy)"
     else
@@ -470,7 +499,7 @@ check_file() {
       SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       record_check_failure
     fi
-  elif is_standard_managed_copy "$dst"; then
+  elif is_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$(basename "$dst") (copy)"
       SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
@@ -499,7 +528,7 @@ list_file() {
         log_broken "$dst (target missing)"
       fi
     fi
-  elif is_standard_managed_copy "$dst"; then
+  elif is_managed_copy "$dst"; then
     if is_managed_copy_current "$src" "$dst"; then
       log_ok "$dst (copy)"
     else
@@ -750,156 +779,89 @@ apply_cursor_rule_action() {
 }
 
 # ---------------------------------------------------------------------------
-# Workflow routing (auto-generated from skill trigger comments)
-#
-# Each skill may contain a routing comment: <!-- routing: [SEVERITY] desc -->
-# This function scans all skill files, extracts those comments, resolves
-# skill paths for the target agent, and emits a routing instruction file.
-# The file is installed as a managed copy into the agent's instruction dir.
+# Codex custom agents (generated TOML)
 # ---------------------------------------------------------------------------
-generate_routing_content() {
-  local agent="$1"
-  local path_mode="${2:-resolve}"  # "resolve" (default) or "relative" (source-repo paths)
-  local skills_dir skill_file
-  skills_dir="$(agent_skills_dir "$agent")"
-  skill_file="$(agent_skill_file "$agent")"
-
-  cat <<'HEADER'
-# Workflow Routing
-
-**[RULE]** Before starting work, check if the current task matches a pattern below. If it does, read the linked skill file AND every file in its Dependencies section BEFORE writing any code or running any commands.
-
-HEADER
-
-  # Collect entries with a sort key: 1=[RULE], 2=[STRONG], 3=[PREFER]
-  local entries=""
-  for f in "$SCRIPT_DIR"/skills/*.md; do
-    [ -e "$f" ] || continue
-    local sname trigger_line
-    sname="$(basename "$f" .md)"
-    trigger_line="$(grep -m1 '^<!-- routing:' "$f" 2>/dev/null || true)"
-    [ -z "$trigger_line" ] && continue
-
-    # Parse: <!-- routing: [SEVERITY] description -->
-    local payload
-    payload="$(printf '%s' "$trigger_line" | sed 's/^<!-- routing: //' | sed 's/ -->$//')"
-    local severity description
-    severity="$(printf '%s' "$payload" | grep -o '^\[[A-Z]\{1,\}\]' || true)"
-    [ -z "$severity" ] && continue
-    description="$(printf '%s' "$payload" | sed 's/^\[[A-Z]*\] //')"
-    [ -z "$description" ] && continue
-
-    local order
-    case "$severity" in
-      "[RULE]")   order=1 ;;
-      "[STRONG]") order=2 ;;
-      "[PREFER]") order=3 ;;
-      *) log_warn "Unknown routing severity $severity in $sname — skipping"; continue ;;
-    esac
-
-    local resolved_path
-    if [ "$path_mode" = "relative" ]; then
-      resolved_path="skills/${sname}.md"
-    elif [ -n "$skills_dir" ]; then
-      resolved_path="${skills_dir}/${sname}/${skill_file}"
-    else
-      resolved_path="${SCRIPT_DIR}/skills/${sname}.md"
-    fi
-
-    printf -v entries '%s%s\n' "$entries" "${order}|**${severity}** ${description} — read \`${resolved_path}\`"
-  done
-
-  # Sort by severity tier then alphabetically, strip the sort key
-  printf '%s' "$entries" | LC_ALL=C sort | sed 's/^[0-9]|/- /'
-
-  cat <<'FOOTER'
-
-## Skill Loading Protocol
-
-1. Read the skill file.
-2. Read EVERY file listed in its "Dependencies" section. Do not skip any.
-3. Follow the skill's steps in order. Do not skip steps.
-4. If the skill chains into another skill, read and follow that too.
-FOOTER
+frontmatter_value() {
+  local src="$1" key="$2"
+  awk -v key="$key" '
+    NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+    in_frontmatter && $0 == "---" { exit }
+    in_frontmatter && index($0, key ":") == 1 {
+      sub("^[^:]+:[[:space:]]*", "")
+      print
+      exit
+    }
+  ' "$src"
 }
 
-process_routing() {
-  local agent="$1" action="$2"
-  local instr_dir instr_ext dst
-  instr_dir="$(agent_instr_dir "$agent")"
-  instr_ext="$(agent_instr_ext "$agent")"
-  [ -n "$instr_dir" ] || return 0
+frontmatter_body() {
+  awk '
+    $0 == "---" { delimiters++; next }
+    delimiters >= 2 { print }
+  ' "$1"
+}
 
-  dst="$instr_dir/workflow-routing${instr_ext}"
+toml_escape() {
+  sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+emit_codex_agent() {
+  local src="$1" name description body_file
+  name="$(frontmatter_value "$src" "name" | toml_escape)"
+  description="$(frontmatter_value "$src" "description" | toml_escape)"
+  body_file="$(mktemp "${TMPDIR:-/tmp}/ai-codex-agent-body.XXXXXX")"
+  frontmatter_body "$src" > "$body_file"
+
+  if grep -Fq '"""' "$body_file"; then
+    rm "$body_file"
+    echo "Error: Codex agent body cannot contain a TOML triple-quote sequence: $src" >&2
+    return 1
+  fi
+
+  echo "name = \"$name\""
+  echo "description = \"$description\""
+  echo 'developer_instructions = """'
+  cat "$body_file"
+  echo '"""'
+  rm "$body_file"
+}
+
+is_codex_agent_copy() {
+  [ -f "$1" ] && ! [ -L "$1" ] && head -1 "$1" 2>/dev/null | grep -Fqx "$TOML_MANAGED_MARKER"
+}
+
+codex_agent_current() {
+  local src="$1" dst="$2"
+  is_codex_agent_copy "$dst" && cmp -s <(emit_codex_agent "$src") <(tail -n +2 "$dst")
+}
+
+process_codex_agent() {
+  local action="$1" src="$2" dst="$3"
 
   case "$action" in
     install_file)
-      local content_file
-      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
-      generate_routing_content "$agent" > "$content_file"
-
-      if [ "$agent" = "cursor" ]; then
-        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
-        rm "$content_file"
-        return
-      fi
-
-      if is_standard_managed_copy "$dst" && cmp -s "$content_file" <(tail -n +2 "$dst"); then
+      if codex_agent_current "$src" "$dst"; then
         log_skip "$(basename "$dst")" "$dst"
         SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-        rm "$content_file"
-        return
-      fi
-
-      # Replace existing symlink from a previous version
-      if [ -L "$dst" ]; then
-        if $DRY_RUN; then
-          log_dry "generate routing -> $(basename "$dst")"
-          SUMMARY_NEW=$((SUMMARY_NEW + 1))
-          rm "$content_file"
-          return
-        fi
-        rm "$dst"
-      fi
-
-      if [ -e "$dst" ] && ! is_standard_managed_copy "$dst"; then
-        log_warn "$(basename "$dst") exists but was not installed by this script -- skipping"
+      elif { [ -e "$dst" ] || [ -L "$dst" ]; } && ! is_codex_agent_copy "$dst"; then
+        log_warn "$(basename "$dst") exists at $dst but was not installed by this script -- skipping"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-        rm "$content_file"
-        return
-      fi
-
-      if $DRY_RUN; then
-        log_dry "generate routing -> $(basename "$dst")"
+      elif $DRY_RUN; then
+        log_dry "generate Codex agent -> $dst"
         SUMMARY_NEW=$((SUMMARY_NEW + 1))
-        rm "$content_file"
-        return
+      else
+        mkdir -p "$(dirname "$dst")"
+        { echo "$TOML_MANAGED_MARKER"; emit_codex_agent "$src"; } > "$dst"
+        log_copy "$(basename "$dst") (Codex agent)"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
       fi
-
-      mkdir -p "$(dirname "$dst")"
-      { echo "$MANAGED_MARKER"; cat "$content_file"; } > "$dst"
-      log_copy "$(basename "$dst") (auto-generated)"
-      SUMMARY_NEW=$((SUMMARY_NEW + 1))
-      rm "$content_file"
       ;;
-
     check_file)
-      local content_file
-      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
-      generate_routing_content "$agent" > "$content_file"
-      if [ "$agent" = "cursor" ]; then
-        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
-      elif is_standard_managed_copy "$dst"; then
-        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
-          log_ok "$(basename "$dst") (auto-generated)"
-          SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-        else
-          log_warn "$(basename "$dst") (auto-generated, out of date)"
-          SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-          record_check_failure
-        fi
-      elif [ -L "$dst" ]; then
-        log_warn "$(basename "$dst") is symlinked — should be auto-generated; run update"
+      if codex_agent_current "$src" "$dst"; then
+        log_ok "$(basename "$dst") (Codex agent)"
+        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      elif [ -e "$dst" ] || [ -L "$dst" ]; then
+        log_warn "$(basename "$dst") (Codex agent, out of date or conflicting)"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         record_check_failure
       elif [ -e "$dst" ]; then
@@ -907,314 +869,29 @@ process_routing() {
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         record_check_failure
       fi
-      rm "$content_file"
       ;;
-
     list_file)
-      local content_file
-      content_file="$(mktemp "${TMPDIR:-/tmp}/ai-routing.XXXXXX")"
-      generate_routing_content "$agent" > "$content_file"
-      if [ "$agent" = "cursor" ]; then
-        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst" "$content_file"
-      elif is_standard_managed_copy "$dst"; then
-        if cmp -s "$content_file" <(tail -n +2 "$dst"); then
-          log_ok "$dst (auto-generated)"
-        else
-          log_warn "$dst (auto-generated, out of date)"
-        fi
-      elif [ -L "$dst" ]; then
-        log_warn "$dst (symlinked, should be auto-generated)"
+      if codex_agent_current "$src" "$dst"; then
+        log_ok "$dst (Codex agent)"
+      elif is_codex_agent_copy "$dst"; then
+        log_warn "$dst (Codex agent, out of date)"
       fi
-      rm "$content_file"
       ;;
-
     unlink_file)
-      if [ "$agent" = "cursor" ]; then
-        apply_cursor_rule_action "$action" "$SCRIPT_DIR/instructions/workflow-routing.md" "$dst"
-      elif is_standard_managed_copy "$dst"; then
+      if is_codex_agent_copy "$dst"; then
         if $DRY_RUN; then
-          log_dry "rm $dst (auto-generated)"
+          log_dry "rm $dst (Codex agent)"
         else
           rm "$dst"
-          log_remove "$(basename "$dst") (auto-generated)"
+          log_remove "$(basename "$dst") (Codex agent)"
         fi
         SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
-      elif [ -L "$dst" ]; then
-        local existing_target
-        existing_target="$(readlink "$dst")"
-        case "$existing_target" in
-          "$SCRIPT_DIR"/*)
-            if $DRY_RUN; then
-              log_dry "rm $dst"
-            else
-              rm "$dst"
-              log_remove "$(basename "$dst")"
-            fi
-            SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
-            ;;
-        esac
+      elif [ -e "$dst" ] || [ -L "$dst" ]; then
+        log_warn "$(basename "$dst") at $dst was not installed by this script -- skipping"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
       fi
       ;;
   esac
-}
-
-# ---------------------------------------------------------------------------
-# Instruction-reference resolution
-#
-# Skills and personas reference instructions as `instructions/<name>.md`.
-# At install time we replace those references with the absolute installed
-# path for the target agent (directory + extension).  Because that content
-# is agent-specific, any file that contains instruction references is always
-# installed as a managed copy, even when the rest of the setup uses symlinks.
-# Changes to such source files do not propagate immediately; they must be
-# reinstalled via `update`.
-#
-# For agents that do not have an instruction directory (e.g. copilot, gemini),
-# references are resolved to the source repo path so they remain usable as
-# long as the repo is present on disk.
-# ---------------------------------------------------------------------------
-sed_escape_replacement() {
-  printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'
-}
-
-resolve_instruction_refs() {
-  local src="$1" agent="$2"
-  local instr_dir instr_ext skills_dir skill_file sed_file
-  instr_dir="$(agent_instr_dir "$agent")"
-  instr_ext="$(agent_instr_ext "$agent")"
-  skills_dir="$(agent_skills_dir "$agent")"
-  skill_file="$(agent_skill_file "$agent")"
-
-  # Fall back to source repo paths for agents without an instruction directory
-  if [ -z "$instr_dir" ]; then
-    instr_dir="$SCRIPT_DIR/instructions"
-    instr_ext=".md"
-  fi
-
-  sed_file="$(mktemp "${TMPDIR:-/tmp}/ai-instruction-refs.XXXXXX")"
-  for instr_file in "$SCRIPT_DIR"/instructions/*.md; do
-    [ -e "$instr_file" ] || continue
-    local name replacement
-    name="$(basename "$instr_file" .md)"
-    replacement="$(sed_escape_replacement "${instr_dir}/${name}${instr_ext}")"
-    printf 's|instructions/%s\\.md|%s|g\n' "$name" "$replacement" >> "$sed_file"
-  done
-
-  # Resolve skills/ cross-references (e.g. skills/foo.md -> <skills_dir>/foo/SKILL.md)
-  if [ -n "$skills_dir" ]; then
-    for skill_src in "$SCRIPT_DIR"/skills/*.md; do
-      [ -e "$skill_src" ] || continue
-      local sname sreplacement
-      sname="$(basename "$skill_src" .md)"
-      sreplacement="$(sed_escape_replacement "${skills_dir}/${sname}/${skill_file}")"
-      printf 's|skills/%s\\.md|%s|g\n' "$sname" "$sreplacement" >> "$sed_file"
-    done
-  fi
-
-  if [ -s "$sed_file" ]; then
-    if ! sed -f "$sed_file" "$src"; then
-      rm "$sed_file"
-      return 1
-    fi
-  else
-    cat "$src"
-  fi
-
-  rm "$sed_file"
-}
-
-is_resolved_copy_current() {
-  local src="$1" dst="$2" agent="$3"
-  is_standard_managed_copy "$dst" || return 1
-  cmp -s <(resolve_instruction_refs "$src" "$agent") <(tail -n +2 "$dst")
-}
-
-install_resolved() {
-  local src="$1" dst="$2" agent="$3"
-
-  if [ -L "$dst" ]; then
-    local existing_target
-    existing_target="$(readlink "$dst")"
-    if [ "$existing_target" = "$src" ]; then
-      if $DRY_RUN; then
-        log_dry "resolve deps: $(basename "$dst")"
-      else
-        rm "$dst"
-        { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
-        log_copy "$(basename "$dst") (resolved deps)"
-      fi
-      SUMMARY_NEW=$((SUMMARY_NEW + 1))
-      return
-    fi
-    if [ "$COMMAND" = "update" ] && ! [ -e "$dst" ]; then
-      case "$existing_target" in
-        "$SCRIPT_DIR"/*)
-          if $DRY_RUN; then
-            log_dry "replace broken link: $(basename "$dst")"
-          else
-            rm "$dst"
-            { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
-            log_copy "$(basename "$dst") (repaired, resolved deps)"
-          fi
-          SUMMARY_NEW=$((SUMMARY_NEW + 1))
-          return
-          ;;
-      esac
-    fi
-    log_warn "$(basename "$dst") exists at $dst and points to $existing_target -- skipping"
-    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-    return
-  fi
-
-  if [ -e "$dst" ]; then
-    if is_resolved_copy_current "$src" "$dst" "$agent"; then
-      log_skip "$(basename "$dst")" "$dst"
-      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-      return
-    fi
-    if is_standard_managed_copy "$dst" && [ "$COMMAND" = "update" ]; then
-      if $DRY_RUN; then
-        log_dry "update: $(basename "$dst")"
-      else
-        { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
-        log_copy "$(basename "$dst") (updated)"
-      fi
-      SUMMARY_NEW=$((SUMMARY_NEW + 1))
-      return
-    fi
-    if is_standard_managed_copy "$dst"; then
-      log_warn "$(basename "$dst") is outdated; run update to refresh"
-      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-      return
-    fi
-    log_warn "$(basename "$dst") already exists at $dst -- skipping"
-    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-    return
-  fi
-
-  if $DRY_RUN; then
-    log_dry "cp (resolved deps) -> $dst"
-    SUMMARY_NEW=$((SUMMARY_NEW + 1))
-    return
-  fi
-
-  mkdir -p "$(dirname "$dst")"
-  { echo "$MANAGED_MARKER"; resolve_instruction_refs "$src" "$agent"; } > "$dst"
-  log_copy "$(basename "$dst") (resolved deps)"
-  SUMMARY_NEW=$((SUMMARY_NEW + 1))
-}
-
-check_resolved() {
-  local src="$1" dst="$2" agent="$3"
-
-  if [ -L "$dst" ]; then
-    local existing_target
-    existing_target="$(readlink "$dst")"
-    if ! [ -e "$dst" ]; then
-      log_broken "$(basename "$dst") -> $existing_target (target missing)"
-      BROKEN_COUNT=$((BROKEN_COUNT + 1))
-      SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
-      record_check_failure
-    elif [ "$existing_target" = "$src" ]; then
-      log_warn "$(basename "$dst") symlinked — instruction deps not resolved; run update"
-      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-      record_check_failure
-    else
-      log_warn "$(basename "$dst") points to $existing_target (expected $src)"
-      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-      record_check_failure
-    fi
-  elif is_standard_managed_copy "$dst"; then
-    if is_resolved_copy_current "$src" "$dst" "$agent"; then
-      log_ok "$(basename "$dst")"
-      SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
-    else
-      log_warn "$(basename "$dst") (out of date)"
-      SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-      record_check_failure
-    fi
-  elif [ -e "$dst" ]; then
-    log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
-    SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-    record_check_failure
-  fi
-}
-
-list_resolved() {
-  local src="$1" dst="$2" agent="$3"
-
-  if [ -L "$dst" ]; then
-    local existing_target
-    existing_target="$(readlink "$dst")"
-    if [ "$existing_target" = "$src" ]; then
-      if [ -e "$dst" ]; then
-        log_warn "$dst (symlinked, deps not resolved)"
-      else
-        log_broken "$dst (target missing)"
-      fi
-    fi
-  elif is_standard_managed_copy "$dst"; then
-    if is_resolved_copy_current "$src" "$dst" "$agent"; then
-      log_ok "$dst (copy, deps resolved)"
-    else
-      log_warn "$dst (copy, out of date)"
-    fi
-  fi
-}
-
-check_routing_targets() {
-  local agent="$1" action="$2"
-  local skills_dir skill_file instr_dir instr_ext routing_dst
-  skills_dir="$(agent_skills_dir "$agent")"
-  skill_file="$(agent_skill_file "$agent")"
-  instr_dir="$(agent_instr_dir "$agent")"
-  instr_ext="$(agent_instr_ext "$agent")"
-  routing_dst="$instr_dir/workflow-routing${instr_ext}"
-
-  [ -n "$skills_dir" ] || return 0
-  if [ "$action" = "unlink_file" ]; then
-    return 0
-  fi
-  if [ "$action" = "install_file" ] && $DRY_RUN; then
-    return 0
-  fi
-  if [ "$action" != "install_file" ]; then
-    if [ -L "$routing_dst" ]; then
-      local existing_target
-      existing_target="$(readlink "$routing_dst")"
-      case "$existing_target" in
-        "$SCRIPT_DIR"/*) ;;
-        *) return 0 ;;
-      esac
-    elif ! is_standard_managed_copy "$routing_dst" && ! is_cursor_rule_copy "$routing_dst"; then
-      return 0
-    fi
-  fi
-
-  for f in "$SCRIPT_DIR"/skills/*.md; do
-    [ -e "$f" ] || continue
-    grep -q '^<!-- routing:' "$f" 2>/dev/null || continue
-
-    local skill_name expected
-    skill_name="$(basename "$f" .md)"
-    expected="$skills_dir/$skill_name/$skill_file"
-    [ -e "$expected" ] && continue
-
-    case "$action" in
-      install_file)
-        log_warn "workflow-routing references missing skill target $expected -- run \"$SCRIPT_DIR/setup.sh\" --agent $agent --only skills"
-        ;;
-      check_file)
-        log_broken "workflow-routing target missing: $expected"
-        BROKEN_COUNT=$((BROKEN_COUNT + 1))
-        SUMMARY_BROKEN=$((SUMMARY_BROKEN + 1))
-        record_check_failure
-        ;;
-      list_file)
-        log_warn "$expected (workflow-routing target missing)"
-        ;;
-    esac
-  done
 }
 
 # ---------------------------------------------------------------------------
@@ -1273,7 +950,7 @@ clean_stale_in_dir() {
             ;;
         esac
       elif is_managed_copy "$nested_path"; then
-        if [ ! -e "$src_dir/${skill_name}.md" ]; then
+        if [ ! -e "$src_dir/$skill_name/$nested_file" ]; then
           remove_stale_entry "$nested_path" "$skill_name/$nested_file (managed copy)" "$entry"
         fi
       fi
@@ -1299,12 +976,17 @@ process_agent() {
   local agent="$1" action="$2"
   log_header "$agent"
 
-  local instr_dir skills_dir personas_dir instr_ext skill_file
+  if [ "$agent" = "cursor" ] && should_process_category "skills"; then
+    cursor_clean_legacy_skills "$action"
+  fi
+
+  local instr_dir skills_dir agents_dir instr_ext skill_file agent_ext
   instr_dir="$(agent_instr_dir "$agent")"
   instr_ext="$(agent_instr_ext "$agent")"
   skills_dir="$(agent_skills_dir "$agent")"
   skill_file="$(agent_skill_file "$agent")"
-  personas_dir="$(agent_personas_dir "$agent")"
+  agents_dir="$(agent_agents_dir "$agent")"
+  agent_ext="$(agent_agent_ext "$agent")"
 
   if should_process_category "instructions"; then
     if [ "$agent" = "codex" ]; then
@@ -1316,73 +998,95 @@ process_agent() {
         [ -e "$f" ] || continue
         local basename_no_ext
         basename_no_ext="$(basename "$f" .md)"
-        # workflow-routing is auto-generated from skill files; skip the placeholder
-        [ "$basename_no_ext" = "workflow-routing" ] && continue
         if [ "$agent" = "cursor" ]; then
           apply_cursor_rule_action "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
         else
           "$action" "$f" "$instr_dir/${basename_no_ext}${instr_ext}"
         fi
       done
-      process_routing "$agent" "$action"
     fi
   fi
 
   if should_process_category "skills" && [ -n "$skills_dir" ]; then
     log "Skills -> $skills_dir/"
-    for f in "$SCRIPT_DIR"/skills/*.md; do
+    for f in "$SCRIPT_DIR"/skills/*/SKILL.md; do
       [ -e "$f" ] || continue
       local skill_name
-      skill_name="$(basename "$f" .md)"
+      skill_name="$(basename "$(dirname "$f")")"
       local sdir="$skills_dir/$skill_name"
       case "$action" in
         install_file)
           if ! $DRY_RUN; then mkdir -p "$sdir"; fi
-          install_resolved "$f" "$sdir/$skill_file" "$agent"
+          install_file "$f" "$sdir/$skill_file"
           ;;
         check_file)
-          check_resolved "$f" "$sdir/$skill_file" "$agent"
+          check_file "$f" "$sdir/$skill_file"
           ;;
         list_file)
-          list_resolved "$f" "$sdir/$skill_file" "$agent"
+          list_file "$f" "$sdir/$skill_file"
           ;;
         unlink_file)
-          "$action" "$f" "$sdir/$skill_file"
+          unlink_file "$f" "$sdir/$skill_file"
           if ! $DRY_RUN; then rmdir "$sdir" 2>/dev/null || true; fi
           ;;
       esac
     done
   fi
 
-  if should_process_category "personas" && [ -n "$personas_dir" ]; then
-    log "Personas -> $personas_dir/"
-    for f in "$SCRIPT_DIR"/personas/*.md; do
+  if should_process_category "agents" && [ -n "$agents_dir" ]; then
+    log "Agents -> $agents_dir/"
+    for f in "$SCRIPT_DIR"/agents/*.md; do
       [ -e "$f" ] || continue
-      local pdst="$personas_dir/$(basename "$f")"
-      case "$action" in
-        install_file)
-          install_resolved "$f" "$pdst" "$agent"
-          ;;
-        check_file)
-          check_resolved "$f" "$pdst" "$agent"
-          ;;
-        list_file)
-          list_resolved "$f" "$pdst" "$agent"
-          ;;
-        unlink_file)
-          "$action" "$f" "$pdst"
-          ;;
-      esac
+      local agent_name adst
+      agent_name="$(basename "$f" .md)"
+      adst="$agents_dir/${agent_name}${agent_ext}"
+      if [ "$agent" = "codex" ]; then
+        process_codex_agent "$action" "$f" "$adst"
+      else
+        "$action" "$f" "$adst"
+      fi
     done
   fi
+}
 
-  if should_process_category "instructions" && [ -n "$instr_dir" ]; then
-    check_routing_targets "$agent" "$action"
-  fi
+# Remove skill entries created by older versions at Cursor's reserved
+# ~/.cursor/skills-cursor path. User-owned files are always preserved.
+cursor_clean_legacy_skills() {
+  local action="$1"
+  case "$action" in
+    install_file|unlink_file) ;;
+    *) return 0 ;;
+  esac
 
-  if [ "$action" = "install_file" ] && [ "$agent" = "claude" ]; then
-    echo ""
-    log "Reminder: reference instructions from your CLAUDE.md if not already done."
+  local legacy_dir="$HOME/.cursor/skills-cursor"
+  [ -d "$legacy_dir" ] || return 0
+
+  local entry nested target is_ours
+  for entry in "$legacy_dir"/*; do
+    [ -d "$entry" ] || continue
+    nested="$entry/SKILL.md"
+    is_ours=false
+
+    if [ -L "$nested" ]; then
+      target="$(readlink "$nested")"
+      case "$target" in "$SCRIPT_DIR"/skills/*.md) is_ours=true ;; esac
+    elif is_standard_managed_copy "$nested"; then
+      is_ours=true
+    fi
+
+    $is_ours || continue
+    if $DRY_RUN; then
+      log_dry "rm legacy Cursor skill $nested"
+    else
+      rm "$nested"
+      rmdir "$entry" 2>/dev/null || true
+      log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
+    fi
+    SUMMARY_STALE=$((SUMMARY_STALE + 1))
+  done
+
+  if ! $DRY_RUN; then
+    rmdir "$legacy_dir" 2>/dev/null || true
   fi
 }
 
@@ -1391,15 +1095,15 @@ process_agent() {
 # ---------------------------------------------------------------------------
 clean_stale_agent() {
   local agent="$1"
-  local instr_dir skills_dir personas_dir skill_file
+  local instr_dir skills_dir agents_dir skill_file
   instr_dir="$(agent_instr_dir "$agent")"
   skills_dir="$(agent_skills_dir "$agent")"
   skill_file="$(agent_skill_file "$agent")"
-  personas_dir="$(agent_personas_dir "$agent")"
+  agents_dir="$(agent_agents_dir "$agent")"
 
   if [ -n "$instr_dir" ]; then clean_stale_in_dir "$instr_dir" "$SCRIPT_DIR/instructions"; fi
   if [ -n "$skills_dir" ]; then clean_stale_in_dir "$skills_dir" "$SCRIPT_DIR/skills" "$skill_file"; fi
-  if [ -n "$personas_dir" ]; then clean_stale_in_dir "$personas_dir" "$SCRIPT_DIR/personas"; fi
+  if [ -n "$agents_dir" ]; then clean_stale_in_dir "$agents_dir" "$SCRIPT_DIR/agents"; fi
 }
 
 # ---------------------------------------------------------------------------
@@ -1452,7 +1156,7 @@ check_stale_in_dir() {
             ;;
         esac
       elif is_managed_copy "$nested_path"; then
-        if [ ! -e "$src_dir/${skill_name}.md" ]; then
+        if [ ! -e "$src_dir/$skill_name/$nested_file" ]; then
           report_stale_entry "$skill_name/$nested_file (stale managed copy)"
         fi
       fi
@@ -1462,45 +1166,30 @@ check_stale_in_dir() {
 
 check_stale_agent() {
   local agent="$1"
-  local instr_dir skills_dir personas_dir skill_file
+  local instr_dir skills_dir agents_dir skill_file
   instr_dir="$(agent_instr_dir "$agent")"
   skills_dir="$(agent_skills_dir "$agent")"
   skill_file="$(agent_skill_file "$agent")"
-  personas_dir="$(agent_personas_dir "$agent")"
+  agents_dir="$(agent_agents_dir "$agent")"
 
   if [ -n "$instr_dir" ]; then check_stale_in_dir "$instr_dir" "$SCRIPT_DIR/instructions"; fi
   if [ -n "$skills_dir" ]; then check_stale_in_dir "$skills_dir" "$SCRIPT_DIR/skills" "$skill_file"; fi
-  if [ -n "$personas_dir" ]; then check_stale_in_dir "$personas_dir" "$SCRIPT_DIR/personas"; fi
+  if [ -n "$agents_dir" ]; then check_stale_in_dir "$agents_dir" "$SCRIPT_DIR/agents"; fi
 }
 
 # ---------------------------------------------------------------------------
 # Concatenated instructions (shared by Codex AGENTS.md and Copilot)
 #
 # Some agents load a single instructions file rather than a directory of
-# separate files. This emits every instruction file (plus the auto-generated
-# routing table) to stdout, with source markers between sections.
-#   path_mode: "relative" -> routing references skills/<name>.md (repo-relative)
-#              "resolve"  -> routing references the agent's installed skill
-#                            paths, falling back to source-repo paths
-#                            ($SCRIPT_DIR/skills/...) when the agent has no
-#                            skills dir (e.g. Codex)
+# separate files. This emits every instruction file to stdout, with source
+# markers between sections.
 # ---------------------------------------------------------------------------
 emit_concat_instructions() {
-  local agent="$1" path_mode="$2"
   for f in "$SCRIPT_DIR"/instructions/*.md; do
     [ -e "$f" ] || continue
-    local bname
-    bname="$(basename "$f" .md)"
-    if [ "$bname" = "workflow-routing" ]; then
-      # Replace placeholder with auto-generated routing table
-      echo "<!-- source: workflow-routing.md (auto-generated) -->"
-      echo ""
-      generate_routing_content "$agent" "$path_mode"
-    else
-      echo "<!-- source: $(basename "$f") -->"
-      echo ""
-      cat "$f"
-    fi
+    echo "<!-- source: $(basename "$f") -->"
+    echo ""
+    cat "$f"
     echo ""
     echo "---"
     echo ""
@@ -1526,7 +1215,7 @@ codex_agents_md() {
 
   local content_file
   content_file="$(mktemp "${TMPDIR:-/tmp}/ai-codex.XXXXXX")"
-  emit_concat_instructions "codex" "resolve" > "$content_file"
+  emit_concat_instructions > "$content_file"
 
   case "$action" in
     install_file)
@@ -1604,7 +1293,7 @@ codex_agents_md() {
 # do not accumulate dead files. Only touches our own artifacts -- symlinks that
 # point at the legacy install targets ($SCRIPT_DIR/instructions/*) and managed
 # copies (marker on line 1). User-authored files, and symlinks that happen to
-# point elsewhere in the repo (e.g. skills/personas), are left alone.
+# point elsewhere in the repo (for example, skills or agents), are left alone.
 codex_clean_legacy_instructions() {
   local action="$1"
   case "$action" in
@@ -1678,7 +1367,7 @@ copilot_concat() {
     echo "$COPILOT_CONCAT_MARKER"
     echo "<!-- Do not edit manually. Re-run setup.sh to update. -->"
     echo ""
-    emit_concat_instructions "copilot" "relative"
+    emit_concat_instructions
   } > "$output_file"
 
   log_action "$(basename "$output_file") ($(wc -l < "$output_file" | tr -d ' ') lines)"
@@ -1741,8 +1430,12 @@ parse_args() {
         shift
         if [ $# -eq 0 ]; then echo "Error: --only requires a value" >&2; exit 1; fi
         case "$1" in
-          instructions|skills|personas) ONLY_CATEGORIES="$ONLY_CATEGORIES $1" ;;
-          *) echo "Error: --only value must be instructions, skills, or personas" >&2; exit 1 ;;
+          instructions|skills|agents) ONLY_CATEGORIES="$ONLY_CATEGORIES $1" ;;
+          personas)
+            log_warn "--only personas is deprecated; use --only agents"
+            ONLY_CATEGORIES="$ONLY_CATEGORIES agents"
+            ;;
+          *) echo "Error: --only value must be instructions, skills, or agents" >&2; exit 1 ;;
         esac
         shift
         ;;

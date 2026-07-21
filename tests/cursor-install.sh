@@ -37,8 +37,7 @@ mkdir -p "$TMP_HOME_FULL/.cursor"
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" --agent cursor --yes >/dev/null
 
 RULE_FILE="$TMP_HOME_FULL/.cursor/rules/coding-principles.mdc"
-ROUTING_FILE="$TMP_HOME_FULL/.cursor/rules/workflow-routing.mdc"
-SKILL_FILE="$TMP_HOME_FULL/.cursor/skills-cursor/investigate-debug/SKILL.md"
+SKILL_FILE="$TMP_HOME_FULL/.cursor/skills/investigate-debug/SKILL.md"
 
 assert_file_exists "$RULE_FILE"
 assert_not_symlink "$RULE_FILE"
@@ -47,13 +46,8 @@ assert_file_contains "$RULE_FILE" "alwaysApply: true"
 assert_file_contains "$RULE_FILE" "<!-- ai-instructions:managed -->"
 assert_file_contains "$RULE_FILE" "# Coding Principles"
 
-assert_file_exists "$ROUTING_FILE"
-assert_not_symlink "$ROUTING_FILE"
-assert_file_contains "$ROUTING_FILE" "description: 'Workflow Routing'"
-assert_file_contains "$ROUTING_FILE" "alwaysApply: true"
-assert_file_contains "$ROUTING_FILE" "$SKILL_FILE"
-
 assert_file_exists "$SKILL_FILE"
+assert_file_contains "$SKILL_FILE" "name: investigate-debug"
 
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" list --agent cursor --yes >"$TMP_HOME_FULL/list.log"
@@ -68,27 +62,14 @@ fi
 assert_file_contains "$TMP_HOME_FULL/stale-check.log" "coding-principles.mdc (cursor rule, out of date)"
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null
 
-rm "$SKILL_FILE"
-
-if HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_HOME_FULL/check.log" 2>&1; then
-  fail "Expected check to fail when a workflow-routing target is missing"
-fi
-
-assert_file_contains "$TMP_HOME_FULL/check.log" "workflow-routing target missing: $SKILL_FILE"
-
 TMP_HOME_PARTIAL="$TMP_ROOT/partial"
 mkdir -p "$TMP_HOME_PARTIAL/.cursor"
 
 HOME="$TMP_HOME_PARTIAL" "$REPO_DIR/setup.sh" --agent cursor --only instructions --yes >"$TMP_HOME_PARTIAL/install.log" 2>&1
 
-assert_file_exists "$TMP_HOME_PARTIAL/.cursor/rules/workflow-routing.mdc"
-assert_file_contains "$TMP_HOME_PARTIAL/install.log" "workflow-routing references missing skill target"
-
-if HOME="$TMP_HOME_PARTIAL" "$REPO_DIR/setup.sh" check --agent cursor --only instructions --yes >"$TMP_HOME_PARTIAL/check.log" 2>&1; then
-  fail "Expected instructions-only check to fail while routing targets are missing"
-fi
-
-assert_file_contains "$TMP_HOME_PARTIAL/check.log" "workflow-routing target missing"
+assert_file_exists "$TMP_HOME_PARTIAL/.cursor/rules/coding-principles.mdc"
+assert_path_missing "$TMP_HOME_PARTIAL/.cursor/skills/investigate-debug/SKILL.md"
+HOME="$TMP_HOME_PARTIAL" "$REPO_DIR/setup.sh" check --agent cursor --only instructions --yes >/dev/null
 
 TMP_HOME_CLEAN="$TMP_ROOT/clean"
 mkdir -p "$TMP_HOME_CLEAN/.cursor"
@@ -169,7 +150,6 @@ assert_not_symlink "$TMP_HOME_COPY/.cursor/rules/coding-principles.mdc"
 HOME="$TMP_HOME_COPY" "$REPO_DIR/setup.sh" check --agent cursor --yes >/dev/null
 HOME="$TMP_HOME_COPY" "$REPO_DIR/setup.sh" remove --agent cursor --yes >/dev/null
 assert_path_missing "$TMP_HOME_COPY/.cursor/rules/coding-principles.mdc"
-assert_path_missing "$TMP_HOME_COPY/.cursor/rules/workflow-routing.mdc"
-assert_path_missing "$TMP_HOME_COPY/.cursor/skills-cursor/investigate-debug/SKILL.md"
+assert_path_missing "$TMP_HOME_COPY/.cursor/skills/investigate-debug/SKILL.md"
 
 echo "cursor installer regression test passed"

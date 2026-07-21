@@ -1,25 +1,19 @@
-# Skill: Investigate / Debug
+---
+name: investigate-debug
+description: Reproduce, isolate, explain, and fix a reported error or regression with a root-cause test. Use for debugging requests and unexplained failures.
+---
 
-<!-- routing: [PREFER] Debugging issues or investigating errors -->
-
-**[PREFER]** Recommended for structured debugging and investigation.
+# Investigate / Debug
 
 A structured workflow for debugging issues. Invoked when I say "debug this", "investigate why X", "this is broken", or share an error message.
-
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/interaction-preferences.md`
-- `instructions/coding-principles.md`
 
 ## Steps
 
 1. **Understand the symptom**: Read the error message, stack trace, or description carefully. Identify the exact failure: what is expected vs. what is happening. Ask clarifying questions if the symptom is ambiguous.
 2. **Start simple**: Before diving deep, check the mundane causes:
    - Is the dev server running? Does it need a restart?
-   - Are dependencies installed (`npm install`)? Is the lockfile up to date?
-   - Is there a stale build? Try `npm run build` or clearing the cache.
+   - Are dependencies installed using the repository's package manager? Is the lockfile up to date?
+   - Is there a stale build? Run the repository's build command or clear its documented cache.
    - Are environment variables set correctly?
 3. **Reproduce**: Confirm you can reproduce the issue. If it is intermittent, note the conditions under which it occurs.
 4. **Isolate**: Narrow down the cause:

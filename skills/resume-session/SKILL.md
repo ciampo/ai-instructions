@@ -1,20 +1,15 @@
-# Skill: Resume Session
+---
+name: resume-session
+description: Recover and verify the state of unfinished work from available transcripts, notes, git state, and remote PRs before proposing the next steps. Use when resuming prior work.
+---
 
-<!-- routing: [PREFER] Continuing work from a previous session -->
-
-**[PREFER]** Recommended when continuing work from a previous session.
+# Resume Session
 
 A workflow for picking up work from a previous session. Invoked when I say "continue where we left off", "pick up from last time", "resume", or reference a previous conversation.
 
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/interaction-preferences.md`
-
 ## Steps
 
-1. **Recover context**: Read the last conversation transcript, session notes, or whatever context is available about the previous session. If a specific transcript or session ID is provided, use that.
+1. **Recover context**: Read the last conversation transcript, session notes, or whatever context the host makes available. If history is unavailable, say so and continue from repository evidence rather than inventing prior decisions.
 2. **Summarize the state**: Present a brief summary of:
    - What was being worked on.
    - What was completed.

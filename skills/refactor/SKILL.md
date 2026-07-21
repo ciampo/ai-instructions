@@ -1,18 +1,11 @@
-# Skill: Refactor
+---
+name: refactor
+description: Plan and execute a codebase-wide refactor or rename in verified batches while preserving behavior and public contracts. Use for broad migrations and systematic replacements.
+---
 
-<!-- routing: [PREFER] Codebase-wide refactors or renames -->
-
-**[PREFER]** Recommended for codebase-wide refactors, renames, or migrations.
+# Refactor
 
 A systematic workflow for codebase-wide refactors. Invoked when I say "refactor X", "rename across codebase", "migrate from A to B", or "replace all uses of X with Y."
-
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/coding-principles.md`
-- `instructions/tools-and-cli.md`
-- `instructions/naming-conventions.md`
 
 ## Steps
 
