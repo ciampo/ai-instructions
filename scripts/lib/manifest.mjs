@@ -4,7 +4,7 @@ import path from 'node:path';
 const PLATFORM_IDS = [ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ];
 const CATEGORIES = [ 'instructions', 'skills', 'agents' ];
 const STRATEGIES = new Set( [ 'concat', 'directories', 'files' ] );
-const SUPPORT_TIERS = new Set( [ 'verified', 'preview', 'experimental' ] );
+const SUPPORT_TIERS = new Set( [ 'verified', 'preview' ] );
 
 function assertString( value, field ) {
 	if ( typeof value !== 'string' || value.trim() === '' ) {

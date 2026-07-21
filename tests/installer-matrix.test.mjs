@@ -131,6 +131,15 @@ test( 'manifest rejects unsafe legacy migration paths', () => {
 	);
 } );
 
+test( 'manifest rejects support tiers outside the documented contract', () => {
+	const invalidManifest = structuredClone( manifest );
+	invalidManifest.platforms[ 0 ].supportTier = 'experimental';
+	assert.throws(
+		() => validateManifest( invalidManifest ),
+		/cursor\.supportTier is invalid/
+	);
+} );
+
 test( 'file mutations fail closed when ownership changes after inspection', async ( t ) => {
 	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-ownership-' ) );
 	t.after( () => rm( directory, { recursive: true, force: true } ) );
