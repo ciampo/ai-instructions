@@ -28,7 +28,7 @@ function displayPath( capability ) {
 
 export function renderSupportTable( manifest ) {
 	const rows = [
-		'| Product surface | Tier | Instructions | Skills | Agents | Verified |',
+		'| Product surface | Tier | Instructions | Skills | Agents | Checked |',
 		'| --- | --- | --- | --- | --- | --- |',
 	];
 	for ( const platform of manifest.platforms ) {

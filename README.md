@@ -6,7 +6,7 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-See the [modernization plan](modernization-plan.md) for the architecture audit and completed implementation roadmap. The [platform support policy](docs/platform-support.md), [migration guide](docs/migration-guide.md), and [standards index](docs/standards-index.md) cover ongoing maintenance.
+See the [modernization plan](modernization-plan.md) for the architecture audit and implementation roadmap. The [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), and [standards index](docs/standards-index.md) cover ongoing maintenance.
 
 ## Structure
 
@@ -90,13 +90,13 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 <!-- Generated from platforms/manifest.json. Do not edit this table directly. -->
 
-| Product surface | Tier | Instructions | Skills | Agents | Verified |
+| Product surface | Tier | Instructions | Skills | Agents | Checked |
 | --- | --- | --- | --- | --- | --- |
 | Cursor editor and CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` | 2026-07-21 |
-| Claude Code CLI | verified | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` | 2026-07-21 |
-| Codex app, CLI, and IDE extension | verified | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` | 2026-07-21 |
-| GitHub Copilot CLI | verified | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.agent.md` | 2026-07-21 |
-| Gemini CLI | verified | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` | 2026-07-21 |
+| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` | 2026-07-21 |
+| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` | 2026-07-21 |
+| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.agent.md` | 2026-07-21 |
+| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` | 2026-07-21 |
 
 <!-- platform-support:end -->
 

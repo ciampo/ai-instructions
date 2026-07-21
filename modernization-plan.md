@@ -1,12 +1,12 @@
 # AI instructions modernization plan
 
-Status: implemented across the stacked modernization pull requests. The original audit baseline remains below for historical context.
+Status: core implementation complete; product discovery acceptance remains open. The original audit baseline remains below for historical context.
 
 Audit date: 2026-07-20
 
-Implementation completed: 2026-07-21
+Core implementation completed: 2026-07-21
 
-The delivered architecture has a 51-line universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md).
+The delivered architecture has a 51-line universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
 ## Executive assessment
 
@@ -358,7 +358,7 @@ tested headlessly.
 
 Status: CI coverage, `check` exit behavior, the target-size correction, and the
 dependency audit are complete in [#19](https://github.com/ciampo/ai-instructions/pull/19).
-The broader normative accessibility audit and migration fixtures remain.
+The scoped standards review is complete in [#22](https://github.com/ciampo/ai-instructions/pull/22), and the frozen historical migration fixture is added in [#24](https://github.com/ciampo/ai-instructions/pull/24).
 
 1. Add the existing installer regression suite and `bash -n` to CI.
 2. Add failing tests for stale/conflicting `check` exit codes.
@@ -484,3 +484,5 @@ The modernization is complete when:
 - no high-severity dependency advisories remain;
 - normative standards claims include current primary sources and review dates;
 - README support claims are generated from tested configuration.
+
+Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, and dependency gates are implemented. The remaining definition-of-done item is successful instruction, skill, and agent discovery on current releases of all five product surfaces. Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).

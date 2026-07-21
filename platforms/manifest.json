@@ -68,7 +68,7 @@
       "id": "claude",
       "product": "Claude Code",
       "surface": "Claude Code CLI",
-      "supportTier": "verified",
+      "supportTier": "preview",
       "lastVerified": "2026-07-21",
       "detection": {
         "userPath": ".claude"
@@ -113,7 +113,7 @@
       "id": "codex",
       "product": "Codex",
       "surface": "Codex app, CLI, and IDE extension",
-      "supportTier": "verified",
+      "supportTier": "preview",
       "lastVerified": "2026-07-21",
       "detection": {
         "userPath": ".codex"
@@ -166,7 +166,7 @@
       "id": "copilot",
       "product": "GitHub Copilot CLI",
       "surface": "GitHub Copilot CLI",
-      "supportTier": "verified",
+      "supportTier": "preview",
       "lastVerified": "2026-07-21",
       "detection": {
         "userPath": ".copilot"
@@ -210,7 +210,7 @@
       "id": "gemini",
       "product": "Gemini CLI",
       "surface": "Gemini CLI",
-      "supportTier": "verified",
+      "supportTier": "preview",
       "lastVerified": "2026-07-21",
       "detection": {
         "userPath": ".gemini"
