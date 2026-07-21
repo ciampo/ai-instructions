@@ -112,6 +112,14 @@ mkdir -p \
   "$INVALID_HOME/.copilot" \
   "$INVALID_HOME/.gemini"
 cp "$REPO_DIR/setup.sh" "$INVALID_REPO/setup.sh"
+cat > "$INVALID_REPO/agents/a-valid-agent.md" <<'EOF'
+---
+name: a-valid-agent
+description: A valid agent that sorts before the invalid fixture.
+---
+
+This agent must not be installed when preflight fails.
+EOF
 cat > "$INVALID_REPO/agents/invalid-agent.md" <<'EOF'
 ---
 name: invalid-agent
@@ -124,13 +132,24 @@ if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent claude --only agents --
   fail "Expected direct agent installation to reject missing frontmatter"
 fi
 assert_file_contains "$INVALID_HOME/claude-install.log" "missing required frontmatter field 'description'"
+assert_path_missing "$INVALID_HOME/.claude/agents/a-valid-agent.md"
 assert_path_missing "$INVALID_HOME/.claude/agents/invalid-agent.md"
 
 if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent '*' --only agents --copy --yes >"$INVALID_HOME/all-install.log" 2>&1; then
   fail "Expected all-platform agent installation to reject missing frontmatter"
 fi
 assert_file_contains "$INVALID_HOME/all-install.log" "missing required frontmatter field 'description'"
+assert_path_missing "$INVALID_HOME/.cursor/agents/a-valid-agent.md"
 assert_path_missing "$INVALID_HOME/.cursor/agents/invalid-agent.md"
+
+mkdir -p "$INVALID_HOME/.claude/agents"
+printf '<!-- ai-instructions:managed -->\n# Stale agent\n' > "$INVALID_HOME/.claude/agents/stale-agent.md"
+if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" update --agent claude --only agents --copy --yes >"$INVALID_HOME/claude-update.log" 2>&1; then
+  fail "Expected agent update to reject missing frontmatter before stale cleanup"
+fi
+assert_file_contains "$INVALID_HOME/claude-update.log" "missing required frontmatter field 'description'"
+assert_file_exists "$INVALID_HOME/.claude/agents/stale-agent.md"
+assert_path_missing "$INVALID_HOME/.claude/agents/a-valid-agent.md"
 
 if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent codex --only agents --copy --yes >"$INVALID_HOME/install.log" 2>&1; then
   fail "Expected Codex agent generation to reject missing frontmatter"
