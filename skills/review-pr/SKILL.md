@@ -9,7 +9,7 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 
 ## Steps
 
-1. **Identify the repository and diff base**: Resolve the PR's base repository and actual base branch from PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Refresh the base and limit review to the PR's own diff.
+1. Read [the code-review reference](references/code-review.md), then identify the repository and diff base. Resolve the PR's base repository and actual base branch from PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Refresh the base and limit review to the PR's own diff.
 2. Fetch PR metadata, diff, comments, existing reviews, thread resolution state, and CI status using the host's GitHub integration or authenticated `gh` fallback.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.

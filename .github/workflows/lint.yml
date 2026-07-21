@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "17 9 1 * *"
 
 jobs:
   quality:
@@ -20,6 +22,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run content:check
       - run: npm run docs:check
       - run: npm run test:shell
       - run: npm run test:node

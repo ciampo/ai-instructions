@@ -1,4 +1,4 @@
-# Coding Principles
+# Coding Principles Reference
 
 How I think about code. These principles apply across all projects.
 
@@ -79,4 +79,4 @@ How I think about code. These principles apply across all projects.
 
 - **[STRONG]** Well-written code should be as self-explanatory as possible. Prefer meaningful names that convey intent.
 - **[RULE]** Do not narrate what the code does. But do leave comments for the important things: trade-offs, constraints, non-obvious reasoning, and context that future maintainers (including LLM agents inspecting the codebase) will benefit from. Good comments are an investment in long-term readability.
-- **[STRONG]** JSDoc on all exported/public APIs. See `writing-conventions.md` (JSDoc section) for detailed guidance.
+- **[STRONG]** Add JSDoc to exported/public APIs when it clarifies behavior, constraints, or non-obvious usage. Follow the target repository's documentation policy.

@@ -14,6 +14,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { assertRecentDate, validateContent } from '../scripts/validate-content.mjs';
+import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
@@ -73,12 +75,20 @@ function artifactPath( platform, category, home ) {
 	if ( category === 'instructions' ) {
 		return capability.strategy === 'concat'
 			? base
-			: path.join( base, `coding-principles${ capability.extension }` );
+			: path.join( base, `core${ capability.extension }` );
 	}
 	if ( category === 'skills' ) {
 		return path.join( base, 'review-pr', 'SKILL.md' );
 	}
 	return path.join( base, `a11y-reviewer${ capability.extension }` );
+}
+
+function skillPath( platform, home, skillName, relative = 'SKILL.md' ) {
+	return path.join(
+		destination( home, platform.capabilities.skills.userPath ),
+		skillName,
+		relative
+	);
 }
 
 async function createDetectedHome( platform ) {
@@ -104,6 +114,51 @@ async function expectedConcatenatedInstructions() {
 		sections.push( `<!-- source: ${ name } -->\n\n${ source }\n---\n` );
 	}
 	return `${ managedMarker }\n${ sections.join( '\n' ) }\n`;
+}
+
+async function createContentFixture( t, {
+	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
+	referenceContent,
+} = {} ) {
+	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-content-' ) );
+	t.after( () => rm( fixture, { recursive: true, force: true } ) );
+	for ( const directory of [
+		'agents',
+		'docs',
+		'instructions',
+		'platforms',
+		'skills/example-skill/references',
+	] ) {
+		await mkdir( path.join( fixture, directory ), { recursive: true } );
+	}
+
+	const today = new Date().toISOString().slice( 0, 10 );
+	const fixtureManifest = structuredClone( manifest );
+	fixtureManifest.lastReviewed = today;
+	for ( const platform of fixtureManifest.platforms ) {
+		platform.lastVerified = today;
+	}
+	await writeFile(
+		path.join( fixture, 'platforms', 'manifest.json' ),
+		`${ JSON.stringify( fixtureManifest, null, 2 ) }\n`
+	);
+	await writeFile(
+		path.join( fixture, 'skills', 'example-skill', 'SKILL.md' ),
+		`---\nname: example-skill\ndescription: Example skill.\n---\n${ referenceContent === undefined ? '' : '\nRead [the reference](references/example.md).\n' }`
+	);
+	if ( referenceContent !== undefined ) {
+		await writeFile(
+			path.join( fixture, 'skills', 'example-skill', 'references', 'example.md' ),
+			referenceContent
+		);
+	}
+	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
+	await writeFile(
+		path.join( fixture, 'docs', 'standards-index.md' ),
+		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Example](https://example.com) | Example | ${ today } |\n`
+	);
+	await writeFile( path.join( fixture, 'agents', 'example-agent.md' ), agentContent );
+	return { fixture, today };
 }
 
 test( 'manifest declares complete, current platform contracts', () => {
@@ -344,6 +399,82 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 	assert.equal( await readFile( removable, 'utf8' ), '# Original file\n' );
 } );
 
+test( 'content contracts enforce the universal instruction budget', async () => {
+	const result = await validateContent( repoDir );
+	assert.ok( result.universal.lines <= 150 );
+	assert.ok( result.universal.bytes <= 8 * 1024 );
+} );
+
+test( 'content contracts reject invalid review dates', () => {
+	assert.throws(
+		() => assertRecentDate( '2026-02-29', 'standards index' ),
+		/valid calendar date/
+	);
+	assert.throws(
+		() => assertRecentDate( 'not-a-date', 'standards index' ),
+		/valid calendar date/
+	);
+} );
+
+test( 'content contracts reject unsupported agent keys with CRLF frontmatter', async ( t ) => {
+	const { fixture } = await createContentFixture( t, {
+		agentContent: '---\r\n  name: example-agent\r\n  description: Example agent.\r\n  tools: Read\r\n---\r\n',
+	} );
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/shared agents support only name and description frontmatter/
+	);
+} );
+
+test( 'content contracts validate links in bundled skill references', async ( t ) => {
+	const { fixture } = await createContentFixture( t, {
+		referenceContent: 'Read [the missing detail](missing.md).\n',
+	} );
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/bundled reference does not exist: missing\.md/
+	);
+} );
+
+test( 'content contracts ignore link-shaped examples in inline code', async ( t ) => {
+	const { fixture } = await createContentFixture( t, {
+		referenceContent: 'Use `([#123](URL))` as the changelog link format.\n',
+	} );
+
+	await assert.doesNotReject( validateContent( fixture ) );
+} );
+
+test( 'content contracts reject every invalid standards review date', async ( t ) => {
+	const { fixture, today } = await createContentFixture( t );
+	await writeFile(
+		path.join( fixture, 'docs', 'standards-index.md' ),
+		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Valid](https://example.com/valid) | Example | ${ today } |\n| [Invalid](https://example.com/invalid) | Example | not-a-date |\n`
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/expected an ISO date with a valid calendar date/
+	);
+} );
+
+test( 'copied skill artifacts preserve source line endings', async ( t ) => {
+	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skill-lines-' ) );
+	t.after( () => rm( fixture, { recursive: true, force: true } ) );
+	const skillDirectory = path.join( fixture, 'skills', 'example-skill' );
+	await mkdir( skillDirectory, { recursive: true } );
+	const source = '---\r\nname: example-skill\r\ndescription: Example skill.\r\n---\r\n\r\n# Example\r\n';
+	await writeFile( path.join( skillDirectory, 'SKILL.md' ), source );
+
+	const [ artifact ] = await createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
+		manifest.platforms[ 0 ],
+		[ 'skills' ],
+		fixture
+	);
+	assert.equal( artifact.expectedContent, source );
+} );
+
 for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: copy lifecycle and category isolation`, async ( t ) => {
 		const home = await createDetectedHome( platform );
@@ -445,10 +576,18 @@ for ( const platform of manifest.platforms ) {
 				? '# ai-instructions:managed\nname = "removed-agent"\n'
 				: `---\nname: removed-agent\ndescription: stale\n---\n${ managedMarker }\n`
 		);
+		const staleSkill = skillPath( platform, home, 'removed-skill', 'SKILL.md' );
+		await mkdir( path.dirname( staleSkill ), { recursive: true } );
+		await writeFile( staleSkill, '---\nname: removed-skill\ndescription: stale\n---\n' );
+		await writeFile(
+			path.join( path.dirname( staleSkill ), '.ai-instructions-managed' ),
+			'ai-instructions:managed\n'
+		);
 
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ], 1 );
 		runInstaller( home, [ 'update', '--agent', platform.id, '--copy', '--yes' ] );
 		assert.equal( await pathExists( stalePath ), false );
+		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
 	} );
 }
 
@@ -475,14 +614,14 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'instructions', 'coding-principles.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
 	);
 	assert.equal(
-		await readFile( destination( home, '.cursor/rules/coding-principles.mdc' ), 'utf8' ),
-		`---\ndescription: 'Coding Principles'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
+		await readFile( destination( home, '.cursor/rules/core.mdc' ), 'utf8' ),
+		`---\ndescription: 'Core Instructions'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
 	);
 	assert.equal(
-		await readFile( destination( home, '.claude/rules/coding-principles.md' ), 'utf8' ),
+		await readFile( destination( home, '.claude/rules/core.md' ), 'utf8' ),
 		`${ managedMarker }\n${ instructionSource }`
 	);
 	const concatenatedInstructions = await expectedConcatenatedInstructions();
@@ -494,13 +633,31 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		assert.equal( await readFile( destination( home, relativePath ), 'utf8' ), concatenatedInstructions );
 	}
 
-	const skillSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ), 'utf8' )
+	const skillSource = await readFile(
+		path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ),
+		'utf8'
 	);
 	for ( const platform of manifest.platforms ) {
 		assert.equal(
 			await readFile( artifactPath( platform, 'skills', home ), 'utf8' ),
-			`${ skillSource }${ managedMarker }\n`
+			skillSource
+		);
+		assert.equal(
+			await readFile( path.join( path.dirname( artifactPath( platform, 'skills', home ) ), '.ai-instructions-managed' ), 'utf8' ),
+			'ai-instructions:managed\n'
+		);
+	}
+	const accessibilityReference = await readFile(
+		path.join( repoDir, 'skills', 'engineering-standards', 'references', 'accessibility.md' ),
+		'utf8'
+	);
+	for ( const platform of manifest.platforms ) {
+		assert.equal(
+			await readFile(
+				skillPath( platform, home, 'engineering-standards', 'references/accessibility.md' ),
+				'utf8'
+			),
+			accessibilityReference
 		);
 	}
 

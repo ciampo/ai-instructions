@@ -1,4 +1,4 @@
-# Code Review
+# Code Review Reference
 
 How I review PRs, and how I expect AI to assist with reviews.
 
@@ -22,7 +22,7 @@ Use these consistently in review output:
 
 - Structured: Summary, Issues Found (numbered with severity), Suggestions.
 - Output as portable markdown. Never post directly to GitHub unless asked.
-- When drafting comments for GitHub, follow the writing style and tone defined in `interaction-preferences.md` (GitHub comment writing style section).
+- When drafting comments for GitHub, keep them concise, collaborative, actionable, and self-contained. Put extended detail in `<details>` when useful.
 
 ## Uncertain Findings
 

@@ -1,4 +1,4 @@
-# Security
+# Security Reference
 
 Baseline security practices for application code. Not an exhaustive security policy -- a set of principles AI agents must follow.
 

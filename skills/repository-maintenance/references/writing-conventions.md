@@ -1,4 +1,4 @@
-# Writing Conventions
+# Writing Conventions Reference
 
 How I expect written artifacts to be structured.
 
@@ -34,7 +34,7 @@ docs: Add migration guide for Button API changes
 
 ## CHANGELOG Entries
 
-- **[RULE]** Always include them for user-facing changes. Use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
+- **[RULE]** Follow the target repository's release policy. When it requires a changelog entry for the change, use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
 - **[STRONG]** Include PR link in `([#NNNNN](URL))` format.
 - **[RULE]** Match the existing CHANGELOG format and conventions in the repo exactly.
 
@@ -51,7 +51,7 @@ docs: Add migration guide for Button API changes
 
 ## Branch Names
 
-See `naming-conventions.md` (Branches section) for the canonical branch naming convention.
+Follow the target repository's branch convention. When none exists, prefer `type/short-description`, such as `fix/focus-trap-escape` or `docs/migration-guide`.
 
 ## JSDoc / API Documentation
 

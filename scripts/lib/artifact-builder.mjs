@@ -122,7 +122,7 @@ export function createArtifactBuilder( { repoDir } ) {
 					artifacts.push( {
 						category,
 						destination,
-						expectedContent: managedMarkdown( content ),
+						expectedContent: content,
 						format: capability.format,
 						generated: false,
 						kind: 'skill-directory',
