@@ -470,9 +470,32 @@ test( 'explicit Copilot repository export refreshes only managed files', async (
 
 test( 'POSIX compatibility wrapper delegates to the Node CLI', {
 	skip: process.platform === 'win32',
-}, () => {
-	const result = spawnSync( 'sh', [ path.join( repoDir, 'setup.sh' ), '--help' ], {
+}, async ( t ) => {
+	const wrapper = await readFile( path.join( repoDir, 'setup.sh' ), 'utf8' );
+	assert.doesNotMatch( wrapper, /\b(?:cd|dirname)[ \t]+--(?:[ \t]|$)/m );
+
+	const utilityDir = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-posix-' ) );
+	t.after( () => rm( utilityDir, { recursive: true, force: true } ) );
+	await writeFile(
+		path.join( utilityDir, 'dirname' ),
+		`#!/bin/sh
+if [ "\${1-}" = "--" ]; then
+	exit 64
+fi
+case \${1-} in
+	*/*) directory=\${1%/*}; [ -n "$directory" ] || directory=/ ;;
+	*) directory=. ;;
+esac
+printf '%s\\n' "$directory"
+`,
+		{ mode: 0o755 }
+	);
+	const result = spawnSync( '/bin/sh', [ path.join( repoDir, 'setup.sh' ), '--help' ], {
 		cwd: repoDir,
+		env: {
+			...process.env,
+			PATH: `${ utilityDir }${ path.delimiter }${ path.dirname( process.execPath ) }`,
+		},
 		encoding: 'utf8',
 	} );
 	assert.equal( result.status, 0, result.stderr );

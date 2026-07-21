@@ -6,5 +6,13 @@ if ! command -v node >/dev/null 2>&1; then
 	exit 1
 fi
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+case $0 in
+	*/*) SCRIPT_DIR=${0%/*} ;;
+	*) SCRIPT_DIR=. ;;
+esac
+[ -n "$SCRIPT_DIR" ] || SCRIPT_DIR=/
+case $SCRIPT_DIR in
+	-*) SCRIPT_DIR="./$SCRIPT_DIR" ;;
+esac
+SCRIPT_DIR="$(CDPATH= cd "$SCRIPT_DIR" && pwd)"
 exec node "$SCRIPT_DIR/scripts/setup.mjs" "$@"
