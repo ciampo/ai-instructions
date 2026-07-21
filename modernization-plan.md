@@ -1,6 +1,7 @@
 # AI instructions modernization plan
 
-Status: assessment and plan only. No implementation changes are included.
+Status: active roadmap. The first Phase 0 fixes are included in
+[#19](https://github.com/ciampo/ai-instructions/pull/19).
 
 Audit date: 2026-07-20
 
@@ -45,7 +46,10 @@ judge whether every personal preference should remain a personal preference.
 It does identify preferences that are presented as universal technical facts or
 that are too broad to apply safely across repositories.
 
-## Current baseline
+## Audit baseline
+
+This snapshot records the repository state on 2026-07-20, before the Phase 0
+changes included in this pull request.
 
 | Area | Current state |
 | --- | --- |
@@ -59,7 +63,7 @@ that are too broad to apply safely across repositories.
 | Dependency state | `markdownlint-cli2` 0.22.0 installed; 0.23.1 current |
 | Dependency audit | 1 high and 4 moderate transitive vulnerabilities |
 
-Current checks:
+Baseline checks:
 
 - `bash -n setup.sh tests/*.sh`: passes.
 - `npm run lint`: passes.
@@ -115,7 +119,7 @@ The exact names can change during implementation. The important boundaries are:
 | Claude Code | Installs `~/.claude/rules/*.md` and generated skill copies; no personas | User rules, Agent Skills, and user custom agents are supported | Rules are broadly correct; the reminder to reference them from `CLAUDE.md` is stale; skills are non-portable; agents are omitted | Small user rules, standard skills, valid agents, no redundant reminder |
 | Codex | Concatenates everything into `~/.codex/AGENTS.md`; marks skills and personas unsupported | Global `AGENTS.md`, standard skills, and user custom agents are supported | The matrix is outdated; the 54 KB eager prompt defeats progressive disclosure; routing points to source-repo files; override precedence is not checked | Minimal `AGENTS.md`, skills under `~/.agents/skills`, generated TOML agents under `~/.codex/agents` |
 | GitHub Copilot CLI | Installs generated skill copies; optionally writes a repository-wide concatenated instruction file; no personas | Personal and modular instructions, Agent Skills, and user custom agents are supported | Personal instructions and agents are omitted; skills lack required metadata; concatenated routing can reference files absent from the target repository | Personal CLI instructions, standard skills, valid agents; repository export remains explicit |
-| Gemini CLI | Installs generated skill copies only | `GEMINI.md` context, Agent Skills, and user custom agents are supported | Instructions and agents are omitted; skills without frontmatter may be silently skipped | Small user context, standard skills, valid agents |
+| Gemini CLI | Installs generated skill copies only | `GEMINI.md` context, Agent Skills, and user custom agents are supported | Instructions and agents are omitted; skills without frontmatter may be silently skipped; the product surface is transitioning to Antigravity CLI for some account tiers | Confirm the intended account and product surface, then provide small user context, standard skills, and valid agents |
 
 ### Source-of-truth notes
 
@@ -145,7 +149,10 @@ The exact names can change during implementation. The important boundaries are:
   for Copilot CLI.
 - Gemini CLI documents [persistent context](https://geminicli.com/docs/cli/gemini-md/),
   [user and workspace skills](https://geminicli.com/docs/cli/using-agent-skills/),
-  and [custom subagents](https://geminicli.com/docs/core/subagents/).
+  and [custom subagents](https://geminicli.com/docs/core/subagents/). The same
+  official documentation announces a transition to Antigravity CLI for
+  unpaid-tier and Google One users, so support must name the intended account
+  and product surface.
 
 ### Recommended support policy
 
@@ -346,6 +353,10 @@ tested headlessly.
 
 ### Phase 0: Lock behavior and repair urgent issues
 
+Status: CI coverage, `check` exit behavior, the target-size correction, and the
+dependency audit are complete in [#19](https://github.com/ciampo/ai-instructions/pull/19).
+The broader normative accessibility audit and migration fixtures remain.
+
 1. Add the existing installer regression suite and `bash -n` to CI.
 2. Add failing tests for stale/conflicting `check` exit codes.
 3. Correct the WCAG target-size language and audit other normative a11y claims
@@ -452,6 +463,9 @@ Recommended defaults are shown first.
    path, symlink, and copy behavior.
 6. **Instruction strictness:** preserve genuine personal boundaries globally;
    scope technology and repository conventions based on detected context.
+7. **Gemini surface:** confirm the intended account tier and whether the target
+   remains Gemini CLI or becomes Antigravity CLI before implementing its
+   adapter.
 
 ## Definition of done
 
