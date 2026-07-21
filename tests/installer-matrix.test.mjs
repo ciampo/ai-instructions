@@ -128,7 +128,7 @@ test( 'manifest rejects unsafe legacy migration paths', () => {
 	invalidManifest.platforms[ 0 ].legacyDestinations[ 0 ].sourceRoot = '../outside-repository';
 	assert.throws(
 		() => validateManifest( invalidManifest ),
-		/legacyDestinations\[0\]\.sourceRoot must stay within/
+		/legacyDestinations\[0\]\.sourceRoot must stay within the repository/
 	);
 } );
 
@@ -177,6 +177,22 @@ test( 'manifest rejects support tiers outside the documented contract', () => {
 	assert.throws(
 		() => validateManifest( invalidManifest ),
 		/cursor\.supportTier is invalid/
+	);
+} );
+
+test( 'manifest rejects invalid review and verification dates', () => {
+	const invalidReviewDate = structuredClone( manifest );
+	invalidReviewDate.lastReviewed = '2026-02-29';
+	assert.throws(
+		() => validateManifest( invalidReviewDate ),
+		/lastReviewed must use YYYY-MM-DD/
+	);
+
+	const invalidVerificationDate = structuredClone( manifest );
+	invalidVerificationDate.platforms[ 0 ].lastVerified = 'July 21, 2026';
+	assert.throws(
+		() => validateManifest( invalidVerificationDate ),
+		/cursor\.lastVerified must use YYYY-MM-DD/
 	);
 } );
 

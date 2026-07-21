@@ -12,7 +12,7 @@ function assertString( value, field ) {
 	}
 }
 
-function validateRelativePath( value, field ) {
+function validateRelativePath( value, field, boundary = 'selected home directory' ) {
 	assertString( value, field );
 	const segments = value.split( /[\\/]/ );
 	if (
@@ -20,11 +20,28 @@ function validateRelativePath( value, field ) {
 		path.win32.isAbsolute( value ) ||
 		segments.includes( '..' )
 	) {
-		throw new Error( `Platform manifest: ${ field } must stay within the selected home directory.` );
+		throw new Error( `Platform manifest: ${ field } must stay within the ${ boundary }.` );
 	}
 	if ( value.includes( '\\' ) ) {
 		throw new Error( `Platform manifest: ${ field } must use forward-slash separators.` );
 	}
+}
+
+function validateDate( value, field ) {
+	assertString( value, field );
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec( value );
+	if ( match ) {
+		const [ year, month, day ] = match.slice( 1 ).map( Number );
+		const parsed = new Date( Date.UTC( year, month - 1, day ) );
+		if (
+			parsed.getUTCFullYear() === year &&
+			parsed.getUTCMonth() === month - 1 &&
+			parsed.getUTCDate() === day
+		) {
+			return;
+		}
+	}
+	throw new Error( `Platform manifest: ${ field } must use YYYY-MM-DD with a valid calendar date.` );
 }
 
 function validatePortableFileName( value, field ) {
@@ -80,7 +97,7 @@ function validateLegacyDestination( platform, legacy, index ) {
 		throw new Error( `Platform manifest: ${ field }.category is invalid.` );
 	}
 	validateRelativePath( legacy.userPath, `${ field }.userPath` );
-	validateRelativePath( legacy.sourceRoot, `${ field }.sourceRoot` );
+	validateRelativePath( legacy.sourceRoot, `${ field }.sourceRoot`, 'repository' );
 	assertString( legacy.reason, `${ field }.reason` );
 	if ( ! [ 'flat', 'nested' ].includes( legacy.layout ) ) {
 		throw new Error( `Platform manifest: ${ field }.layout is invalid.` );
@@ -94,7 +111,7 @@ export function validateManifest( manifest ) {
 	if ( manifest.schemaVersion !== 1 ) {
 		throw new Error( 'Platform manifest: unsupported schemaVersion.' );
 	}
-	assertString( manifest.lastReviewed, 'lastReviewed' );
+	validateDate( manifest.lastReviewed, 'lastReviewed' );
 	if ( ! Array.isArray( manifest.platforms ) ) {
 		throw new Error( 'Platform manifest: platforms must be an array.' );
 	}
@@ -109,7 +126,7 @@ export function validateManifest( manifest ) {
 		if ( ! SUPPORT_TIERS.has( platform.supportTier ) ) {
 			throw new Error( `Platform manifest: ${ platform.id }.supportTier is invalid.` );
 		}
-		assertString( platform.lastVerified, `${ platform.id }.lastVerified` );
+		validateDate( platform.lastVerified, `${ platform.id }.lastVerified` );
 		validateRelativePath( platform.detection?.userPath, `${ platform.id }.detection.userPath` );
 		for ( const category of CATEGORIES ) {
 			validateCapability( platform, category );
