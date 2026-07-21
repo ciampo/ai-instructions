@@ -12,9 +12,9 @@ See the [modernization plan](modernization-plan.md) for the current architecture
 
 ```text
 instructions/          Always-on rules loaded into every AI session
-skills/                On-demand workflows invoked by trigger phrases
-personas/              Specialized agent identities for focused tasks
-CONVENTIONS.md         Meta-conventions (severity tags, cross-references)
+skills/*/SKILL.md      Standards-compliant workflows loaded on demand
+agents/                Custom agent definitions for focused tasks
+CONVENTIONS.md         Meta-conventions for skills, agents, and severity tags
 setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini CLI
 ```
 
@@ -39,31 +39,33 @@ setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini
 
 | File | Trigger | What it does |
 | --- | --- | --- |
-| [review-pr.md](skills/review-pr.md) | "review this PR" | Structured PR review against the checklist |
-| [self-review-pr.md](skills/self-review-pr.md) | "self-review" | Readonly subagent self-review to reduce bias |
-| [write-pr-description.md](skills/write-pr-description.md) | "write/update PR description" | PR description writer following repo template |
-| [draft-review-comment.md](skills/draft-review-comment.md) | "craft a comment" | GitHub review comment drafter (copy-paste snippets) |
-| [audit-dependency-update.md](skills/audit-dependency-update.md) | updating a dependency | Full audit: changelog, codebase impact, compatibility, security |
-| [address-pr-feedback.md](skills/address-pr-feedback.md) | "address the feedback" | Systematic workflow for review comments |
-| [investigate-debug.md](skills/investigate-debug.md) | "debug this" | Structured debugging: reproduce, isolate, fix, verify |
-| [refactor.md](skills/refactor.md) | "refactor X" | Systematic codebase-wide refactoring workflow |
-| [resume-session.md](skills/resume-session.md) | "continue where we left off" | Pick up work from a previous session |
-| [release-publish.md](skills/release-publish.md) | "prepare a release" | Version bump, CHANGELOG, publish, post-publish checks |
+| [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
+| [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with a no-subagent fallback |
+| [write-pr-description](skills/write-pr-description/SKILL.md) | "write/update PR description" | PR description writer following the repository template |
+| [draft-review-comment](skills/draft-review-comment/SKILL.md) | "craft a comment" | GitHub review comment drafter that never posts directly |
+| [audit-dependency-update](skills/audit-dependency-update/SKILL.md) | updating a dependency | Changelog, impact, compatibility, and security audit |
+| [address-pr-feedback](skills/address-pr-feedback/SKILL.md) | "address the feedback" | Systematic workflow for review comments |
+| [investigate-debug](skills/investigate-debug/SKILL.md) | "debug this" | Reproduce, isolate, fix, and verify |
+| [refactor](skills/refactor/SKILL.md) | "refactor X" | Verified codebase-wide refactoring workflow |
+| [resume-session](skills/resume-session/SKILL.md) | "continue where we left off" | Recover and verify previous work |
+| [prepare-release](skills/prepare-release/SKILL.md) | "prepare a release" | Local release preparation without remote publication |
+| [publish-release](skills/publish-release/SKILL.md) | "publish the release" | Explicitly authorized release publication |
 
-### Personas
+### Agents
 
 | File | What it does |
 | --- | --- |
-| [a11y-reviewer.md](personas/a11y-reviewer.md) | Senior accessibility engineer for deep a11y audits |
-| [performance-reviewer.md](personas/performance-reviewer.md) | Senior performance engineer for bundle, rendering, and runtime reviews |
-| [api-design-reviewer.md](personas/api-design-reviewer.md) | API design specialist for surface area, consistency, and ergonomics |
+| [a11y-reviewer.md](agents/a11y-reviewer.md) | Senior accessibility engineer for deep a11y audits |
+| [performance-reviewer.md](agents/performance-reviewer.md) | Senior performance engineer for bundle, rendering, and runtime reviews |
+| [api-design-reviewer.md](agents/api-design-reviewer.md) | API design specialist for surface area, consistency, and ergonomics |
 
 ## Conventions
 
 See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 
 - **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
-- **Cross-references**: Skills and personas declare `## Dependencies` listing the instruction files they need.
+- **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
+- **Custom agents**: Shared Markdown definitions are installed directly where possible and generated as TOML for Codex.
 
 ## Setup
 
@@ -81,13 +83,13 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 ### Supported agents
 
-| Agent | Detection | Instructions | Skills | Personas |
+| Agent | Detection | Instructions | Skills | Agents |
 | --- | --- | --- | --- | --- |
-| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` (generated copies with YAML frontmatter) | `~/.cursor/skills-cursor/*/SKILL.md` | `~/.cursor/agents/` |
-| Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | -- |
-| Codex | `~/.codex/` | `~/.codex/AGENTS.md` (single concatenated, managed file) | -- | -- |
-| GitHub Copilot | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | -- |
-| Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | -- |
+| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` (generated copies with YAML frontmatter) | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` |
+| Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` |
+| Codex | `~/.codex/` | `~/.codex/AGENTS.md` (single concatenated, managed file) | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` |
+| GitHub Copilot CLI | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.md` |
+| Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` |
 
 ### Commands
 
@@ -97,14 +99,14 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | `list` | Show all installed symlinks/copies grouped by agent (includes stale entries) |
 | `remove` | Remove symlinks/copies created by this script (includes stale cleanup) |
 | `update` | Re-install + clean stale symlinks/copies for deleted source files |
-| `check` | Verify existing symlinks/copies are valid, detect stale/broken links, and confirm `workflow-routing` targets resolve for the selected agent (exits non-zero if any found) |
+| `check` | Verify existing symlinks/copies and generated agents, detect stale/broken/conflicting entries, and exit non-zero when problems are found |
 
 ### Options
 
 | Flag | What it does |
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
-| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `personas`). Repeatable. For agents with `workflow-routing`, `--only instructions` is a partial install: `check` will still flag missing skill targets until the matching skills are installed. |
+| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. The legacy `personas` value remains an alias for `agents` during migration. |
 | `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
@@ -117,25 +119,25 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --yes                                   # Non-interactive: all detected agents
 ./setup.sh --agent cursor --agent claude           # Target specific agents
 ./setup.sh --agent '*' --dry-run                   # Preview for all agents
-./setup.sh --only skills --only personas           # Only install skills + personas
+./setup.sh --only skills --only agents             # Only install skills + custom agents
 ./setup.sh remove --agent cursor                   # Remove Cursor symlinks
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
-./setup.sh check --agent cursor                    # Verify generated Cursor rules and routing targets
+./setup.sh check --agent cursor                    # Verify managed Cursor configuration
 ./setup.sh install --copy --yes                    # Copy mode for CI
 ./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
 
-The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied files include a `<!-- ai-instructions:managed -->` marker so `update --copy` only overwrites files the script previously installed.
+The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied Markdown files include an `<!-- ai-instructions:managed -->` marker, while generated Codex agents use `# ai-instructions:managed`, so `update --copy` only overwrites files the script previously installed.
 
 ### Manual integration
 
 If you prefer to set things up manually or use a different tool:
 
-- **Cursor**: Instructions to `~/.cursor/rules/` as `.mdc` files with YAML frontmatter (`description`, `alwaysApply`), skills to `~/.cursor/skills-cursor/<name>/SKILL.md`, personas to `~/.cursor/agents/`
-- **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/<name>/SKILL.md`, reference from `CLAUDE.md`
-- **Codex**: All instructions concatenated into `~/.codex/AGENTS.md` (the global file Codex loads on startup). The script generates it as a managed file and refuses to overwrite a user-maintained `~/.codex/AGENTS.md`. Re-run `./setup.sh update --agent codex` to refresh after source changes.
-- **GitHub Copilot**: Skills to `~/.copilot/skills/<name>/SKILL.md`, or use `--copilot-concat` for a single instructions file
-- **Gemini CLI**: Skills to `~/.gemini/skills/<name>/SKILL.md`
+- **Cursor**: Instructions to `~/.cursor/rules/`, skills to `~/.cursor/skills/`, and agents to `~/.cursor/agents/`
+- **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/`, and agents to `~/.claude/agents/`
+- **Codex**: Instructions to managed `~/.codex/AGENTS.md`, skills to the shared `~/.agents/skills/` location, and generated agents to `~/.codex/agents/`
+- **GitHub Copilot CLI**: Skills to `~/.copilot/skills/` and agents to `~/.copilot/agents/`; use `--copilot-concat` only for explicit repository export
+- **Gemini CLI**: Skills to `~/.gemini/skills/` and agents to `~/.gemini/agents/`
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
 
 ### Per-project overrides

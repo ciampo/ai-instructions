@@ -46,10 +46,10 @@ assert_not_symlink "$AGENTS_FILE"
 # Concatenated instruction sources are present.
 assert_file_contains "$AGENTS_FILE" "<!-- source: coding-principles.md -->"
 assert_file_contains "$AGENTS_FILE" "# Accessibility Standards"
-# Routing table is inlined and references the source skill files (no per-agent
-# skills install exists for Codex).
-assert_file_contains "$AGENTS_FILE" "# Workflow Routing"
-assert_file_contains "$AGENTS_FILE" "$REPO_DIR/skills/write-pr-description.md"
+# Skills use Codex's standard user-level Agent Skills directory.
+CODEX_SKILL="$TMP_HOME/.agents/skills/write-pr-description/SKILL.md"
+assert_file_exists "$CODEX_SKILL"
+assert_file_contains "$CODEX_SKILL" "name: write-pr-description"
 # No legacy per-file instructions directory is created.
 assert_path_missing "$TMP_HOME/.codex/instructions"
 
@@ -69,7 +69,7 @@ fi
 assert_file_contains "$TMP_HOME/stale-check.log" "out of date"
 # update brings it back in sync.
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" update --agent codex --yes >/dev/null
-assert_file_contains "$AGENTS_FILE" "# Workflow Routing"
+assert_file_contains "$AGENTS_FILE" "# Accessibility Standards"
 
 # --- Remove only deletes the managed file ----------------------------------
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" remove --agent codex --yes >/dev/null
@@ -107,7 +107,7 @@ printf '# external\n' > "$TMP_LEGACY/external.md"
 ln -s "$TMP_LEGACY/external.md" "$TMP_LEGACY/.codex/instructions/user-link.md"
 # A user symlink targeting a repo file outside instructions/ (e.g. a skill)
 # was never installed by this script and must be preserved.
-ln -s "$REPO_DIR/skills/refactor.md" "$TMP_LEGACY/.codex/instructions/user-skill-link.md"
+ln -s "$REPO_DIR/skills/refactor/SKILL.md" "$TMP_LEGACY/.codex/instructions/user-skill-link.md"
 
 HOME="$TMP_LEGACY" "$REPO_DIR/setup.sh" --agent codex --yes >"$TMP_LEGACY/install.log" 2>&1
 assert_file_contains "$TMP_LEGACY/install.log" "legacy Codex instructions"
@@ -143,11 +143,12 @@ HOME="$TMP_DRY" "$REPO_DIR/setup.sh" --agent codex --dry-run --yes >"$TMP_DRY/dr
 assert_file_contains "$TMP_DRY/dry.log" "dry-run"
 assert_path_missing "$TMP_DRY/.codex/AGENTS.md"
 
-# --- --only skills is a no-op for Codex (it has no skills) ------------------
+# --- --only skills installs skills without creating global instructions -----
 TMP_ONLY="$TMP_ROOT/only"
 mkdir -p "$TMP_ONLY/.codex"
 HOME="$TMP_ONLY" "$REPO_DIR/setup.sh" --agent codex --only skills --yes >/dev/null
 assert_path_missing "$TMP_ONLY/.codex/AGENTS.md"
+assert_file_exists "$TMP_ONLY/.agents/skills/refactor/SKILL.md"
 
 # --- check on a clean home succeeds (exit 0, nothing installed) -------------
 TMP_CLEAN="$TMP_ROOT/clean"

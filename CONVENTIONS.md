@@ -1,6 +1,6 @@
 # Conventions
 
-Meta-conventions used across all instruction, skill, and persona files in this repo.
+Meta-conventions used across all instruction, skill, and custom-agent files in this repo.
 
 ## Severity Tags
 
@@ -12,42 +12,34 @@ Rules and preferences are tagged with severity to help AI agents calibrate:
 
 Not every bullet point needs a tag. Use them on items where the distinction matters — where an agent might otherwise treat a hard rule as optional, or over-enforce a soft preference.
 
-## Cross-References in Skills and Personas
+## Agent Skills
 
-Skills and personas that depend on instruction files must declare their dependencies at the top:
+Every skill follows the [Agent Skills specification](https://agentskills.io/specification) and lives at `skills/<name>/SKILL.md`.
 
-```markdown
-## Dependencies
+The file starts with YAML frontmatter:
 
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/code-review.md`
-- `instructions/accessibility.md`
+```yaml
+---
+name: review-pr
+description: Perform a read-only, multi-round pull-request review. Use when asked to review someone else's PR.
+---
 ```
 
-This tells the agent which context to load. The `[RULE]` tag signals that loading dependencies is non-negotiable. If a dependency is not available, the agent should still proceed but note the gap.
+- `name` matches the directory name and uses lowercase letters, numbers, and hyphens.
+- `description` says what the skill does and when to use it.
+- The body is self-contained and states required capabilities and safe fallbacks.
+- Supporting material belongs inside the skill directory under `references/`, `scripts/`, or `assets/` and is linked with relative paths.
+- Do not reference the source checkout with absolute paths.
 
-## Workflow Routing
+Procedural workflows belong in skills instead of always-on instructions. Native skill descriptions replace the former generated workflow-routing file.
 
-`instructions/workflow-routing.md` maps task types to required skills. It is **auto-generated** by `setup.sh` from metadata in skill files — do not edit the installed copies directly.
+## Custom Agents
 
-### Routing comments in skills
+Shared custom-agent sources live at `agents/<name>.md` with `name` and `description` YAML frontmatter. Keep shared definitions to the common metadata subset; platform-specific adapters generate any required native format.
 
-Each skill that should appear in the routing table must include an HTML comment near the top of the file:
+Keep required metadata as single-line plain or quoted scalars. The portable Codex adapter rejects block scalars and quoted escape sequences that it cannot translate safely.
 
-```markdown
-<!-- routing: [SEVERITY] Short description of when to use this skill -->
-```
-
-`setup.sh` extracts these comments, resolves the skill paths for each agent, and generates the routing instruction file during installation. When adding a new skill, add a routing comment to include it in the table. Skills without a routing comment (e.g., supporting skills like `draft-review-comment`) are omitted.
-
-### Severity calibration
-
-Use severity tags from the **Severity Tags** section above to control how strongly agents are directed toward each skill:
-
-- **[RULE]**: Non-negotiable — agent must always follow (e.g., `audit-dependency-update`, `write-pr-description`).
-- **[STRONG]**: Strong default — agent should follow unless there is explicit justification to skip (e.g., `review-pr`, `self-review-pr`).
-- **[PREFER]**: Recommended — agent should consider but may skip for simple tasks (e.g., `investigate-debug`, `refactor`).
+The Markdown body is the canonical prompt for Markdown-based products. Codex TOML is generated from the same name, description, and body. Never add a platform-only field to the shared frontmatter unless every direct consumer supports it.
 
 ## Guardrails
 

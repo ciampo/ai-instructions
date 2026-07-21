@@ -1,33 +1,21 @@
-# Skill: Review PR
+---
+name: review-pr
+description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR.
+---
 
-<!-- routing: [STRONG] Reviewing someone else's GitHub PR -->
-
-**[STRONG]** This skill should be used when reviewing someone else's GitHub PR.
+# Review PR
 
 A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
 
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/code-review.md`
-- `instructions/accessibility.md`
-- `instructions/interaction-preferences.md`
-- `instructions/tools-and-cli.md`
-
-**[RULE]** Chain into this skill for final output formatting:
-
-- `skills/draft-review-comment.md`
-
 ## Steps
 
-1. **Identify the repository and diff base**: Identify `owner/repo` per `tools-and-cli.md`. Determine the actual base branch with `PAGER=cat gh pr view <N> --json baseRefName --jq '.baseRefName'` — this outputs the plain ref name. PRs can be stacked, do NOT assume they all target `trunk` or `main`. Fetch and diff against the up-to-date remote base: `git fetch origin <base_branch>` then `git diff origin/<base_branch>...HEAD`. Only review files in the PR (`gh pr diff <N> --name-only`). Do not comment on changes from parent PRs or other branches.
-2. Fetch the PR metadata, diff, comments, existing reviews, and CI status via `gh`.
+1. **Identify the repository and diff base**: Resolve the PR's base repository and actual base branch from PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Refresh the base and limit review to the PR's own diff.
+2. Fetch PR metadata, diff, comments, existing reviews, thread resolution state, and CI status using the host's GitHub integration or authenticated `gh` fallback.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
-5. Perform structured analysis against the review checklist from `instructions/code-review.md`, with accessibility as the first priority.
+5. Review accessibility first, then consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Verify APG, ARIA, and WCAG claims against their primary sources.
 6. Cross-reference changes against how sibling modules/components handle the same patterns.
-7. Write the full review to a markdown document in the OS temporary directory, following the `draft-review-comment` skill (see **Output Format** below). The file is named `<pr-number>-review.md` and opened in the editor — nothing is printed inline in the chat beyond a one-line confirmation.
+7. Use the `draft-review-comment` skill to write the full review to `<pr-number>-review.md` in the OS temporary directory. Open it when supported; otherwise return the path. Print nothing else in chat beyond a one-line confirmation.
 8. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
 9. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Update the same review document.
 

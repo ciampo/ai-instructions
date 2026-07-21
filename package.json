@@ -7,7 +7,7 @@
     "lint": "markdownlint-cli2 \"**/*.md\"",
     "lint:fix": "markdownlint-cli2 --fix \"**/*.md\"",
     "test": "npm run test:shell && npm run test:installer",
-    "test:installer": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh",
+    "test:installer": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh && bash tests/skills-agents-install.sh",
     "test:shell": "bash -n setup.sh tests/*.sh"
   },
   "devDependencies": {

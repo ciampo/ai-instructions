@@ -1,18 +1,11 @@
-# Skill: Audit Dependency Update
+---
+name: audit-dependency-update
+description: Audit dependency additions, removals, and updates by checking releases, compatibility, security, and the full verification suite. Use for every dependency change.
+---
 
-<!-- routing: [RULE] Adding, removing, or updating a dependency -->
-
-**[RULE]** This skill MUST be used for any task that adds, removes, or updates a dependency. Do not proceed without completing every step.
+# Audit Dependency Update
 
 A workflow for thoroughly auditing a dependency update. Invoked when updating a package or reviewing a PR that updates dependencies.
-
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/coding-principles.md`
-- `instructions/security.md`
-- `instructions/tools-and-cli.md`
 
 ## Steps
 

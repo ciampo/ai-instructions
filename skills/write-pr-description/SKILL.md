@@ -1,16 +1,11 @@
-# Skill: Write PR Description
+---
+name: write-pr-description
+description: Write or update a concise pull-request description from the actual diff, repository template, and behavior-focused testing steps. Use for every PR description change.
+---
 
-<!-- routing: [RULE] Writing or updating a PR description -->
-
-**[RULE]** This skill MUST be used when writing or updating a PR description. Do not proceed without completing every step.
+# Write PR Description
 
 A workflow for writing or updating a PR description. Invoked when I say "write the PR description" or "update the PR description."
-
-## Dependencies
-
-**[RULE]** Read each of these files before proceeding. Do not skip this section.
-
-- `instructions/writing-conventions.md`
 
 ## Steps
 
