@@ -20,16 +20,54 @@ assert_file_contains() {
   grep -Fq -- "$2" "$1" || fail "Expected '$2' in $1"
 }
 
+assert_frontmatter_field() {
+  local path="$1" field="$2" expected="${3:-}"
+  awk -v field="$field" -v expected="$expected" '
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+
+    NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+    in_frontmatter && $0 == "---" { closed = 1; exit }
+    in_frontmatter {
+      pattern = "^[[:space:]]*" field "[[:space:]]*:"
+      if (match($0, pattern)) {
+        value = trim(substr($0, RLENGTH + 1))
+        if (expected == "" && value != "") {
+          found = 1
+        } else if (value == expected || value == "\"" expected "\"" || value == "\047" expected "\047") {
+          found = 1
+        }
+      }
+    }
+    END { exit(found && closed ? 0 : 1) }
+  ' "$path" || fail "Expected non-empty '$field' frontmatter field in $path"
+}
+
 assert_frontmatter_file() {
   local path="$1" name="$2"
   assert_file_exists "$path"
   [ "$(sed -n '1p' "$path")" = "---" ] || fail "Expected YAML frontmatter first in $path"
-  assert_file_contains "$path" "name: $name"
-  assert_file_contains "$path" "description:"
+  assert_frontmatter_field "$path" "name" "$name"
+  assert_frontmatter_field "$path" "description"
 }
 
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/skills-agents-install.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
+
+INVALID_FRONTMATTER_FIXTURE="$TMP_ROOT/invalid-frontmatter.md"
+cat > "$INVALID_FRONTMATTER_FIXTURE" <<'EOF'
+---
+name: invalid-frontmatter
+---
+
+The body contains description: but the frontmatter does not.
+EOF
+if ( assert_frontmatter_file "$INVALID_FRONTMATTER_FIXTURE" "invalid-frontmatter" ) 2>/dev/null; then
+  fail "Expected frontmatter assertions to ignore fields in the Markdown body"
+fi
 
 for skill in "$REPO_DIR"/skills/*/SKILL.md; do
   skill_name="$(basename "$(dirname "$skill")")"
