@@ -110,7 +110,7 @@ for installed_skill in "$CURSOR_SKILL" "$CLAUDE_SKILL" "$CODEX_SKILL" "$COPILOT_
 done
 assert_file_exists "$ENGINEERING_REFERENCE"
 assert_file_contains "$ENGINEERING_REFERENCE" "# Accessibility Reference"
-assert_file_contains "$TMP_HOME/.agents/skills/engineering-standards/.ai-instructions-managed" "ai-instructions:managed-skill"
+assert_file_contains "$TMP_HOME/.agents/skills/engineering-standards/.ai-instructions-managed" "ai-instructions:managed"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/dev/null
 
