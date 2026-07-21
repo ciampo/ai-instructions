@@ -442,6 +442,21 @@ test( 'POSIX compatibility wrapper delegates to the Node CLI', {
 	assert.match( result.stdout, /Usage: setup\.sh/ );
 } );
 
+test( 'POSIX compatibility wrapper explains the missing Node requirement', {
+	skip: process.platform === 'win32',
+}, () => {
+	const result = spawnSync( '/bin/sh', [ path.join( repoDir, 'setup.sh' ), '--help' ], {
+		cwd: repoDir,
+		env: { ...process.env, PATH: '' },
+		encoding: 'utf8',
+	} );
+	assert.equal( result.status, 1 );
+	assert.match(
+		result.stderr,
+		/ai-instructions requires Node\.js 22 or newer, but 'node' was not found on PATH\./
+	);
+} );
+
 test( 'the Node entrypoint discovers the platform home when HOME is unset', () => {
 	const env = { ...process.env };
 	delete env.HOME;
