@@ -370,6 +370,23 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	assert.match( codexAgent, /\n"""\n$/ );
 } );
 
+test( 'install directs stale owned generated artifacts to update', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	runInstaller( home, [ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ] );
+	const target = artifactPath( platform, 'agents', home );
+	const staleContent = '# ai-instructions:managed\nname = "stale"\n';
+	await writeFile( target, staleContent );
+
+	const output = runInstaller(
+		home,
+		[ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ]
+	);
+	assert.match( output, /a11y-reviewer\.toml.*out of date; run update to refresh/ );
+	assert.equal( await readFile( target, 'utf8' ), staleContent );
+} );
+
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
 	const home = await createDetectedHome( platform );

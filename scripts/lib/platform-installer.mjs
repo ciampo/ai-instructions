@@ -424,6 +424,11 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 				state.skipped++;
 				return;
 			}
+			if ( artifact.generated && status.owned ) {
+				console.warn( `  [warning] ${ path.basename( artifact.destination ) } is out of date; run update to refresh` );
+				state.skipped++;
+				return;
+			}
 			logConflict( artifact, state );
 			return;
 		}
