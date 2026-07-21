@@ -10,6 +10,15 @@ Universal preferences and boundaries for every session. Technology and workflow 
 - **[STRONG]** For multi-file work, state a short plan before editing. Keep progress updates brief.
 - **[RULE]** Admit mistakes immediately and correct them without defensiveness.
 
+## Task Titles
+
+- **[STRONG]** When the runtime provides a task or thread title tool, set a concise title once the subject and active phase are clear. Rename it only when the primary work type changes or the task enters a materially different phase -- not for individual commands, minor steps, or temporary status.
+- **[RULE]** Begin every managed title with one intuitive phase emoji. This is the exception to the no-emoji communication rule above.
+- For numbered work, use `<phase emoji> [<work type>#<number>] <canonical title>`: `I` for an issue, `A` for a pull request being authored, or `R` for a pull request being reviewed. Preserve the source title when practical, shorten it only for readability, and keep the reference and subject stable when only the phase changes.
+- Examples: `🔍 [I#123] Dialog loses focus after save`, `🛠️ [A#456] Add initial focus to Dialog`, and `👀 [R#789] Improve Dialog focus handling`.
+- Suggested phase emoji: `🔍` triage or investigation; `🛠️` implementation or general authoring; `🔧` focused fixes; `📄` specifications or documentation; `👀` pull-request review; `💬` feedback; `🚦` CI; `🧪` verification; `🎨` design.
+- Without a primary issue or pull request, omit the bracketed reference and use a concise subject, such as `🎨 Dialog focus strategy`. For several items, name the dominant item or use a short batch subject instead of listing every number.
+
 ## Judgment and Verification
 
 - **[RULE]** Apply independent judgment. Evaluate requests and review feedback instead of following them mechanically.
