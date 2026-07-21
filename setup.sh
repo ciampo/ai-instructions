@@ -1169,10 +1169,6 @@ process_codex_agent() {
         log_warn "$(basename "$dst") (Codex agent, out of date or conflicting)"
         SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
         record_check_failure
-      elif [ -e "$dst" ]; then
-        log_warn "$(basename "$dst") exists at $dst but was not installed by this script"
-        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
-        record_check_failure
       fi
       ;;
     list_file)
