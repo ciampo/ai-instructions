@@ -6,8 +6,8 @@ The installer targets user-level configuration for specific product surfaces. Re
 
 - **Verified**: the path and format are documented by the vendor, the shared install/update/check/remove contract passes, generated output is validated, and a manual discovery procedure is documented below.
 - **Preview**: the adapter and lifecycle tests pass, but part of discovery or the user-level surface still requires product-specific confirmation.
-- **Experimental**: an adapter may exist for evaluation, but its contract is not stable enough for routine use.
-- **Unsupported**: the manifest marks the capability unsupported and the installer does not generate an implied substitute.
+
+Platform support tiers are limited to verified and preview. Individual capabilities can be unsupported; the manifest marks those explicitly and the installer does not generate an implied substitute.
 
 The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). Change support claims in the manifest, update its verification date and official documentation links, then run `npm run docs:generate`.
 
