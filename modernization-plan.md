@@ -290,7 +290,7 @@ that manifest. Keep platform-specific logic in small adapters.
 
 The recommended implementation is a Node-based CLI using built-in APIs, with
 `setup.sh` retained as a compatibility wrapper. The repository already requires
-Node for linting, and structured generation, atomic writes, Windows paths, and
+Node for linting, and structured generation, staged writes, Windows paths, and
 test fixtures are easier to maintain than in a single 1,818-line Bash file.
 Before committing to the migration, write an architecture decision record that
 compares this option with splitting the existing Bash implementation. Do not do
@@ -403,7 +403,7 @@ Exit criteria:
 
 - all five adapters pass the same lifecycle contract;
 - user-owned files are never overwritten or removed;
-- install and update are atomic and idempotent;
+- install and update are staged, no-clobber, and idempotent;
 - unsupported capabilities are reported explicitly.
 
 ### Phase 3: Reclassify and trim instructions

@@ -141,7 +141,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
 
-The installer is non-destructive, idempotent, and writes managed files atomically. It skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only overwrites files previously installed by this repository.
+The installer is non-destructive and idempotent. It stages complete artifacts before publishing them, never clobbers an unexpected destination, and skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only replaces files previously installed by this repository.
 
 ### Manual integration
 

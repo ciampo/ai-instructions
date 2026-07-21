@@ -76,6 +76,34 @@ async function capturePath( target ) {
 	}
 }
 
+async function copyDirectoryNoClobber( source, destination ) {
+	await mkdir( destination );
+	for ( const name of ( await readdir( source ) ).sort() ) {
+		const sourceEntry = path.join( source, name );
+		const destinationEntry = path.join( destination, name );
+		const entryStats = await lstat( sourceEntry );
+		if ( entryStats.isDirectory() ) {
+			await copyDirectoryNoClobber( sourceEntry, destinationEntry );
+		} else if ( entryStats.isFile() ) {
+			await link( sourceEntry, destinationEntry );
+		} else if ( entryStats.isSymbolicLink() ) {
+			const linkTarget = await readlink( sourceEntry );
+			const targetStats = await lstatSafe(
+				path.resolve( path.dirname( sourceEntry ), linkTarget )
+			);
+			await symlink(
+				linkTarget,
+				destinationEntry,
+				process.platform === 'win32'
+					? ( targetStats?.isDirectory() ? 'dir' : 'file' )
+					: undefined
+			);
+		} else {
+			throw new Error( `Cannot copy unsupported path type at ${ sourceEntry }.` );
+		}
+	}
+}
+
 async function restoreCapturedPath( captured, target ) {
 	const stats = await lstat( captured );
 	try {
@@ -92,13 +120,7 @@ async function restoreCapturedPath( captured, target ) {
 					: undefined
 			);
 		} else if ( stats.isDirectory() ) {
-			await cp( captured, target, {
-				recursive: true,
-				preserveTimestamps: true,
-				verbatimSymlinks: true,
-				force: false,
-				errorOnExist: true,
-			} );
+			await copyDirectoryNoClobber( captured, target );
 		} else {
 			throw new Error( `Cannot restore unsupported path type at ${ target }.` );
 		}
@@ -127,39 +149,37 @@ function destinationExistsError( destination, backupPath ) {
 	return error;
 }
 
-async function publishDirectoryNoClobber( temporary, destination, canReplace ) {
-	const destinationStats = await lstatSafe( destination );
-	let backup;
-	if ( destinationStats ) {
-		if ( ! canReplace ) {
-			throw destinationExistsError( destination );
-		}
-
-		backup = await capturePath( destination );
-		if ( backup && ! await canReplace( backup ) ) {
-			await restoreCapturedPath( backup, destination );
-			backup = null;
-			throw new Error( `Refusing to replace ${ destination } because its ownership changed.` );
-		}
+async function recoverCapturedPath( captured, destination, error ) {
+	if ( ! captured || ! await lstatSafe( captured ) ) {
+		return;
 	}
+	if ( await lstatSafe( destination ) ) {
+		throw error.backupPath === captured
+			? error
+			: destinationExistsError( destination, captured );
+	}
+	await restoreCapturedPath( captured, destination );
+}
+
+async function publishDirectoryNoClobber( temporary, destination, canReplace ) {
+	let backup;
 	try {
-		await cp( temporary, destination, {
-			recursive: true,
-			preserveTimestamps: true,
-			verbatimSymlinks: true,
-			force: false,
-			errorOnExist: true,
-		} );
-	} catch ( error ) {
-		if ( backup && await lstatSafe( backup ) ) {
-			if ( await lstatSafe( destination ) ) {
-				throw error.backupPath === backup
-					? error
-					: destinationExistsError( destination, backup );
-			} else {
+		const destinationStats = await lstatSafe( destination );
+		if ( destinationStats ) {
+			if ( ! canReplace ) {
+				throw destinationExistsError( destination );
+			}
+
+			backup = await capturePath( destination );
+			if ( backup && ! await canReplace( backup ) ) {
 				await restoreCapturedPath( backup, destination );
+				backup = null;
+				throw new Error( `Refusing to replace ${ destination } because its ownership changed.` );
 			}
 		}
+		await copyDirectoryNoClobber( temporary, destination );
+	} catch ( error ) {
+		await recoverCapturedPath( backup, destination, error );
 		throw error;
 	}
 	if ( backup ) {
@@ -185,7 +205,7 @@ export async function writeNewFileAtomic( destination, content ) {
 	}
 }
 
-export async function writeOwnedFileAtomic( destination, content, repoDir ) {
+export async function writeOwnedFileSafely( destination, content, repoDir ) {
 	const temporary = await createTemporaryFile( destination, content );
 	let captured;
 	try {
@@ -201,22 +221,14 @@ export async function writeOwnedFileAtomic( destination, content, repoDir ) {
 			captured = null;
 		}
 	} catch ( error ) {
-		if ( captured ) {
-			if ( await lstatSafe( destination ) ) {
-				throw error.backupPath === captured
-					? error
-					: destinationExistsError( destination, captured );
-			} else {
-				await restoreCapturedPath( captured, destination );
-			}
-		}
+		await recoverCapturedPath( captured, destination, error );
 		throw error;
 	} finally {
 		await rm( temporary, { force: true } );
 	}
 }
 
-export async function symlinkAtomic( source, destination, type = 'file', canReplace ) {
+export async function writeSymlinkSafely( source, destination, type = 'file', canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
 	let captured;
 	try {
@@ -225,7 +237,7 @@ export async function symlinkAtomic( source, destination, type = 'file', canRepl
 				throw destinationExistsError( destination );
 			}
 			captured = await capturePath( destination );
-			if ( ! await canReplace( captured ) ) {
+			if ( captured && ! await canReplace( captured ) ) {
 				await restoreCapturedPath( captured, destination );
 				captured = null;
 				throw new Error( `Refusing to replace ${ destination } because its ownership changed.` );
@@ -237,20 +249,12 @@ export async function symlinkAtomic( source, destination, type = 'file', canRepl
 			captured = null;
 		}
 	} catch ( error ) {
-		if ( captured ) {
-			if ( await lstatSafe( destination ) ) {
-				throw error.backupPath === captured
-					? error
-					: destinationExistsError( destination, captured );
-			} else {
-				await restoreCapturedPath( captured, destination );
-			}
-		}
+		await recoverCapturedPath( captured, destination, error );
 		throw error;
 	}
 }
 
-export async function writeSkillDirectoryAtomic( source, destination, entrypointContent, canReplace ) {
+export async function writeSkillDirectorySafely( source, destination, entrypointContent, canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
 	const entrypoint = path.join( source, 'SKILL.md' );
 	const entrypointStats = await lstatSafe( entrypoint );
@@ -382,15 +386,22 @@ export async function isOwnedPath( target, repoDir ) {
 }
 
 export async function removeOwnedPath( target, repoDir, canRemove ) {
-	const captured = await capturePath( target );
+	let captured = await capturePath( target );
 	if ( ! captured ) {
 		return false;
 	}
-	if ( ! await ( canRemove ? canRemove( captured ) : isOwnedPath( captured, repoDir ) ) ) {
-		await restoreCapturedPath( captured, target );
-		return false;
+	try {
+		if ( ! await ( canRemove ? canRemove( captured ) : isOwnedPath( captured, repoDir ) ) ) {
+			await restoreCapturedPath( captured, target );
+			captured = null;
+			return false;
+		}
+		const stats = await lstat( captured );
+		await rm( captured, { recursive: stats.isDirectory() && ! stats.isSymbolicLink(), force: true } );
+		captured = null;
+		return true;
+	} catch ( error ) {
+		await recoverCapturedPath( captured, target, error );
+		throw error;
 	}
-	const stats = await lstat( captured );
-	await rm( captured, { recursive: stats.isDirectory() && ! stats.isSymbolicLink(), force: true } );
-	return true;
 }

@@ -14,7 +14,7 @@ import {
 	isOwnedPath,
 	lstatSafe,
 	writeNewFileAtomic,
-	writeOwnedFileAtomic,
+	writeOwnedFileSafely,
 } from './lib/files.mjs';
 import { categories, loadManifest, resolveUserPath } from './lib/manifest.mjs';
 import { createPlatformInstaller } from './lib/platform-installer.mjs';
@@ -122,7 +122,7 @@ Commands:
   install              Install missing managed artifacts (default)
   list                 List installed, stale, and conflicting artifacts
   remove               Remove only artifacts owned by this repository
-  update               Atomically refresh managed artifacts and clean stale ones
+  update               Safely refresh managed artifacts and clean stale ones
   check                Verify installed artifacts; exits non-zero on drift or conflicts
 
 Options:
@@ -228,7 +228,7 @@ async function processCopilotExport( directory, state ) {
 		console.log( `  [dry-run] write ${ destination }` );
 	} else {
 		if ( stats ) {
-			await writeOwnedFileAtomic( destination, expectedContent, repoDir );
+			await writeOwnedFileSafely( destination, expectedContent, repoDir );
 		} else {
 			await writeNewFileAtomic( destination, expectedContent );
 		}

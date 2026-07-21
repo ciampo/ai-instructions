@@ -12,10 +12,10 @@ import {
 	readlinkSafe,
 	removeOwnedPath,
 	SKILL_DIRECTORY_MARKER,
-	symlinkAtomic,
 	writeNewFileAtomic,
-	writeOwnedFileAtomic,
-	writeSkillDirectoryAtomic,
+	writeOwnedFileSafely,
+	writeSkillDirectorySafely,
+	writeSymlinkSafely,
 } from './files.mjs';
 import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 
@@ -198,7 +198,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 		const canReplace = status.exists ? skillPathCanReplace : undefined;
 		if ( copy ) {
-			await writeSkillDirectoryAtomic(
+			await writeSkillDirectorySafely(
 				artifact.source,
 				artifact.destination,
 				artifact.expectedContent,
@@ -207,7 +207,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			return;
 		}
 		try {
-			await symlinkAtomic( artifact.source, artifact.destination, 'dir', canReplace );
+			await writeSymlinkSafely( artifact.source, artifact.destination, 'dir', canReplace );
 		} catch ( error ) {
 			if ( process.platform === 'win32' && [ 'EPERM', 'EACCES' ].includes( error.code ) ) {
 				fail( `Cannot create ${ artifact.destination } as a symlink. Re-run with --copy on Windows.` );
@@ -340,14 +340,14 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 		if ( artifact.generated || state.options.copy ) {
 			if ( status.exists ) {
-				await writeOwnedFileAtomic( artifact.destination, artifact.expectedContent, repoDir );
+				await writeOwnedFileSafely( artifact.destination, artifact.expectedContent, repoDir );
 			} else {
 				await writeNewFileAtomic( artifact.destination, artifact.expectedContent );
 			}
 			return;
 		}
 		try {
-			await symlinkAtomic(
+			await writeSymlinkSafely(
 				artifact.source,
 				artifact.destination,
 				'file',

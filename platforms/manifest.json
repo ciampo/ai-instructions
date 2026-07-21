@@ -6,7 +6,7 @@
     "portableDefault": "symlink",
     "generatedDefault": "copy",
     "copyFlag": "--copy",
-    "writes": "atomic",
+    "writes": "staged-no-clobber",
     "conflicts": "preserve-user-owned"
   },
   "platforms": [

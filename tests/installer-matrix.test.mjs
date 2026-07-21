@@ -17,10 +17,10 @@ import { fileURLToPath } from 'node:url';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
-	symlinkAtomic,
 	writeNewFileAtomic,
-	writeOwnedFileAtomic,
-	writeSkillDirectoryAtomic,
+	writeOwnedFileSafely,
+	writeSkillDirectorySafely,
+	writeSymlinkSafely,
 } from '../scripts/lib/files.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
@@ -188,7 +188,7 @@ test( 'file mutations fail closed when ownership changes after inspection', asyn
 	await writeFile( target, `${ managedMarker }\nmanaged\n` );
 	await writeFile( target, '# user-owned replacement\n' );
 	await assert.rejects(
-		writeOwnedFileAtomic( target, `${ managedMarker }\nupdated\n`, repoDir ),
+		writeOwnedFileSafely( target, `${ managedMarker }\nupdated\n`, repoDir ),
 		/ownership changed/
 	);
 	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
@@ -212,7 +212,7 @@ test( 'failed ownership restoration preserves the captured user file', async ( t
 
 	let captured;
 	await assert.rejects(
-		symlinkAtomic(
+		writeSymlinkSafely(
 			source,
 			target,
 			'file',
@@ -239,7 +239,7 @@ test( 'skill copies reject source control-file symlinks', async ( t ) => {
 	await symlink( '../external.md', path.join( source, 'SKILL.md' ) );
 
 	await assert.rejects(
-		writeSkillDirectoryAtomic( source, destination, '# Managed skill\n' ),
+		writeSkillDirectorySafely( source, destination, '# Managed skill\n' ),
 		/source SKILL\.md must be a regular file/
 	);
 	assert.equal( await readFile( external, 'utf8' ), '# User file\n' );
@@ -256,7 +256,7 @@ test( 'skill copies reject a source ownership marker', async ( t ) => {
 	await writeFile( path.join( source, '.ai-instructions-managed' ), 'user content\n' );
 
 	await assert.rejects(
-		writeSkillDirectoryAtomic( source, destination, '# Managed skill\n' ),
+		writeSkillDirectorySafely( source, destination, '# Managed skill\n' ),
 		/\.ai-instructions-managed is reserved/
 	);
 	assert.equal( await pathExists( destination ), false );
@@ -274,7 +274,7 @@ test( 'directory replacement preserves its backup when the destination reappears
 
 	let backup;
 	await assert.rejects(
-		writeSkillDirectoryAtomic(
+		writeSkillDirectorySafely(
 			source,
 			destination,
 			'# Managed updated skill\n',
@@ -292,6 +292,40 @@ test( 'directory replacement preserves its backup when the destination reappears
 		'# User-owned replacement\n'
 	);
 	assert.equal( await readFile( path.join( backup, 'SKILL.md' ), 'utf8' ), '# Original skill\n' );
+} );
+
+test( 'ownership-check errors restore captured paths', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-ownership-error-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const source = path.join( directory, 'source' );
+	const destination = path.join( directory, 'installed-skill' );
+	const removable = path.join( directory, 'removable.md' );
+	await mkdir( source );
+	await mkdir( destination );
+	await writeFile( path.join( source, 'SKILL.md' ), '# Updated skill\n' );
+	await writeFile( path.join( destination, 'SKILL.md' ), '# Original skill\n' );
+	await writeFile( removable, '# Original file\n' );
+
+	await assert.rejects(
+		writeSkillDirectorySafely(
+			source,
+			destination,
+			'# Managed updated skill\n',
+			async () => {
+				throw new Error( 'ownership inspection failed' );
+			}
+		),
+		/ownership inspection failed/
+	);
+	assert.equal( await readFile( path.join( destination, 'SKILL.md' ), 'utf8' ), '# Original skill\n' );
+
+	await assert.rejects(
+		removeOwnedPath( removable, repoDir, async () => {
+			throw new Error( 'removal inspection failed' );
+		} ),
+		/removal inspection failed/
+	);
+	assert.equal( await readFile( removable, 'utf8' ), '# Original file\n' );
 } );
 
 for ( const platform of manifest.platforms ) {
