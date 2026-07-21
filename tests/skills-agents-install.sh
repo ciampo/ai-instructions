@@ -255,6 +255,8 @@ mkdir -p "$LEGACY_SAFE_COPY_SKILL" "$LEGACY_SAFE_COPY_HOME/.codex"
   cat "$RESOURCE_REPO/skills/resource-skill/SKILL.md"
   printf '<!-- ai-instructions:managed -->\n'
 } > "$LEGACY_SAFE_COPY_SKILL/SKILL.md"
+printf 'Finder metadata\n' > "$LEGACY_SAFE_COPY_SKILL/.DS_Store"
+printf 'Windows metadata\n' > "$LEGACY_SAFE_COPY_SKILL/Thumbs.db"
 
 HOME="$LEGACY_SAFE_COPY_HOME" "$RESOURCE_REPO/setup.sh" update --agent codex --only skills --yes >"$LEGACY_SAFE_COPY_HOME/update-without-copy.log" 2>&1
 assert_file_contains "$LEGACY_SAFE_COPY_HOME/update-without-copy.log" "run update --copy to migrate it without changing install mode"
@@ -265,6 +267,8 @@ assert_path_missing "$LEGACY_SAFE_COPY_SKILL/references/example.md"
 HOME="$LEGACY_SAFE_COPY_HOME" "$RESOURCE_REPO/setup.sh" update --agent codex --only skills --copy --yes >/dev/null
 assert_file_contains "$LEGACY_SAFE_COPY_SKILL/.ai-instructions-managed" "ai-instructions:managed"
 assert_file_contains "$LEGACY_SAFE_COPY_SKILL/references/example.md" "# Updated bundled reference"
+assert_path_missing "$LEGACY_SAFE_COPY_SKILL/.DS_Store"
+assert_path_missing "$LEGACY_SAFE_COPY_SKILL/Thumbs.db"
 
 LEGACY_COPY_HOME="$TMP_ROOT/legacy-copy-home"
 LEGACY_COPY_SKILL="$LEGACY_COPY_HOME/.agents/skills/resource-skill"

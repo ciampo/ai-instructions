@@ -824,9 +824,15 @@ skill_directory_is_legacy_managed() {
 }
 
 legacy_skill_directory_has_unknown_entries() {
-  local dst="$1"
-  find "$dst" -mindepth 1 -maxdepth 1 ! -name 'SKILL.md' -print |
-    awk 'NR { found = 1 } END { exit(found ? 0 : 1) }'
+  local dst="$1" unknown
+  unknown="$(
+    find "$dst" -mindepth 1 -maxdepth 1 \
+      ! -name 'SKILL.md' \
+      ! -name '.DS_Store' \
+      ! -name 'Thumbs.db' \
+      -print -quit
+  )"
+  [ -n "$unknown" ]
 }
 
 legacy_skill_directory_is_safe_to_replace() {
