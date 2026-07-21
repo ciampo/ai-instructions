@@ -309,9 +309,13 @@ assert_file_contains "$LEGACY_HOME/check.log" "review-pr/SKILL.md (legacy Cursor
 HOME="$LEGACY_HOME" "$REPO_DIR/setup.sh" list --agent cursor --only skills --yes >"$LEGACY_HOME/list.log" 2>&1
 assert_file_contains "$LEGACY_HOME/list.log" "review-pr/SKILL.md (legacy Cursor path)"
 
-HOME="$LEGACY_HOME" "$REPO_DIR/setup.sh" update --agent cursor --only skills --only agents --copy --yes >/dev/null
+HOME="$LEGACY_HOME" "$REPO_DIR/setup.sh" update --agent cursor --only skills --yes >/dev/null
 assert_path_missing "$LEGACY_HOME/.cursor/skills-cursor/review-pr/SKILL.md"
 assert_frontmatter_file "$LEGACY_HOME/.cursor/skills/review-pr/SKILL.md" "review-pr"
+assert_file_contains "$LEGACY_HOME/.cursor/skills/review-pr/.ai-instructions-managed" "ai-instructions:managed"
+[ ! -L "$LEGACY_HOME/.cursor/skills/review-pr" ] || fail "Expected legacy Cursor skill copy migration to preserve copy mode"
+
+HOME="$LEGACY_HOME" "$REPO_DIR/setup.sh" update --agent cursor --only agents --copy --yes >/dev/null
 assert_frontmatter_file "$LEGACY_HOME/.cursor/agents/a11y-reviewer.md" "a11y-reviewer"
 
 echo "skills and agents installer regression test passed"

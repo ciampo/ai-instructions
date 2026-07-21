@@ -149,6 +149,7 @@ COMMAND="install"
 SELECTED_AGENTS=""
 ONLY_CATEGORIES=""
 COPILOT_CONCAT_DIR=""
+CURSOR_MIGRATED_LEGACY_COPY_SKILLS=""
 BROKEN_COUNT=0
 CHECK_FAILURE_COUNT=0
 
@@ -1325,6 +1326,9 @@ process_agent() {
       local skill_name sdir
       skill_name="$(basename "$f")"
       sdir="$skills_dir/$skill_name"
+      if [ "$agent" = "cursor" ] && contains_word "$CURSOR_MIGRATED_LEGACY_COPY_SKILLS" "$skill_name"; then
+        continue
+      fi
       process_skill_directory "$action" "$f" "$sdir"
     done
   fi
@@ -1352,11 +1356,12 @@ cursor_clean_legacy_skills() {
   local legacy_dir="$HOME/.cursor/skills-cursor"
   [ -d "$legacy_dir" ] || return 0
 
-  local entry nested target is_ours
+  local entry nested target is_ours is_copy skill_name src dst
   for entry in "$legacy_dir"/*; do
     [ -d "$entry" ] || continue
     nested="$entry/SKILL.md"
     is_ours=false
+    is_copy=false
 
     if [ -L "$nested" ]; then
       target="$(readlink "$nested")"
@@ -1365,6 +1370,7 @@ cursor_clean_legacy_skills() {
       esac
     elif is_standard_managed_copy "$nested"; then
       is_ours=true
+      is_copy=true
     fi
 
     $is_ours || continue
@@ -1376,7 +1382,54 @@ cursor_clean_legacy_skills() {
         log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
         SUMMARY_STALE=$((SUMMARY_STALE + 1))
         ;;
-      install_file|unlink_file)
+      install_file)
+        skill_name="$(basename "$entry")"
+        src="$SCRIPT_DIR/skills/$skill_name"
+        dst="$HOME/.cursor/skills/$skill_name"
+
+        if $is_copy && [ -f "$src/SKILL.md" ]; then
+          if [ -e "$dst" ] || [ -L "$dst" ]; then
+            if skill_directory_is_current "$src" "$dst"; then
+              if $DRY_RUN; then
+                log_dry "rm legacy Cursor skill $nested"
+              else
+                rm "$nested"
+                rmdir "$entry" 2>/dev/null || true
+                log_stale "$skill_name/SKILL.md (legacy Cursor path)"
+              fi
+              CURSOR_MIGRATED_LEGACY_COPY_SKILLS="$CURSOR_MIGRATED_LEGACY_COPY_SKILLS $skill_name"
+              SUMMARY_STALE=$((SUMMARY_STALE + 1))
+            else
+              log_warn "$skill_name/ cannot migrate from the legacy Cursor path because $dst already exists; preserving the legacy copy"
+              SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+            fi
+            continue
+          fi
+
+          if $DRY_RUN; then
+            log_dry "migrate legacy Cursor skill copy $entry -> $dst"
+          else
+            write_skill_directory_copy "$src" "$dst"
+            rm "$nested"
+            rmdir "$entry" 2>/dev/null || true
+            log_copy "$skill_name/ (migrated legacy Cursor skill copy)"
+          fi
+          CURSOR_MIGRATED_LEGACY_COPY_SKILLS="$CURSOR_MIGRATED_LEGACY_COPY_SKILLS $skill_name"
+          SUMMARY_NEW=$((SUMMARY_NEW + 1))
+          SUMMARY_STALE=$((SUMMARY_STALE + 1))
+          continue
+        fi
+
+        if $DRY_RUN; then
+          log_dry "rm legacy Cursor skill $nested"
+        else
+          rm "$nested"
+          rmdir "$entry" 2>/dev/null || true
+          log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
+        fi
+        SUMMARY_STALE=$((SUMMARY_STALE + 1))
+        ;;
+      unlink_file)
         if $DRY_RUN; then
           log_dry "rm legacy Cursor skill $nested"
         else
