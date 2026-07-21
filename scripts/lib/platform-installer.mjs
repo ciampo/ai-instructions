@@ -4,21 +4,35 @@ import process from 'node:process';
 import { createArtifactBuilder } from './artifact-builder.mjs';
 import {
 	isInside,
+	isManagedSkillDirectory,
 	isOwnedPath,
 	lstatSafe,
 	managedFileType,
+	pathsHaveEqualContents,
 	readlinkSafe,
 	removeOwnedPath,
+	SKILL_DIRECTORY_MARKER,
 	symlinkAtomic,
-	writeAtomic,
+	writeNewFileAtomic,
+	writeOwnedFileAtomic,
+	writeSkillDirectoryAtomic,
 } from './files.mjs';
 import { resolveUserPath } from './manifest.mjs';
 
 export function createPlatformInstaller( { repoDir, home, state } ) {
 	const { buildArtifacts } = createArtifactBuilder( { repoDir } );
+	const migratedSkillDestinations = new Set();
 
 	function fail( message ) {
 		throw new Error( message );
+	}
+
+	async function removeArtifactPath( target, canRemove ) {
+		const removed = await removeOwnedPath( target, repoDir, canRemove );
+		if ( ! removed && await lstatSafe( target ) ) {
+			fail( `Refusing to remove ${ target } because its ownership changed.` );
+		}
+		return removed;
 	}
 
 	function logHeader( value ) {
@@ -61,17 +75,139 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		return { exists: true, current: false, owned: false, kind: 'other' };
 	}
 
-	async function installArtifact( artifact, state ) {
+	async function skillDirectoryIsCurrent( artifact ) {
+		if ( ! await isManagedSkillDirectory( artifact.destination ) ) {
+			return false;
+		}
+		const [ sourceEntries, destinationEntries ] = await Promise.all( [
+			readdir( artifact.source ),
+			readdir( artifact.destination ),
+		] );
+		if ( sourceEntries.includes( SKILL_DIRECTORY_MARKER ) ) {
+			fail( `${ artifact.source }: ${ SKILL_DIRECTORY_MARKER } is reserved for installed skill copies.` );
+		}
+		const expectedEntries = [ ...sourceEntries, SKILL_DIRECTORY_MARKER ].sort();
+		destinationEntries.sort();
+		if (
+			expectedEntries.length !== destinationEntries.length ||
+			expectedEntries.some( ( name, index ) => name !== destinationEntries[ index ] )
+		) {
+			return false;
+		}
+		if ( await readFile( path.join( artifact.destination, 'SKILL.md' ), 'utf8' ) !== artifact.expectedContent ) {
+			return false;
+		}
+		for ( const name of sourceEntries ) {
+			if ( name === 'SKILL.md' ) {
+				continue;
+			}
+			if ( ! await pathsHaveEqualContents(
+				path.join( artifact.source, name ),
+				path.join( artifact.destination, name )
+			) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	async function inspectSkillArtifact( artifact ) {
+		const stats = await lstatSafe( artifact.destination );
+		if ( ! stats ) {
+			return { exists: false, current: false, owned: false };
+		}
+		if ( stats.isSymbolicLink() ) {
+			const link = await readlinkSafe( artifact.destination );
+			const resolvedLink = path.resolve( path.dirname( artifact.destination ), link );
+			const targetExists = Boolean( await lstatSafe( resolvedLink ) );
+			return {
+				exists: true,
+				current: resolvedLink === path.resolve( artifact.source ) && targetExists,
+				owned: isInside( resolvedLink, path.join( repoDir, 'skills' ) ),
+				kind: 'symlink',
+				broken: ! targetExists,
+			};
+		}
+		if ( ! stats.isDirectory() ) {
+			return { exists: true, current: false, owned: false, kind: 'other' };
+		}
+
+		const isManagedCopy = await isManagedSkillDirectory( artifact.destination );
+		const entrypoint = path.join( artifact.destination, 'SKILL.md' );
+		const entrypointStats = await lstatSafe( entrypoint );
+		let legacyCopy = false;
+		let legacyLink = false;
+		if ( ! isManagedCopy && entrypointStats?.isSymbolicLink() ) {
+			const link = await readlinkSafe( entrypoint );
+			const resolvedLink = path.resolve( artifact.destination, link );
+			legacyLink = isInside( resolvedLink, path.join( repoDir, 'skills' ) );
+		} else if ( ! isManagedCopy ) {
+			legacyCopy = Boolean( await managedFileType( entrypoint ) );
+		}
+		const legacyOwned = legacyCopy || legacyLink;
+		const unknownEntries = legacyOwned && ! isManagedCopy
+			? ( await readdir( artifact.destination ) ).filter(
+				( name ) => ! [ 'SKILL.md', '.DS_Store', 'Thumbs.db' ].includes( name )
+			)
+			: [];
+		return {
+			exists: true,
+			current: isManagedCopy && await skillDirectoryIsCurrent( artifact ),
+			owned: isManagedCopy,
+			kind: 'directory',
+			legacyCopy,
+			legacyLink,
+			legacyOwned,
+			legacySafe: legacyOwned && unknownEntries.length === 0,
+			unknownEntries,
+		};
+	}
+
+	async function legacySkillDirectoryCanReplace( target, sourceRoot = path.join( repoDir, 'skills' ) ) {
+		const stats = await lstatSafe( target );
+		if ( ! stats?.isDirectory() || stats.isSymbolicLink() ) {
+			return false;
+		}
+		const entrypoint = path.join( target, 'SKILL.md' );
+		const entrypointStats = await lstatSafe( entrypoint );
+		let entrypointOwned = Boolean( await managedFileType( entrypoint ) );
+		if ( entrypointStats?.isSymbolicLink() ) {
+			const link = await readlinkSafe( entrypoint );
+			entrypointOwned = isInside(
+				path.resolve( target, link ),
+				sourceRoot
+			);
+		}
+		if ( ! entrypointOwned ) {
+			return false;
+		}
+		const unknownEntries = ( await readdir( target ) ).filter(
+			( name ) => ! [ 'SKILL.md', '.DS_Store', 'Thumbs.db' ].includes( name )
+		);
+		return unknownEntries.length === 0;
+	}
+
+	async function skillPathCanReplace( target ) {
+		return await isOwnedPath( target, repoDir ) || legacySkillDirectoryCanReplace( target );
+	}
+
+	async function installSkillArtifact( artifact, state, status, copy = state.options.copy ) {
 		if ( state.options.dryRun ) {
-			console.log( `  [dry-run] ${ artifact.generated || state.options.copy ? 'write' : 'link' } ${ artifact.destination }` );
+			console.log( `  [dry-run] ${ copy ? 'copy' : 'link' } ${ artifact.source } -> ${ artifact.destination }` );
 			return;
 		}
-		if ( artifact.generated || state.options.copy ) {
-			await writeAtomic( artifact.destination, artifact.expectedContent );
+		const canReplace = status.exists ? skillPathCanReplace : undefined;
+		if ( copy ) {
+			await writeSkillDirectoryAtomic(
+				artifact.source,
+				artifact.destination,
+				artifact.expectedContent,
+				canReplace
+			);
 			return;
 		}
 		try {
-			await symlinkAtomic( artifact.source, artifact.destination );
+			await symlinkAtomic( artifact.source, artifact.destination, 'dir', canReplace );
 		} catch ( error ) {
 			if ( process.platform === 'win32' && [ 'EPERM', 'EACCES' ].includes( error.code ) ) {
 				fail( `Cannot create ${ artifact.destination } as a symlink. Re-run with --copy on Windows.` );
@@ -80,22 +216,23 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 	}
 
-	function logConflict( artifact, state ) {
-		if ( artifact.format === 'agents-md' ) {
-			console.warn( `  [warning] AGENTS.md at ${ artifact.destination } was not generated by this script -- skipping` );
-		} else {
-			console.warn( `  [warning] ${ path.basename( artifact.destination ) } already exists at ${ artifact.destination } -- skipping` );
-		}
+	function logSkillConflict( artifact, state, message ) {
+		console.warn(
+			`  [warning] ${ message ?? `${ path.basename( artifact.destination ) }/ already exists at ${ artifact.destination } but was not installed by this script -- skipping` }`
+		);
 		state.skipped++;
 	}
 
-	async function processArtifact( artifact, state ) {
-		const status = await inspectArtifact( artifact );
+	async function processSkillArtifact( artifact, state ) {
+		if ( migratedSkillDestinations.delete( artifact.destination ) ) {
+			return;
+		}
+		const status = await inspectSkillArtifact( artifact );
 		const { command } = state.options;
 
 		if ( ! status.exists ) {
 			if ( [ 'install', 'update' ].includes( command ) ) {
-				await installArtifact( artifact, state );
+				await installSkillArtifact( artifact, state, status );
 				console.log( `  [+] ${ artifact.label }` );
 				state.new++;
 			} else if ( command === 'check' ) {
@@ -119,7 +256,155 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 				console.log( `  [ok] ${ artifact.label }` );
 			} else if ( command === 'remove' ) {
 				if ( ! state.options.dryRun ) {
-					await removeOwnedPath( artifact.destination, repoDir );
+					await removeArtifactPath( artifact.destination );
+				}
+				console.log( `  [-] ${ artifact.label }` );
+				state.removed++;
+			}
+			return;
+		}
+
+		if ( command === 'install' ) {
+			if ( status.legacyOwned && status.unknownEntries.length > 0 ) {
+				logSkillConflict( artifact, state, `${ artifact.label } contains files not installed by this script; preserving the legacy directory` );
+			} else if ( status.legacyCopy ) {
+				logSkillConflict( artifact, state, `${ artifact.label } is a legacy managed copy; run update --copy to migrate it without changing install mode` );
+			} else {
+				logSkillConflict( artifact, state );
+			}
+			return;
+		}
+
+		if ( command === 'update' ) {
+			if ( status.legacyOwned && status.unknownEntries.length > 0 ) {
+				logSkillConflict( artifact, state, `${ artifact.label } contains files not installed by this script; preserving the legacy directory` );
+				return;
+			}
+			if ( ( ( status.kind === 'directory' && status.owned ) || status.legacyCopy ) && ! state.options.copy ) {
+				const action = status.legacyCopy ? 'migrate it without changing install mode' : 'refresh it';
+				logSkillConflict( artifact, state, `${ artifact.label } is a ${ status.legacyCopy ? 'legacy ' : '' }managed copy; run update --copy to ${ action }` );
+				return;
+			}
+			if ( status.owned || status.legacySafe || ( status.kind === 'symlink' && status.owned ) ) {
+				await installSkillArtifact( artifact, state, status );
+				console.log( `  [+] ${ artifact.label } (updated)` );
+				state.new++;
+			} else {
+				logSkillConflict( artifact, state );
+			}
+			return;
+		}
+
+		if ( command === 'check' ) {
+			console.warn( `  [BROKEN] ${ artifact.label } (${ status.broken ? 'target missing' : 'out of date or conflicting' })` );
+			state.checkFailures++;
+			state.broken++;
+			return;
+		}
+
+		if ( command === 'list' ) {
+			if ( status.owned || status.legacyOwned || ( status.kind === 'symlink' && status.owned ) ) {
+				console.warn( `  [stale] ${ artifact.label }` );
+			}
+			return;
+		}
+
+		if ( status.owned || ( status.kind === 'symlink' && status.owned ) ) {
+			if ( ! state.options.dryRun ) {
+				await removeArtifactPath( artifact.destination );
+			}
+			console.log( `  [-] ${ artifact.label }` );
+			state.removed++;
+		} else if ( status.legacySafe ) {
+			if ( ! state.options.dryRun ) {
+				await removeArtifactPath( artifact.destination, skillPathCanReplace );
+			}
+			console.log( `  [-] ${ artifact.label }` );
+			state.removed++;
+		} else if ( status.legacyOwned ) {
+			if ( ! state.options.dryRun ) {
+				await removeArtifactPath( path.join( artifact.destination, 'SKILL.md' ) );
+			}
+			console.log( `  [-] ${ path.join( artifact.destination, 'SKILL.md' ) } (legacy managed entrypoint)` );
+			console.warn( `  [warning] ${ artifact.label } contains files not installed by this script; preserving them` );
+			state.removed++;
+		} else {
+			logSkillConflict( artifact, state );
+		}
+	}
+
+	async function installArtifact( artifact, state, status ) {
+		if ( state.options.dryRun ) {
+			console.log( `  [dry-run] ${ artifact.generated || state.options.copy ? 'write' : 'link' } ${ artifact.destination }` );
+			return;
+		}
+		if ( artifact.generated || state.options.copy ) {
+			if ( status.exists ) {
+				await writeOwnedFileAtomic( artifact.destination, artifact.expectedContent, repoDir );
+			} else {
+				await writeNewFileAtomic( artifact.destination, artifact.expectedContent );
+			}
+			return;
+		}
+		try {
+			await symlinkAtomic(
+				artifact.source,
+				artifact.destination,
+				'file',
+				status.exists ? ( target ) => isOwnedPath( target, repoDir ) : undefined
+			);
+		} catch ( error ) {
+			if ( process.platform === 'win32' && [ 'EPERM', 'EACCES' ].includes( error.code ) ) {
+				fail( `Cannot create ${ artifact.destination } as a symlink. Re-run with --copy on Windows.` );
+			}
+			throw error;
+		}
+	}
+
+	function logConflict( artifact, state ) {
+		if ( artifact.format === 'agents-md' ) {
+			console.warn( `  [warning] AGENTS.md at ${ artifact.destination } was not generated by this script -- skipping` );
+		} else {
+			console.warn( `  [warning] ${ path.basename( artifact.destination ) } already exists at ${ artifact.destination } -- skipping` );
+		}
+		state.skipped++;
+	}
+
+	async function processArtifact( artifact, state ) {
+		if ( artifact.kind === 'skill-directory' ) {
+			await processSkillArtifact( artifact, state );
+			return;
+		}
+		const status = await inspectArtifact( artifact );
+		const { command } = state.options;
+
+		if ( ! status.exists ) {
+			if ( [ 'install', 'update' ].includes( command ) ) {
+				await installArtifact( artifact, state, status );
+				console.log( `  [+] ${ artifact.label }` );
+				state.new++;
+			} else if ( command === 'check' ) {
+				console.warn( `  [BROKEN] ${ artifact.label } (missing)` );
+				state.checkFailures++;
+				state.broken++;
+			} else if ( command === 'list' ) {
+				console.warn( `  [missing] ${ artifact.label }` );
+			}
+			return;
+		}
+
+		if ( status.current ) {
+			if ( [ 'install', 'update' ].includes( command ) ) {
+				console.log( `  [=] ${ artifact.label }` );
+				state.upToDate++;
+			} else if ( command === 'check' ) {
+				console.log( `  [ok] ${ artifact.label }` );
+				state.upToDate++;
+			} else if ( command === 'list' ) {
+				console.log( `  [ok] ${ artifact.label }` );
+			} else if ( command === 'remove' ) {
+				if ( ! state.options.dryRun ) {
+					await removeArtifactPath( artifact.destination );
 				}
 				console.log( `  [-] ${ artifact.label }` );
 				state.removed++;
@@ -129,7 +414,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 
 		if ( command === 'install' ) {
 			if ( artifact.generated && status.kind === 'symlink' && status.owned ) {
-				await installArtifact( artifact, state );
+				await installArtifact( artifact, state, status );
 				console.log( `  [+] ${ artifact.label } (migrated)` );
 				state.new++;
 				return;
@@ -145,7 +430,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 
 		if ( command === 'update' ) {
 			if ( status.owned ) {
-				await installArtifact( artifact, state );
+				await installArtifact( artifact, state, status );
 				console.log( `  [+] ${ artifact.label } (updated)` );
 				state.new++;
 			} else {
@@ -181,7 +466,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 
 		if ( status.owned ) {
 			if ( ! state.options.dryRun ) {
-				await removeOwnedPath( artifact.destination, repoDir );
+				await removeArtifactPath( artifact.destination );
 			}
 			console.log( `  [-] ${ artifact.label }` );
 			state.removed++;
@@ -212,7 +497,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			if ( capability.strategy === 'directories' ) {
 				for ( const entry of await directoryEntries( root ) ) {
 					if ( entry.isDirectory() || entry.isSymbolicLink() ) {
-						candidates.push( path.join( root, entry.name, capability.fileName ) );
+						candidates.push( path.join( root, entry.name ) );
 					}
 				}
 			} else {
@@ -235,7 +520,39 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			const link = await readlinkSafe( candidate );
 			return isInside( path.resolve( path.dirname( candidate ), link ), sourceRoot );
 		}
+		if ( stats.isDirectory() ) {
+			if ( await isManagedSkillDirectory( candidate ) ) {
+				return true;
+			}
+			const entrypoint = path.join( candidate, 'SKILL.md' );
+			return isOwnedCandidate( entrypoint, sourceRoot );
+		}
 		return Boolean( await managedFileType( candidate ) );
+	}
+
+	async function removeStaleCandidate( candidate, sourceRoot ) {
+		const stats = await lstatSafe( candidate );
+		if ( ! stats?.isDirectory() || stats.isSymbolicLink() || await isManagedSkillDirectory( candidate ) ) {
+			await removeArtifactPath(
+				candidate,
+				( target ) => isOwnedCandidate( target, sourceRoot )
+			);
+			return;
+		}
+
+		if ( await legacySkillDirectoryCanReplace( candidate, sourceRoot ) ) {
+			await removeArtifactPath(
+				candidate,
+				( target ) => legacySkillDirectoryCanReplace( target, sourceRoot )
+			);
+			return;
+		}
+
+		const entrypoint = path.join( candidate, 'SKILL.md' );
+		await removeArtifactPath(
+			entrypoint,
+			( target ) => isOwnedCandidate( target, sourceRoot )
+		);
 	}
 
 	async function handleStalePath( candidate, state, detail = 'stale managed artifact', sourceRoot = repoDir ) {
@@ -245,7 +562,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const isLegacyInstall = state.options.command === 'install' && detail !== 'stale managed artifact';
 		if ( [ 'update', 'remove' ].includes( state.options.command ) || isLegacyInstall ) {
 			if ( ! state.options.dryRun ) {
-				await removeOwnedPath( candidate, repoDir );
+				await removeStaleCandidate( candidate, sourceRoot );
 			}
 			console.log( `  [stale] ${ candidate } (${ detail })` );
 			state.stale++;
@@ -270,14 +587,46 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			if ( legacy.category && ! selectedCategories.includes( legacy.category ) ) {
 				continue;
 			}
+			const legacyDetail = platform.id === 'cursor' && legacy.category === 'skills'
+				? 'legacy Cursor path'
+				: legacy.reason;
 			const root = resolveUserPath( home, legacy.userPath );
 			if ( legacy.layout === 'nested' ) {
 				for ( const entry of await directoryEntries( root ) ) {
 					if ( entry.isDirectory() ) {
+						const candidate = path.join( root, entry.name, legacy.fileName );
+						if (
+							legacy.category === 'skills' &&
+							[ 'install', 'update' ].includes( state.options.command ) &&
+							await managedFileType( candidate )
+						) {
+							const artifact = artifacts.find(
+								( current ) => current.kind === 'skill-directory' && path.basename( current.destination ) === entry.name
+							);
+							if ( artifact ) {
+								const destinationStatus = await inspectSkillArtifact( artifact );
+								if ( ! destinationStatus.exists ) {
+									await installSkillArtifact( artifact, state, destinationStatus, true );
+									console.log( `  [+] ${ artifact.label } (migrated legacy managed copy)` );
+									state.new++;
+									migratedSkillDestinations.add( artifact.destination );
+								} else if ( ! destinationStatus.current ) {
+									console.warn( `  [warning] ${ artifact.label } cannot migrate from the legacy path because the destination already exists; preserving the legacy copy` );
+									state.skipped++;
+									continue;
+								}
+								if ( ! state.options.dryRun ) {
+									await removeArtifactPath( candidate );
+								}
+								console.log( `  [stale] ${ candidate } (${ legacyDetail })` );
+								state.stale++;
+								continue;
+							}
+						}
 						await handleStalePath(
-							path.join( root, entry.name, legacy.fileName ),
+							candidate,
 							state,
-							legacy.reason,
+							legacyDetail,
 							path.join( repoDir, legacy.sourceRoot )
 						);
 					}
@@ -288,7 +637,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 						await handleStalePath(
 							path.join( root, entry.name ),
 							state,
-							legacy.reason,
+							legacyDetail,
 							path.join( repoDir, legacy.sourceRoot )
 						);
 					}
@@ -311,7 +660,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			const destination = resolveUserPath( home, capability.userPath );
 			if ( state.options.command === 'update' && await isOwnedPath( destination, repoDir ) ) {
 				if ( ! state.options.dryRun ) {
-					await removeOwnedPath( destination, repoDir );
+					await removeArtifactPath( destination );
 				}
 				state.stale++;
 			}

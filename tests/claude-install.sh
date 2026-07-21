@@ -27,6 +27,7 @@ ROUTING_FILE="$TMP_HOME/.claude/rules/workflow-routing.md"
 mkdir -p "$(dirname "$ROUTING_FILE")"
 printf '# User routing\n' > "$ROUTING_FILE"
 
+HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent claude --yes >/dev/null
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent claude --yes >"$TMP_HOME/check.log" 2>&1
 assert_file_not_contains "$TMP_HOME/check.log" "workflow-routing.md"
 assert_file_contains "$ROUTING_FILE" "# User routing"

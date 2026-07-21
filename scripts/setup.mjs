@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { createInterface } from 'node:readline/promises';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import {
 	concatInstructions,
@@ -12,7 +13,8 @@ import {
 import {
 	isOwnedPath,
 	lstatSafe,
-	writeAtomic,
+	writeNewFileAtomic,
+	writeOwnedFileAtomic,
 } from './lib/files.mjs';
 import { categories, loadManifest, resolveUserPath } from './lib/manifest.mjs';
 import { createPlatformInstaller } from './lib/platform-installer.mjs';
@@ -223,7 +225,11 @@ async function processCopilotExport( directory, state ) {
 		return;
 	}
 	if ( ! state.options.dryRun ) {
-		await writeAtomic( destination, expectedContent );
+		if ( stats ) {
+			await writeOwnedFileAtomic( destination, expectedContent, repoDir );
+		} else {
+			await writeNewFileAtomic( destination, expectedContent );
+		}
 	}
 	console.log( `  [+] ${ destination }` );
 	state.new++;
@@ -248,9 +254,9 @@ function printSummary( state ) {
 
 async function main() {
 	requireSupportedNode();
-	const home = process.env.HOME;
+	const home = process.env.HOME || homedir();
 	if ( ! home ) {
-		fail( '$HOME is not set. Cannot determine agent configuration directories.' );
+		fail( 'Cannot determine the home directory for agent configuration.' );
 	}
 	const manifest = await loadManifest( repoDir );
 	const platformIds = manifest.platforms.map( ( platform ) => platform.id );

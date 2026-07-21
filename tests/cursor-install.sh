@@ -59,7 +59,7 @@ if HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" check --agent cursor --yes >"$TMP_
   fail "Expected check to fail when a generated Cursor rule is out of date"
 fi
 
-assert_file_contains "$TMP_HOME_FULL/stale-check.log" "coding-principles.mdc (cursor rule, out of date)"
+assert_file_contains "$TMP_HOME_FULL/stale-check.log" "coding-principles.mdc (cursor rule) (out of date)"
 HOME="$TMP_HOME_FULL" "$REPO_DIR/setup.sh" update --agent cursor --yes >/dev/null
 
 TMP_HOME_PARTIAL="$TMP_ROOT/partial"

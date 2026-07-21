@@ -13,6 +13,48 @@ export function normalizeMarkdown( value ) {
 	return value.replace( /\r\n?/g, '\n' );
 }
 
+function parseFrontmatterScalar( value, key, source ) {
+	value = value.trim();
+	if ( [ '>', '|' ].includes( value[ 0 ] ) ) {
+		throw new Error( `${ source }: frontmatter field '${ key }' must use a single-line scalar.` );
+	}
+
+	if ( value.startsWith( "'" ) ) {
+		if ( value.length < 2 || ! value.endsWith( "'" ) ) {
+			throw new Error( `${ source }: frontmatter field '${ key }' has an unterminated quoted scalar.` );
+		}
+		const inner = value.slice( 1, -1 );
+		let decoded = '';
+		for ( let index = 0; index < inner.length; index++ ) {
+			if ( inner[ index ] !== "'" ) {
+				decoded += inner[ index ];
+				continue;
+			}
+			if ( inner[ index + 1 ] !== "'" ) {
+				throw new Error( `${ source }: frontmatter field '${ key }' has an invalid single-quoted scalar.` );
+			}
+			decoded += "'";
+			index++;
+		}
+		value = decoded;
+	} else if ( value.startsWith( '"' ) ) {
+		if ( value.length < 2 || ! value.endsWith( '"' ) ) {
+			throw new Error( `${ source }: frontmatter field '${ key }' has an unterminated quoted scalar.` );
+		}
+		value = value.slice( 1, -1 );
+		if ( value.includes( '\\' ) || value.includes( '"' ) ) {
+			throw new Error( `${ source }: frontmatter field '${ key }' uses unsupported quoted escapes.` );
+		}
+	} else {
+		value = value.replace( /\s+#.*$/, '' ).trim();
+	}
+
+	if ( value === '' ) {
+		throw new Error( `${ source }: frontmatter field '${ key }' must not be empty.` );
+	}
+	return value;
+}
+
 export function parseFrontmatter( content, source = 'Markdown file' ) {
 	content = normalizeMarkdown( content );
 	if ( ! content.startsWith( '---\n' ) ) {
@@ -24,15 +66,24 @@ export function parseFrontmatter( content, source = 'Markdown file' ) {
 	}
 
 	const values = {};
+	let rootIndentation;
 	for ( const line of content.slice( 4, closing ).split( '\n' ) ) {
-		const match = line.match( /^([a-zA-Z][a-zA-Z0-9-]*):\s*(.+)$/ );
-		if ( match ) {
-			values[ match[ 1 ] ] = match[ 2 ].replace( /^(?:'([^']*)'|"([^"]*)")$/, '$1$2' );
+		if ( /^\s*(?:#.*)?$/.test( line ) ) {
+			continue;
+		}
+		const indentation = line.match( /^\s*/ )[ 0 ].length;
+		rootIndentation ??= indentation;
+		if ( indentation !== rootIndentation ) {
+			continue;
+		}
+		const match = line.match( /^\s*([a-zA-Z][a-zA-Z0-9-]*)\s*:\s*(.*)$/ );
+		if ( match && values[ match[ 1 ] ] === undefined ) {
+			values[ match[ 1 ] ] = parseFrontmatterScalar( match[ 2 ], match[ 1 ], source );
 		}
 	}
 	for ( const key of [ 'name', 'description' ] ) {
 		if ( ! values[ key ] ) {
-			throw new Error( `${ source }: frontmatter requires ${ key }.` );
+			throw new Error( `${ source }: missing required frontmatter field '${ key }'.` );
 		}
 	}
 
@@ -65,10 +116,7 @@ function tomlString( value ) {
 export function codexAgent( content, source ) {
 	content = normalizeMarkdown( content );
 	const { name, description, body } = parseFrontmatter( content, source );
-	if ( body.includes( '"""' ) ) {
-		throw new Error( `${ source }: Codex agent instructions cannot contain a TOML triple-quote sequence.` );
-	}
-	return `${ TOML_MANAGED_MARKER }\nname = "${ tomlString( name ) }"\ndescription = "${ tomlString( description ) }"\ndeveloper_instructions = """\n${ ensureTrailingNewline( body ) }"""\n`;
+	return `${ TOML_MANAGED_MARKER }\nname = "${ tomlString( name ) }"\ndescription = "${ tomlString( description ) }"\ndeveloper_instructions = """\n${ tomlString( ensureTrailingNewline( body ) ) }"""\n`;
 }
 
 export async function concatInstructions( instructionsDir ) {

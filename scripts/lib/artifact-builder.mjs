@@ -27,15 +27,16 @@ export function createArtifactBuilder( { repoDir } ) {
 			.sort();
 	}
 
-	async function sourceSkillFiles() {
+	async function sourceSkillDirectories() {
 		const entries = ( await readdir( skillsDir, { withFileTypes: true } ) )
 			.filter( ( entry ) => entry.isDirectory() )
 			.sort( ( a, b ) => a.name.localeCompare( b.name ) );
 		const result = [];
 		for ( const entry of entries ) {
-			const source = path.join( skillsDir, entry.name, 'SKILL.md' );
-			if ( await lstatSafe( source ) ) {
-				result.push( { name: entry.name, source } );
+			const source = path.join( skillsDir, entry.name );
+			const entrypoint = path.join( source, 'SKILL.md' );
+			if ( await lstatSafe( entrypoint ) ) {
+				result.push( { name: entry.name, source, entrypoint } );
 			}
 		}
 		return result;
@@ -99,16 +100,15 @@ export function createArtifactBuilder( { repoDir } ) {
 			}
 
 			if ( category === 'skills' ) {
-				for ( const { name, source } of await sourceSkillFiles() ) {
-					const content = await readFile( source, 'utf8' );
-					const metadata = parseFrontmatter( content, source );
+				for ( const { name, source, entrypoint } of await sourceSkillDirectories() ) {
+					const content = await readFile( entrypoint, 'utf8' );
+					const metadata = parseFrontmatter( content, entrypoint );
 					if ( metadata.name !== name ) {
-						fail( `${ source }: frontmatter name must match its directory.` );
+						fail( `${ entrypoint }: frontmatter name must match its directory.` );
 					}
 					const destination = path.join(
 						resolveUserPath( home, capability.userPath ),
-						name,
-						capability.fileName
+						name
 					);
 					artifacts.push( {
 						category,
@@ -116,7 +116,8 @@ export function createArtifactBuilder( { repoDir } ) {
 						expectedContent: managedMarkdown( content ),
 						format: capability.format,
 						generated: false,
-						label: destination,
+						kind: 'skill-directory',
+						label: `${ destination }/ (skill)`,
 						source,
 					} );
 				}
@@ -153,4 +154,3 @@ export function createArtifactBuilder( { repoDir } ) {
 
 	return { buildArtifacts };
 }
-

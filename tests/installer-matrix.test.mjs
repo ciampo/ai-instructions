@@ -15,6 +15,11 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { validateManifest } from '../scripts/lib/manifest.mjs';
+import {
+	removeOwnedPath,
+	writeNewFileAtomic,
+	writeOwnedFileAtomic,
+} from '../scripts/lib/files.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
 const setupScript = path.join( repoDir, 'scripts', 'setup.mjs' );
@@ -125,6 +130,28 @@ test( 'manifest rejects unsafe legacy migration paths', () => {
 	);
 } );
 
+test( 'file mutations fail closed when ownership changes after inspection', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-ownership-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const target = path.join( directory, 'managed.md' );
+
+	await writeFile( target, `${ managedMarker }\nmanaged\n` );
+	await writeFile( target, '# user-owned replacement\n' );
+	await assert.rejects(
+		writeOwnedFileAtomic( target, `${ managedMarker }\nupdated\n`, repoDir ),
+		/ownership changed/
+	);
+	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+
+	assert.equal( await removeOwnedPath( target, repoDir ), false );
+	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+	await assert.rejects(
+		writeNewFileAtomic( target, `${ managedMarker }\nnew\n` ),
+		( error ) => error.code === 'EEXIST'
+	);
+	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+} );
+
 for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: copy lifecycle and category isolation`, async ( t ) => {
 		const home = await createDetectedHome( platform );
@@ -148,6 +175,11 @@ for ( const platform of manifest.platforms ) {
 		}
 
 		runInstaller( home, [ 'remove', '--agent', platform.id, '--copy', '--yes' ] );
+		assert.equal(
+			await pathExists( destination( home, platform.detection.userPath ) ),
+			true,
+			`${ platform.id } configuration root was removed`
+		);
 		for ( const category of [ 'instructions', 'skills', 'agents' ] ) {
 			const target = artifactPath( platform, category, home );
 			if ( target ) {
@@ -235,7 +267,7 @@ test( 'portable artifacts use symlinks on POSIX and remain checkable', {
 		const home = await createDetectedHome( platform );
 		t.after( () => rm( home, { recursive: true, force: true } ) );
 		runInstaller( home, [ '--agent', platform.id, '--yes' ] );
-		assert.equal( ( await lstat( artifactPath( platform, 'skills', home ) ) ).isSymbolicLink(), true );
+		assert.equal( ( await lstat( path.dirname( artifactPath( platform, 'skills', home ) ) ) ).isSymbolicLink(), true );
 		runInstaller( home, [ 'check', '--agent', platform.id, '--yes' ] );
 		assert.match( runInstaller( home, [ 'list', '--agent', platform.id, '--yes' ] ), /\[ok\]/ );
 		runInstaller( home, [ 'remove', '--agent', platform.id, '--yes' ] );
@@ -344,6 +376,18 @@ test( 'POSIX compatibility wrapper delegates to the Node CLI', {
 }, () => {
 	const result = spawnSync( 'sh', [ path.join( repoDir, 'setup.sh' ), '--help' ], {
 		cwd: repoDir,
+		encoding: 'utf8',
+	} );
+	assert.equal( result.status, 0, result.stderr );
+	assert.match( result.stdout, /Usage: setup\.sh/ );
+} );
+
+test( 'the Node entrypoint discovers the platform home when HOME is unset', () => {
+	const env = { ...process.env };
+	delete env.HOME;
+	const result = spawnSync( process.execPath, [ setupScript, '--help' ], {
+		cwd: repoDir,
+		env,
 		encoding: 'utf8',
 	} );
 	assert.equal( result.status, 0, result.stderr );
