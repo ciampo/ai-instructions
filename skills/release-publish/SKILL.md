@@ -10,7 +10,8 @@ This deprecated skill preserves the former `release-publish` trigger while keepi
 ## Route the request
 
 1. Use the `prepare-release` skill for version selection, changelog updates, local release artifacts, or any request to prepare or cut a release without explicit publication authorization.
-2. Use the `publish-release` skill only when the user explicitly asks to publish an already prepared release.
-3. If the request is ambiguous, stop after preparation and report the remote actions that still require authorization.
+2. When the user explicitly asks to prepare and publish a release, use `prepare-release` first, then continue with `publish-release` after preparation succeeds. Carry the original publication authorization forward; stop if the target, credentials, prepared state, or authorization becomes ambiguous.
+3. Use the `publish-release` skill directly when the user explicitly asks to publish an already prepared release.
+4. If the request is ambiguous, stop after preparation and report the remote actions that still require authorization.
 
 Prefer the replacement skill name in new prompts. Do not combine preparation and publication merely because this compatibility name was invoked.
