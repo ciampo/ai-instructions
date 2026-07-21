@@ -56,7 +56,7 @@ assert_path_missing "$TMP_HOME/.codex/instructions"
 # --- Idempotent check / list / re-install ----------------------------------
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent codex --yes >/dev/null
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" list --agent codex --yes >"$TMP_HOME/list.log"
-assert_file_contains "$TMP_HOME/list.log" "$AGENTS_FILE (concatenated)"
+assert_file_contains "$TMP_HOME/list.log" "AGENTS.md (concatenated)"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent codex --yes >"$TMP_HOME/reinstall.log"
 assert_file_contains "$TMP_HOME/reinstall.log" "Already up to date"
@@ -150,10 +150,12 @@ HOME="$TMP_ONLY" "$REPO_DIR/setup.sh" --agent codex --only skills --yes >/dev/nu
 assert_path_missing "$TMP_ONLY/.codex/AGENTS.md"
 assert_file_exists "$TMP_ONLY/.agents/skills/refactor/SKILL.md"
 
-# --- check on a clean home succeeds (exit 0, nothing installed) -------------
+# --- check on a clean home reports missing managed artifacts ----------------
 TMP_CLEAN="$TMP_ROOT/clean"
 mkdir -p "$TMP_CLEAN/.codex"
-HOME="$TMP_CLEAN" "$REPO_DIR/setup.sh" check --agent codex --yes >/dev/null
+if HOME="$TMP_CLEAN" "$REPO_DIR/setup.sh" check --agent codex --yes >/dev/null 2>&1; then
+  fail "Expected check to fail when managed Codex artifacts are missing"
+fi
 
 # --- --copy mode still produces a managed file (no symlink) -----------------
 TMP_COPY="$TMP_ROOT/copy"

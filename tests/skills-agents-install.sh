@@ -54,6 +54,13 @@ assert_frontmatter_file() {
   assert_frontmatter_field "$path" "description"
 }
 
+copy_installer_runtime() {
+  local destination="$1"
+  cp "$REPO_DIR/setup.sh" "$destination/setup.sh"
+  cp -R "$REPO_DIR/scripts" "$destination/scripts"
+  cp -R "$REPO_DIR/platforms" "$destination/platforms"
+}
+
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/skills-agents-install.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
@@ -106,7 +113,7 @@ HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/d
 for agent_path in \
   "$TMP_HOME/.cursor/agents/a11y-reviewer.md" \
   "$TMP_HOME/.claude/agents/a11y-reviewer.md" \
-  "$TMP_HOME/.copilot/agents/a11y-reviewer.md" \
+  "$TMP_HOME/.copilot/agents/a11y-reviewer.agent.md" \
   "$TMP_HOME/.gemini/agents/a11y-reviewer.md"; do
   assert_frontmatter_file "$agent_path" "a11y-reviewer"
 done
@@ -120,7 +127,7 @@ assert_file_contains "$CODEX_AGENT" "developer_instructions ="
 QUOTED_REPO="$TMP_ROOT/quoted-repo"
 QUOTED_HOME="$TMP_ROOT/quoted-home"
 mkdir -p "$QUOTED_REPO/agents" "$QUOTED_HOME/.codex"
-cp "$REPO_DIR/setup.sh" "$QUOTED_REPO/setup.sh"
+copy_installer_runtime "$QUOTED_REPO"
 cat > "$QUOTED_REPO/agents/quoted-agent.md" <<'EOF'
 ---
   name: "quoted-agent"
@@ -149,7 +156,7 @@ mkdir -p \
   "$INVALID_HOME/.codex" \
   "$INVALID_HOME/.copilot" \
   "$INVALID_HOME/.gemini"
-cp "$REPO_DIR/setup.sh" "$INVALID_REPO/setup.sh"
+copy_installer_runtime "$INVALID_REPO"
 cat > "$INVALID_REPO/agents/a-valid-agent.md" <<'EOF'
 ---
 name: a-valid-agent
@@ -198,7 +205,7 @@ assert_path_missing "$INVALID_HOME/.codex/agents/invalid-agent.toml"
 FOLDED_REPO="$TMP_ROOT/folded-repo"
 FOLDED_HOME="$TMP_ROOT/folded-home"
 mkdir -p "$FOLDED_REPO/agents" "$FOLDED_HOME/.codex"
-cp "$REPO_DIR/setup.sh" "$FOLDED_REPO/setup.sh"
+copy_installer_runtime "$FOLDED_REPO"
 cat > "$FOLDED_REPO/agents/folded-agent.md" <<'EOF'
 ---
 name: folded-agent
@@ -218,12 +225,27 @@ assert_path_missing "$FOLDED_HOME/.codex/agents/folded-agent.toml"
 STANDARD_COPY_REPO="$TMP_ROOT/standard-copy-repo"
 STANDARD_COPY_HOME="$TMP_ROOT/standard-copy-home"
 STANDARD_COPY_SKILL="$STANDARD_COPY_HOME/.agents/skills/standard-copy/SKILL.md"
-mkdir -p "$STANDARD_COPY_REPO/skills/standard-copy" "$STANDARD_COPY_HOME/.codex"
-cp "$REPO_DIR/setup.sh" "$STANDARD_COPY_REPO/setup.sh"
-printf '# Standard managed copy fixture\n' > "$STANDARD_COPY_REPO/skills/standard-copy/SKILL.md"
+mkdir -p \
+  "$STANDARD_COPY_REPO/skills/standard-copy" \
+  "$STANDARD_COPY_HOME/.codex" \
+  "$(dirname "$STANDARD_COPY_SKILL")"
+copy_installer_runtime "$STANDARD_COPY_REPO"
+cat > "$STANDARD_COPY_REPO/skills/standard-copy/SKILL.md" <<'EOF'
+---
+name: standard-copy
+description: Validate migration from the former managed-file format.
+---
 
-HOME="$STANDARD_COPY_HOME" "$STANDARD_COPY_REPO/setup.sh" --agent codex --only skills --copy --yes >/dev/null
-[ "$(sed -n '1p' "$STANDARD_COPY_SKILL")" = '<!-- ai-instructions:managed -->' ] || fail "Expected a standard managed skill copy"
+# Standard managed copy fixture
+EOF
+{
+  printf '<!-- ai-instructions:managed -->\n'
+  cat "$STANDARD_COPY_REPO/skills/standard-copy/SKILL.md"
+} > "$STANDARD_COPY_SKILL"
+
+HOME="$STANDARD_COPY_HOME" "$STANDARD_COPY_REPO/setup.sh" update --agent codex --only skills --copy --yes >/dev/null
+[ "$(sed -n '1p' "$STANDARD_COPY_SKILL")" = '---' ] || fail "Expected the standard managed copy to migrate"
+assert_file_contains "$(dirname "$STANDARD_COPY_SKILL")/.ai-instructions-managed" "ai-instructions:managed"
 HOME="$STANDARD_COPY_HOME" "$STANDARD_COPY_REPO/setup.sh" check --agent codex --only skills --copy --yes >/dev/null
 
 RESOURCE_REPO="$TMP_ROOT/resource-repo"
@@ -236,7 +258,7 @@ mkdir -p \
   "$RESOURCE_HOME/.codex" \
   "$RESOURCE_HOME/.copilot" \
   "$RESOURCE_HOME/.gemini"
-cp "$REPO_DIR/setup.sh" "$RESOURCE_REPO/setup.sh"
+copy_installer_runtime "$RESOURCE_REPO"
 cat > "$RESOURCE_REPO/skills/resource-skill/SKILL.md" <<'EOF'
 ---
 name: resource-skill
@@ -341,6 +363,19 @@ assert_path_missing "$LEGACY_COPY_SKILL/.ai-instructions-managed"
 HOME="$LEGACY_COPY_HOME" "$RESOURCE_REPO/setup.sh" remove --agent codex --only skills --copy --yes >"$LEGACY_COPY_HOME/remove.log" 2>&1
 assert_path_missing "$LEGACY_COPY_SKILL/SKILL.md"
 assert_file_contains "$LEGACY_COPY_SKILL/user-reference.md" "# User-owned sibling"
+
+STALE_LEGACY_HOME="$TMP_ROOT/stale-legacy-home"
+STALE_SAFE_SKILL="$STALE_LEGACY_HOME/.agents/skills/stale-safe"
+STALE_MIXED_SKILL="$STALE_LEGACY_HOME/.agents/skills/stale-mixed"
+mkdir -p "$STALE_SAFE_SKILL" "$STALE_MIXED_SKILL" "$STALE_LEGACY_HOME/.codex"
+printf '<!-- ai-instructions:managed -->\n# Removed skill\n' > "$STALE_SAFE_SKILL/SKILL.md"
+printf '<!-- ai-instructions:managed -->\n# Removed skill\n' > "$STALE_MIXED_SKILL/SKILL.md"
+printf '# User-owned sibling\n' > "$STALE_MIXED_SKILL/reference.md"
+
+HOME="$STALE_LEGACY_HOME" "$RESOURCE_REPO/setup.sh" update --agent codex --only skills --copy --yes >/dev/null
+assert_path_missing "$STALE_SAFE_SKILL"
+assert_path_missing "$STALE_MIXED_SKILL/SKILL.md"
+assert_file_contains "$STALE_MIXED_SKILL/reference.md" "# User-owned sibling"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent '*' --only skills --only agents --copy --yes >/dev/null
 

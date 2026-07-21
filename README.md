@@ -4,7 +4,7 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 ## Why
 
-AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and get loaded automatically via symlinks into each tool's config.
+AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
 See the [modernization plan](modernization-plan.md) for the current architecture audit and implementation roadmap.
 
@@ -14,8 +14,10 @@ See the [modernization plan](modernization-plan.md) for the current architecture
 instructions/          Always-on rules loaded into every AI session
 skills/*/SKILL.md      Standards-compliant workflows loaded on demand
 agents/                Custom agent definitions for focused tasks
+platforms/manifest.json  Tested product capabilities and destinations
+scripts/               Installer, format adapters, and documentation generator
 CONVENTIONS.md         Meta-conventions for skills, agents, and severity tags
-setup.sh               Installs into Cursor, Claude Code, Codex, Copilot, Gemini CLI
+setup.sh               POSIX compatibility wrapper for the Node installer
 ```
 
 ### Instructions
@@ -69,7 +71,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 
 ## Setup
 
-Clone the repo and run the setup script:
+The installer requires Node.js 22 or newer. Clone the repo and run the POSIX wrapper on macOS, Linux, or WSL:
 
 ```bash
 git clone <repo-url> ~/Code/ai-instructions
@@ -79,17 +81,29 @@ cd ~/Code/ai-instructions
 ./setup.sh --agent cursor    # Target a specific agent
 ```
 
+On native Windows, run the Node entrypoint directly and use copy mode:
+
+```powershell
+node scripts/setup.mjs --agent '*' --copy --yes
+```
+
 The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected agents alongside generating the concatenated file.
 
 ### Supported agents
 
-| Agent | Detection | Instructions | Skills | Agents |
-| --- | --- | --- | --- | --- |
-| Cursor | `~/.cursor/` | `~/.cursor/rules/*.mdc` (generated copies with YAML frontmatter) | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` |
-| Claude Code | `~/.claude/` | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` |
-| Codex | `~/.codex/` | `~/.codex/AGENTS.md` (single concatenated, managed file) | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` |
-| GitHub Copilot CLI | `~/.copilot/` | -- | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.md` |
-| Gemini CLI | `~/.gemini/` | -- | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` |
+<!-- platform-support:start -->
+
+<!-- Generated from platforms/manifest.json. Do not edit this table directly. -->
+
+| Product surface | Tier | Instructions | Skills | Agents | Verified |
+| --- | --- | --- | --- | --- | --- |
+| Cursor editor and CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` | 2026-07-21 |
+| Claude Code CLI | verified | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` | 2026-07-21 |
+| Codex app, CLI, and IDE extension | verified | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` | 2026-07-21 |
+| GitHub Copilot CLI | verified | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.agent.md` | 2026-07-21 |
+| Gemini CLI | verified | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` | 2026-07-21 |
+
+<!-- platform-support:end -->
 
 ### Commands
 
@@ -127,7 +141,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 ./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
 ```
 
-The script is non-destructive (skips files it did not install), idempotent (safe to re-run), and bash 3.2+ compatible (works on stock macOS). Copied Markdown files include an `<!-- ai-instructions:managed -->` marker, while generated Codex agents use `# ai-instructions:managed`, so `update --copy` only overwrites files the script previously installed.
+The installer is non-destructive and idempotent. It stages complete artifacts before publishing them, never clobbers an unexpected destination, and skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only replaces files previously installed by this repository.
 
 ### Manual integration
 
@@ -136,8 +150,8 @@ If you prefer to set things up manually or use a different tool:
 - **Cursor**: Instructions to `~/.cursor/rules/`, skills to `~/.cursor/skills/`, and agents to `~/.cursor/agents/`
 - **Claude Code**: Instructions to `~/.claude/rules/`, skills to `~/.claude/skills/`, and agents to `~/.claude/agents/`
 - **Codex**: Instructions to managed `~/.codex/AGENTS.md`, skills to the shared `~/.agents/skills/` location, and generated agents to `~/.codex/agents/`
-- **GitHub Copilot CLI**: Skills to `~/.copilot/skills/` and agents to `~/.copilot/agents/`; use `--copilot-concat` only for explicit repository export
-- **Gemini CLI**: Skills to `~/.gemini/skills/` and agents to `~/.gemini/agents/`
+- **GitHub Copilot CLI**: Instructions to `~/.copilot/copilot-instructions.md`, skills to `~/.copilot/skills/`, and agents to `~/.copilot/agents/`; use `--copilot-concat` only for explicit repository export
+- **Gemini CLI**: Instructions to `~/.gemini/GEMINI.md`, skills to `~/.gemini/skills/`, and agents to `~/.gemini/agents/`
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
 
 ### Per-project overrides
@@ -150,11 +164,13 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. If you installed with the default symlink mode, edit the source files here and every tool picks up changes immediately. Two agents are exceptions because they need generated, managed files rather than symlinks: Cursor instructions are always emitted as managed `.mdc` copies so the installer can add the YAML frontmatter Cursor requires, and Codex instructions are always concatenated into a single managed `~/.codex/AGENTS.md`. Re-run `./setup.sh update --agent cursor` or `./setup.sh update --agent codex` to refresh those generated files after source changes. If you installed other agents with `--copy`, changes do not propagate automatically; run `./setup.sh update --copy` to refresh installed files. In all modes, `update` cleans up stale entries (broken symlinks or orphaned managed copies) for source files that were removed from the repo. Commit and push to keep history and sync across machines.
+These are living documents. In the default mode, portable instructions, skills, and Markdown agents are symlinked and update immediately. Cursor instructions, concatenated Codex/Copilot/Gemini instructions, and Codex TOML agents are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations also require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. Commit and push to keep history and sync across machines.
 
 ## Development
 
 Development requires Node.js 22 or newer and npm.
+
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md).
 
 ```bash
 npm ci

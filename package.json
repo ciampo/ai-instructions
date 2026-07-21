@@ -4,10 +4,14 @@
     "node": ">=22"
   },
   "scripts": {
+    "docs:check": "node scripts/generate-support-table.mjs --check",
+    "docs:generate": "node scripts/generate-support-table.mjs",
     "lint": "markdownlint-cli2 \"**/*.md\"",
     "lint:fix": "markdownlint-cli2 --fix \"**/*.md\"",
     "test": "npm run test:shell && npm run test:installer",
-    "test:installer": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh && bash tests/skills-agents-install.sh",
+    "test:installer": "npm run test:node && npm run test:legacy",
+    "test:legacy": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh && bash tests/skills-agents-install.sh",
+    "test:node": "node --test tests/installer-matrix.test.mjs",
     "test:shell": "bash -n setup.sh tests/*.sh"
   },
   "devDependencies": {
