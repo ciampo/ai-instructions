@@ -28,5 +28,5 @@ Regression-limit the generated universal artifact to 150 lines and 8 KB. Validat
 - Unrelated sessions receive a small, stable personal core instead of framework-specific context.
 - Skill descriptions become routing APIs and need review when scope changes.
 - Installed skills must include their entire directory, not only `SKILL.md`.
-- Existing file edits propagate through default symlinks, while added or removed bundled resources require installer update.
+- Default directory symlinks expose edits, additions, and removals immediately; copy-mode installations require an installer update.
 - Repository-specific conventions override personal defaults unless a core boundary explicitly says otherwise.

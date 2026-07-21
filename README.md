@@ -163,7 +163,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. In the default mode, portable instruction, skill, and Markdown-agent files are symlinked, while each skill keeps a real discovery directory with all bundled resources. Edits to linked files update immediately; adding or removing skill resources requires `update`. Cursor instructions, concatenated Codex/Copilot/Gemini instructions, and Codex TOML agents are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations also require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
+These are living documents. In the default mode, portable instructions and Markdown agents are symlinked as files, while each skill is symlinked as a complete directory with its bundled resources. Source edits, additions, and removals appear immediately through those symlinks. Cursor instructions, concatenated Codex/Copilot/Gemini instructions, and Codex TOML agents are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
 
 ## Development
 
