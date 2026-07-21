@@ -643,6 +643,24 @@ printf '%s\\n' "$directory"
 	assert.match( result.stdout, /Usage: ai-instructions/ );
 } );
 
+test( 'POSIX compatibility wrapper resolves a bare command name through PATH', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	const workingDirectory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-path-' ) );
+	t.after( () => rm( workingDirectory, { recursive: true, force: true } ) );
+	const wrapper = await readFile( path.join( repoDir, 'setup.sh' ), 'utf8' );
+	const result = spawnSync( '/bin/sh', [ '-c', wrapper, 'setup.sh', '--help' ], {
+		cwd: workingDirectory,
+		env: {
+			...process.env,
+			PATH: [ repoDir, path.dirname( process.execPath ), '/usr/bin', '/bin' ].join( path.delimiter ),
+		},
+		encoding: 'utf8',
+	} );
+	assert.equal( result.status, 0, result.stderr );
+	assert.match( result.stdout, /Usage: ai-instructions/ );
+} );
+
 test( 'POSIX compatibility wrapper explains the missing Node requirement', {
 	skip: process.platform === 'win32',
 }, () => {
