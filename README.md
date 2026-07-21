@@ -6,13 +6,13 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-See the [modernization plan](modernization-plan.md) for the current architecture audit and implementation roadmap.
+See the [modernization plan](modernization-plan.md) for the architecture audit and completed implementation roadmap. The [platform support policy](docs/platform-support.md), [migration guide](docs/migration-guide.md), and [standards index](docs/standards-index.md) cover ongoing maintenance.
 
 ## Structure
 
 ```text
-instructions/          Always-on rules loaded into every AI session
-skills/*/SKILL.md      Standards-compliant workflows loaded on demand
+instructions/core.md  Small universal personal defaults
+skills/*/SKILL.md      Standards-compliant workflows and references loaded on demand
 agents/                Custom agent definitions for focused tasks
 platforms/manifest.json  Tested product capabilities and destinations
 scripts/               Installer, format adapters, and documentation generator
@@ -24,23 +24,16 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 
 | File | What it covers |
 | --- | --- |
-| [coding-principles.md](instructions/coding-principles.md) | Engineering philosophy, TypeScript/JS/CSS/React style, module organization, dependencies, testing, comments |
-| [interaction-preferences.md](instructions/interaction-preferences.md) | Concise communication, intellectual honesty, verify from source, GitHub boundaries, context switching, collaboration |
-| [writing-conventions.md](instructions/writing-conventions.md) | PR descriptions, commit messages, CHANGELOGs, branch names, JSDoc, error messages |
-| [code-review.md](instructions/code-review.md) | Multi-round review process, severity labels, structured output, prioritized checklist, "do not flag" list |
-| [accessibility.md](instructions/accessibility.md) | WAI-ARIA/WCAG standards, focus management, live regions, keyboard interaction, motion, visual and touch a11y |
-| [design-system-components.md](instructions/design-system-components.md) | Component library patterns: architecture, polymorphic rendering, styling, theming, Storybook, versioning |
-| [tools-and-cli.md](instructions/tools-and-cli.md) | GitHub CLI, git workflow, package managers, MCP tools, verify-before-push, shell conventions |
-| [performance.md](instructions/performance.md) | Bundle size, lazy loading, rendering optimization, CSS performance, images, measuring |
-| [i18n.md](instructions/i18n.md) | Translatable strings, RTL support, locale-aware formatting, i18n testing |
-| [security.md](instructions/security.md) | XSS prevention, content security, dependencies, server-side, secrets |
-| [error-handling.md](instructions/error-handling.md) | Error boundaries, loading/empty/error states, retry/recovery, logging |
-| [naming-conventions.md](instructions/naming-conventions.md) | Files, components, hooks, CSS, variables, types, branches |
+| [core.md](instructions/core.md) | Communication, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
+
+The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost.
 
 ### Skills
 
 | File | Trigger | What it does |
 | --- | --- | --- |
+| [engineering-standards](skills/engineering-standards/SKILL.md) | implementation or code review | Routes to only the relevant accessibility, design-system, language, i18n, security, performance, naming, or error-handling reference |
+| [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
 | [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with a no-subagent fallback |
 | [write-pr-description](skills/write-pr-description/SKILL.md) | "write/update PR description" | PR description writer following the repository template |
@@ -67,6 +60,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 
 - **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
+- **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
 - **Custom agents**: Shared Markdown definitions are installed directly where possible and generated as TOML for Codex.
 
 ## Setup
@@ -104,6 +98,8 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 | Gemini CLI | verified | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` | 2026-07-21 |
 
 <!-- platform-support:end -->
+
+See [platform support](docs/platform-support.md) for tier definitions, current product discovery checks, and the release verification checklist.
 
 ### Commands
 
@@ -158,23 +154,28 @@ If you prefer to set things up manually or use a different tool:
 
 These instructions are global defaults. To override for a specific project:
 
-- **Cursor**: Add project-specific `.cursor/rules/*.mdc` files in the repo. They take precedence over global rules.
-- **Claude Code**: Add project-specific rules in the repo's `CLAUDE.md` or `.claude/rules/`.
+- **Cursor**: Add `.cursor/rules/`, `.cursor/skills/`, or `.cursor/agents/` in the repository.
+- **Claude Code**: Add `CLAUDE.md`, `.claude/rules/`, `.claude/skills/`, or `.claude/agents/`.
+- **Codex**: Add `AGENTS.md`, `.agents/skills/`, or `.codex/agents/`.
+- **GitHub Copilot CLI**: Add `.github/copilot-instructions.md`, `.github/skills/`, or `.github/agents/`.
+- **Gemini CLI**: Add `GEMINI.md`, `.gemini/skills/`, or `.gemini/agents/`.
 - Use the project-level config to relax global rules (e.g., "this project uses Tailwind instead of CSS Modules") or add project-specific conventions.
 
 ## Updating
 
-These are living documents. In the default mode, portable instructions, skills, and Markdown agents are symlinked and update immediately. Cursor instructions, concatenated Codex/Copilot/Gemini instructions, and Codex TOML agents are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations also require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. Commit and push to keep history and sync across machines.
+These are living documents. In the default mode, portable instruction, skill, and Markdown-agent files are symlinked, while each skill keeps a real discovery directory with all bundled resources. Edits to linked files update immediately; adding or removing skill resources requires `update`. Cursor instructions, concatenated Codex/Copilot/Gemini instructions, and Codex TOML agents are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations also require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
 
 ## Development
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), and the context-scoping decision is recorded in [ADR 0002](docs/decisions/0002-progressive-disclosure.md).
 
 ```bash
 npm ci
 npm run lint
+npm run content:check
+npm run docs:check
 npm test
 npm audit --audit-level=high
 ```

@@ -1,9 +1,12 @@
 # AI instructions modernization plan
 
-Status: active roadmap. The first Phase 0 fixes are included in
-[#19](https://github.com/ciampo/ai-instructions/pull/19).
+Status: implemented across the stacked modernization pull requests. The original audit baseline remains below for historical context.
 
 Audit date: 2026-07-20
+
+Implementation completed: 2026-07-21
+
+The delivered architecture has a 51-line universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md).
 
 ## Executive assessment
 
@@ -134,7 +137,7 @@ The exact names can change during implementation. The important boundaries are:
   [custom agents](https://developers.openai.com/codex/subagents) now cover all
   three repository concepts.
 - Claude Code documents [persistent instructions and rules](https://code.claude.com/docs/en/memory),
-  [Agent Skills](https://code.claude.com/docs/en/slash-commands), and
+  [Agent Skills](https://code.claude.com/docs/en/skills), and
   [custom subagents](https://code.claude.com/docs/en/sub-agents). Its guidance
   also recommends keeping persistent instruction files concise and moving
   workflows into skills.
