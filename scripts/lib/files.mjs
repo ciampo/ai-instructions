@@ -102,9 +102,13 @@ async function restoreCapturedPath( captured, target ) {
 	await rename( captured, target );
 }
 
-function destinationExistsError( destination ) {
-	const error = new Error( `Refusing to replace ${ destination } because another path exists.` );
+function destinationExistsError( destination, backupPath ) {
+	const recovery = backupPath ? ` The original remains at ${ backupPath }.` : '';
+	const error = new Error( `Refusing to replace ${ destination } because another path exists.${ recovery }` );
 	error.code = 'EEXIST';
+	if ( backupPath ) {
+		error.backupPath = backupPath;
+	}
 	return error;
 }
 
@@ -126,14 +130,15 @@ async function replaceTemporaryPath( temporary, destination, canReplace ) {
 	}
 	try {
 		if ( await lstatSafe( destination ) ) {
-			await rm( backup, { recursive: true, force: true } );
-			throw destinationExistsError( destination );
+			throw destinationExistsError( destination, backup );
 		}
 		await rename( temporary, destination );
 	} catch ( error ) {
 		if ( await lstatSafe( backup ) ) {
 			if ( await lstatSafe( destination ) ) {
-				await rm( backup, { recursive: true, force: true } );
+				throw error.backupPath === backup
+					? error
+					: destinationExistsError( destination, backup );
 			} else {
 				await restoreCapturedPath( backup, destination );
 			}

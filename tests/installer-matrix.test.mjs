@@ -19,6 +19,7 @@ import {
 	removeOwnedPath,
 	writeNewFileAtomic,
 	writeOwnedFileAtomic,
+	writeSkillDirectoryAtomic,
 } from '../scripts/lib/files.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
@@ -150,6 +151,38 @@ test( 'file mutations fail closed when ownership changes after inspection', asyn
 		( error ) => error.code === 'EEXIST'
 	);
 	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+} );
+
+test( 'directory replacement preserves its backup when the destination reappears', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-directory-race-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const source = path.join( directory, 'source' );
+	const destination = path.join( directory, 'installed-skill' );
+	await mkdir( source );
+	await mkdir( destination );
+	await writeFile( path.join( source, 'SKILL.md' ), '# Updated skill\n' );
+	await writeFile( path.join( destination, 'SKILL.md' ), '# Original skill\n' );
+
+	let backup;
+	await assert.rejects(
+		writeSkillDirectoryAtomic(
+			source,
+			destination,
+			'# Managed updated skill\n',
+			async ( captured ) => {
+				backup = captured;
+				await mkdir( destination );
+				await writeFile( path.join( destination, 'user-owned.md' ), '# User-owned replacement\n' );
+				return true;
+			}
+		),
+		( error ) => error.code === 'EEXIST' && error.backupPath === backup
+	);
+	assert.equal(
+		await readFile( path.join( destination, 'user-owned.md' ), 'utf8' ),
+		'# User-owned replacement\n'
+	);
+	assert.equal( await readFile( path.join( backup, 'SKILL.md' ), 'utf8' ), '# Original skill\n' );
 } );
 
 for ( const platform of manifest.platforms ) {
