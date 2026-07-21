@@ -19,6 +19,7 @@ import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
+	SKILL_DIRECTORY_MARKER,
 	writeNewFileAtomic,
 	writeOwnedFileSafely,
 	writeSkillDirectorySafely,
@@ -541,6 +542,21 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 	assert.equal( artifact.expectedContent, source );
 } );
 
+async function assertSkillInstallMode( platform, home, skillName, expectedMode ) {
+	const skillDirectory = path.dirname( skillPath( platform, home, skillName ) );
+	const stats = await lstat( skillDirectory );
+	assert.equal(
+		stats.isSymbolicLink(),
+		expectedMode === 'symlink',
+		`${ platform.id } ${ skillName } should use ${ expectedMode } mode`
+	);
+	assert.equal(
+		await pathExists( path.join( skillDirectory, SKILL_DIRECTORY_MARKER ) ),
+		expectedMode === 'copy',
+		`${ platform.id } ${ skillName } should ${ expectedMode === 'copy' ? 'include' : 'not include' } the managed-copy marker`
+	);
+}
+
 async function verifyLegacyUpgrade( t, copy ) {
 	const home = await mkdtemp( path.join( os.tmpdir(), `ai-instructions-legacy-${ copy ? 'copy' : 'default' }-` ) );
 	t.after( () => rm( home, { recursive: true, force: true } ) );
@@ -558,12 +574,20 @@ async function verifyLegacyUpgrade( t, copy ) {
 		await pathExists( destination( home, '.cursor/skills-cursor/review-pr/SKILL.md' ) ),
 		false
 	);
+	const currentSkillNames = ( await readdir( path.join( repoDir, 'skills' ), { withFileTypes: true } ) )
+		.filter( ( entry ) => entry.isDirectory() )
+		.map( ( entry ) => entry.name );
+	const newSkillNames = currentSkillNames.filter( ( name ) => ! legacyFixture.skills.includes( name ) );
 	for ( const platform of manifest.platforms ) {
-		assert.equal(
-			await pathExists( skillPath( platform, home, 'release-publish' ) ),
-			true,
-			`${ platform.id } did not retain the legacy release-publish entrypoint`
-		);
+		const legacySkillMode = copy || legacyFixture.platforms[ platform.id ].skillsPath
+			? 'copy'
+			: 'symlink';
+		for ( const skillName of legacyFixture.skills ) {
+			await assertSkillInstallMode( platform, home, skillName, legacySkillMode );
+		}
+		for ( const skillName of newSkillNames ) {
+			await assertSkillInstallMode( platform, home, skillName, copy ? 'copy' : 'symlink' );
+		}
 	}
 }
 
