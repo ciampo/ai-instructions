@@ -61,6 +61,23 @@ copy_installer_runtime() {
   cp -R "$REPO_DIR/platforms" "$destination/platforms"
 }
 
+skills_are_portable() {
+  local root="$1" status
+  if grep -R -E -q '/Users/|skills/[^/[:space:]]+\.md' "$root"; then
+    return 1
+  else
+    status=$?
+  fi
+  [ "$status" -eq 1 ] || fail "Could not scan skill portability: $root"
+
+  if grep -E -q '^## Dependencies' "$root"/*/SKILL.md; then
+    return 1
+  else
+    status=$?
+  fi
+  [ "$status" -eq 1 ] || fail "Could not scan skill entrypoints: $root"
+}
+
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/skills-agents-install.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
@@ -86,7 +103,20 @@ for agent in "$REPO_DIR"/agents/*.md; do
   assert_frontmatter_file "$agent" "$agent_name"
 done
 
-if grep -E -q '^## Dependencies|/Users/|skills/[^/[:space:]]+\.md' "$REPO_DIR"/skills/*/SKILL.md; then
+PORTABILITY_FIXTURE="$TMP_ROOT/portability-fixture"
+mkdir -p "$PORTABILITY_FIXTURE/example/references"
+cat > "$PORTABILITY_FIXTURE/example/SKILL.md" <<'EOF'
+---
+name: example
+description: Exercise the portability scan.
+---
+EOF
+printf '/Users/example/private-instructions.md\n' > "$PORTABILITY_FIXTURE/example/references/private.md"
+if skills_are_portable "$PORTABILITY_FIXTURE"; then
+  fail "Expected the portability scan to inspect bundled references"
+fi
+
+if ! skills_are_portable "$REPO_DIR/skills"; then
   fail "Skills must be self-contained and portable"
 fi
 
