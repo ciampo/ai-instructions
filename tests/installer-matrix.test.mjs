@@ -517,8 +517,9 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		assert.equal( await readFile( destination( home, relativePath ), 'utf8' ), concatenatedInstructions );
 	}
 
-	const skillSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ), 'utf8' )
+	const skillSource = await readFile(
+		path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ),
+		'utf8'
 	);
 	for ( const platform of manifest.platforms ) {
 		assert.equal(
