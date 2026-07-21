@@ -783,21 +783,103 @@ apply_cursor_rule_action() {
 # ---------------------------------------------------------------------------
 frontmatter_value() {
   local src="$1" key="$2"
-  awk -v key="$key" '
+  awk -v key="$key" -v src="$src" '
+    function fail(message) {
+      print "Error: " src ": " message > "/dev/stderr"
+      failed = 1
+      exit 1
+    }
+
+    function trim(value) {
+      sub(/^[[:space:]]+/, "", value)
+      sub(/[[:space:]]+$/, "", value)
+      return value
+    }
+
+    BEGIN {
+      single_quote = sprintf("%c", 39)
+    }
+
     NR == 1 && $0 == "---" { in_frontmatter = 1; next }
     in_frontmatter && $0 == "---" { exit }
-    in_frontmatter && index($0, key ":") == 1 {
-      sub("^[^:]+:[[:space:]]*", "")
-      print
+
+    in_frontmatter && $0 !~ /^[[:space:]]*(#|$)/ {
+      match($0, /[^[:space:]]/)
+      indentation = RSTART - 1
+      if (!root_indentation_set) {
+        root_indentation = indentation
+        root_indentation_set = 1
+      }
+
+      if (indentation != root_indentation) {
+        next
+      }
+
+      field_pattern = "^[[:space:]]*" key "[[:space:]]*:"
+      if (!match($0, field_pattern)) {
+        next
+      }
+
+      value = trim(substr($0, RLENGTH + 1))
+      first_character = substr(value, 1, 1)
+      last_character = substr(value, length(value), 1)
+
+      if (first_character == ">" || first_character == "|") {
+        fail("frontmatter field \047" key "\047 must use a single-line scalar")
+      }
+
+      if (first_character == single_quote) {
+        if (length(value) < 2 || last_character != single_quote) {
+          fail("frontmatter field \047" key "\047 has an unterminated quoted scalar")
+        }
+        value = substr(value, 2, length(value) - 2)
+        unescaped_value = value
+        gsub(single_quote single_quote, "", unescaped_value)
+        if (index(unescaped_value, single_quote) > 0) {
+          fail("frontmatter field \047" key "\047 has an invalid single-quoted scalar")
+        }
+        gsub(single_quote single_quote, single_quote, value)
+      } else if (first_character == "\"") {
+        if (length(value) < 2 || last_character != "\"") {
+          fail("frontmatter field \047" key "\047 has an unterminated quoted scalar")
+        }
+        value = substr(value, 2, length(value) - 2)
+        if (index(value, "\\") > 0 || index(value, "\"") > 0) {
+          fail("frontmatter field \047" key "\047 uses unsupported quoted escapes")
+        }
+      } else {
+        sub(/[[:space:]]+#.*$/, "", value)
+        value = trim(value)
+      }
+
+      if (value == "") {
+        fail("frontmatter field \047" key "\047 must not be empty")
+      }
+
+      found = 1
+      print value
       exit
+    }
+
+    END {
+      if (!found && !failed) {
+        fail("missing required frontmatter field \047" key "\047")
+      }
     }
   ' "$src"
 }
 
 frontmatter_body() {
-  awk '
-    $0 == "---" { delimiters++; next }
-    delimiters >= 2 { print }
+  awk -v src="$1" '
+    NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+    in_frontmatter && $0 == "---" { in_frontmatter = 0; found_body = 1; next }
+    found_body { print }
+    END {
+      if (!found_body) {
+        print "Error: " src ": missing closing frontmatter delimiter" > "/dev/stderr"
+        exit 1
+      }
+    }
   ' "$1"
 }
 
@@ -807,10 +889,19 @@ toml_escape() {
 
 emit_codex_agent() {
   local src="$1" name description body_file
-  name="$(frontmatter_value "$src" "name" | toml_escape)"
-  description="$(frontmatter_value "$src" "description" | toml_escape)"
+  if ! name="$(frontmatter_value "$src" "name")"; then
+    return 1
+  fi
+  if ! description="$(frontmatter_value "$src" "description")"; then
+    return 1
+  fi
+  name="$(printf '%s' "$name" | toml_escape)"
+  description="$(printf '%s' "$description" | toml_escape)"
   body_file="$(mktemp "${TMPDIR:-/tmp}/ai-codex-agent-body.XXXXXX")"
-  frontmatter_body "$src" > "$body_file"
+  if ! frontmatter_body "$src" > "$body_file"; then
+    rm "$body_file"
+    return 1
+  fi
 
   if grep -Fq '"""' "$body_file"; then
     rm "$body_file"
@@ -831,16 +922,20 @@ is_codex_agent_copy() {
 }
 
 codex_agent_current() {
-  local src="$1" dst="$2"
-  is_codex_agent_copy "$dst" && cmp -s <(emit_codex_agent "$src") <(tail -n +2 "$dst")
+  local generated="$1" dst="$2"
+  is_codex_agent_copy "$dst" && cmp -s <(printf '%s\n' "$generated") <(tail -n +2 "$dst")
 }
 
 process_codex_agent() {
-  local action="$1" src="$2" dst="$3"
+  local action="$1" src="$2" dst="$3" generated=""
+
+  if [ "$action" != "unlink_file" ] && ! generated="$(emit_codex_agent "$src")"; then
+    return 1
+  fi
 
   case "$action" in
     install_file)
-      if codex_agent_current "$src" "$dst"; then
+      if codex_agent_current "$generated" "$dst"; then
         log_skip "$(basename "$dst")" "$dst"
         SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       elif { [ -e "$dst" ] || [ -L "$dst" ]; } && ! is_codex_agent_copy "$dst"; then
@@ -851,13 +946,13 @@ process_codex_agent() {
         SUMMARY_NEW=$((SUMMARY_NEW + 1))
       else
         mkdir -p "$(dirname "$dst")"
-        { echo "$TOML_MANAGED_MARKER"; emit_codex_agent "$src"; } > "$dst"
+        { echo "$TOML_MANAGED_MARKER"; printf '%s\n' "$generated"; } > "$dst"
         log_copy "$(basename "$dst") (Codex agent)"
         SUMMARY_NEW=$((SUMMARY_NEW + 1))
       fi
       ;;
     check_file)
-      if codex_agent_current "$src" "$dst"; then
+      if codex_agent_current "$generated" "$dst"; then
         log_ok "$(basename "$dst") (Codex agent)"
         SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
       elif [ -e "$dst" ] || [ -L "$dst" ]; then
@@ -871,7 +966,7 @@ process_codex_agent() {
       fi
       ;;
     list_file)
-      if codex_agent_current "$src" "$dst"; then
+      if codex_agent_current "$generated" "$dst"; then
         log_ok "$dst (Codex agent)"
       elif is_codex_agent_copy "$dst"; then
         log_warn "$dst (Codex agent, out of date)"

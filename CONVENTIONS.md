@@ -37,6 +37,8 @@ Procedural workflows belong in skills instead of always-on instructions. Native 
 
 Shared custom-agent sources live at `agents/<name>.md` with `name` and `description` YAML frontmatter. Keep shared definitions to the common metadata subset; platform-specific adapters generate any required native format.
 
+Keep required metadata as single-line plain or quoted scalars. The portable Codex adapter rejects block scalars and quoted escape sequences that it cannot translate safely.
+
 The Markdown body is the canonical prompt for Markdown-based products. Codex TOML is generated from the same name, description, and body. Never add a platform-only field to the shared frontmatter unless every direct consumer supports it.
 
 ## Guardrails

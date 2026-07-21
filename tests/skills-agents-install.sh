@@ -79,6 +79,62 @@ assert_file_contains "$CODEX_AGENT" "# ai-instructions:managed"
 assert_file_contains "$CODEX_AGENT" 'name = "a11y-reviewer"'
 assert_file_contains "$CODEX_AGENT" "developer_instructions ="
 
+QUOTED_REPO="$TMP_ROOT/quoted-repo"
+QUOTED_HOME="$TMP_ROOT/quoted-home"
+mkdir -p "$QUOTED_REPO/agents" "$QUOTED_HOME/.codex"
+cp "$REPO_DIR/setup.sh" "$QUOTED_REPO/setup.sh"
+cat > "$QUOTED_REPO/agents/quoted-agent.md" <<'EOF'
+---
+  name: "quoted-agent"
+  description: 'Quoted description: it''s portable.'
+---
+
+Review quoted metadata.
+EOF
+
+HOME="$QUOTED_HOME" "$QUOTED_REPO/setup.sh" --agent codex --only agents --copy --yes >/dev/null
+QUOTED_AGENT="$QUOTED_HOME/.codex/agents/quoted-agent.toml"
+assert_file_contains "$QUOTED_AGENT" 'name = "quoted-agent"'
+assert_file_contains "$QUOTED_AGENT" 'description = "Quoted description: it'\''s portable."'
+
+INVALID_REPO="$TMP_ROOT/invalid-repo"
+INVALID_HOME="$TMP_ROOT/invalid-home"
+mkdir -p "$INVALID_REPO/agents" "$INVALID_HOME/.codex"
+cp "$REPO_DIR/setup.sh" "$INVALID_REPO/setup.sh"
+cat > "$INVALID_REPO/agents/invalid-agent.md" <<'EOF'
+---
+name: invalid-agent
+---
+
+This agent has no description.
+EOF
+
+if HOME="$INVALID_HOME" "$INVALID_REPO/setup.sh" --agent codex --only agents --copy --yes >"$INVALID_HOME/install.log" 2>&1; then
+  fail "Expected Codex agent generation to reject missing frontmatter"
+fi
+assert_file_contains "$INVALID_HOME/install.log" "missing required frontmatter field 'description'"
+assert_path_missing "$INVALID_HOME/.codex/agents/invalid-agent.toml"
+
+FOLDED_REPO="$TMP_ROOT/folded-repo"
+FOLDED_HOME="$TMP_ROOT/folded-home"
+mkdir -p "$FOLDED_REPO/agents" "$FOLDED_HOME/.codex"
+cp "$REPO_DIR/setup.sh" "$FOLDED_REPO/setup.sh"
+cat > "$FOLDED_REPO/agents/folded-agent.md" <<'EOF'
+---
+name: folded-agent
+description: >
+  Folded descriptions are valid YAML but unsupported by the portable shell parser.
+---
+
+This agent uses folded metadata.
+EOF
+
+if HOME="$FOLDED_HOME" "$FOLDED_REPO/setup.sh" --agent codex --only agents --copy --yes >"$FOLDED_HOME/install.log" 2>&1; then
+  fail "Expected Codex agent generation to reject folded frontmatter"
+fi
+assert_file_contains "$FOLDED_HOME/install.log" "frontmatter field 'description' must use a single-line scalar"
+assert_path_missing "$FOLDED_HOME/.codex/agents/folded-agent.toml"
+
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent '*' --only skills --only agents --copy --yes >/dev/null
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" remove --agent '*' --only skills --only agents --copy --yes >/dev/null
