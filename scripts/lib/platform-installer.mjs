@@ -666,6 +666,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			}
 			if ( state.options.command === 'check' && await isOwnedPath( destination, repoDir ) ) {
 				state.checkFailures++;
+				state.broken++;
 			}
 			console.log( `  [unsupported] ${ path.basename( blocker ) } takes precedence over ${ path.basename( destination ) }; managed ${ category } skipped` );
 			blocked.add( category );

@@ -374,6 +374,24 @@ test( 'Codex override precedence is explicit and non-destructive', async ( t ) =
 	assert.equal( await readFile( overridePath, 'utf8' ), '# user override\n' );
 } );
 
+test( 'Codex check counts managed instructions blocked by an override as broken', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	runInstaller( home, [ '--agent', 'codex', '--only', 'instructions', '--yes' ] );
+	const managedPath = destination( home, '.codex/AGENTS.md' );
+	await writeFile( destination( home, '.codex/AGENTS.override.md' ), '# User override\n' );
+
+	const output = runInstaller(
+		home,
+		[ 'check', '--agent', 'codex', '--only', 'instructions', '--yes' ],
+		1
+	);
+	assert.match( output, /AGENTS\.override\.md.*takes precedence/ );
+	assert.match( output, /Broken: 1/ );
+	assert.equal( await pathExists( managedPath ), true );
+} );
+
 test( 'explicit Copilot repository export refreshes only managed files', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'copilot' );
 	const home = await createDetectedHome( platform );
