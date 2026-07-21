@@ -80,7 +80,7 @@ fi
 TMP_HOME_MIGRATION="$TMP_ROOT/migration"
 mkdir -p "$TMP_HOME_MIGRATION/.cursor/rules"
 ln -s "$REPO_DIR/instructions/core.md" "$TMP_HOME_MIGRATION/.cursor/rules/core.mdc"
-ln -s "$REPO_DIR/instructions/coding-principles.md" "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
+ln -s "$REPO_DIR/instructions/core.md" "$TMP_HOME_MIGRATION/.cursor/rules/coding-principles.mdc"
 
 HOME="$TMP_HOME_MIGRATION" "$REPO_DIR/setup.sh" --agent cursor --yes >/dev/null
 
