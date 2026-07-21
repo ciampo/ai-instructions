@@ -28,6 +28,7 @@ fi
 # ---------------------------------------------------------------------------
 MANAGED_MARKER='<!-- ai-instructions:managed -->'
 TOML_MANAGED_MARKER='# ai-instructions:managed'
+SKILL_DIR_MANAGED_MARKER='.ai-instructions-managed'
 
 log()        { echo "  $1"; }
 log_action() { echo -e "  ${C_GREEN}[+]${C_RESET} $1"; }
@@ -779,6 +780,215 @@ apply_cursor_rule_action() {
 }
 
 # ---------------------------------------------------------------------------
+# Skill directories
+#
+# Skills can bundle references, scripts, and binary assets alongside SKILL.md.
+# Manage the directory as one unit so relative references and file bytes survive.
+# ---------------------------------------------------------------------------
+skill_directory_link_is_ours() {
+  local dst="$1" target
+  [ -L "$dst" ] || return 1
+  target="$(readlink "$dst")"
+  case "$target" in
+    "$SCRIPT_DIR"/skills/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+skill_directory_is_managed_copy() {
+  local dst="$1" marker
+  [ -d "$dst" ] && ! [ -L "$dst" ] || return 1
+  marker="$dst/$SKILL_DIR_MANAGED_MARKER"
+  [ -f "$marker" ] && grep -Fqx 'ai-instructions:managed' "$marker"
+}
+
+skill_directory_is_legacy_managed() {
+  local dst="$1" entrypoint target
+  [ -d "$dst" ] && ! [ -L "$dst" ] || return 1
+  skill_directory_is_managed_copy "$dst" && return 1
+  entrypoint="$dst/SKILL.md"
+
+  if is_portable_managed_copy "$entrypoint" || is_standard_managed_copy "$entrypoint"; then
+    return 0
+  fi
+
+  if [ -L "$entrypoint" ]; then
+    target="$(readlink "$entrypoint")"
+    case "$target" in
+      "$SCRIPT_DIR"/skills/*.md|"$SCRIPT_DIR"/skills/*/SKILL.md) return 0 ;;
+    esac
+  fi
+
+  return 1
+}
+
+legacy_skill_directory_has_unknown_entries() {
+  local dst="$1"
+  find "$dst" -mindepth 1 -maxdepth 1 ! -name 'SKILL.md' -print |
+    awk 'NR { found = 1 } END { exit(found ? 0 : 1) }'
+}
+
+legacy_skill_directory_is_safe_to_replace() {
+  local dst="$1"
+  skill_directory_is_legacy_managed "$dst" || return 1
+  ! legacy_skill_directory_has_unknown_entries "$dst"
+}
+
+write_skill_directory_copy() {
+  local src="$1" dst="$2"
+  mkdir -p "$dst"
+  cp -Rp "$src/." "$dst/"
+  write_managed_copy "$src/SKILL.md" "$dst/SKILL.md"
+  printf 'ai-instructions:managed\n' > "$dst/$SKILL_DIR_MANAGED_MARKER"
+}
+
+skill_directory_is_current() {
+  local src="$1" dst="$2" target expected status
+
+  if [ -L "$dst" ]; then
+    target="$(readlink "$dst")"
+    [ "$target" = "$src" ]
+    return
+  fi
+
+  skill_directory_is_managed_copy "$dst" || return 1
+  is_portable_managed_copy "$dst/SKILL.md" || return 1
+
+  expected="$(mktemp -d "${TMPDIR:-/tmp}/ai-skill-copy.XXXXXX")"
+  write_skill_directory_copy "$src" "$expected"
+  if diff -qr "$expected" "$dst" >/dev/null; then
+    status=0
+  else
+    status=1
+  fi
+  rm -rf "$expected"
+  return "$status"
+}
+
+skill_directory_can_update() {
+  local dst="$1"
+
+  if skill_directory_link_is_ours "$dst"; then
+    return 0
+  fi
+
+  if skill_directory_is_managed_copy "$dst"; then
+    $COPY_MODE
+    return
+  fi
+
+  if legacy_skill_directory_is_safe_to_replace "$dst"; then
+    if [ -L "$dst/SKILL.md" ]; then
+      return 0
+    fi
+    $COPY_MODE
+    return
+  fi
+
+  return 1
+}
+
+create_skill_directory() {
+  local src="$1" dst="$2"
+  mkdir -p "$(dirname "$dst")"
+  if $COPY_MODE; then
+    write_skill_directory_copy "$src" "$dst"
+    log_copy "$(basename "$dst")/ (skill)"
+  else
+    ln -s "$src" "$dst"
+    log_action "$(basename "$dst")/ (skill)"
+  fi
+}
+
+remove_skill_directory() {
+  local dst="$1"
+  if [ -L "$dst" ]; then
+    rm "$dst"
+  else
+    rm -rf "$dst"
+  fi
+}
+
+process_skill_directory() {
+  local action="$1" src="$2" dst="$3" label
+  label="$(basename "$dst")/"
+
+  case "$action" in
+    install_file)
+      if skill_directory_is_current "$src" "$dst"; then
+        log_skip "$label" "$dst"
+        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      elif [ -e "$dst" ] || [ -L "$dst" ]; then
+        if [ "$COMMAND" = "update" ] && skill_directory_can_update "$dst"; then
+          if $DRY_RUN; then
+            log_dry "replace managed skill $dst"
+          else
+            remove_skill_directory "$dst"
+            create_skill_directory "$src" "$dst"
+          fi
+          SUMMARY_NEW=$((SUMMARY_NEW + 1))
+        else
+          if skill_directory_is_legacy_managed "$dst" && legacy_skill_directory_has_unknown_entries "$dst"; then
+            log_warn "$label contains files not installed by this script; preserving the legacy directory"
+          elif { skill_directory_is_managed_copy "$dst" || skill_directory_is_legacy_managed "$dst"; } && ! $COPY_MODE; then
+            log_warn "$label is a managed copy; run update --copy to refresh it"
+          else
+            log_warn "$label exists at $dst but is out of date or was not installed by this script -- skipping"
+          fi
+          SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        fi
+      elif $DRY_RUN; then
+        log_dry "install skill $src -> $dst"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      else
+        create_skill_directory "$src" "$dst"
+        SUMMARY_NEW=$((SUMMARY_NEW + 1))
+      fi
+      ;;
+    check_file)
+      if skill_directory_is_current "$src" "$dst"; then
+        log_ok "$label (skill)"
+        SUMMARY_UPTODATE=$((SUMMARY_UPTODATE + 1))
+      elif [ -e "$dst" ] || [ -L "$dst" ]; then
+        log_warn "$label (skill, out of date or conflicting)"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+        record_check_failure
+      fi
+      ;;
+    list_file)
+      if skill_directory_is_current "$src" "$dst"; then
+        log_ok "$dst (skill)"
+      elif skill_directory_link_is_ours "$dst" || skill_directory_is_managed_copy "$dst" || skill_directory_is_legacy_managed "$dst"; then
+        log_warn "$dst (skill, out of date)"
+      fi
+      ;;
+    unlink_file)
+      if skill_directory_link_is_ours "$dst" || skill_directory_is_managed_copy "$dst" || legacy_skill_directory_is_safe_to_replace "$dst"; then
+        if $DRY_RUN; then
+          log_dry "rm $dst (skill)"
+        else
+          remove_skill_directory "$dst"
+          log_remove "$label (skill)"
+        fi
+        SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+      elif skill_directory_is_legacy_managed "$dst"; then
+        if $DRY_RUN; then
+          log_dry "rm legacy managed entrypoint $dst/SKILL.md"
+        else
+          rm "$dst/SKILL.md"
+          log_remove "$(basename "$dst")/SKILL.md (legacy managed entrypoint)"
+          log_warn "$label contains files not installed by this script; preserving them"
+        fi
+        SUMMARY_REMOVED=$((SUMMARY_REMOVED + 1))
+      elif [ -e "$dst" ] || [ -L "$dst" ]; then
+        log_warn "$label at $dst was not installed by this script -- skipping"
+        SUMMARY_SKIPPED=$((SUMMARY_SKIPPED + 1))
+      fi
+      ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
 # Codex custom agents (generated TOML)
 # ---------------------------------------------------------------------------
 frontmatter_value() {
@@ -912,7 +1122,7 @@ emit_codex_agent() {
   echo "name = \"$name\""
   echo "description = \"$description\""
   echo 'developer_instructions = """'
-  cat "$body_file"
+  sed 's/\\/\\\\/g' "$body_file"
   echo '"""'
   rm "$body_file"
 }
@@ -997,7 +1207,11 @@ remove_stale_entry() {
   if $DRY_RUN; then
     log_dry "rm stale $path"
   else
-    rm "$path"
+    if [ -d "$path" ] && ! [ -L "$path" ]; then
+      rm -rf "$path"
+    else
+      rm "$path"
+    fi
     if [ -n "$parent_dir" ]; then
       rmdir "$parent_dir" 2>/dev/null || true
     fi
@@ -1034,7 +1248,9 @@ clean_stale_in_dir() {
       local nested_path="$entry/$nested_file"
       local skill_name
       skill_name="$(basename "$entry")"
-      if [ -L "$nested_path" ]; then
+      if skill_directory_is_managed_copy "$entry" && [ ! -e "$src_dir/$skill_name/$nested_file" ]; then
+        remove_stale_entry "$entry" "$skill_name/ (managed skill directory)"
+      elif [ -L "$nested_path" ]; then
         local target
         target="$(readlink "$nested_path")"
         case "$target" in
@@ -1104,27 +1320,12 @@ process_agent() {
 
   if should_process_category "skills" && [ -n "$skills_dir" ]; then
     log "Skills -> $skills_dir/"
-    for f in "$SCRIPT_DIR"/skills/*/SKILL.md; do
-      [ -e "$f" ] || continue
-      local skill_name
-      skill_name="$(basename "$(dirname "$f")")"
-      local sdir="$skills_dir/$skill_name"
-      case "$action" in
-        install_file)
-          if ! $DRY_RUN; then mkdir -p "$sdir"; fi
-          install_file "$f" "$sdir/$skill_file"
-          ;;
-        check_file)
-          check_file "$f" "$sdir/$skill_file"
-          ;;
-        list_file)
-          list_file "$f" "$sdir/$skill_file"
-          ;;
-        unlink_file)
-          unlink_file "$f" "$sdir/$skill_file"
-          if ! $DRY_RUN; then rmdir "$sdir" 2>/dev/null || true; fi
-          ;;
-      esac
+    for f in "$SCRIPT_DIR"/skills/*; do
+      [ -f "$f/$skill_file" ] || continue
+      local skill_name sdir
+      skill_name="$(basename "$f")"
+      sdir="$skills_dir/$skill_name"
+      process_skill_directory "$action" "$f" "$sdir"
     done
   fi
 
@@ -1148,11 +1349,6 @@ process_agent() {
 # ~/.cursor/skills-cursor path. User-owned files are always preserved.
 cursor_clean_legacy_skills() {
   local action="$1"
-  case "$action" in
-    install_file|unlink_file) ;;
-    *) return 0 ;;
-  esac
-
   local legacy_dir="$HOME/.cursor/skills-cursor"
   [ -d "$legacy_dir" ] || return 0
 
@@ -1164,23 +1360,36 @@ cursor_clean_legacy_skills() {
 
     if [ -L "$nested" ]; then
       target="$(readlink "$nested")"
-      case "$target" in "$SCRIPT_DIR"/skills/*.md) is_ours=true ;; esac
+      case "$target" in
+        "$SCRIPT_DIR"/skills/*.md|"$SCRIPT_DIR"/skills/*/SKILL.md) is_ours=true ;;
+      esac
     elif is_standard_managed_copy "$nested"; then
       is_ours=true
     fi
 
     $is_ours || continue
-    if $DRY_RUN; then
-      log_dry "rm legacy Cursor skill $nested"
-    else
-      rm "$nested"
-      rmdir "$entry" 2>/dev/null || true
-      log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
-    fi
-    SUMMARY_STALE=$((SUMMARY_STALE + 1))
+    case "$action" in
+      check_file)
+        report_stale_entry "$(basename "$entry")/SKILL.md (legacy Cursor path)"
+        ;;
+      list_file)
+        log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
+        SUMMARY_STALE=$((SUMMARY_STALE + 1))
+        ;;
+      install_file|unlink_file)
+        if $DRY_RUN; then
+          log_dry "rm legacy Cursor skill $nested"
+        else
+          rm "$nested"
+          rmdir "$entry" 2>/dev/null || true
+          log_stale "$(basename "$entry")/SKILL.md (legacy Cursor path)"
+        fi
+        SUMMARY_STALE=$((SUMMARY_STALE + 1))
+        ;;
+    esac
   done
 
-  if ! $DRY_RUN; then
+  if ! $DRY_RUN && { [ "$action" = "install_file" ] || [ "$action" = "unlink_file" ]; }; then
     rmdir "$legacy_dir" 2>/dev/null || true
   fi
 }
@@ -1240,7 +1449,9 @@ check_stale_in_dir() {
       local nested_path="$entry/$nested_file"
       local skill_name
       skill_name="$(basename "$entry")"
-      if [ -L "$nested_path" ]; then
+      if skill_directory_is_managed_copy "$entry" && [ ! -e "$src_dir/$skill_name/$nested_file" ]; then
+        report_stale_entry "$skill_name/ (stale managed skill directory)"
+      elif [ -L "$nested_path" ]; then
         local target
         target="$(readlink "$nested_path")"
         case "$target" in
