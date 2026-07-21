@@ -859,7 +859,6 @@ skill_directory_is_current() {
   fi
 
   skill_directory_is_managed_copy "$dst" || return 1
-  is_portable_managed_copy "$dst/SKILL.md" || return 1
 
   expected="$(mktemp -d "${TMPDIR:-/tmp}/ai-skill-copy.XXXXXX")"
   write_skill_directory_copy "$src" "$expected"

@@ -215,6 +215,17 @@ fi
 assert_file_contains "$FOLDED_HOME/install.log" "frontmatter field 'description' must use a single-line scalar"
 assert_path_missing "$FOLDED_HOME/.codex/agents/folded-agent.toml"
 
+STANDARD_COPY_REPO="$TMP_ROOT/standard-copy-repo"
+STANDARD_COPY_HOME="$TMP_ROOT/standard-copy-home"
+STANDARD_COPY_SKILL="$STANDARD_COPY_HOME/.agents/skills/standard-copy/SKILL.md"
+mkdir -p "$STANDARD_COPY_REPO/skills/standard-copy" "$STANDARD_COPY_HOME/.codex"
+cp "$REPO_DIR/setup.sh" "$STANDARD_COPY_REPO/setup.sh"
+printf '# Standard managed copy fixture\n' > "$STANDARD_COPY_REPO/skills/standard-copy/SKILL.md"
+
+HOME="$STANDARD_COPY_HOME" "$STANDARD_COPY_REPO/setup.sh" --agent codex --only skills --copy --yes >/dev/null
+[ "$(sed -n '1p' "$STANDARD_COPY_SKILL")" = '<!-- ai-instructions:managed -->' ] || fail "Expected a standard managed skill copy"
+HOME="$STANDARD_COPY_HOME" "$STANDARD_COPY_REPO/setup.sh" check --agent codex --only skills --copy --yes >/dev/null
+
 RESOURCE_REPO="$TMP_ROOT/resource-repo"
 RESOURCE_HOME="$TMP_ROOT/resource-home"
 mkdir -p \
