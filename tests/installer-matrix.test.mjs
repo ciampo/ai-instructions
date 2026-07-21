@@ -131,6 +131,15 @@ test( 'manifest rejects unsafe legacy migration paths', () => {
 	);
 } );
 
+test( 'manifest rejects Windows-style path traversal', () => {
+	const invalidManifest = structuredClone( manifest );
+	invalidManifest.platforms[ 0 ].legacyDestinations[ 0 ].sourceRoot = '..\\outside-repository';
+	assert.throws(
+		() => validateManifest( invalidManifest ),
+		/legacyDestinations\[0\]\.sourceRoot must stay within/
+	);
+} );
+
 test( 'manifest rejects support tiers outside the documented contract', () => {
 	const invalidManifest = structuredClone( manifest );
 	invalidManifest.platforms[ 0 ].supportTier = 'experimental';

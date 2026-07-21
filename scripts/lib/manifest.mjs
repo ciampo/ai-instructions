@@ -14,7 +14,12 @@ function assertString( value, field ) {
 
 function validateRelativePath( value, field ) {
 	assertString( value, field );
-	if ( path.isAbsolute( value ) || value.split( '/' ).includes( '..' ) ) {
+	const segments = value.split( /[\\/]/ );
+	if (
+		path.posix.isAbsolute( value ) ||
+		path.win32.isAbsolute( value ) ||
+		segments.includes( '..' )
+	) {
 		throw new Error( `Platform manifest: ${ field } must stay within the selected home directory.` );
 	}
 }
