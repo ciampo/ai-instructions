@@ -4,7 +4,6 @@ Support tiers require evidence from the target product, not only proof that file
 
 The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
-
 ## 2026-07-21 and 2026-07-22 adapter and live discovery checks
 
 The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured checks across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
@@ -29,20 +28,6 @@ The Gemini authentication failure is not a local login or stale-client problem. 
 The Antigravity CLI was installed through the [official installation and authentication flow](https://antigravity.google/docs/cli/install). Its onboarding was completed with optional interaction-data collection disabled. Headless verification used plan mode, terminal sandboxing, and an isolated clean repository. A blanket permission bypass was not used.
 
 ## 2026-07-22 pre-retirement installation and discovery checks
-
-The active installation was generated from `main` at `6ca999444033ef095d9f8539f60c410043d930c8`. `./setup.sh check --agent '*'` verified all 90 managed artifacts across the five product surfaces. The live checks below used that installed revision; the content and authority changes being developed after it were not installed from a feature branch.
-
-| Product surface | Product version | Adapter | Instructions | Skills | Agents | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| Cursor editor and Agent CLI | Editor 3.12.17; Agent CLI 2026.05.04-08e5280 | Pass | Blocked: the Agent CLI is not authenticated; the editor UI was not exercised | Blocked: local files passed installer checks, but neither listing nor invocation was available without an authenticated client or editor UI | Blocked: invocation requires an authenticated client or editor UI | Preview |
-| Claude Code CLI | 2.1.63 | Pass | Blocked: `claude auth status` reported no login | Blocked: invocation requires authentication | Pass for listing: `claude agents` reported all three user agents; invocation blocked by authentication | Preview |
-| Codex app, CLI, and IDE extension | CLI 0.145.0; app and IDE extension versions not exposed | Pass | Partial pass: this fresh app task followed the installed task-title convention; the CLI and IDE extension were not independently exercised | Partial pass: this task discovered all 14 user skills and activated the relevant repository-maintenance and refactor skills; a separate CLI run was not authorized | Partial pass: all three agents were discoverable, and `a11y-reviewer` returned the repository-specific 24x24 AA and 44x44 AAA canary with W3C sources; the CLI and IDE extension were not independently exercised | Preview |
-| GitHub Copilot CLI | 1.0.73 | Pass | Blocked: model invocation reported no authentication | Pass for listing: `copilot skill list` reported all 14 personal skills; invocation blocked by authentication | Blocked: invocation requires authentication | Preview |
-| Gemini CLI | 0.51.0 | Pass | Blocked: no authentication method is configured | Blocked: `gemini skills list --all` did not return before it was stopped, and invocation could not start without authentication | Blocked: invocation requires authentication | Preview |
-
-Codex context isolation also passed in a fresh delegated task: a non-engineering prose prompt produced only the requested prose, without engineering, release, or pull-request procedures. The combined Codex surface remains preview because the app version, IDE extension version, and independent CLI and IDE checks are still missing. No other support tier changes are justified by this evidence.
-
-## 2026-07-22 active installation and discovery checks
 
 The active installation was generated from `main` at `6ca999444033ef095d9f8539f60c410043d930c8`. `./setup.sh check --agent '*'` verified all 90 managed artifacts across the five product surfaces. The live checks below used that installed revision; the content and authority changes being developed after it were not installed from a feature branch.
 
