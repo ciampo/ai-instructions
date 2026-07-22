@@ -267,7 +267,7 @@ async function restoreManagedFileSnapshot( entry, snapshot, repoDir ) {
 			snapshot.value,
 			entry.destination,
 			'file',
-			() => matchesPublishedContent( entry.destination, entry.content )
+			( target ) => matchesPublishedContent( target, entry.content )
 		);
 		return;
 	}

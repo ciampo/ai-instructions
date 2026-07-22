@@ -424,6 +424,37 @@ test( 'managed file transactions restore earlier writes when a later destination
 	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
 } );
 
+test( 'managed file transactions restore an owned symlink after a later write fails', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-symlink-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const source = path.join( repoDir, 'AGENTS.md' );
+	const next = `${ managedMarker }\n# Next\n`;
+	await symlink( source, first );
+
+	await assert.rejects(
+		writeManagedFilesTransactionally(
+			[
+				{ destination: first, content: next },
+				{ destination: second, content: next },
+			],
+			repoDir,
+			{
+				beforeWrite: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		( error ) => error.code === 'EEXIST'
+	);
+	assert.ok( ( await lstat( first ) ).isSymbolicLink() );
+	assert.equal( await readlink( first ), source );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
+} );
+
 test( 'managed file transactions report rollback failures', async ( t ) => {
 	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-rollback-' ) );
 	t.after( () => rm( directory, { recursive: true, force: true } ) );
