@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "implicit-dialog-audit",
+      "prompt": "Audit this custom dialog for keyboard, focus, and screen-reader accessibility.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "general-pull-request-review",
+      "prompt": "Review this pull request for correctness, API design, tests, performance, and accessibility.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "source-proven-read-only-finding",
+      "prompt": "Audit the focus behavior in this dialog component for accessibility. Do not modify the source.",
+      "context": "evals/fixtures/dialog-focus.md",
+      "expectedOutcome": "A read-only accessibility assessment that distinguishes source-proven failures from behavior that requires runtime verification.",
+      "assertions": [
+        "The assessment does not modify the component.",
+        "Confirmed findings cite applicable primary accessibility sources.",
+        "Unobserved runtime behavior is reported as a verification gap rather than a confirmed violation."
+      ]
+    }
+  ]
+}

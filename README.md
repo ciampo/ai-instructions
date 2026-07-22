@@ -61,6 +61,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
 - **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
 - **Specialist execution**: Reusable review methods live in skills. Add a custom agent only when delegated execution demonstrates measurable value beyond loading the skill directly.
+- **Skill evaluation**: New or materially changed skills use versioned trigger and output fixtures; see the [evaluation guide](docs/skill-evaluations.md).
 
 ## Setup
 

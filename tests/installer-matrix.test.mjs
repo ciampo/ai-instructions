@@ -669,6 +669,7 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 
 test( 'content contracts enforce the universal instruction budget', async () => {
 	const result = await validateContent( repoDir );
+	assert.equal( result.evaluationCount, 4 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
@@ -711,6 +712,65 @@ test( 'content contracts validate links in bundled skill references', async ( t 
 	await assert.rejects(
 		validateContent( fixture ),
 		/bundled reference does not exist: missing\.md/
+	);
+} );
+
+test( 'content contracts reject incomplete skill evaluation fixtures', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	const evalsDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
+	await mkdir( evalsDirectory );
+	await writeFile(
+		path.join( evalsDirectory, 'evals.json' ),
+		JSON.stringify( {
+			schemaVersion: 1,
+			triggerCases: [
+				{ id: 'only-positive', prompt: 'Use this skill.', shouldTrigger: true },
+				{ id: 'another-positive', prompt: 'Use this skill again.', shouldTrigger: true },
+			],
+			outputCases: [
+				{
+					id: 'output',
+					prompt: 'Use this skill.',
+					expectedOutcome: 'A useful result.',
+					assertions: [ 'The result is useful.' ],
+				},
+			],
+		}, null, 2 )
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/triggerCases must include both triggering and non-triggering cases/
+	);
+} );
+
+test( 'content contracts require an existing output evaluation context', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	const evalsDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
+	await mkdir( evalsDirectory );
+	await writeFile(
+		path.join( evalsDirectory, 'evals.json' ),
+		JSON.stringify( {
+			schemaVersion: 1,
+			triggerCases: [
+				{ id: 'positive', prompt: 'Use this skill.', shouldTrigger: true },
+				{ id: 'negative', prompt: 'Do not use this skill.', shouldTrigger: false },
+			],
+			outputCases: [
+				{
+					id: 'output',
+					prompt: 'Use this skill.',
+					context: 'evals/fixtures/missing.md',
+					expectedOutcome: 'A useful result.',
+					assertions: [ 'The result is useful.' ],
+				},
+			],
+		}, null, 2 )
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/outputCases\[0\]\.context does not exist: evals\/fixtures\/missing\.md/
 	);
 } );
 
