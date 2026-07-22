@@ -40,4 +40,19 @@ The agent layer did not change tools, authority, context isolation, or the resul
 
 The API-design and performance skills remain distinct from general PR review because they are deliberately triggered only for focused public-API or performance analysis. General PR review owns change discovery, complete-diff coverage, cross-domain prioritization, deduplication, and final delivery. It may route to a specialist skill only when that domain is materially in scope.
 
+## Delegated comparison and agent decision
+
+- **Decision revision:** `1b147a6c1de794f2a93048863578f7043955dfbf`
+- **Method:** compare direct skill execution with the parent revision's custom-agent prompt on the same scoped examples. The comparisons were read-only and inspected both contracts explicitly.
+
+| Capability | Comparison evidence | Decision |
+| --- | --- | --- |
+| Accessibility | The direct skill produced source-linked findings and kept unobserved focus behavior as a verification gap. Delegated custom-agent runs retained the older `Violations / Best Practices / Enhancements` taxonomy even when the current skill was also supplied, demonstrating that the second prompt could override or drift from the shared output contract. No distinct tools or isolation benefit appeared. | Keep `review-accessibility`; remove `a11y-reviewer` |
+| API design | Both paths found the material polymorphism, callback-type, ref, and consumer-evidence concerns. The direct skill correctly left the accepted `variant` vocabulary as a verification gap; the custom agent promoted it to a breaking-risk finding despite acknowledging that consumers and compatibility policy were unavailable. Its generic request for future escape hatches also conflicts with evidence-based minimality. | Keep `review-api-design`; remove `api-design-reviewer` |
+| Performance | Both paths identified dependency, repeated-rendering, usage-context, and scale risks. The direct skill distinguished source-proven cost from missing bundle, profile, and realistic-scale evidence and required a repeatable measurement before prescribing an optimization. The custom agent added only a persona and a conflicting severity taxonomy. | Keep `review-performance`; remove `performance-reviewer` |
+
+The agent layer did not change tools, authority, context isolation, or the resulting analysis enough to justify a second copy of each specialist contract. All three capabilities therefore use direct skills. The manifest marks bundled custom agents unsupported, while legacy destinations let `update` and `remove` clean only repository-owned retired agents; user-maintained agents remain untouched.
+
+The API-design and performance skills remain distinct from general PR review because they are deliberately triggered only for focused public-API or performance analysis. General PR review owns change discovery, complete-diff coverage, cross-domain prioritization, deduplication, and final delivery. It may route to a specialist skill only when that domain is materially in scope.
+
 Automatic product routing and browser or assistive-technology execution were not measured in this direct pass. Current product-level blockers remain in [discovery evidence](discovery-evidence.md). Do not generalize this small matrix into a model-graded harness unless repeated pilot runs expose a stable failure that deterministic checks and human review cannot explain.
