@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastReviewed": "2026-07-21",
+  "lastReviewed": "2026-07-22",
   "installPolicy": {
     "scope": "user",
     "portableDefault": "symlink",
