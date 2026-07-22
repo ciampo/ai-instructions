@@ -1,16 +1,20 @@
 ---
 name: write-pr-description
-description: Write or update a concise pull-request description from the actual diff, repository template, and behavior-focused testing steps. Use for every PR description change.
+description: Draft a concise pull-request description locally from the actual diff, repository template, and behavior-focused testing steps, or apply it to GitHub when explicitly authorized. Use for every PR description change; drafting does not imply remote-write authority.
 ---
 
 # Write PR Description
 
 A workflow for writing or updating a PR description. Invoked when I say "write the PR description" or "update the PR description."
 
+## Authority and output
+
+By default, return the description as Markdown in chat or write it to a user-requested local file. Apply it to GitHub only when the user explicitly asks to update, create, or open the pull request. Preserve manually authored remote content when updating an existing description.
+
 ## Steps
 
 1. Detect the repo's PR template (look for `.github/PULL_REQUEST_TEMPLATE.md` or similar). If none exists, use the default structure: What / Why / How / Testing Instructions.
-2. If updating an existing PR description, read the current description first. Preserve anything that should stay (manually added links, screenshots, reviewer context) and rewrite the rest based on the current state of the code.
+2. If updating an existing PR description, read the current description first. Preserve anything that should stay (manually added links, screenshots, reviewer context) and rewrite the rest based on the current state of the code. Reading the remote description does not authorize applying the draft.
 3. Read all staged/committed changes to understand the scope.
 4. Write the What / Why / How sections in plain, human language. Lead with the outcome and motivation, explain only the implementation detail needed to understand the approach, and prefer one or two sentences per section when possible. A reviewer should grasp the change in 30 seconds without first understanding the code.
 5. Write a "Testing Instructions" section that prioritizes manual reproduction and verification:
@@ -22,3 +26,4 @@ A workflow for writing or updating a PR description. Invoked when I say "write t
 8. Add a "TODO / Follow-ups" section when there is deferred or out-of-scope work.
 9. Place related issue/PR links at the top.
 10. Keep it concise. If in doubt, cut it.
+11. Deliver the Markdown locally unless the request already authorizes the corresponding GitHub write. Report clearly whether the remote description changed.

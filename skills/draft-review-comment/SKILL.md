@@ -1,6 +1,6 @@
 ---
 name: draft-review-comment
-description: Draft concise, self-contained GitHub review comments in a portable Markdown document without posting them. Use directly or from PR review workflows.
+description: Draft concise, self-contained GitHub review findings in a portable local Markdown document without posting them. Use directly or from PR review workflows; support inline, file-level, and general findings, with chat delivery only when explicitly requested.
 ---
 
 # Draft Review Comment
@@ -11,11 +11,11 @@ This is a supporting skill — typically chained into by `review-pr`, `self-revi
 
 ## Output Delivery
 
-All review output goes into a **single markdown document** — never inline in the chat.
+Multi-finding review output goes into a **single Markdown document** by default. When the user explicitly requests chat delivery, return only the requested concise, copy-pasteable comment or comments in chat unless they also explicitly request file delivery.
 
-1. Write findings to a file in the **OS temporary directory** (e.g., `$TMPDIR` on macOS, `/tmp` on Linux). Use a descriptive name such as `<pr-number>-review.md` (or `review-<timestamp>.md` when no PR number is available). Calling skills may override the filename (e.g., `-self-review.md`, `-replies.md`). On update (e.g., multi-round reviews), **overwrite the file** with the full revised content — do not append.
-2. Open the file in the current editor when the host exposes that capability. Otherwise, provide the path so it can be opened manually.
-3. In the chat, only print a one-line confirmation with the file path — nothing else.
+1. For default document delivery, write findings to a file in the **OS temporary directory** (e.g., `$TMPDIR` on macOS, `/tmp` on Linux). Use a descriptive name such as `<pr-number>-review.md` (or `review-<timestamp>.md` when no PR number is available). Calling skills may override the filename (e.g., `-self-review.md`, `-replies.md`). On update (e.g., multi-round reviews), **overwrite the file** with the full revised content — do not append.
+2. When a file was written, open it in the current editor if the host exposes that capability. Otherwise, provide the path so it can be opened manually. In chat, print only a one-line confirmation with the file path.
+3. For chat delivery, skip file creation and return only the requested comment or comments unless the user explicitly asks for both formats.
 
 ## Steps
 
@@ -25,8 +25,8 @@ All review output goes into a **single markdown document** — never inline in t
    - When the behavior can be observed, include short reproduction or verification steps: where to go, what to do, and what to expect.
    - Keep implementation details and suggested diffs secondary. Put them in `<details>` when the comment is understandable without them.
    - Acknowledge what the PR does well only when it adds useful context. Keep it to one sentence and do not let it delay the main point.
-   - Each inline comment must specify the **exact file path and line range** it applies to, so I know where to leave it on GitHub (e.g., **`src/components/Button.tsx:42-45`**).
+   - Inline findings must specify the **exact file path and line range** they apply to (e.g., **`src/components/Button.tsx:42-45`**). File-level findings need the file path but no invented line. General or architectural findings may omit a code location when no honest location exists.
    - Each feedback item should propose a concrete alternative or ask a clarifying question.
-3. Compose all findings into the review document described in **Output Delivery**. One section per comment thread or review point — each self-contained and copy-pasteable.
+3. Compose all findings into the review document described in **Output Delivery**, unless the user explicitly requested chat delivery. Use one section per comment thread or review point, and make each self-contained and copy-pasteable.
 4. **Do NOT post to GitHub.** Never use `gh pr comment`, `gh pr review`, or any GitHub write operation.
-5. If I edit or refine the draft, update the same review document and re-open it.
+5. If I edit or refine the draft, preserve its delivery mode: update and re-open the existing review document for file delivery, or return only the revised comment or comments for chat delivery.
