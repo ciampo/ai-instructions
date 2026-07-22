@@ -1,0 +1,70 @@
+{
+  "sourceRevision": "66fcb79ade8c32bfd9a2f8848438ccb9a716f4e1",
+  "managedMarker": "<!-- ai-instructions:managed -->",
+  "instructions": [
+    "accessibility.md",
+    "code-review.md",
+    "coding-principles.md",
+    "design-system-components.md",
+    "error-handling.md",
+    "guardrails.md",
+    "i18n.md",
+    "interaction-preferences.md",
+    "naming-conventions.md",
+    "performance.md",
+    "security.md",
+    "tools-and-cli.md",
+    "workflow-routing.md",
+    "writing-conventions.md"
+  ],
+  "skills": [
+    "address-pr-feedback",
+    "audit-dependency-update",
+    "draft-review-comment",
+    "investigate-debug",
+    "refactor",
+    "release-publish",
+    "resume-session",
+    "review-pr",
+    "self-review-pr",
+    "write-pr-description"
+  ],
+  "personas": [
+    "a11y-reviewer.md",
+    "api-design-reviewer.md",
+    "performance-reviewer.md"
+  ],
+  "platforms": {
+    "cursor": {
+      "instructions": {
+        "kind": "files",
+        "userPath": ".cursor/rules",
+        "extension": ".mdc",
+        "format": "cursor-rule"
+      },
+      "skillsPath": ".cursor/skills-cursor",
+      "personasPath": ".cursor/agents"
+    },
+    "claude": {
+      "instructions": {
+        "kind": "files",
+        "userPath": ".claude/rules",
+        "extension": ".md",
+        "format": "markdown"
+      },
+      "skillsPath": ".claude/skills"
+    },
+    "codex": {
+      "instructions": {
+        "kind": "single",
+        "userPath": ".codex/AGENTS.md"
+      }
+    },
+    "copilot": {
+      "skillsPath": ".copilot/skills"
+    },
+    "gemini": {
+      "skillsPath": ".gemini/skills"
+    }
+  }
+}

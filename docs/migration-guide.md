@@ -4,21 +4,27 @@ The current installer changes instruction scope and installs complete Agent Skil
 
 ## Before Updating
 
-1. Commit or back up local changes to this repository.
-2. Back up any user-maintained files under the target product directories.
-3. Preview the migration:
+1. Verify that Node.js 22 or newer is available before replacing an older installation. The former Bash installer did not require Node:
+
+   ```bash
+   node --version
+   ```
+
+2. Commit or back up local changes to this repository.
+3. Back up any user-maintained files under the target product directories.
+4. Preview the migration:
 
    ```bash
    ./setup.sh update --agent '*' --dry-run
    ```
 
-4. Run the update. Add `--copy` if the existing installation uses copy mode or when running on native Windows.
+5. Run the update. Add `--copy` if the existing installation uses copy mode or when running on native Windows.
 
    ```bash
    ./setup.sh update --agent '*'
    ```
 
-5. Run `./setup.sh check --agent '*'` and complete the discovery checks in [the platform support guide](platform-support.md).
+6. Run `./setup.sh check --agent '*'` and complete the discovery checks in [the platform support guide](platform-support.md).
 
 ## What Changes
 
@@ -33,6 +39,8 @@ User-authored rules are left untouched. A conflict reported by `check` requires 
 Current installations link or copy each complete `skills/<name>/` directory instead of installing only `SKILL.md`. This preserves bundled `references/`, `scripts/`, and `assets/`.
 
 The installer automatically migrates an old skill directory only when its `SKILL.md` is repository-owned or managed and any other entries are known operating-system metadata (`.DS_Store` or `Thumbs.db`). If you added files to an installed skill directory, it is treated as user-owned and preserved. Back up those additions, remove or relocate the conflict, and rerun update.
+
+Legacy managed skill copies retain copy mode during their first update, even when `--copy` is omitted. Newly installed skills still use the requested mode. The former combined `release-publish` skill remains available as a deprecated compatibility route to `prepare-release` or `publish-release`.
 
 Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that marker to a user-maintained directory.
 
