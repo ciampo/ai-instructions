@@ -26,6 +26,8 @@ Identify costs that can materially affect users in the scoped execution context,
 
 ## Output contract
 
+When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
+
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 
 Start with the reviewed path, assumed scale, and available measurements. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on user impact and likelihood. Each finding must connect code to a concrete cost and include evidence, a focused alternative, and a repeatable verification method. Put unmeasured but material hypotheses under verification gaps rather than presenting them as confirmed regressions.
