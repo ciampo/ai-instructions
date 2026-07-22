@@ -102,7 +102,7 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 See [platform support](docs/platform-support.md) for tier definitions, current product discovery checks, and the release verification checklist.
 
-Gemini CLI preview support now applies only to its enterprise, Google Cloud, and paid API authentication contexts. Individual users are directed to Google Antigravity, which is tracked as a separate product surface in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
+Gemini CLI preview support now applies only to its enterprise, Google Cloud, and paid API authentication contexts. Individual users are directed to Google Antigravity CLI, which is tracked as a separate product surface in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
 ### Commands
 

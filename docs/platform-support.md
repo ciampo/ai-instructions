@@ -44,7 +44,7 @@ After installation, start a new session unless the product documents live reload
 
 ### Gemini CLI (preview; non-individual authentication only)
 
-Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth with `UNSUPPORTED_CLIENT`. Run these checks only with a supported enterprise, Google Cloud, or paid API authentication context, and record that context with the result. Individual users are directed to Google Antigravity, which is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
+Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth with `UNSUPPORTED_CLIENT`. Run these checks only with a supported enterprise, Google Cloud, or paid API authentication context, and record that context with the result. Individual users are directed to Google Antigravity CLI, which is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
 1. Run `/skills reload`, then `/skills list`; confirm `review-pr` and the scoped standards skills appear.
 2. Run `/agents reload`, then `/agents list`; confirm the three custom agents appear.

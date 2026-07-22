@@ -6,7 +6,7 @@ Audit date: 2026-07-20
 
 Core implementation completed: 2026-07-21
 
-Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
+Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity CLI is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
 The delivered architecture has a budget-constrained universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
@@ -471,7 +471,7 @@ Recommended defaults are shown first.
    scope technology and repository conventions based on detected context.
 7. **Google surfaces:** retain Gemini CLI in preview only for its supported
    enterprise, Google Cloud, and paid API authentication contexts. Individual
-   users are directed to Antigravity; model it as a separate adapter and
+   users are directed to Google Antigravity CLI; model it as a separate adapter and
    do not inherit the Gemini support claim or paths.
 
 ## Definition of done
@@ -489,4 +489,4 @@ The modernization is complete when:
 - normative standards claims include current primary sources and review dates;
 - README support claims are generated from tested configuration.
 
-Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, and dependency gates are implemented. The remaining definition-of-done work is successful instruction, skill, and agent discovery on current releases of every client named by the five product surfaces, plus resolution of the Gemini support policy and separate Antigravity adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).
+Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, and dependency gates are implemented. The remaining definition-of-done work is successful instruction, skill, and agent discovery on current releases of every client named by the five currently manifested product surfaces, plus resolution of the Gemini support policy and a separate Google Antigravity CLI adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).
