@@ -471,7 +471,7 @@ Recommended defaults are shown first.
    scope technology and repository conventions based on detected context.
 7. **Google surfaces:** retain Gemini CLI in preview only for its supported
    enterprise, Google Cloud, and paid API authentication contexts. Individual
-   users have been migrated to Antigravity; model it as a separate adapter and
+   users are directed to Antigravity; model it as a separate adapter and
    do not inherit the Gemini support claim or paths.
 
 ## Definition of done
