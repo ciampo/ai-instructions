@@ -41,6 +41,20 @@ The active installation was generated from `main` at `6ca999444033ef095d9f8539f6
 
 Codex context isolation also passed in a fresh delegated task: a non-engineering prose prompt produced only the requested prose, without engineering, release, or pull-request procedures. The combined Codex surface remains preview because the app version, IDE extension version, and independent CLI and IDE checks are still missing. No other support tier changes are justified by this evidence.
 
+## 2026-07-22 active installation and discovery checks
+
+The active installation was generated from `main` at `6ca999444033ef095d9f8539f60c410043d930c8`. `./setup.sh check --agent '*'` verified all 90 managed artifacts across the five product surfaces. The live checks below used that installed revision; the content and authority changes being developed after it were not installed from a feature branch.
+
+| Product surface | Product version | Adapter | Instructions | Skills | Agents | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| Cursor editor and Agent CLI | Editor 3.12.17; Agent CLI 2026.05.04-08e5280 | Pass | Blocked: the Agent CLI is not authenticated; the editor UI was not exercised | Blocked: local files passed installer checks, but neither listing nor invocation was available without an authenticated client or editor UI | Blocked: invocation requires an authenticated client or editor UI | Preview |
+| Claude Code CLI | 2.1.63 | Pass | Blocked: `claude auth status` reported no login | Blocked: invocation requires authentication | Pass for listing: `claude agents` reported all three user agents; invocation blocked by authentication | Preview |
+| Codex app, CLI, and IDE extension | CLI 0.145.0; app and IDE extension versions not exposed | Pass | Partial pass: this fresh app task followed the installed task-title convention; the CLI and IDE extension were not independently exercised | Partial pass: this task discovered all 14 user skills and activated the relevant repository-maintenance and refactor skills; a separate CLI run was not authorized | Partial pass: all three agents were discoverable, and `a11y-reviewer` returned the repository-specific 24x24 AA and 44x44 AAA canary with W3C sources; the CLI and IDE extension were not independently exercised | Preview |
+| GitHub Copilot CLI | 1.0.73 | Pass | Blocked: model invocation reported no authentication | Pass for listing: `copilot skill list` reported all 14 personal skills; invocation blocked by authentication | Blocked: invocation requires authentication | Preview |
+| Gemini CLI | 0.51.0 | Pass | Blocked: no authentication method is configured | Blocked: `gemini skills list --all` did not return before it was stopped, and invocation could not start without authentication | Blocked: invocation requires authentication | Preview |
+
+Codex context isolation also passed in a fresh delegated task: a non-engineering prose prompt produced only the requested prose, without engineering, release, or pull-request procedures. The combined Codex surface remains preview because the app version, IDE extension version, and independent CLI and IDE checks are still missing. No other support tier changes are justified by this evidence.
+
 ## Acceptance matrix
 
 Run these checks from a disposable home on a current product version. Use product introspection where available, pair it with the repository-specific canaries below, and record pass, fail, or blocked above for each capability and client before promoting a platform to verified.
