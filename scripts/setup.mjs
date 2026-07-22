@@ -13,8 +13,7 @@ import {
 import {
 	isOwnedPath,
 	lstatSafe,
-	writeNewFileAtomic,
-	writeOwnedFileSafely,
+	writeManagedFilesTransactionally,
 } from './lib/files.mjs';
 import { categories, loadManifest, resolveUserPath } from './lib/manifest.mjs';
 import { createPlatformInstaller } from './lib/platform-installer.mjs';
@@ -243,16 +242,20 @@ async function processCopilotExport( directory, state ) {
 		state.skipped++;
 		return;
 	}
-	for ( const { artifact, stats } of statuses ) {
-		if ( state.options.dryRun ) {
+	if ( state.options.dryRun ) {
+		for ( const { artifact } of statuses ) {
 			console.log( `  [dry-run] write ${ artifact.destination }` );
-			continue;
 		}
-		if ( stats ) {
-			await writeOwnedFileSafely( artifact.destination, artifact.expectedContent, repoDir );
-		} else {
-			await writeNewFileAtomic( artifact.destination, artifact.expectedContent );
-		}
+		return;
+	}
+	await writeManagedFilesTransactionally(
+		artifacts.map( ( artifact ) => ( {
+			destination: artifact.destination,
+			content: artifact.expectedContent,
+		} ) ),
+		repoDir
+	);
+	for ( const { artifact } of statuses ) {
 		console.log( `  [+] ${ artifact.destination }` );
 		state.new++;
 	}

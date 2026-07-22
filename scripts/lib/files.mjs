@@ -228,6 +228,83 @@ export async function writeOwnedFileSafely( destination, content, repoDir ) {
 	}
 }
 
+async function managedFileSnapshot( destination, repoDir ) {
+	const stats = await lstatSafe( destination );
+	if ( ! stats ) {
+		return { exists: false };
+	}
+	if ( ! await isOwnedPath( destination, repoDir ) ) {
+		throw destinationExistsError( destination );
+	}
+	if ( stats.isSymbolicLink() ) {
+		return { exists: true, kind: 'symlink', value: await readlink( destination ) };
+	}
+	if ( stats.isFile() ) {
+		return { exists: true, kind: 'file', value: await readFile( destination, 'utf8' ) };
+	}
+	throw new Error( `Cannot replace unsupported path type at ${ destination }.` );
+}
+
+async function matchesPublishedContent( destination, expectedContent ) {
+	const stats = await lstatSafe( destination );
+	return Boolean(
+		stats?.isFile() &&
+		! stats.isSymbolicLink() &&
+		await readFile( destination, 'utf8' ) === expectedContent
+	);
+}
+
+async function restoreManagedFileSnapshot( entry, snapshot, repoDir ) {
+	if ( ! await matchesPublishedContent( entry.destination, entry.content ) ) {
+		throw new Error( `Refusing to roll back ${ entry.destination } because its ownership changed.` );
+	}
+	if ( ! snapshot.exists ) {
+		await rm( entry.destination );
+		return;
+	}
+	if ( snapshot.kind === 'symlink' ) {
+		await writeSymlinkSafely(
+			snapshot.value,
+			entry.destination,
+			'file',
+			() => matchesPublishedContent( entry.destination, entry.content )
+		);
+		return;
+	}
+	await writeOwnedFileSafely( entry.destination, snapshot.value, repoDir );
+}
+
+export async function writeManagedFilesTransactionally( entries, repoDir, { beforeWrite } = {} ) {
+	const snapshots = await Promise.all(
+		entries.map( ( entry ) => managedFileSnapshot( entry.destination, repoDir ) )
+	);
+	const published = [];
+	try {
+		for ( const [ index, entry ] of entries.entries() ) {
+			await beforeWrite?.( entry, index );
+			if ( snapshots[ index ].exists ) {
+				await writeOwnedFileSafely( entry.destination, entry.content, repoDir );
+			} else {
+				await writeNewFileAtomic( entry.destination, entry.content );
+			}
+			published.push( index );
+		}
+	} catch ( error ) {
+		const rollbackFailures = [];
+		for ( const index of published.reverse() ) {
+			try {
+				await restoreManagedFileSnapshot( entries[ index ], snapshots[ index ], repoDir );
+			} catch ( rollbackError ) {
+				rollbackFailures.push( rollbackError );
+			}
+		}
+		if ( rollbackFailures.length > 0 ) {
+			error.rollbackFailures = rollbackFailures;
+		}
+		throw error;
+	}
+}
+
 export async function writeSymlinkSafely( source, destination, type = 'file', canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
 	let captured;

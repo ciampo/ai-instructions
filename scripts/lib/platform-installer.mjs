@@ -13,6 +13,7 @@ import {
 	removeOwnedPath,
 	SKILL_DIRECTORY_MARKER,
 	writeNewFileAtomic,
+	writeManagedFilesTransactionally,
 	writeOwnedFileSafely,
 	writeSkillDirectorySafely,
 	writeSymlinkSafely,
@@ -549,6 +550,28 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		if ( blockers.length > 0 ) {
 			for ( const blocker of blockers ) {
 				logGroupBlocker( blocker, state );
+			}
+			return;
+		}
+		if ( [ 'install', 'update' ].includes( command ) && ! state.options.dryRun ) {
+			const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+			if ( statuses.some( ( status ) => ! status.current ) ) {
+				await writeManagedFilesTransactionally(
+					artifacts.map( ( artifact ) => ( {
+						destination: artifact.destination,
+						content: artifact.expectedContent,
+					} ) ),
+					repoDir
+				);
+			}
+			for ( const [ index, artifact ] of artifacts.entries() ) {
+				if ( statuses[ index ].current ) {
+					console.log( `  [=] ${ artifact.label }` );
+					state.upToDate++;
+				} else {
+					console.log( `  [+] ${ artifact.label }` );
+					state.new++;
+				}
 			}
 			return;
 		}

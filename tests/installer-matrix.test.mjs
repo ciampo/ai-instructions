@@ -21,6 +21,7 @@ import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.
 import {
 	removeOwnedPath,
 	SKILL_DIRECTORY_MARKER,
+	writeManagedFilesTransactionally,
 	writeNewFileAtomic,
 	writeOwnedFileSafely,
 	writeSkillDirectorySafely,
@@ -391,6 +392,36 @@ test( 'file mutations fail closed when ownership changes after inspection', asyn
 		( error ) => error.code === 'EEXIST'
 	);
 	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+} );
+
+test( 'managed file transactions restore earlier writes when a later destination changes ownership', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	const next = `${ managedMarker }\n# Next\n`;
+	await writeFile( first, previous );
+
+	await assert.rejects(
+		writeManagedFilesTransactionally(
+			[
+				{ destination: first, content: next },
+				{ destination: second, content: next },
+			],
+			repoDir,
+			{
+				beforeWrite: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		( error ) => error.code === 'EEXIST'
+	);
+	assert.equal( await readFile( first, 'utf8' ), previous );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
 } );
 
 test( 'failed ownership restoration preserves the captured user file', async ( t ) => {
