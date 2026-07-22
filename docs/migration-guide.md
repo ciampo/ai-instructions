@@ -44,6 +44,12 @@ Legacy managed skill copies retain copy mode during their first update, even whe
 
 Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that marker to a user-maintained directory.
 
+### Specialist reviews and retired agents
+
+Accessibility, public API-design, and performance reviews now use the `review-accessibility`, `review-api-design`, and `review-performance` skills directly. The repository no longer installs custom-agent definitions for those capabilities.
+
+During `update` or `remove`, the installer recognizes the former agent destinations on all five product surfaces and removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this cleanup during the compatibility window.
+
 ### Legacy product paths
 
 - **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. Managed instruction rules not present in the new core are removed. User-owned files remain.

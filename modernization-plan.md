@@ -1,16 +1,38 @@
 # AI instructions modernization plan
 
-Status: core implementation complete; product discovery acceptance remains open. The original audit baseline remains below for historical context.
+Status: implementation complete; current in-product discovery acceptance remains open. Historical audit material is retained below as the decision trail, not as active architecture guidance.
 
 Audit date: 2026-07-20
 
-Core implementation completed: 2026-07-21
+Implementation completed: 2026-07-22
 
 Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity CLI is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
-The delivered architecture has a budget-constrained universal core, standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Specialist reviews are direct skills; legacy custom-agent destinations remain only for ownership-safe cleanup. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
+The delivered architecture has a budget-constrained universal core, 17 standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. The specialist pilot retained accessibility, API-design, and performance reviews as direct skills and retired the duplicated custom-agent prompts. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
-## Executive assessment
+## Current architecture and remaining work
+
+| Area | Current contract |
+| --- | --- |
+| Persistent context | `instructions/core.md`, 60 lines and 4,770 bytes |
+| On-demand capability | 17 self-contained `skills/<name>/SKILL.md` directories |
+| Specialist reviews | Direct accessibility, API-design, and performance skills; no bundled custom agents |
+| Orchestration | `review-pr` owns the complete review, material specialist routing, severity normalization, deduplication, and final delivery |
+| Distribution | One manifest-driven installer for instructions, skills, migration, and ownership-safe lifecycle operations |
+| Support | Five explicitly named preview product surfaces with versioned discovery evidence |
+
+Remaining work is acceptance and maintenance rather than another architecture migration:
+
+1. complete current instruction and direct-skill discovery checks for every named client surface;
+2. refresh blocked checks when credentials and app or extension versions are available;
+3. keep normative standards and adapter evidence within their review windows;
+4. retain migration cleanup until the compatibility removal gates are met.
+
+The accepted specialist decision is recorded in [ADR 0004](docs/decisions/0004-skill-first-specialists.md). Optional catalogs, plugins, external skill managers, custom-agent adapters, and model-graded evaluation remain conditional work requiring measured need.
+
+## Historical audit assessment (2026-07-20)
+
+The remainder of this assessment through the historical implementation plan describes the pre-modernization repository and the options considered at that time. References to flat skills, personas, the monolithic installer, and proposed custom-agent packages are not descriptions of the current source tree.
 
 The repository has a sound core idea: keep personal preferences, reusable
 workflows, and specialist review prompts in one versioned source. The content is
@@ -80,7 +102,7 @@ Passing tests currently demonstrate that the installer reproduces its intended
 Cursor and Codex layouts. They do not demonstrate that current product versions
 discover or apply those artifacts.
 
-## Target architecture
+## Historical target architecture proposal
 
 The following is the original modernization target and audit record. Its proposed custom-agent source and adapter layer was superseded after the direct-skill comparison documented in [`docs/accessibility-review-pilot.md`](docs/accessibility-review-pilot.md); the current distribution contract is described above and in the platform-support guide.
 
@@ -116,7 +138,7 @@ The exact names can change during implementation. The important boundaries are:
 - **Agents** represent delegated identities and product-specific capabilities.
 - **Adapters** translate canonical content into native product formats.
 
-## Platform support assessment
+## Historical platform support assessment
 
 ### Support matrix
 
@@ -180,7 +202,7 @@ Use three support tiers:
 The README support table should be generated from the same manifest as the
 installer so documentation and behavior cannot drift independently.
 
-## Findings and recommendations
+## Historical findings and recommendations
 
 ### P0: Fix correctness and security issues first
 
@@ -357,7 +379,7 @@ tested headlessly.
   package skills and agents more cleanly than a personal installer in some
   environments.
 
-## Phased implementation plan
+## Completed historical implementation plan
 
 ### Phase 0: Lock behavior and repair urgent issues
 
@@ -381,6 +403,8 @@ Exit criteria:
 - normative accessibility claims are source-linked and correctly leveled.
 
 ### Phase 1: Adopt canonical skill and agent formats
+
+Status: standard skills and bundled resources are complete. Native custom agents were initially implemented, then retired after the 2026-07-22 pilot demonstrated that direct skills preserved the capability with less drift. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md).
 
 1. Convert one representative workflow, `review-pr`, to a standard skill with
    bundled references.
@@ -439,7 +463,7 @@ Exit criteria:
 4. Remove legacy adapters only after the documented migration window.
 5. Evaluate native plugin/extension distribution as a separate follow-up.
 
-## Recommended first implementation slice
+## Historical first implementation slice
 
 Keep the first pull request narrow and independently valuable:
 
@@ -454,7 +478,7 @@ installer rewrite, content taxonomy, and every platform adapter in one change
 would make regressions and user-config cleanup unnecessarily difficult to
 review.
 
-## Decisions to confirm before implementation
+## Historical implementation decisions
 
 Recommended defaults are shown first.
 
@@ -481,7 +505,7 @@ Recommended defaults are shown first.
 The modernization is complete when:
 
 - every advertised capability maps to a current official product contract;
-- every skill and agent is discoverable, not merely copied;
+- every advertised instruction and skill capability is discoverable, not merely copied;
 - the universal instruction payload is small and measured;
 - all five platform adapters pass a shared lifecycle test suite;
 - CI exercises the installer and validates generated formats;
@@ -491,4 +515,4 @@ The modernization is complete when:
 - normative standards claims include current primary sources and review dates;
 - README support claims are generated from tested configuration.
 
-Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, and dependency gates are implemented. The remaining definition-of-done work is successful instruction, skill, and agent discovery on current releases of every client named by the five currently manifested product surfaces, plus resolution of the Gemini support policy and a separate Google Antigravity CLI adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).
+Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, specialist pilot, and dependency gates are implemented. The remaining definition-of-done work is successful instruction and direct-skill discovery on current releases of every client named by the five product surfaces, plus the separate Google Antigravity CLI adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), the skill-first specialist model is accepted in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).

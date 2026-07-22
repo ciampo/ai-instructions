@@ -49,6 +49,10 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [publish-release](skills/publish-release/SKILL.md) | "publish the release" | Explicitly authorized release publication |
 | [release-publish](skills/release-publish/SKILL.md) | legacy `release-publish` invocation | Deprecated compatibility route to the two release workflows |
 
+### Specialist reviews
+
+Accessibility, API-design, and performance reviews are direct skills. A focused pilot found no distinct tools, isolation benefit, or analysis quality from maintaining parallel custom-agent prompts, so this repository bundles no custom agents. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md) and the [pilot record](docs/accessibility-review-pilot.md).
+
 ## Conventions
 
 See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
@@ -56,7 +60,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 - **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
 - **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
-- **Specialist reviews**: Accessibility, API-design, and performance reviews are direct Agent Skills, not repository-managed custom agents.
+- **Specialist execution**: Reusable review methods live in skills. Add a custom agent only when delegated execution demonstrates measurable value beyond loading the skill directly.
 
 ## Setup
 
@@ -106,7 +110,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 | `list` | Show all installed symlinks/copies grouped by agent (includes stale entries) |
 | `remove` | Remove symlinks/copies created by this script (includes stale cleanup) |
 | `update` | Re-install + clean stale symlinks/copies for deleted source files |
-| `check` | Verify existing managed artifacts, detect stale/broken/conflicting entries, and exit non-zero when problems are found |
+| `check` | Verify existing symlinks, copies, and generated artifacts; detect stale, broken, or conflicting entries; and exit non-zero when problems are found |
 
 ### Options
 
@@ -160,13 +164,13 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. In the default mode, portable instructions are symlinked as files and each skill is symlinked as a complete directory with its bundled resources. Source edits, additions, and removals appear immediately through those symlinks. Cursor instructions and concatenated Codex/Copilot/Gemini instructions are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
+These are living documents. In the default mode, portable instructions are symlinked as files, while each skill is symlinked as a complete directory with its bundled resources. Source edits, additions, and removals appear immediately through those symlinks. Cursor instructions and concatenated Codex/Copilot/Gemini instructions are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries, including retired custom agents, while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
 
 ## Development
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), and the context-scoping decision is recorded in [ADR 0002](docs/decisions/0002-progressive-disclosure.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), and the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md). A concise walkthrough is available in the [presentation guide](docs/presentation-guide.md).
 
 ```bash
 npm ci
