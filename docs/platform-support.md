@@ -42,12 +42,18 @@ After installation, start a new session unless the product documents live reload
 2. Run `/agent` and select `a11y-reviewer`, or start a one-shot session with `copilot --agent=a11y-reviewer --prompt "Review this interface"`.
 3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
-### Gemini CLI
+### Gemini CLI (preview; non-individual authentication only)
+
+Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth with `UNSUPPORTED_CLIENT`. Run these checks only with a supported enterprise, Google Cloud, or paid API authentication context, and record that context with the result. Individual users are directed to Google Antigravity, which is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
 1. Run `/skills reload`, then `/skills list`; confirm `review-pr` and the scoped standards skills appear.
 2. Run `/agents reload`, then `/agents list`; confirm the three custom agents appear.
 3. Invoke `@a11y-reviewer Review this interface` to force the custom subagent.
 4. Ask Gemini to summarize one core instruction to confirm `~/.gemini/GEMINI.md` is loaded.
+
+### Google Antigravity CLI (not yet advertised)
+
+Antigravity is not covered by the Gemini adapter or support tier. Discovery evidence may be recorded while [issue #40](https://github.com/ciampo/ai-instructions/issues/40) establishes current native paths, lifecycle behavior, migration safety, and an explicit manifest entry.
 
 ## Release Verification Checklist
 
