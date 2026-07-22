@@ -2,6 +2,8 @@
 
 Support tiers require evidence from the target product, not only proof that files were installed. This record separates the automated adapter contract from product discovery.
 
+Entries before the specialist-agent retirement record the then-current installation and discovery results. They remain historical evidence and do not describe the current distribution contract, which provides specialist reviews as direct Agent Skills.
+
 ## 2026-07-21 and 2026-07-22 adapter and live discovery checks
 
 The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured checks across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
@@ -25,7 +27,7 @@ The Gemini authentication failure is not a local login or stale-client problem. 
 
 The Antigravity CLI was installed through the [official installation and authentication flow](https://antigravity.google/docs/cli/install). Its onboarding was completed with optional interaction-data collection disabled. Headless verification used plan mode, terminal sandboxing, and an isolated clean repository. A blanket permission bypass was not used.
 
-## 2026-07-22 active installation and discovery checks
+## 2026-07-22 pre-retirement installation and discovery checks
 
 The active installation was generated from `main` at `6ca999444033ef095d9f8539f60c410043d930c8`. `./setup.sh check --agent '*'` verified all 90 managed artifacts across the five product surfaces. The live checks below used that installed revision; the content and authority changes being developed after it were not installed from a feature branch.
 
@@ -51,7 +53,7 @@ Run these checks from a disposable home on a current product version. Use produc
 | Skill invocation | Explicitly invoke `review-pr` without providing a pull request. | The skill requests or identifies a PR and keeps the review read-only; it does not invent a target. |
 | Context isolation | Ask for a prose summary unrelated to engineering. | Engineering, release, and PR-review guidance is not injected as task instructions. |
 | Context activation | Ask whether a 44x44 CSS-pixel touch target is required for WCAG 2.2 Level AA. | The response identifies 24x24 with exceptions as the Level AA minimum and 44x44 as the stronger Level AAA preference from the accessibility reference. |
-| Custom agents | List user agents, then invoke `a11y-reviewer`. | All three agents are listed and the accessibility specialist prompt is used. |
+| Specialist review skills | List and invoke `review-accessibility`, `review-api-design`, and `review-performance`. | All three skills are available at user scope and each direct review follows its scoped output and read-only contract. |
 | Release boundary | Invoke the legacy `release-publish` name with a preparation-only request. | The request routes to preparation and performs no publish, tag, or push action. |
 
 If a product cannot expose one of these checks non-interactively, perform it in the product UI and record the result. A plausible generic response is not proof of discovery when source introspection or a repository-specific canary is available. Do not infer discovery from file presence.

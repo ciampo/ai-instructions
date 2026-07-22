@@ -703,6 +703,7 @@ for ( const platform of manifest.platforms ) {
 			: platform.id === 'copilot' ? '.agent.md' : '.md';
 		const staleDir = destination( home, retiredAgents.userPath );
 		const stalePath = path.join( staleDir, `removed-agent${ staleExtension }` );
+		const userAgentPath = path.join( staleDir, `user-agent${ staleExtension }` );
 		await mkdir( staleDir, { recursive: true } );
 		await writeFile(
 			stalePath,
@@ -710,6 +711,7 @@ for ( const platform of manifest.platforms ) {
 				? '# ai-instructions:managed\nname = "removed-agent"\n'
 				: `---\nname: removed-agent\ndescription: stale\n---\n${ managedMarker }\n`
 		);
+		await writeFile( userAgentPath, '# User-authored agent\n' );
 		const staleSkill = skillPath( platform, home, 'removed-skill', 'SKILL.md' );
 		await mkdir( path.dirname( staleSkill ), { recursive: true } );
 		await writeFile( staleSkill, '---\nname: removed-skill\ndescription: stale\n---\n' );
@@ -719,8 +721,10 @@ for ( const platform of manifest.platforms ) {
 		);
 
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ], 1 );
+		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
 		runInstaller( home, [ 'update', '--agent', platform.id, '--copy', '--yes' ] );
 		assert.equal( await pathExists( stalePath ), false );
+		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
 		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
 	} );
 }
