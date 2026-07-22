@@ -21,7 +21,7 @@ Move other guidance into three kinds of skill content:
 
 Use the portable Agent Skills common format for shared sources. Do not add vendor-only path or invocation metadata to canonical frontmatter; generate a product adapter only when a concrete consumer requires behavior the common format cannot represent.
 
-Regression-limit the generated universal artifact to 150 lines and 8 KB. Validate skill names, descriptions, links, bundled resources, agent metadata, platform contracts, and source-review dates in CI.
+Regression-limit the generated universal artifact to 150 lines and 8 KB. Validate skill names, descriptions, links, bundled resources, platform contracts, and source-review dates in CI.
 
 ## Consequences
 

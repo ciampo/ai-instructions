@@ -40,7 +40,7 @@
         },
         "agents": {
           "supported": false,
-          "reason": "Specialist reviews are distributed as Agent Skills instead of custom agents."
+          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
         }
       },
       "legacyDestinations": [
@@ -96,7 +96,7 @@
         },
         "agents": {
           "supported": false,
-          "reason": "Specialist reviews are distributed as Agent Skills instead of custom agents."
+          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
         }
       },
       "legacyDestinations": [
@@ -144,7 +144,7 @@
         },
         "agents": {
           "supported": false,
-          "reason": "Specialist reviews are distributed as Agent Skills instead of custom agents."
+          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
         }
       },
       "legacyDestinations": [
@@ -198,7 +198,7 @@
         },
         "agents": {
           "supported": false,
-          "reason": "Specialist reviews are distributed as Agent Skills instead of custom agents."
+          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
         }
       },
       "legacyDestinations": [
@@ -245,7 +245,7 @@
         },
         "agents": {
           "supported": false,
-          "reason": "Specialist reviews are distributed as Agent Skills instead of custom agents."
+          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
         }
       },
       "legacyDestinations": [

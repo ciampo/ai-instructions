@@ -632,7 +632,7 @@ for ( const platform of manifest.platforms ) {
 		runInstaller( home, [ '--agent', platform.id, '--copy', '--yes' ] );
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ] );
 		const listOutput = runInstaller( home, [ 'list', '--agent', platform.id, '--copy', '--yes' ] );
-		assert.match( listOutput, /\[(?:ok|unsupported)\]/ );
+		assert.match( listOutput, /\[(?:ok|not distributed)\]/ );
 		assert.match(
 			runInstaller( home, [ '--agent', platform.id, '--copy', '--yes' ] ),
 			/Already up to date/
@@ -677,7 +677,7 @@ for ( const platform of manifest.platforms ) {
 						`${ selection.join( '+' ) } selection produced unexpected ${ category } state`
 					);
 				} else if ( selection.includes( category ) ) {
-					assert.match( output, /unsupported/i );
+					assert.match( output, /not distributed/i );
 				}
 			}
 			runInstaller( partialHome, [
@@ -743,6 +743,37 @@ for ( const platform of manifest.platforms ) {
 		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
 	} );
 }
+
+test( 'retired custom-agent symlinks are cleaned without touching user artifacts', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	for ( const platform of manifest.platforms ) {
+		const legacyAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		assert.ok( legacyAgents, `${ platform.id} must declare a retired agent destination` );
+		const home = await createDetectedHome( platform );
+		t.after( () => rm( home, { recursive: true, force: true } ) );
+		const legacyDir = destination( home, legacyAgents.userPath );
+		const retiredAgent = path.join( legacyDir, 'retired-agent.md' );
+		const userAgent = path.join( legacyDir, 'user-agent.md' );
+		const userSource = path.join( home, 'user-agent-source.md' );
+		await mkdir( legacyDir, { recursive: true } );
+		await writeFile( userSource, '# User-authored agent\n' );
+		await symlink( path.join( repoDir, 'agents', 'retired-agent.md' ), retiredAgent );
+		await symlink( userSource, userAgent );
+
+		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'agents', '--yes' ], 1 );
+		assert.equal( await pathExists( retiredAgent ), true );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+		runInstaller( home, [ 'update', '--agent', platform.id, '--only', 'agents', '--yes' ] );
+		assert.equal( await pathExists( retiredAgent ), false );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+
+		await symlink( path.join( repoDir, 'agents', 'retired-agent.md' ), retiredAgent );
+		runInstaller( home, [ 'remove', '--agent', platform.id, '--only', 'agents', '--yes' ] );
+		assert.equal( await pathExists( retiredAgent ), false );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+	}
+} );
 
 test( 'portable artifacts use symlinks on POSIX and remain checkable', {
 	skip: process.platform === 'win32',

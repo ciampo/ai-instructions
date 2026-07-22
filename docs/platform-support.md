@@ -7,7 +7,7 @@ The installer targets user-level configuration for specific product surfaces. Re
 - **Verified**: the path and format are documented by the vendor, the shared install/update/check/remove contract passes, generated output is validated, and successful discovery is recorded for every supported capability on current versions of every client named by the product surface.
 - **Preview**: the adapter and lifecycle tests pass, but part of discovery or the user-level surface still requires product-specific confirmation.
 
-Platform support tiers are limited to verified and preview. Individual capabilities can be unsupported; the manifest marks those explicitly and the installer does not generate an implied substitute.
+Platform support tiers are limited to verified and preview. The README table lists the artifacts this repository distributes; it does not enumerate product features the repository elects not to ship. An omitted category is not a claim that the host product lacks that capability. The manifest separately records unavailable categories so the installer can preserve lifecycle and migration safety.
 
 The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). `lastAdapterChecked` records the latest filesystem and lifecycle check; it is not product-discovery evidence. Product versions, discovery dates, and capability results live only in the discovery evidence. When a row names several clients, every client must pass before the combined surface can be promoted; otherwise split the surface.
 
