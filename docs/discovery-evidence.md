@@ -22,7 +22,7 @@ This pass verifies the current direct-skill architecture rather than the retired
 
 ## 2026-07-21 and 2026-07-22 adapter and live discovery checks
 
-The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured checks across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
+The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured artifacts per adapter, or 90 total across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
 
 Product canaries ran in an isolated temporary repository with tools disabled where the client supported that restriction. Authentication was reused only from the current product profile; no credentials were copied into the disposable home.
 
