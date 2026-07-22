@@ -20,8 +20,8 @@
       "expectedOutcome": "A feedback pass that uses a SHA-pinned CLI snapshot, rebuilds it if the PR head changes, and separates valid fixes from resolved or non-actionable feedback.",
       "assertions": [
         "The workflow captures the base and head revisions before reading code or categorizing feedback.",
-        "The workflow refreshes PR metadata before acting and discards the snapshot if the head changed.",
-        "The workflow uses the connector only when merged discussion or resolved thread state is material and does not post replies or resolve threads."
+        "The workflow refreshes PR metadata before acting and discards the snapshot if either captured boundary changed.",
+        "The workflow uses the connector for merged discussion, resolved thread state, or a CLI authentication or capability gap and does not post replies or resolve threads."
       ]
     }
   ]

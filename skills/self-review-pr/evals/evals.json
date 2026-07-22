@@ -20,7 +20,7 @@
       "expectedOutcome": "An independent, read-only review that checks the PR description, commit scope, SHA-pinned source, and CI before reporting confirmed findings or no findings.",
       "assertions": [
         "The review captures the title and description, base/head revisions, and base-to-head commit history before judging scope or completeness.",
-        "The review uses the CLI and local Git by default, and requests connector state only when resolved threads or merged discussion are material.",
+        "The review uses the CLI and local Git by default, verifies both captured boundaries, and falls back to connector state for resolved threads, merged discussion, or a CLI authentication or capability gap.",
         "The review does not edit source, commit, push, or change the pull request."
       ]
     }
