@@ -201,7 +201,7 @@ async function validateSkills( repoDir ) {
 				source
 			);
 		}
-		if ( bundledFiles.includes( 'evals/evals.json' ) ) {
+		if ( bundledFiles.includes( path.join( 'evals', 'evals.json' ) ) ) {
 			const evaluationSource = path.join( skillDirectory, 'evals', 'evals.json' );
 			validateSkillEvaluation( await readFile( evaluationSource, 'utf8' ), evaluationSource );
 			evaluationCount++;

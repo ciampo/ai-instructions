@@ -18,7 +18,7 @@
       "prompt": "Review https://github.com/example/widgets/pull/42 and give me copy-pasteable findings.",
       "expectedOutcome": "A read-only review that uses the actual base and current head, avoids duplicate comments, and returns prioritized findings or an explicit no-findings result.",
       "assertions": [
-        "The review does not edit local files or post to GitHub.",
+        "The review does not modify repository source or post to GitHub.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "Focused specialist findings are synthesized instead of delivered as competing reports."
       ]
