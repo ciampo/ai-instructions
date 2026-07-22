@@ -1,6 +1,6 @@
 ---
 name: review-accessibility
-description: Perform a read-only, source-verified accessibility review of an interface, component, interaction, or UI-focused change. Use for explicit accessibility, WCAG, ARIA, keyboard, focus, screen-reader, contrast, reflow, motion, or pointer-target audits. Do not use for general code review, implementation work, or non-UI content unless accessibility review is specifically requested; never edit source, commit, or write remotely.
+description: Perform a read-only, source-verified accessibility review of an interface, component, interaction, or UI-focused change. Use for explicit accessibility, WCAG, ARIA, keyboard, focus, screen-reader, contrast, reflow, motion, or pointer-target audits. Do not use as a standalone general PR review, implementation work, or non-UI content unless accessibility review is specifically requested; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Accessibility

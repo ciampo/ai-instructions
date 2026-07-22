@@ -1,6 +1,6 @@
 ---
 name: review-performance
-description: Perform a read-only, evidence-based performance review of a component, feature, package, or UI-focused change for bundle cost, loading, rendering, layout, paint, and scale risks. Use when the user explicitly requests performance review, profiling analysis, or bundle and runtime risk assessment. Do not use for general PR review or optimization implementation; never edit source, commit, or write remotely.
+description: Perform a read-only, evidence-based performance review of a component, feature, package, or UI-focused change for bundle cost, loading, rendering, layout, paint, and scale risks. Use when the user explicitly requests performance review, profiling analysis, or bundle and runtime risk assessment. Do not use as a standalone general PR review or optimization implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Performance
