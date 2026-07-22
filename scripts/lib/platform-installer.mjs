@@ -486,6 +486,37 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 	}
 
+	function groupArtifacts( artifacts ) {
+		const groups = new Map();
+		for ( const artifact of artifacts ) {
+			const key = artifact.group ?? `artifact:${ artifact.destination }`;
+			const group = groups.get( key ) ?? [];
+			group.push( artifact );
+			groups.set( key, group );
+		}
+		return groups;
+	}
+
+	async function groupConflicts( artifacts ) {
+		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+		return artifacts.filter( ( artifact, index ) =>
+			statuses[ index ].exists && ! statuses[ index ].owned
+		);
+	}
+
+	async function blockedGroupCategories( groups ) {
+		const blocked = new Set();
+		for ( const group of groups.values() ) {
+			if ( group.length < 2 || ( await groupConflicts( group ) ).length === 0 ) {
+				continue;
+			}
+			for ( const artifact of group ) {
+				blocked.add( artifact.category );
+			}
+		}
+		return blocked;
+	}
+
 	async function processArtifactGroup( artifacts, state ) {
 		const { command } = state.options;
 		if ( ! [ 'install', 'update', 'remove' ].includes( command ) ) {
@@ -495,10 +526,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			return;
 		}
 
-		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
-		const conflicts = artifacts.filter( ( artifact, index ) =>
-			statuses[ index ].exists && ! statuses[ index ].owned
-		);
+		const conflicts = await groupConflicts( artifacts );
 		if ( conflicts.length > 0 ) {
 			for ( const artifact of conflicts ) {
 				logConflict( artifact, state );
@@ -729,15 +757,13 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const blocked = await blockingCategory( platform, selectedCategories, home, state );
 		const activeCategories = selectedCategories.filter( ( category ) => ! blocked.has( category ) );
 		const artifacts = await buildArtifacts( platform, activeCategories, home );
+		const groups = groupArtifacts( artifacts );
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
-			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );
-		}
-		const groups = new Map();
-		for ( const artifact of artifacts ) {
-			const key = artifact.group ?? `artifact:${ artifact.destination }`;
-			const group = groups.get( key ) ?? [];
-			group.push( artifact );
-			groups.set( key, group );
+			const cleanupBlockedCategories = await blockedGroupCategories( groups );
+			const cleanupCategories = activeCategories.filter(
+				( category ) => ! cleanupBlockedCategories.has( category )
+			);
+			await processStaleArtifacts( platform, artifacts, cleanupCategories, home, state );
 		}
 		for ( const group of groups.values() ) {
 			if ( group.length === 1 ) {

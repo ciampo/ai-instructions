@@ -238,7 +238,7 @@ async function processCopilotExport( directory, state ) {
 		}
 		return;
 	}
-	if ( statuses.some( ( { stats } ) => stats ) && state.options.command === 'install' ) {
+	if ( statuses.some( ( { stats }, index ) => stats && ! isCurrent[ index ] ) && state.options.command === 'install' ) {
 		console.warn( '  [warning] repository export is outdated; run update to refresh' );
 		state.skipped++;
 		return;

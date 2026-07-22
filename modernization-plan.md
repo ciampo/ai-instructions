@@ -14,7 +14,7 @@ The delivered architecture has a budget-constrained universal core, 17 standard 
 
 | Area | Current contract |
 | --- | --- |
-| Persistent context | `instructions/core.md`, 60 lines and 4,770 bytes |
+| Persistent context | `AGENTS.md`, 54 lines and 4,705 bytes |
 | On-demand capability | 17 self-contained `skills/<name>/SKILL.md` directories |
 | Specialist reviews | Direct accessibility, API-design, and performance skills; no bundled custom agents |
 | Orchestration | `review-pr` owns the complete review, material specialist routing, severity normalization, deduplication, and final delivery |
