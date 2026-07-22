@@ -4,9 +4,25 @@ Support tiers require evidence from the target product, not only proof that file
 
 The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
+## 2026-07-22 direct-skill verification
+
+The active user installation was generated from `main` at `34007084d2070f5abb6ddbc11269e6568139d5ab`. Its owner installer passed `./setup.sh check --agent '*' --yes` with all 90 expected core-instruction and complete-skill artifacts current. The skills are repository-owned symlinks to that checkout; the audit branch did not overwrite them across worktrees.
+
+The model-backed checks below used authenticated, installed clients only where available. Each prompt prohibited tool use and file changes; Codex CLI used an ephemeral read-only session. No credential was copied, no canary wrote to the workspace, and no canary published, pushed, tagged, committed, or posted a comment.
+
+| Product surface | Product version | Source introspection | Direct-skill canaries | Remaining gap | Evidence outcome |
+| --- | --- | --- | --- | --- | --- |
+| Cursor editor and Agent CLI | Editor 3.12.17; Agent CLI 2026.05.04-08e5280 | Partial: the authenticated editor skill picker exposed `review-pr`, `address-pr-feedback`, `audit-dependency-update`, and additional entries. The core rule and an Agent CLI source listing were not independently inspected. | Agent CLI pass: title convention, `review-pr` target and read-only boundary, prose isolation, accessibility activation, API and performance review boundaries, and preparation-only `release-publish` routing. | Run the model canaries independently in the editor before treating the combined editor/CLI surface as complete. | Partial |
+| Claude Code CLI | 2.1.63 | Blocked: `claude auth status` reports `loggedIn: false`, so no client source inspection ran. | Blocked: no model-backed check ran. | Authenticate a current Claude Code profile, then run the direct-skill matrix and resolve or document the [#43](https://github.com/ciampo/ai-instructions/issues/43) release-boundary behavior. | Blocked |
+| Codex app, CLI, and IDE extension | CLI 0.145.0 | Partial: direct-skill CLI canaries ran, but no client source listing was recorded and the app and IDE extension were not inspected. | CLI pass: title convention, `review-pr` target and read-only boundary, prose isolation, accessibility activation, and API/performance review boundaries. | Independently run the app and IDE-extension checks before treating the combined surface as complete. | Partial |
+| GitHub Copilot CLI | 1.0.73 | Partial: `copilot skill list` reported all 17 personal skills; core-instruction loading was not inspected in the client. | Blocked: non-interactive invocation reports no authentication information. | Authenticate the current CLI profile, run the direct-skill matrix, and complete the current cross-platform release matrix before promotion. | Blocked |
+| Gemini CLI | 0.51.0 | Blocked: `gemini skills list` requires authentication, and no client source inspection ran. | Blocked: no model-backed check ran. | After [#40](https://github.com/ciampo/ai-instructions/issues/40) selects the retained Gemini policy, use a supported enterprise, Google Cloud, or paid API context for the direct-skill matrix. | Blocked |
+
+This pass verifies the current direct-skill architecture rather than the retired custom-agent contract. It does not justify a tier promotion: Cursor and Codex combine clients that were not all independently exercised, and Claude, Copilot, and Gemini need authenticated canaries. Every manifest tier remains `preview`.
+
 ## 2026-07-21 and 2026-07-22 adapter and live discovery checks
 
-The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured checks across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
+The installer first copied all configured artifacts into a disposable home on macOS arm64. The current user profiles were then refreshed with `./setup.sh update --agent '*' --yes`: 15 obsolete managed artifacts were removed and 90 current artifacts were installed or updated. `check` passed all 18 configured artifacts per adapter, or 90 total across the five adapters. Google Antigravity CLI is a sixth product surface in the table, but does not yet have an adapter and was not part of that check.
 
 Product canaries ran in an isolated temporary repository with tools disabled where the client supported that restriction. Authentication was reused only from the current product profile; no credentials were copied into the disposable home.
 

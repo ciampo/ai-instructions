@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastReviewed": "2026-07-21",
+  "lastReviewed": "2026-07-22",
   "installPolicy": {
     "scope": "user",
     "portableDefault": "symlink",
@@ -15,7 +15,7 @@
       "product": "Cursor",
       "surface": "Cursor editor and Agent CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".cursor"
       },
@@ -71,7 +71,7 @@
       "product": "Claude Code",
       "surface": "Claude Code CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".claude"
       },
@@ -110,8 +110,7 @@
       ],
       "documentation": [
         "https://code.claude.com/docs/en/memory",
-        "https://code.claude.com/docs/en/skills",
-        "https://code.claude.com/docs/en/sub-agents"
+        "https://code.claude.com/docs/en/skills"
       ]
     },
     {
@@ -119,7 +118,7 @@
       "product": "Codex",
       "surface": "Codex app, CLI, and IDE extension",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".codex"
       },
@@ -165,8 +164,7 @@
       ],
       "documentation": [
         "https://developers.openai.com/codex/guides/agents-md",
-        "https://developers.openai.com/codex/skills",
-        "https://developers.openai.com/codex/subagents"
+        "https://developers.openai.com/codex/skills"
       ]
     },
     {
@@ -174,7 +172,7 @@
       "product": "GitHub Copilot CLI",
       "surface": "GitHub Copilot CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".copilot"
       },
@@ -213,7 +211,7 @@
       "documentation": [
         "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions",
         "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
-        "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli"
+        "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills"
       ]
     },
     {
@@ -221,7 +219,7 @@
       "product": "Gemini CLI",
       "surface": "Gemini CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".gemini"
       },
@@ -259,8 +257,7 @@
       ],
       "documentation": [
         "https://geminicli.com/docs/cli/gemini-md/",
-        "https://geminicli.com/docs/cli/using-agent-skills/",
-        "https://geminicli.com/docs/core/subagents/"
+        "https://geminicli.com/docs/cli/using-agent-skills/"
       ]
     }
   ]

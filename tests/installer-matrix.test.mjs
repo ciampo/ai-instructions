@@ -6,6 +6,7 @@ import {
 	lstat,
 	readdir,
 	readFile,
+	readlink,
 	rm,
 	symlink,
 	writeFile,
@@ -66,6 +67,26 @@ async function pathExists( target ) {
 		}
 		throw error;
 	}
+}
+
+async function filesInDirectory( root, current = '' ) {
+	const files = [];
+	for ( const entry of await readdir( path.join( root, current ), { withFileTypes: true } ) ) {
+		const relative = path.join( current, entry.name );
+		if ( entry.isDirectory() ) {
+			files.push( ...await filesInDirectory( root, relative ) );
+		} else if ( entry.isFile() || entry.isSymbolicLink() ) {
+			files.push( relative );
+		}
+	}
+	return files.sort();
+}
+
+async function sourceSkillNames() {
+	return ( await readdir( path.join( repoDir, 'skills' ), { withFileTypes: true } ) )
+		.filter( ( entry ) => entry.isDirectory() )
+		.map( ( entry ) => entry.name )
+		.sort();
 }
 
 function artifactPath( platform, category, home ) {
@@ -850,6 +871,72 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		);
 	}
 
+} );
+
+test( 'all platforms distribute complete skills and no current custom agents', async ( t ) => {
+	const home = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skills-first-' ) );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	for ( const platform of manifest.platforms ) {
+		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
+	}
+
+	const skillNames = await sourceSkillNames();
+	assert.ok( skillNames.length > 0 );
+	assert.equal( await pathExists( path.join( repoDir, 'agents' ) ), false );
+	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
+
+	for ( const platform of manifest.platforms ) {
+		assert.equal( platform.capabilities.agents.supported, false );
+		assert.equal( artifactPath( platform, 'agents', home ), null );
+		assert.match(
+			runInstaller( home, [ 'list', '--agent', platform.id, '--only', 'agents', '--yes' ] ),
+			/not distributed/i
+		);
+		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'agents', '--yes' ] );
+
+		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		assert.ok( retiredAgents, `${ platform.id } must retain a retired-agent cleanup destination` );
+		assert.equal( await pathExists( destination( home, retiredAgents.userPath ) ), false );
+
+		for ( const skillName of skillNames ) {
+			const source = path.join( repoDir, 'skills', skillName );
+			const installed = path.dirname( skillPath( platform, home, skillName ) );
+			const sourceFiles = await filesInDirectory( source );
+			assert.deepEqual(
+				await filesInDirectory( installed ),
+				[ ...sourceFiles, SKILL_DIRECTORY_MARKER ].sort(),
+				`${ platform.id } ${ skillName } must include every bundled skill resource`
+			);
+			for ( const relative of sourceFiles ) {
+				const sourcePath = path.join( source, relative );
+				const installedPath = path.join( installed, relative );
+				const [ sourceStatus, installedStatus ] = await Promise.all( [
+					lstat( sourcePath ),
+					lstat( installedPath ),
+				] );
+				assert.equal(
+					installedStatus.isSymbolicLink(),
+					sourceStatus.isSymbolicLink(),
+					`${ platform.id } ${ skillName } ${ relative } must preserve its path type`
+				);
+				if ( sourceStatus.isSymbolicLink() ) {
+					assert.equal(
+						await readlink( installedPath ),
+						await readlink( sourcePath ),
+						`${ platform.id } ${ skillName } ${ relative } must preserve its symlink target`
+					);
+				} else {
+					assert.ok( sourceStatus.isFile() );
+					assert.ok( installedStatus.isFile() );
+					assert.deepEqual(
+						await readFile( installedPath ),
+						await readFile( sourcePath ),
+						`${ platform.id } ${ skillName } ${ relative } must match the source`
+					);
+				}
+			}
+		}
+	}
 } );
 
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {

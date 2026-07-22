@@ -10,8 +10,8 @@ How I think about performance. Not premature optimization -- informed awareness 
 
 ## Lazy Loading
 
-- **[STRONG]** Code-split routes, heavy components, and non-critical features behind `React.lazy()` / dynamic `import()`.
-- **[PREFER]** Defer loading of below-the-fold content, modals, and drawers until needed.
+- Consider code-splitting routes, heavy components, and non-critical features behind `React.lazy()` / dynamic `import()` when measured loading costs justify the added boundary and fallback behavior.
+- **[PREFER]** Defer below-the-fold content, modals, and drawers when profiling or bundle evidence shows that doing so improves the relevant loading path.
 - Load fonts with `font-display: swap` or `optional` to avoid invisible text.
 
 ## Rendering
@@ -19,7 +19,7 @@ How I think about performance. Not premature optimization -- informed awareness 
 - **[STRONG]** Avoid unnecessary re-renders. Lift state up only as far as needed. Colocate state with the components that use it.
 - **[PREFER]** Use `useMemo` and `useCallback` when the computation is genuinely expensive or when a stable reference prevents re-renders in children that rely on referential equality. Do not scatter them everywhere as a reflex.
 - Avoid creating new objects, arrays, or functions inline in JSX when they are passed to memoized children.
-- **[STRONG]** Virtualize long lists. Do not render hundreds of DOM nodes when only a few are visible.
+- Consider virtualizing long lists when measured rendering or scale costs justify its interaction, accessibility, and state-management trade-offs.
 
 <details>
 <summary>Example: memoization -- when it helps vs. when it's noise</summary>
