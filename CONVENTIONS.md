@@ -43,6 +43,6 @@ Add a custom agent only when evaluation demonstrates value from context isolatio
 
 ## Universal Instructions
 
-`instructions/core.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
+`AGENTS.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
 
 The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, bundled-reference, optional agent metadata, and manifest contracts.

@@ -486,6 +486,31 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 	}
 
+	async function processArtifactGroup( artifacts, state ) {
+		const { command } = state.options;
+		if ( ! [ 'install', 'update', 'remove' ].includes( command ) ) {
+			for ( const artifact of artifacts ) {
+				await processArtifact( artifact, state );
+			}
+			return;
+		}
+
+		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+		const conflicts = artifacts.filter( ( artifact, index ) =>
+			statuses[ index ].exists && ! statuses[ index ].owned
+		);
+		if ( conflicts.length > 0 ) {
+			for ( const artifact of conflicts ) {
+				logConflict( artifact, state );
+			}
+			return;
+		}
+
+		for ( const artifact of artifacts ) {
+			await processArtifact( artifact, state );
+		}
+	}
+
 	async function directoryEntries( directory ) {
 		try {
 			return await readdir( directory, { withFileTypes: true } );
@@ -501,7 +526,10 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const candidates = [];
 		for ( const category of selectedCategories ) {
 			const capability = platform.capabilities[ category ];
-			if ( ! capability.supported || capability.strategy === 'concat' ) {
+			if (
+				! capability.supported ||
+				[ 'direct', 'wrapper' ].includes( capability.strategy )
+			) {
 				continue;
 			}
 			const root = resolveUserPath( home, capability.userPath );
@@ -704,8 +732,19 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
 			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );
 		}
+		const groups = new Map();
 		for ( const artifact of artifacts ) {
-			await processArtifact( artifact, state );
+			const key = artifact.group ?? `artifact:${ artifact.destination }`;
+			const group = groups.get( key ) ?? [];
+			group.push( artifact );
+			groups.set( key, group );
+		}
+		for ( const group of groups.values() ) {
+			if ( group.length === 1 ) {
+				await processArtifact( group[ 0 ], state );
+			} else {
+				await processArtifactGroup( group, state );
+			}
 		}
 		if ( [ 'check', 'list', 'remove' ].includes( state.options.command ) ) {
 			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );

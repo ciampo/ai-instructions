@@ -244,7 +244,7 @@ installer so documentation and behavior cannot drift independently.
 
 ### P1: Reduce always-on context
 
-The current taxonomy says every file in `instructions/` is always loaded.
+The taxonomy at the time said every file in `instructions/` was always loaded.
 That includes React, design-system, Storybook, i18n, security, performance,
 error-handling, GitHub, and release guidance in unrelated sessions. Codex
 receives a 940-line global file before project instructions are considered.

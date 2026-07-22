@@ -27,6 +27,7 @@
           "userPath": ".cursor/rules",
           "projectPath": ".cursor/rules",
           "extension": ".mdc",
+          "fileName": "core",
           "precedence": "Project rules can be more specific; user rules configured in the product UI also apply."
         },
         "skills": {
@@ -78,12 +79,12 @@
       "capabilities": {
         "instructions": {
           "supported": true,
-          "strategy": "files",
-          "format": "markdown",
-          "userPath": ".claude/rules",
-          "projectPath": ".claude/rules",
-          "extension": ".md",
-          "precedence": "More specific project instructions supplement user-level rules."
+          "strategy": "wrapper",
+          "format": "claude-md",
+          "userPath": ".claude/CLAUDE.md",
+          "canonicalPath": ".claude/AGENTS.md",
+          "projectPath": "CLAUDE.md",
+          "precedence": "CLAUDE.md imports the adjacent managed AGENTS.md; more specific project instructions supplement user-level rules."
         },
         "skills": {
           "supported": true,
@@ -100,6 +101,13 @@
         }
       },
       "legacyDestinations": [
+        {
+          "category": "instructions",
+          "userPath": ".claude/rules",
+          "layout": "flat",
+          "sourceRoot": "instructions",
+          "reason": "legacy Claude instructions from the former core layout."
+        },
         {
           "category": "agents",
           "userPath": ".claude/agents",
@@ -125,7 +133,7 @@
       "capabilities": {
         "instructions": {
           "supported": true,
-          "strategy": "concat",
+          "strategy": "direct",
           "format": "agents-md",
           "userPath": ".codex/AGENTS.md",
           "projectPath": "AGENTS.md",
@@ -179,11 +187,12 @@
       "capabilities": {
         "instructions": {
           "supported": true,
-          "strategy": "concat",
+          "strategy": "wrapper",
           "format": "copilot-instructions",
           "userPath": ".copilot/copilot-instructions.md",
+          "canonicalPath": ".copilot/AGENTS.md",
           "projectPath": ".github/copilot-instructions.md",
-          "precedence": "Applicable user and repository instruction files are merged; avoid conflicting guidance."
+          "precedence": "The managed Copilot file imports the adjacent AGENTS.md; applicable user and repository instruction files are merged, so avoid conflicting guidance."
         },
         "skills": {
           "supported": true,
@@ -226,11 +235,12 @@
       "capabilities": {
         "instructions": {
           "supported": true,
-          "strategy": "concat",
+          "strategy": "wrapper",
           "format": "gemini-md",
           "userPath": ".gemini/GEMINI.md",
+          "canonicalPath": ".gemini/AGENTS.md",
           "projectPath": "GEMINI.md",
-          "precedence": "Global, workspace, and just-in-time context files are concatenated."
+          "precedence": "GEMINI.md imports the adjacent managed AGENTS.md; global, workspace, and just-in-time context files are concatenated."
         },
         "skills": {
           "supported": true,

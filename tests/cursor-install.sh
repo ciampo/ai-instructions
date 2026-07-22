@@ -122,7 +122,7 @@ mkdir -p "$TMP_HOME_LEGACY/.cursor/rules"
 LEGACY_FILE="$TMP_HOME_LEGACY/.cursor/rules/core.mdc"
 {
   echo "<!-- ai-instructions:managed -->"
-  cat "$REPO_DIR/instructions/core.md"
+  cat "$REPO_DIR/AGENTS.md"
 } > "$LEGACY_FILE"
 
 HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" --agent cursor --yes >"$TMP_HOME_LEGACY/install.log" 2>&1
@@ -139,7 +139,7 @@ assert_file_contains "$LEGACY_FILE" "description: 'Core Instructions'"
 
 {
   echo "<!-- ai-instructions:managed -->"
-  cat "$REPO_DIR/instructions/core.md"
+  cat "$REPO_DIR/AGENTS.md"
 } > "$LEGACY_FILE"
 
 HOME="$TMP_HOME_LEGACY" "$REPO_DIR/setup.sh" remove --agent cursor --yes >/dev/null

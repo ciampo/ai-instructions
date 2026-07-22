@@ -1,11 +1,11 @@
-# ADR 0004: Make `AGENTS.md` the Canonical Shared Instruction Artifact
+# ADR 0005: Make `AGENTS.md` the Canonical Shared Instruction Artifact
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-07-22
 
 ## Context
 
-The current source of the always-on core is [`instructions/core.md`](../../instructions/core.md). The manifest adapts that content into five product-specific user-level instruction locations. This gives the installer a safe lifecycle owner, but it leaves a repository that supports more than one coding agent without a shared, discoverable instruction file.
+The previous source of the always-on core was `instructions/core.md`. The installer adapted it into five product-specific user-level instruction locations. That preserved a safe lifecycle owner, but left a repository that supports more than one coding agent without a shared, discoverable instruction file.
 
 Current vendor guidance has converged substantially around repository-root `AGENTS.md`:
 
@@ -23,9 +23,9 @@ The content decision remains separate from the filename decision. The current co
 
 ## Decision
 
-Adopt `AGENTS.md` as the single canonical **repository-level shared instruction artifact**. The change will be implemented in a later, separately reviewed migration once the acceptance criteria below have been met.
+Adopt `AGENTS.md` as the single canonical **repository-level shared instruction artifact**.
 
-The intended model is:
+The implemented model is:
 
 ```text
 AGENTS.md                         shared, concise repository guidance
@@ -72,19 +72,19 @@ Rejected. Product-native configuration remains useful for user-level scope, path
 
 Rejected. It invites drift, conflicting instructions, and unnecessary always-on context. Thin wrappers are easier to inspect and test.
 
-## Implementation Plan
+## Implementation
 
-1. Add the root `AGENTS.md` source and migrate the current universal core without changing its scope or budget.
-2. Extend the manifest with an explicit shared-artifact/wrapper strategy. Do not overload the existing `files` or `concat` semantics.
-3. Update the artifact builder and lifecycle code so a wrapper and any sidecar source are installed, checked, updated, and removed atomically as one adapter contract.
-4. Preserve direct Codex global output; generate native wrappers only where the vendor documentation requires one.
-5. Change the explicit project export from a Copilot-only concatenation to a selected-tool export that always creates `AGENTS.md` and only needed wrappers.
-6. Retain legacy cleanup and user-owned conflict protection under the compatibility policy. Do not remove the current instruction destinations until upgrades from the frozen support floor pass in default and copy modes.
-7. Update the README, migration guide, generated support table, and discovery evidence only with results from the new adapter, not from the current one.
+1. Root `AGENTS.md` now contains the previous universal core without changing its scope or budget.
+2. The manifest has explicit `direct` and `wrapper` strategies. The wrapper strategy writes a managed adjacent `AGENTS.md` and a native file that imports it relatively.
+3. The artifact builder and lifecycle code install, check, update, and remove both files in the wrapper adapter. It preflights the pair for user-owned conflicts before mutating either file.
+4. Codex receives the canonical content directly. Claude, Copilot, and Gemini receive thin native wrappers; Cursor keeps its native rule adapter for user scope.
+5. The compatibility `--copilot-concat` option now explicitly exports project-root `AGENTS.md` and a Copilot wrapper rather than duplicating the full instruction body.
+6. Legacy cleanup and user-owned conflict protection remain under the compatibility policy. The frozen pre-modernization upgrade fixtures continue to pass.
+7. The README, migration guide, support policy, and source index describe the current implementation. Product support remains preview until fresh discovery proves the new wrappers load on current client releases.
 
-## Acceptance Criteria
+## Ongoing Acceptance Criteria
 
-Before changing the manifest or support claims:
+Before promoting a support claim:
 
 1. Verify the documented project-level behavior on current releases of Codex, Claude Code, Copilot CLI, Gemini CLI, and Cursor. Record exact versions and results in discovery evidence.
 2. In disposable homes, cover install, idempotent reinstall, list, check, update, remove, copy mode, user-owned conflicts, managed stale sidecars, and interrupted replacement for every changed adapter.

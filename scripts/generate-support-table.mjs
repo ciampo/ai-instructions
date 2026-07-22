@@ -17,13 +17,13 @@ function displayPath( capability ) {
 		return `Not distributed: ${ capability.reason }`;
 	}
 	const root = `~/${ capability.userPath }`;
-	if ( capability.strategy === 'concat' ) {
+	if ( [ 'direct', 'wrapper' ].includes( capability.strategy ) ) {
 		return `\`${ root }\``;
 	}
 	if ( capability.strategy === 'directories' ) {
 		return `\`${ root }/*/${ capability.fileName }\``;
 	}
-	return `\`${ root }/*${ capability.extension }\``;
+	return `\`${ root }/${ capability.fileName }${ capability.extension }\``;
 }
 
 export function renderSupportTable( manifest ) {

@@ -6,12 +6,12 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-See the [modernization plan](modernization-plan.md) for the architecture audit and implementation roadmap. The [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [skills-first support audit](docs/skills-first-support-audit.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0004-agents-md-canonical-artifact.md) cover ongoing maintenance.
+See the [modernization plan](modernization-plan.md) for the architecture audit and implementation roadmap. The [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md) cover ongoing maintenance.
 
 ## Structure
 
 ```text
-instructions/core.md  Small universal personal defaults
+AGENTS.md             Small universal personal defaults and shared project artifact
 skills/*/SKILL.md      Standards-compliant workflows and references loaded on demand
 platforms/manifest.json  Tested product capabilities and destinations
 scripts/               Installer, format adapters, and documentation generator
@@ -23,7 +23,7 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 
 | File | What it covers |
 | --- | --- |
-| [core.md](instructions/core.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
+| [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
 
 The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost.
 
@@ -80,7 +80,7 @@ On native Windows, run the Node entrypoint directly and use copy mode:
 node scripts/setup.mjs --agent '*' --copy --yes
 ```
 
-The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside generating the concatenated file.
+The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside exporting a shared project `AGENTS.md` and a thin Copilot wrapper.
 
 ### Supported product surfaces
 
@@ -90,11 +90,11 @@ The script auto-detects supported product surfaces by scanning `$HOME` for known
 
 | Product surface | Tier | Instructions | Skills | Adapter checked |
 | --- | --- | --- | --- | --- |
-| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | 2026-07-22 |
-| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | 2026-07-22 |
-| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | 2026-07-22 |
-| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | 2026-07-22 |
-| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | 2026-07-22 |
+| Cursor editor and Agent CLI | preview | `~/.cursor/rules/core.mdc` | `~/.cursor/skills/*/SKILL.md` | 2026-07-21 |
+| Claude Code CLI | preview | `~/.claude/CLAUDE.md` | `~/.claude/skills/*/SKILL.md` | 2026-07-21 |
+| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | 2026-07-21 |
+| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | 2026-07-21 |
+| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | 2026-07-21 |
 
 <!-- platform-support:end -->
 
@@ -118,7 +118,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
 | `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. `agents` is retained only to safely clean up retired repository-managed agents; the legacy `personas` value remains its alias. |
-| `--copilot-concat [DIR]` | Concatenate all instructions into `.github/copilot-instructions.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
+| `--copilot-concat [DIR]` | Export `AGENTS.md` and a thin `.github/copilot-instructions.md` wrapper in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
@@ -135,7 +135,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
 ./setup.sh check --agent cursor                    # Verify managed Cursor configuration
 ./setup.sh install --copy --yes                    # Copy mode for CI
-./setup.sh --copilot-concat ~/Code/my-project      # Standalone: generate concatenated Copilot file
+./setup.sh --copilot-concat ~/Code/my-project      # Standalone: export AGENTS.md and Copilot wrapper
 ```
 
 The installer is non-destructive and idempotent. It stages complete artifacts before publishing them, never clobbers an unexpected destination, and skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only replaces files previously installed by this repository.
@@ -145,32 +145,33 @@ The installer is non-destructive and idempotent. It stages complete artifacts be
 If you prefer to set things up manually or use a different tool:
 
 - **Cursor**: Instructions to `~/.cursor/rules/` and skills to `~/.cursor/skills/`
-- **Claude Code**: Instructions to `~/.claude/rules/` and skills to `~/.claude/skills/`
+- **Claude Code**: Managed `~/.claude/CLAUDE.md` imports adjacent `~/.claude/AGENTS.md`; skills go to `~/.claude/skills/`
 - **Codex**: Instructions to managed `~/.codex/AGENTS.md` and skills to the shared `~/.agents/skills/` location
-- **GitHub Copilot CLI**: Instructions to `~/.copilot/copilot-instructions.md` and skills to `~/.copilot/skills/`; use `--copilot-concat` only for explicit repository export
-- **Gemini CLI**: Instructions to `~/.gemini/GEMINI.md` and skills to `~/.gemini/skills/`
+- **GitHub Copilot CLI**: Managed `~/.copilot/copilot-instructions.md` imports adjacent `~/.copilot/AGENTS.md`; skills go to `~/.copilot/skills/`; use `--copilot-concat` only for explicit repository export
+- **Gemini CLI**: Managed `~/.gemini/GEMINI.md` imports adjacent `~/.gemini/AGENTS.md`; skills go to `~/.gemini/skills/`
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
 
 ### Per-project overrides
 
 These instructions are global defaults. To override for a specific project:
 
-- **Cursor**: Add `.cursor/rules/` or `.cursor/skills/` in the repository.
-- **Claude Code**: Add `CLAUDE.md`, `.claude/rules/`, or `.claude/skills/`.
-- **Codex**: Add `AGENTS.md` or `.agents/skills/`.
-- **GitHub Copilot CLI**: Add `.github/copilot-instructions.md` or `.github/skills/`.
-- **Gemini CLI**: Add `GEMINI.md` or `.gemini/skills/`.
+- **All supported tools**: Start with a root `AGENTS.md` for shared project guidance.
+- **Cursor**: Add `.cursor/rules/` only for scoped rules or Cursor-specific metadata; use `.cursor/skills/` for project skills.
+- **Claude Code**: Add `CLAUDE.md` with `@AGENTS.md` only for Claude-specific guidance; use `.claude/rules/` or `.claude/skills/` when their scoped behavior is needed.
+- **Codex**: Add nested `AGENTS.md` or `.agents/skills/` for subtree-specific work.
+- **GitHub Copilot CLI**: Add `.github/copilot-instructions.md` with `@../AGENTS.md` only for Copilot-specific guidance, or `.github/skills/` for project skills.
+- **Gemini CLI**: Add `GEMINI.md` with `@AGENTS.md` only for Gemini-specific guidance, or `.gemini/skills/` for project skills.
 - Use the project-level config to relax global rules (e.g., "this project uses Tailwind instead of CSS Modules") or add project-specific conventions.
 
 ## Updating
 
-These are living documents. In the default mode, portable instructions are symlinked as files, while each skill is symlinked as a complete directory with its bundled resources. Source edits, additions, and removals appear immediately through those symlinks. Cursor instructions and concatenated Codex/Copilot/Gemini instructions are generated managed files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries, including retired custom agents, while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
+These are living documents. In the default mode, portable skills are symlinked as complete directories with their bundled resources. Cursor rules and the managed `AGENTS.md`/native-wrapper instruction artifacts are generated files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries, including retired custom agents, while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
 
 ## Development
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), and the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md).
 
 ```bash
 npm ci

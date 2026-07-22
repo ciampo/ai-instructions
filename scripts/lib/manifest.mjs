@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const PLATFORM_IDS = [ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ];
 const CATEGORIES = [ 'instructions', 'skills', 'agents' ];
-const STRATEGIES = new Set( [ 'concat', 'directories', 'files' ] );
+const STRATEGIES = new Set( [ 'direct', 'directories', 'files', 'wrapper' ] );
 const SUPPORT_TIERS = new Set( [ 'verified', 'preview' ] );
 
 function assertString( value, field ) {
@@ -79,6 +79,21 @@ function validateCapability( platform, category ) {
 			capability.extension,
 			`${ platform.id }.${ category }.extension`
 		);
+	}
+	if ( capability.strategy === 'files' && category === 'instructions' ) {
+		validatePortableFileName(
+			capability.fileName,
+			`${ platform.id }.${ category }.fileName`
+		);
+	}
+	if ( capability.strategy === 'wrapper' ) {
+		validateRelativePath(
+			capability.canonicalPath,
+			`${ platform.id }.${ category }.canonicalPath`
+		);
+		if ( path.posix.dirname( capability.userPath ) !== path.posix.dirname( capability.canonicalPath ) ) {
+			throw new Error( `Platform manifest: ${ platform.id }.${ category }.wrapper and canonical paths must share a directory.` );
+		}
 	}
 	if ( capability.strategy === 'directories' ) {
 		validatePortableFileName(

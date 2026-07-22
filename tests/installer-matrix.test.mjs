@@ -97,9 +97,10 @@ function artifactPath( platform, category, home ) {
 
 	const base = destination( home, capability.userPath );
 	if ( category === 'instructions' ) {
-		return capability.strategy === 'concat'
-			? base
-			: path.join( base, `core${ capability.extension }` );
+		if ( capability.strategy === 'files' ) {
+			return path.join( base, `${ capability.fileName }${ capability.extension }` );
+		}
+		return base;
 	}
 	if ( category === 'skills' ) {
 		return path.join( base, 'review-pr', 'SKILL.md' );
@@ -132,20 +133,6 @@ function normalizedWithTrailingNewline( content ) {
 	return content.endsWith( '\n' ) ? content : `${ content }\n`;
 }
 
-async function expectedConcatenatedInstructions() {
-	const instructionNames = ( await readdir( path.join( repoDir, 'instructions' ) ) )
-		.filter( ( name ) => name.endsWith( '.md' ) )
-		.sort();
-	const sections = [];
-	for ( const name of instructionNames ) {
-		const source = normalizedWithTrailingNewline(
-			await readFile( path.join( repoDir, 'instructions', name ), 'utf8' )
-		);
-		sections.push( `<!-- source: ${ name } -->\n\n${ source }\n---\n` );
-	}
-	return `${ managedMarker }\n${ sections.join( '\n' ) }\n`;
-}
-
 async function createContentFixture( t, {
 	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
 	referenceContent,
@@ -155,7 +142,6 @@ async function createContentFixture( t, {
 	for ( const directory of [
 		'agents',
 		'docs',
-		'instructions',
 		'platforms',
 		'skills/example-skill/references',
 	] ) {
@@ -182,7 +168,7 @@ async function createContentFixture( t, {
 			referenceContent
 		);
 	}
-	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
+	await writeFile( path.join( fixture, 'AGENTS.md' ), '# Core\n' );
 	await writeFile(
 		path.join( fixture, 'docs', 'standards-index.md' ),
 		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Example](https://example.com) | Example | ${ today } |\n`
@@ -579,7 +565,7 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 
 test( 'artifact building fails when required instructions are missing', async ( t ) => {
 	const { fixture } = await createContentFixture( t );
-	await rm( path.join( fixture, 'instructions' ), { recursive: true } );
+	await rm( path.join( fixture, 'AGENTS.md' ) );
 
 	await assert.rejects(
 		createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
@@ -824,23 +810,20 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
 	);
 	assert.equal(
 		await readFile( destination( home, '.cursor/rules/core.mdc' ), 'utf8' ),
 		`---\ndescription: 'Core Instructions'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
 	);
-	assert.equal(
-		await readFile( destination( home, '.claude/rules/core.md' ), 'utf8' ),
-		`${ managedMarker }\n${ instructionSource }`
-	);
-	const concatenatedInstructions = await expectedConcatenatedInstructions();
-	for ( const relativePath of [
-		'.codex/AGENTS.md',
-		'.copilot/copilot-instructions.md',
-		'.gemini/GEMINI.md',
+	assert.equal( await readFile( destination( home, '.codex/AGENTS.md' ), 'utf8' ), `${ managedMarker }\n${ instructionSource }` );
+	for ( const [ directory, wrapper ] of [
+		[ '.claude', 'CLAUDE.md' ],
+		[ '.copilot', 'copilot-instructions.md' ],
+		[ '.gemini', 'GEMINI.md' ],
 	] ) {
-		assert.equal( await readFile( destination( home, relativePath ), 'utf8' ), concatenatedInstructions );
+		assert.equal( await readFile( destination( home, `${ directory }/AGENTS.md` ), 'utf8' ), `${ managedMarker }\n${ instructionSource }` );
+		assert.equal( await readFile( destination( home, `${ directory }/${ wrapper }` ), 'utf8' ), `${ managedMarker }\n@AGENTS.md\n` );
 	}
 
 	const skillSource = await readFile(
@@ -939,6 +922,46 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 	}
 } );
 
+test( 'instruction adapters derive native wrappers from the canonical AGENTS.md', async ( t ) => {
+	const home = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-agents-artifacts-' ) );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	for ( const platform of manifest.platforms ) {
+		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
+	}
+
+	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
+
+	const source = normalizedWithTrailingNewline(
+		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
+	);
+	const canonical = `${ managedMarker }\n${ source }`;
+	assert.equal( await readFile( destination( home, '.codex/AGENTS.md' ), 'utf8' ), canonical );
+	for ( const [ directory, wrapper ] of [
+		[ '.claude', 'CLAUDE.md' ],
+		[ '.copilot', 'copilot-instructions.md' ],
+		[ '.gemini', 'GEMINI.md' ],
+	] ) {
+		assert.equal( await readFile( destination( home, `${ directory }/AGENTS.md` ), 'utf8' ), canonical );
+		assert.equal(
+			await readFile( destination( home, `${ directory }/${ wrapper }` ), 'utf8' ),
+			`${ managedMarker }\n@AGENTS.md\n`
+		);
+	}
+} );
+
+test( 'wrapper adapters do not create a sidecar when the native file is user-owned', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const wrapperPath = destination( home, '.claude/CLAUDE.md' );
+	await writeFile( wrapperPath, '# User Claude instructions\n' );
+
+	const output = runInstaller( home, [ '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( output, /CLAUDE\.md already exists/ );
+	assert.equal( await pathExists( destination( home, '.claude/AGENTS.md' ) ), false );
+	assert.equal( await readFile( wrapperPath, 'utf8' ), '# User Claude instructions\n' );
+} );
+
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
 	const home = await createDetectedHome( platform );
@@ -979,7 +1002,9 @@ test( 'explicit Copilot repository export refreshes only managed files', async (
 	t.after( () => rm( project, { recursive: true, force: true } ) );
 	t.after( () => rm( dryRunProject, { recursive: true, force: true } ) );
 	const target = path.join( project, '.github', 'copilot-instructions.md' );
+	const canonicalTarget = path.join( project, 'AGENTS.md' );
 	const dryRunTarget = path.join( dryRunProject, '.github', 'copilot-instructions.md' );
+	const dryRunCanonicalTarget = path.join( dryRunProject, 'AGENTS.md' );
 	const arguments_ = [
 		'--agent',
 		'copilot',
@@ -998,11 +1023,14 @@ test( 'explicit Copilot repository export refreshes only managed files', async (
 	] );
 	assert.match( dryRunOutput, /\[dry-run\] write .*copilot-instructions\.md/ );
 	assert.equal( await pathExists( dryRunTarget ), false );
+	assert.equal( await pathExists( dryRunCanonicalTarget ), false );
 
 	runInstaller( home, arguments_ );
 	assert.match( await readFile( target, 'utf8' ), /^<!-- Auto-generated by ai-instructions\/setup\.sh --copilot-concat -->/ );
+	assert.equal( await readFile( target, 'utf8' ), '<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->\n<!-- Do not edit manually. Re-run setup.sh to update. -->\n\n@../AGENTS.md\n' );
+	assert.match( await readFile( canonicalTarget, 'utf8' ), /^<!-- ai-instructions:managed -->\n# Core Instructions/m );
 	await writeFile( target, '<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->\nstale\n' );
-	assert.match( runInstaller( home, arguments_ ), /outdated; run update/ );
+	assert.match( runInstaller( home, arguments_ ), /repository export is outdated; run update/ );
 	runInstaller( home, [ 'update', ...arguments_ ] );
 	assert.doesNotMatch( await readFile( target, 'utf8' ), /\nstale\n/ );
 
