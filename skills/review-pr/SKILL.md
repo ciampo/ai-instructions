@@ -15,9 +15,9 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
 5. Review accessibility first, then consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Verify APG, ARIA, and WCAG claims against their primary sources.
 6. Cross-reference changes against how sibling modules/components handle the same patterns.
-7. Use the `draft-review-comment` skill to write the full review to `<pr-number>-review.md` in the OS temporary directory. Open it when supported; otherwise return the path. Print nothing else in chat beyond a one-line confirmation unless the user explicitly requested chat delivery.
+7. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.
 8. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
-9. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Update the same review document.
+9. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
 
 ## Output Format
 
