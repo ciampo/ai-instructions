@@ -1,6 +1,6 @@
 ---
 name: review-performance
-description: Perform a read-only, evidence-based performance review of a component, feature, package, or UI-focused change for bundle cost, loading, rendering, layout, paint, and scale risks. Use when the user explicitly requests performance review, profiling analysis, or bundle and runtime risk assessment. Do not use for general PR review or optimization implementation; never edit source, commit, or write remotely.
+description: Perform a read-only, evidence-based performance review of a component, feature, package, or UI-focused change for bundle cost, loading, rendering, layout, paint, and scale risks. Use when the user explicitly requests performance review, profiling analysis, or bundle and runtime risk assessment. Do not use as a standalone general PR review or optimization implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Performance
@@ -25,6 +25,8 @@ Identify costs that can materially affect users in the scoped execution context,
 8. **Recommend a verifiable direction**: State the cost, affected scenario, evidence, smallest plausible improvement, and the measurement that would confirm it without implementing the change.
 
 ## Output contract
+
+When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 

@@ -13,11 +13,16 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 2. Fetch PR metadata, diff, comments, existing reviews, thread resolution state, and CI status using the host's GitHub integration or authenticated `gh` fallback.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
-5. Review accessibility first, then consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Verify APG, ARIA, and WCAG claims against their primary sources.
-6. Cross-reference changes against how sibling modules/components handle the same patterns.
-7. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.
-8. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
-9. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
+5. Perform the complete core review: accessibility, consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.
+6. Load a specialist skill directly only when its domain is materially in scope:
+   - Use `review-accessibility` for UI or interaction changes whose semantics, keyboard behavior, focus, announcements, contrast, motion, zoom, or target behavior require the deeper accessibility method. Continue to perform the core accessibility pass for every PR.
+   - Use `review-api-design` when the PR adds or materially changes a public component, library, or package API. Ordinary internal type or implementation correctness stays in the core pass.
+   - Use `review-performance` when the change plausibly affects bundle loading, a user-critical runtime path, rendering or layout work, or behavior at meaningful scale. Do not invoke it for generic optimization ideas or harmless local computation.
+7. When invoking a specialist, request an internal findings handoff instead of its standalone delivery. The specialist must return structured findings and verification gaps to this workflow without creating a separate review artifact or returning a user-facing path.
+8. Synthesize specialist results into the main review. Recheck each finding against the actual PR diff and consumers, normalize severity to the shared `[critical]`, `[major]`, `[minor]`, and `[nit]` scale, remove duplicates, and keep verification gaps separate from confirmed findings. The main review owns prioritization and final delivery.
+9. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.
+10. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
+11. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
 
 ## Output Format
 

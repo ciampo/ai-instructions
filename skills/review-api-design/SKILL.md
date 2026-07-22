@@ -1,6 +1,6 @@
 ---
 name: review-api-design
-description: Perform a read-only review of a public component, library, or package API for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use when the user explicitly requests API-design review of exports, types, props, callbacks, composition, or compatibility. Do not use for general PR review, internal implementation review, or API implementation; never edit source, commit, or write remotely.
+description: Perform a read-only review of a public component, library, or package API for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use when the user explicitly requests API-design review of exports, types, props, callbacks, composition, or compatibility. Do not use as a standalone general PR review, internal implementation review, or API implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review API Design
@@ -25,6 +25,8 @@ Review the public contract from the consumer's perspective and report only mater
 8. **Recommend the smallest coherent alternative**: Explain the consumer impact, the established pattern, and a focused design direction without implementing it.
 
 ## Output contract
+
+When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 

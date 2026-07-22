@@ -1,6 +1,6 @@
 ---
 name: review-accessibility
-description: Perform a read-only, source-verified accessibility review of an interface, component, interaction, or UI-focused change. Use for explicit accessibility, WCAG, ARIA, keyboard, focus, screen-reader, contrast, reflow, motion, or pointer-target audits. Do not use for general code review, implementation work, or non-UI content unless accessibility review is specifically requested; never edit source, commit, or write remotely.
+description: Perform a read-only, source-verified accessibility review of an interface, component, interaction, or UI-focused change. Use for explicit accessibility, WCAG, ARIA, keyboard, focus, screen-reader, contrast, reflow, motion, or pointer-target audits. Do not use as a standalone general PR review, implementation work, or non-UI content unless accessibility review is specifically requested; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Accessibility
@@ -26,6 +26,8 @@ Review the scoped user experience deeply enough to find material accessibility r
 8. **Recommend the smallest correct direction**: Explain the expected behavior and a concrete remediation direction without implementing it. Preserve the target repository's public contracts and established accessible patterns.
 
 ## Output contract
+
+When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
 
 By default, write one portable Markdown artifact in the OS temporary directory and return its path. When the user explicitly requests chat delivery, return only the requested finding or findings in chat.
 

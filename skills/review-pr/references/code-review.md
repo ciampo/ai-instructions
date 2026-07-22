@@ -57,14 +57,16 @@ To avoid noise, do not raise comments on:
 
 ## Review Priorities (in order)
 
-1. **Accessibility**: ARIA patterns, focus management, screen reader behavior, `forced-colors` / high-contrast mode, semantic HTML.
+1. **Accessibility**: semantic HTML, accessible names, keyboard behavior, focus management, announcements, contrast, motion, zoom, and pointer targets. Use `review-accessibility` for the deeper method when UI or interaction changes make this domain material.
 2. **Consistency**: Does this follow established patterns across sibling modules and the broader codebase?
-3. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive?
+3. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive? Use `review-api-design` when a public API is added or materially changed.
 4. **Test adequacy**: Do tests exist? Do they test the right behavior? Would they fail on the bug they claim to fix? Would they pass against the previous (broken) code?
 5. **Blast radius**: What else in the codebase consumes the modified API/utility? Are those consumers affected?
-6. **Build/dependency correctness**: Missing or unused deps, `sideEffects` config, tree-shaking implications, CSS module vs global CSS distinctions.
+6. **Build, dependency, and performance correctness**: Missing or unused dependencies, `sideEffects` configuration, tree-shaking implications, critical-path loading, repeated runtime work, and CSS module versus global CSS distinctions. Use `review-performance` only when bundle, runtime, rendering, layout, or scale risks are material.
 7. **Documentation**: CHANGELOGs, JSDoc, README updates, Storybook stories.
 8. **Scope discipline**: Are there unrelated changes that should be in separate PRs?
+
+Specialist skills deepen a relevant domain; they do not replace the complete core review. The main workflow verifies and deduplicates their findings before delivery.
 
 ## Third-Party Impact
 
