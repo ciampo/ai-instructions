@@ -25,7 +25,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 ## Git
 
-- **[STRONG]** Commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
+- **[STRONG]** When the calling request authorizes commits, commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
 - **[RULE]** Use `--force-with-lease` for force pushes, never `--force`.
 - **[PREFER]** Prefer `git rebase` for integrating upstream changes on feature branches.
 - **[RULE]** Open PRs as drafts. Convert to ready only when polished and verified.
@@ -36,7 +36,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 - **[STRONG]** Use whichever package manager the project already uses (`npm`, `pnpm`, `yarn`). Check for lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`) to determine which one.
 - **[RULE]** Never mix package managers in the same project. Do not run `npm install` in a `pnpm` project.
-- **[STRONG]** Always commit lockfile changes. Do not `.gitignore` lockfiles.
+- **[STRONG]** Keep lockfile changes with the dependency change. When commits are authorized, include the lockfile in the relevant commit; never omit it by adding it to `.gitignore`.
 - **[PREFER]** For monorepos/workspaces, use the workspace-aware commands (`npm -w`, `pnpm --filter`, `yarn workspace`).
 
 ## MCP and Agent Tools
