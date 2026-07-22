@@ -5,7 +5,7 @@
 
 ## Context
 
-[Codex plugins](https://learn.chatgpt.com/docs/build-plugins), [Claude Code plugins](https://code.claude.com/docs/en/plugins), [GitHub Copilot CLI plugins](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference), and [Gemini CLI extensions](https://geminicli.com/docs/extensions/) provide product-specific distribution systems. Those systems can improve installation and discovery inside one product, but they do not provide one shared package format for this repository's instructions, Agent Skills, and custom agents.
+[OpenAI plugins for ChatGPT and Codex](https://learn.chatgpt.com/docs/build-plugins), [Claude Code plugins](https://code.claude.com/docs/en/plugins), [GitHub Copilot plugins](https://docs.github.com/en/copilot/concepts/agents/about-plugins), and [Gemini CLI extensions](https://geminicli.com/docs/extensions/) provide product-specific distribution systems. Those systems can improve installation and discovery inside one product, but they do not provide one shared package format for this repository's instructions, Agent Skills, and custom agents.
 
 The repository is currently a personal, cross-platform source of truth. Adding several native packages now would create parallel version, release, rollback, and migration channels before product discovery is fully verified.
 
