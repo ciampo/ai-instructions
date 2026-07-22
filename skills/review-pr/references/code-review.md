@@ -4,7 +4,7 @@ How I review PRs, and how I expect AI to assist with reviews.
 
 ## Process
 
-- **[STRONG]** Multi-round by default. A single review pass is rarely sufficient. Expect 2-3 rounds, each building on previous feedback.
+- **[STRONG]** Support additional review rounds when the PR head changes or the user requests follow-up. Do not require multiple passes when one complete pass resolves the scoped review.
 - **[RULE]** Read the full diff, all modified source files, and their consumers before forming opinions.
 - **[STRONG]** Cross-reference against how other components/modules in the same codebase handle the same problem. Consistency is a first-class concern.
 - **[RULE]** Validate claims independently. Do not take PR descriptions at face value. Read the code and verify.
@@ -13,8 +13,8 @@ How I review PRs, and how I expect AI to assist with reviews.
 
 Use these consistently in review output:
 
-- **[critical]** — Must be fixed before merge. Correctness bugs, a11y violations, security issues, data loss risks.
-- **[major]** — Should be fixed before merge. Consistency violations, missing tests for new behavior, API design concerns.
+- **[critical]** — Must be fixed before merge because the concrete impact and likelihood are severe, such as an exploitable security flaw, data loss, or a blocking correctness or accessibility failure.
+- **[major]** — Should be fixed before merge because the issue materially affects users, consumers, correctness, accessibility, or maintainability.
 - **[minor]** — Worth addressing but not blocking. Naming improvements, small simplifications, minor doc gaps.
 - **[nit]** — Trivial or stylistic. Take it or leave it. Import ordering, slightly better variable name, etc.
 
@@ -26,8 +26,8 @@ Use these consistently in review output:
 
 ## Uncertain Findings
 
-- When you suspect something is wrong but cannot confirm, flag it as **"Possible issue"** with your reasoning. Ask the author to verify rather than stating it as a definitive problem.
-- Do not suppress uncertain findings entirely -- surface them with appropriate hedging.
+- Investigate suspected issues privately and use available source, consumer, test, and specification evidence before reporting them.
+- Report a **"Possible issue"** only when the unresolved risk is material, the uncertainty cannot reasonably be resolved during review, and the author is better positioned to verify it. Do not surface low-impact speculation merely to avoid suppressing a thought.
 
 <details>
 <summary>Examples: review comment quality</summary>

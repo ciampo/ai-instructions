@@ -30,7 +30,7 @@ import DOMPurify from 'dompurify';
 
 ## Content Security
 
-- **[STRONG]** Use `rel="noopener noreferrer"` on external links opened with `target="_blank"`.
+- **[STRONG]** For links opened with `target="_blank"`, preserve the [HTML standard's implicit `noopener` protection](https://html.spec.whatwg.org/multipage/links.html#link-type-noopener) or add `rel="noopener"` for compatibility or clarity. Add `noreferrer` only when suppressing referrer information is intentional; it changes privacy and analytics behavior.
 - **[PREFER]** Avoid inline event handlers (`onclick="..."`) and inline styles injected from user data. These conflict with strict CSP policies.
 - **[STRONG]** Do not embed secrets, API keys, or credentials in client-side code. Keep secrets server-side only (server-only environment variables or a secret management service). Only explicitly public configuration values may be exposed to client code. Use server-side proxies for secret-backed operations.
 
@@ -41,7 +41,8 @@ import DOMPurify from 'dompurify';
 
 ## Server-Side Considerations
 
-- **[RULE]** Validate and sanitize all input on the server side, regardless of client-side validation.
+- **[RULE]** [Validate untrusted input](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html) at each trust boundary against the expected syntax and business rules, regardless of client-side validation.
+- **[RULE]** Sanitize only when an intentionally supported content format permits potentially dangerous markup. [Encode or escape untrusted data for its output context](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html); do not use destructive input sanitization as a substitute for validation and contextual output encoding.
 - **[STRONG]** Use parameterized queries / prepared statements for database operations. Never interpolate user input into SQL or query strings.
 - **[STRONG]** Apply the principle of least privilege: API endpoints should only expose the data and actions the caller is authorized to use.
 

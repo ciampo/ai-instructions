@@ -17,7 +17,7 @@ How AI agents should use command-line tools, especially `gh` and `git`.
 
 ### Fetching PR Review Comments
 
-- **[STRONG]** Use a two-step approach — the `pulls/{number}/comments` endpoint can return 404. Instead: first get review IDs via `repos/{owner}/{repo}/pulls/{number}/reviews`, then get comments per review via `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments`.
+- **[STRONG]** Use the documented [`repos/{owner}/{repo}/pulls/{number}/comments` endpoint](https://docs.github.com/en/rest/pulls/comments#list-review-comments-on-a-pull-request) first to list all review comments on a pull request. If a GitHub Enterprise version, permission boundary, or host-specific compatibility issue prevents it, fall back to listing reviews and fetching `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments` for each review.
 
 ### zsh and `--jq`
 
