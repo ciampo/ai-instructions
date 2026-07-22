@@ -5,8 +5,8 @@ This pilot tests whether accessibility review works as a canonical skill before 
 ## Direct skill evaluation
 
 - **Date:** 2026-07-22
-- **Skill revision:** `45723dcd8560bf8089745962a7457cf7e70c092e`
-- **Source:** [`skills/review-accessibility/SKILL.md`](../skills/review-accessibility/SKILL.md)
+- **Historical pilot revision:** `45723dcd8560bf8089745962a7457cf7e70c092e` (the revision directly evaluated during this pilot)
+- **Current skill source:** [`skills/review-accessibility/SKILL.md`](../skills/review-accessibility/SKILL.md)
 - **Method:** Isolated, read-only agents loaded that exact repository skill directly. The active user installation was not changed, so an older installed skill could not satisfy the prompts.
 
 | Case | Prompt shape | Result |
@@ -23,6 +23,6 @@ The first material-violation run incorrectly promoted focus behavior that was ab
 
 ## Direct-path conclusion
 
-The skill provides the specialist method without custom-agent support, routes away from unrelated and broader review work, permits a no-findings result, and preserves its read-only boundary. This is sufficient to proceed to the delegated comparison.
+The historical pilot revision provides the specialist method without custom-agent support, routes away from unrelated and broader review work, permits a no-findings result, and preserves its read-only boundary. This is sufficient to proceed to the delegated comparison. Later pull-request changes, including the output-delivery wording, were not exercised by this pilot.
 
 Automatic product routing and browser or assistive-technology execution were not measured in this direct pass. Current product-level blockers remain in [discovery evidence](discovery-evidence.md). Do not generalize this small matrix into a model-graded harness unless repeated pilot runs expose a stable failure that deterministic checks and human review cannot explain.
