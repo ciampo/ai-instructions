@@ -14,7 +14,7 @@ The delivered architecture has a budget-constrained universal core, 17 standard 
 
 | Area | Current contract |
 | --- | --- |
-| Persistent context | `instructions/core.md`, 60 lines and 4,770 bytes |
+| Persistent context | `AGENTS.md`, 54 lines and 4,705 bytes |
 | On-demand capability | 17 self-contained `skills/<name>/SKILL.md` directories |
 | Specialist reviews | Direct accessibility, API-design, and performance skills; no bundled custom agents |
 | Orchestration | `review-pr` owns the complete review, material specialist routing, severity normalization, deduplication, and final delivery |
@@ -244,7 +244,7 @@ installer so documentation and behavior cannot drift independently.
 
 ### P1: Reduce always-on context
 
-The current taxonomy says every file in `instructions/` is always loaded.
+The taxonomy at the time said every file in `instructions/` was always loaded.
 That includes React, design-system, Storybook, i18n, security, performance,
 error-handling, GitHub, and release guidance in unrelated sessions. Codex
 receives a 940-line global file before project instructions are considered.

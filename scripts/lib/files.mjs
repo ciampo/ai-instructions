@@ -228,6 +228,152 @@ export async function writeOwnedFileSafely( destination, content, repoDir ) {
 	}
 }
 
+async function managedFileSnapshot( destination, repoDir ) {
+	const stats = await lstatSafe( destination );
+	if ( ! stats ) {
+		return { exists: false };
+	}
+	if ( ! await isOwnedPath( destination, repoDir ) ) {
+		throw destinationExistsError( destination );
+	}
+	if ( stats.isSymbolicLink() ) {
+		return { exists: true, kind: 'symlink', value: await readlink( destination ) };
+	}
+	if ( stats.isFile() ) {
+		return { exists: true, kind: 'file', value: await readFile( destination, 'utf8' ) };
+	}
+	throw new Error( `Cannot replace unsupported path type at ${ destination }.` );
+}
+
+async function matchesPublishedContent( destination, expectedContent ) {
+	const stats = await lstatSafe( destination );
+	return Boolean(
+		stats?.isFile() &&
+		! stats.isSymbolicLink() &&
+		await readFile( destination, 'utf8' ) === expectedContent
+	);
+}
+
+async function restoreManagedFileSnapshot( entry, snapshot, repoDir ) {
+	if ( ! await matchesPublishedContent( entry.destination, entry.content ) ) {
+		throw new Error( `Refusing to roll back ${ entry.destination } because its ownership changed.` );
+	}
+	if ( ! snapshot.exists ) {
+		await rm( entry.destination );
+		return;
+	}
+	if ( snapshot.kind === 'symlink' ) {
+		await writeSymlinkSafely(
+			snapshot.value,
+			entry.destination,
+			'file',
+			( target ) => matchesPublishedContent( target, entry.content )
+		);
+		return;
+	}
+	await writeOwnedFileSafely( entry.destination, snapshot.value, repoDir );
+}
+
+export async function writeManagedFilesTransactionally( entries, repoDir, { beforeWrite } = {} ) {
+	const snapshots = await Promise.all(
+		entries.map( ( entry ) => managedFileSnapshot( entry.destination, repoDir ) )
+	);
+	const published = [];
+	try {
+		for ( const [ index, entry ] of entries.entries() ) {
+			await beforeWrite?.( entry, index );
+			if ( snapshots[ index ].exists ) {
+				await writeOwnedFileSafely( entry.destination, entry.content, repoDir );
+			} else {
+				await writeNewFileAtomic( entry.destination, entry.content );
+			}
+			published.push( index );
+		}
+	} catch ( error ) {
+		const rollbackFailures = [];
+		for ( const index of published.reverse() ) {
+			try {
+				await restoreManagedFileSnapshot( entries[ index ], snapshots[ index ], repoDir );
+			} catch ( rollbackError ) {
+				rollbackFailures.push( rollbackError );
+			}
+		}
+		if ( rollbackFailures.length > 0 ) {
+			const rollbackError = new Error(
+				`${ error.message } Rollback failed: ${ rollbackFailures.map( ( failure ) => failure.message ).join( ' ' ) }`,
+				{ cause: error }
+			);
+			rollbackError.rollbackFailures = rollbackFailures;
+			throw rollbackError;
+		}
+		throw error;
+	}
+}
+
+export async function removeManagedFilesTransactionally( entries, repoDir, {
+	beforeRemove,
+	beforeCleanup,
+} = {} ) {
+	const captured = [];
+	try {
+		for ( const [ index, entry ] of entries.entries() ) {
+			await beforeRemove?.( entry, index );
+			const backup = await capturePath( entry.destination );
+			if ( ! backup ) {
+				continue;
+			}
+			const removal = { entry, backup };
+			captured.push( removal );
+			if ( ! await isOwnedPath( backup, repoDir ) ) {
+				throw new Error( `Refusing to remove ${ entry.destination } because its ownership changed.` );
+			}
+		}
+	} catch ( error ) {
+		const rollbackFailures = [];
+		for ( const removal of captured.reverse() ) {
+			if ( ! removal.backup || ! await lstatSafe( removal.backup ) ) {
+				continue;
+			}
+			try {
+				await recoverCapturedPath( removal.backup, removal.entry.destination, error );
+				removal.backup = null;
+			} catch ( rollbackError ) {
+				rollbackFailures.push( rollbackError );
+			}
+		}
+		if ( rollbackFailures.length > 0 ) {
+			const rollbackError = new Error(
+				`${ error.message } Rollback failed: ${ rollbackFailures.map( ( failure ) => failure.message ).join( ' ' ) }`,
+				{ cause: error }
+			);
+			rollbackError.rollbackFailures = rollbackFailures;
+			throw rollbackError;
+		}
+		throw error;
+	}
+
+	const cleanupFailures = [];
+	for ( const [ index, removal ] of captured.entries() ) {
+		try {
+			await beforeCleanup?.( removal.entry, index );
+			const stats = await lstat( removal.backup );
+			await rm( removal.backup, {
+				recursive: stats.isDirectory() && ! stats.isSymbolicLink(),
+				force: true,
+			} );
+		} catch ( error ) {
+			cleanupFailures.push( { error, backup: removal.backup } );
+		}
+	}
+	if ( cleanupFailures.length > 0 ) {
+		const cleanupError = new Error(
+			`Managed files were removed, but cleanup failed: ${ cleanupFailures.map( ( failure ) => `${ failure.error.message } (${ failure.backup })` ).join( ' ' ) }`
+		);
+		cleanupError.cleanupFailures = cleanupFailures;
+		throw cleanupError;
+	}
+}
+
 export async function writeSymlinkSafely( source, destination, type = 'file', canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
 	let captured;

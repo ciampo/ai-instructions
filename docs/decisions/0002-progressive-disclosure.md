@@ -11,7 +11,7 @@ All targeted products now support Agent Skills with description-based discovery.
 
 ## Decision
 
-Keep a single product-neutral `instructions/core.md` for communication, verification, authority, safety, implementation, and delivery boundaries that genuinely apply everywhere.
+Keep a single product-neutral `AGENTS.md` for communication, verification, authority, safety, implementation, and delivery boundaries that genuinely apply everywhere.
 
 Move other guidance into three kinds of skill content:
 

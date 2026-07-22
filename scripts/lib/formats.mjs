@@ -1,4 +1,3 @@
-import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 export const MANAGED_MARKER = '<!-- ai-instructions:managed -->';
@@ -118,24 +117,4 @@ export function codexAgent( content, source ) {
 	content = normalizeMarkdown( content );
 	const { name, description, body } = parseFrontmatter( content, source );
 	return `${ TOML_MANAGED_MARKER }\nname = "${ tomlString( name ) }"\ndescription = "${ tomlString( description ) }"\ndeveloper_instructions = """\n${ tomlString( ensureTrailingNewline( body ) ) }"""\n`;
-}
-
-export async function concatInstructions( instructionsDir ) {
-	const names = ( await readdir( instructionsDir ) )
-		.filter( ( name ) => name.endsWith( '.md' ) )
-		.sort();
-	const sections = [];
-	for ( const name of names ) {
-		const content = ensureTrailingNewline( normalizeMarkdown( await readFile( path.join( instructionsDir, name ), 'utf8' ) ) );
-		sections.push( `<!-- source: ${ name } -->\n\n${ content }\n---\n` );
-	}
-	return `${ sections.join( '\n' ) }\n`;
-}
-
-export function concatenatedInstructions( content ) {
-	return `${ MANAGED_MARKER }\n${ content }`;
-}
-
-export function copilotProjectExport( content ) {
-	return `${ COPILOT_EXPORT_MARKER }\n<!-- Do not edit manually. Re-run setup.sh to update. -->\n\n${ content }`;
 }

@@ -31,7 +31,7 @@ assert_file_contains() {
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/codex-install.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 
-# --- Basic install: a single concatenated AGENTS.md, no instructions dir ----
+# --- Basic install: a single canonical AGENTS.md, no instructions dir -------
 TMP_HOME="$TMP_ROOT/basic"
 mkdir -p "$TMP_HOME/.codex"
 
@@ -43,8 +43,7 @@ assert_not_symlink "$AGENTS_FILE"
 # Managed marker on line 1 so the installer can own the file.
 [ "$(head -1 "$AGENTS_FILE")" = "<!-- ai-instructions:managed -->" ] \
   || fail "Expected managed marker on line 1 of $AGENTS_FILE"
-# Concatenated instruction sources are present.
-assert_file_contains "$AGENTS_FILE" "<!-- source: core.md -->"
+# The canonical source is present without a product-specific wrapper.
 assert_file_contains "$AGENTS_FILE" "# Core Instructions"
 # Skills use Codex's standard user-level Agent Skills directory.
 CODEX_SKILL="$TMP_HOME/.agents/skills/write-pr-description/SKILL.md"
@@ -56,7 +55,7 @@ assert_path_missing "$TMP_HOME/.codex/instructions"
 # --- Idempotent check / list / re-install ----------------------------------
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent codex --yes >/dev/null
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" list --agent codex --yes >"$TMP_HOME/list.log"
-assert_file_contains "$TMP_HOME/list.log" "AGENTS.md (concatenated)"
+assert_file_contains "$TMP_HOME/list.log" "AGENTS.md (canonical)"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent codex --yes >"$TMP_HOME/reinstall.log"
 assert_file_contains "$TMP_HOME/reinstall.log" "Already up to date"

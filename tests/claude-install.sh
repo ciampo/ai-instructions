@@ -26,10 +26,16 @@ trap 'rm -rf "$TMP_HOME"' EXIT
 ROUTING_FILE="$TMP_HOME/.claude/rules/workflow-routing.md"
 mkdir -p "$(dirname "$ROUTING_FILE")"
 printf '# User routing\n' > "$ROUTING_FILE"
+printf '<!-- ai-instructions:managed -->\n# Legacy core\n' > "$TMP_HOME/.claude/rules/core.md"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent claude --yes >/dev/null
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" check --agent claude --yes >"$TMP_HOME/check.log" 2>&1
 assert_file_not_contains "$TMP_HOME/check.log" "workflow-routing.md"
 assert_file_contains "$ROUTING_FILE" "# User routing"
+if [[ -e "$TMP_HOME/.claude/rules/core.md" ]]; then
+  fail "Expected legacy managed Claude core to be removed"
+fi
+assert_file_contains "$TMP_HOME/.claude/CLAUDE.md" "@AGENTS.md"
+assert_file_contains "$TMP_HOME/.claude/AGENTS.md" "# Core Instructions"
 
 echo "claude installer regression test passed"

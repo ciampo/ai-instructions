@@ -1,8 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
-	concatInstructions,
-	concatenatedInstructions,
 	codexAgent,
 	cursorRule,
 	managedMarkdown,
@@ -12,7 +10,7 @@ import { lstatSafe, SKILL_DIRECTORY_MARKER } from './files.mjs';
 import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 
 export function createArtifactBuilder( { repoDir } ) {
-	const instructionsDir = path.join( repoDir, 'instructions' );
+	const canonicalInstructionsPath = path.join( repoDir, 'AGENTS.md' );
 	const skillsDir = path.join( repoDir, 'skills' );
 	const agentsDir = path.join( repoDir, 'agents' );
 
@@ -63,7 +61,7 @@ export function createArtifactBuilder( { repoDir } ) {
 			return `${ destination } (cursor rule)`;
 		}
 		if ( format === 'agents-md' ) {
-			return `${ destination } (concatenated)`;
+			return `${ destination } (canonical)`;
 		}
 		if ( format === 'codex-agent-toml' ) {
 			return `${ destination } (Codex agent)`;
@@ -80,12 +78,17 @@ export function createArtifactBuilder( { repoDir } ) {
 			}
 
 			if ( category === 'instructions' ) {
-				if ( capability.strategy === 'concat' ) {
-					const destination = resolveUserPath( home, capability.userPath );
+				const content = await readFile( canonicalInstructionsPath, 'utf8' );
+				if ( capability.strategy === 'files' ) {
+					const destination = resolveUserChildPath(
+						home,
+						capability.userPath,
+						`${ capability.fileName }${ capability.extension }`
+					);
 					artifacts.push( {
 						category,
 						destination,
-						expectedContent: concatenatedInstructions( await concatInstructions( instructionsDir ) ),
+						expectedContent: cursorRule( content, canonicalInstructionsPath ),
 						format: capability.format,
 						generated: true,
 						label: artifactLabel( capability.format, destination ),
@@ -93,26 +96,44 @@ export function createArtifactBuilder( { repoDir } ) {
 					continue;
 				}
 
-				for ( const name of await sourceMarkdownFiles( instructionsDir ) ) {
-					const source = path.join( instructionsDir, name );
-					const content = await readFile( source, 'utf8' );
-					const destination = resolveUserChildPath(
-						home,
-						capability.userPath,
-						`${ path.basename( name, '.md' ) }${ capability.extension }`
-					);
+				if ( capability.strategy === 'direct' ) {
+					const destination = resolveUserPath( home, capability.userPath );
 					artifacts.push( {
 						category,
 						destination,
-						expectedContent: capability.format === 'cursor-rule'
-							? cursorRule( content, source )
-							: managedMarkdown( content ),
+						expectedContent: managedMarkdown( content ),
 						format: capability.format,
-						generated: capability.format !== 'markdown',
+						generated: true,
 						label: artifactLabel( capability.format, destination ),
-						source,
 					} );
+					continue;
 				}
+
+				const canonicalDestination = resolveUserPath( home, capability.canonicalPath );
+				const group = `${ category }:${ capability.userPath }`;
+				artifacts.push( {
+					category,
+					destination: canonicalDestination,
+					expectedContent: managedMarkdown( content ),
+					format: 'agents-md',
+					generated: true,
+					group,
+					label: artifactLabel( 'agents-md', canonicalDestination ),
+				} );
+				const destination = resolveUserPath( home, capability.userPath );
+				const importPath = path.posix.relative(
+					path.posix.dirname( capability.userPath ),
+					capability.canonicalPath
+				);
+				artifacts.push( {
+					category,
+					destination,
+					expectedContent: managedMarkdown( `@${ importPath }\n` ),
+					format: capability.format,
+					generated: true,
+					group,
+					label: artifactLabel( capability.format, destination ),
+				} );
 				continue;
 			}
 

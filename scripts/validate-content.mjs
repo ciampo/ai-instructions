@@ -4,12 +4,7 @@ import { lstat, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import {
-	concatInstructions,
-	concatenatedInstructions,
-	normalizeMarkdown,
-	parseFrontmatter,
-} from './lib/formats.mjs';
+import { managedMarkdown, normalizeMarkdown, parseFrontmatter } from './lib/formats.mjs';
 import { isInside } from './lib/files.mjs';
 import { loadManifest } from './lib/manifest.mjs';
 
@@ -170,13 +165,12 @@ async function validateAgents( repoDir ) {
 }
 
 async function validateUniversalInstructions( repoDir ) {
-	const instructionsDirectory = path.join( repoDir, 'instructions' );
-	for ( const entry of await entries( instructionsDirectory ) ) {
-		if ( ! entry.isFile() || ! entry.name.endsWith( '.md' ) ) {
-			throw new Error( `${ path.join( instructionsDirectory, entry.name ) }: universal instructions must be Markdown files.` );
-		}
+	const source = path.join( repoDir, 'AGENTS.md' );
+	const stats = await lstat( source );
+	if ( ! stats.isFile() ) {
+		throw new Error( `${ source }: canonical universal instructions must be a regular Markdown file.` );
 	}
-	const generated = concatenatedInstructions( await concatInstructions( instructionsDirectory ) );
+	const generated = managedMarkdown( await readFile( source, 'utf8' ) );
 	const bytes = Buffer.byteLength( generated );
 	const lines = generated.endsWith( '\n' )
 		? generated.split( '\n' ).length - 1

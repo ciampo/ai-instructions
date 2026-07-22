@@ -10,9 +10,11 @@ import {
 	managedFileType,
 	pathsHaveEqualContents,
 	readlinkSafe,
+	removeManagedFilesTransactionally,
 	removeOwnedPath,
 	SKILL_DIRECTORY_MARKER,
 	writeNewFileAtomic,
+	writeManagedFilesTransactionally,
 	writeOwnedFileSafely,
 	writeSkillDirectorySafely,
 	writeSymlinkSafely,
@@ -486,6 +488,112 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		}
 	}
 
+	function groupArtifacts( artifacts ) {
+		const groups = new Map();
+		for ( const artifact of artifacts ) {
+			const key = artifact.group ?? `artifact:${ artifact.destination }`;
+			const group = groups.get( key ) ?? [];
+			group.push( artifact );
+			groups.set( key, group );
+		}
+		return groups;
+	}
+
+	function installWouldSkipArtifact( artifact, status ) {
+		return status.exists &&
+			! status.current &&
+			! ( artifact.generated && status.kind === 'symlink' && status.owned );
+	}
+
+	async function groupBlockers( artifacts, command ) {
+		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+		return artifacts.flatMap( ( artifact, index ) => {
+			const status = statuses[ index ];
+			const blocksGroup = command === 'install'
+				? installWouldSkipArtifact( artifact, status )
+				: status.exists && ! status.owned;
+			return blocksGroup ? [ { artifact, status } ] : [];
+		} );
+	}
+
+	function logGroupBlocker( { artifact, status }, state ) {
+		if ( state.options.command === 'install' && status.owned ) {
+			console.warn( `  [warning] ${ path.basename( artifact.destination ) } is out of date; run update to refresh` );
+			state.skipped++;
+			return;
+		}
+		logConflict( artifact, state );
+	}
+
+	async function blockedGroupCategories( groups, state ) {
+		const blocked = new Set();
+		for ( const group of groups.values() ) {
+			if ( group.length < 2 || ( await groupBlockers( group, state.options.command ) ).length === 0 ) {
+				continue;
+			}
+			for ( const artifact of group ) {
+				blocked.add( artifact.category );
+			}
+		}
+		return blocked;
+	}
+
+	async function processArtifactGroup( artifacts, state ) {
+		const { command } = state.options;
+		if ( ! [ 'install', 'update', 'remove' ].includes( command ) ) {
+			for ( const artifact of artifacts ) {
+				await processArtifact( artifact, state );
+			}
+			return;
+		}
+
+		const blockers = await groupBlockers( artifacts, command );
+		if ( blockers.length > 0 ) {
+			for ( const blocker of blockers ) {
+				logGroupBlocker( blocker, state );
+			}
+			return;
+		}
+		if ( [ 'install', 'update' ].includes( command ) && ! state.options.dryRun ) {
+			const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+			if ( statuses.some( ( status ) => ! status.current ) ) {
+				await writeManagedFilesTransactionally(
+					artifacts.map( ( artifact ) => ( {
+						destination: artifact.destination,
+						content: artifact.expectedContent,
+					} ) ),
+					repoDir
+				);
+			}
+			for ( const [ index, artifact ] of artifacts.entries() ) {
+				if ( statuses[ index ].current ) {
+					console.log( `  [=] ${ artifact.label }` );
+					state.upToDate++;
+				} else {
+					console.log( `  [+] ${ artifact.label }` );
+					state.new++;
+				}
+			}
+			return;
+		}
+		if ( command === 'remove' && ! state.options.dryRun ) {
+			const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+			await removeManagedFilesTransactionally( artifacts, repoDir );
+			for ( const [ index, artifact ] of artifacts.entries() ) {
+				if ( ! statuses[ index ].exists ) {
+					continue;
+				}
+				console.log( `  [-] ${ artifact.label }` );
+				state.removed++;
+			}
+			return;
+		}
+
+		for ( const artifact of artifacts ) {
+			await processArtifact( artifact, state );
+		}
+	}
+
 	async function directoryEntries( directory ) {
 		try {
 			return await readdir( directory, { withFileTypes: true } );
@@ -501,7 +609,10 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const candidates = [];
 		for ( const category of selectedCategories ) {
 			const capability = platform.capabilities[ category ];
-			if ( ! capability.supported || capability.strategy === 'concat' ) {
+			if (
+				! capability.supported ||
+				[ 'direct', 'wrapper' ].includes( capability.strategy )
+			) {
 				continue;
 			}
 			const root = resolveUserPath( home, capability.userPath );
@@ -701,11 +812,36 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const blocked = await blockingCategory( platform, selectedCategories, home, state );
 		const activeCategories = selectedCategories.filter( ( category ) => ! blocked.has( category ) );
 		const artifacts = await buildArtifacts( platform, activeCategories, home );
+		const groups = groupArtifacts( artifacts );
+		const wrapperCategories = new Set(
+			[ ...groups.values() ]
+				.filter( ( group ) => group.length > 1 )
+				.flatMap( ( group ) => group.map( ( artifact ) => artifact.category ) )
+		);
+		let deferredCleanupCategories = [];
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
-			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );
+			const cleanupBlockedCategories = await blockedGroupCategories( groups, state );
+			const cleanupCategories = activeCategories.filter(
+				( category ) => ! cleanupBlockedCategories.has( category ) && ! wrapperCategories.has( category )
+			);
+			deferredCleanupCategories = activeCategories.filter(
+				( category ) => ! cleanupBlockedCategories.has( category ) && wrapperCategories.has( category )
+			);
+			await processStaleArtifacts( platform, artifacts, cleanupCategories, home, state );
 		}
-		for ( const artifact of artifacts ) {
-			await processArtifact( artifact, state );
+		for ( const group of groups.values() ) {
+			if ( group.length === 1 ) {
+				await processArtifact( group[ 0 ], state );
+			} else {
+				await processArtifactGroup( group, state );
+			}
+		}
+		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
+			const completedCleanupBlockers = await blockedGroupCategories( groups, state );
+			const completedCleanupCategories = deferredCleanupCategories.filter(
+				( category ) => ! completedCleanupBlockers.has( category )
+			);
+			await processStaleArtifacts( platform, artifacts, completedCleanupCategories, home, state );
 		}
 		if ( [ 'check', 'list', 'remove' ].includes( state.options.command ) ) {
 			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );

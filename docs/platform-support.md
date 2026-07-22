@@ -69,3 +69,5 @@ Before changing a support tier or adapter-check date:
 9. Regenerate the README support table and review its diff.
 
 Native plugin and extension distribution is evaluated in [ADR 0003](decisions/0003-native-distribution.md). Compatibility retention and removal gates are defined in the [compatibility policy](compatibility-policy.md).
+
+Repository-level `AGENTS.md` interoperability is implemented in [ADR 0005](decisions/0005-agents-md-canonical-artifact.md). The adapter paths remain preview until fresh product-discovery evidence covers the new wrapper artifacts.

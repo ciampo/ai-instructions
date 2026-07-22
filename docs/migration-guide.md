@@ -30,7 +30,7 @@ The current installer changes instruction scope and installs complete Agent Skil
 
 ### Universal instructions
 
-The installer now publishes only `instructions/core.md` as always-on context. Former technology, review, repository, and writing rules moved into discoverable skills. Updating removes the old managed per-file rules and refreshes the concatenated Codex, Copilot, and Gemini files.
+The installer now uses root [`AGENTS.md`](../AGENTS.md) as the single always-on source. Former technology, review, repository, and writing rules remain in discoverable skills. Updating removes the old managed per-file rules, refreshes the generated Cursor rule and Codex file, and creates managed `AGENTS.md` sidecars plus thin native wrappers for Claude, Copilot, and Gemini.
 
 User-authored rules are left untouched. A conflict reported by `check` requires a manual choice: keep the user file, merge its intent into the canonical source, or move it before rerunning update.
 
@@ -52,11 +52,11 @@ During `update` or `remove`, the installer recognizes the former agent destinati
 
 ### Legacy product paths
 
-- **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. Managed instruction rules not present in the new core are removed. User-owned files remain.
+- **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. The generated user rule now derives from root `AGENTS.md`. User-owned files remain.
 - **Codex**: managed files under the former `~/.codex/instructions/` layout are removed. The current global file is `~/.codex/AGENTS.md`; `AGENTS.override.md` still takes precedence and is never modified.
-- **GitHub Copilot CLI**: repository-owned retired custom-agent artifacts under `~/.copilot/agents/` are removed during lifecycle operations regardless of their former adapter extension. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` for each generated project file.
-- **Gemini CLI**: update creates the global `~/.gemini/GEMINI.md` core file and installs complete skills in their native user directory.
-- **Claude Code**: the obsolete reminder to import rules from `CLAUDE.md` is gone. User rules and complete skills are installed directly in their native directories.
+- **Claude Code**: update creates managed `~/.claude/AGENTS.md` and `~/.claude/CLAUDE.md`. The latter contains only `@AGENTS.md`, so add any user-owned Claude-specific guidance elsewhere instead of editing the managed wrapper.
+- **GitHub Copilot CLI**: update creates managed `~/.copilot/AGENTS.md` and a thin `~/.copilot/copilot-instructions.md` wrapper. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` to create project-root `AGENTS.md`. During this export, a repository-owned wrapper from an earlier export is removed to prevent duplicated instructions; user-owned `.github/copilot-instructions.md` files are preserved for Copilot-specific guidance.
+- **Gemini CLI**: update creates managed `~/.gemini/AGENTS.md` and `~/.gemini/GEMINI.md`; the latter imports the former. Complete skills remain in their native user directory.
 
 For every supported product surface, `install`, `update`, and `remove` also clean only repository-owned artifacts from the retired custom-agent layout. User-authored agents are preserved.
 
@@ -65,5 +65,6 @@ For every supported product surface, `install`, `update`, and `remove` also clea
 - `check` exits non-zero for missing, stale, changed, or conflicting expected artifacts. Run `list` for a categorized view and `update` to repair only repository-owned state.
 - If a generated file is reported as user-owned, compare it with the canonical source before moving it. The installer intentionally refuses to claim it automatically.
 - If Codex skips global instructions, check for `~/.codex/AGENTS.override.md`.
+- If a Claude, Copilot, or Gemini wrapper cannot load the shared instructions, verify that its adjacent managed `AGENTS.md` exists and still contains the managed marker. Run `update` to repair a repository-owned stale pair; do not replace a user-owned file automatically.
 - If native Windows cannot create symlinks, rerun with `--copy` through `node scripts/setup.mjs`.
 - If a skill does not appear, verify that the whole skill directory and exact uppercase `SKILL.md` were installed, then use the product-specific reload/discovery command.

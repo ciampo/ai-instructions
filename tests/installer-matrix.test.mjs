@@ -20,7 +20,9 @@ import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
+	removeManagedFilesTransactionally,
 	SKILL_DIRECTORY_MARKER,
+	writeManagedFilesTransactionally,
 	writeNewFileAtomic,
 	writeOwnedFileSafely,
 	writeSkillDirectorySafely,
@@ -97,9 +99,10 @@ function artifactPath( platform, category, home ) {
 
 	const base = destination( home, capability.userPath );
 	if ( category === 'instructions' ) {
-		return capability.strategy === 'concat'
-			? base
-			: path.join( base, `core${ capability.extension }` );
+		if ( capability.strategy === 'files' ) {
+			return path.join( base, `${ capability.fileName }${ capability.extension }` );
+		}
+		return base;
 	}
 	if ( category === 'skills' ) {
 		return path.join( base, 'review-pr', 'SKILL.md' );
@@ -132,20 +135,6 @@ function normalizedWithTrailingNewline( content ) {
 	return content.endsWith( '\n' ) ? content : `${ content }\n`;
 }
 
-async function expectedConcatenatedInstructions() {
-	const instructionNames = ( await readdir( path.join( repoDir, 'instructions' ) ) )
-		.filter( ( name ) => name.endsWith( '.md' ) )
-		.sort();
-	const sections = [];
-	for ( const name of instructionNames ) {
-		const source = normalizedWithTrailingNewline(
-			await readFile( path.join( repoDir, 'instructions', name ), 'utf8' )
-		);
-		sections.push( `<!-- source: ${ name } -->\n\n${ source }\n---\n` );
-	}
-	return `${ managedMarker }\n${ sections.join( '\n' ) }\n`;
-}
-
 async function createContentFixture( t, {
 	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
 	referenceContent,
@@ -155,7 +144,6 @@ async function createContentFixture( t, {
 	for ( const directory of [
 		'agents',
 		'docs',
-		'instructions',
 		'platforms',
 		'skills/example-skill/references',
 	] ) {
@@ -182,7 +170,7 @@ async function createContentFixture( t, {
 			referenceContent
 		);
 	}
-	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
+	await writeFile( path.join( fixture, 'AGENTS.md' ), '# Core\n' );
 	await writeFile(
 		path.join( fixture, 'docs', 'standards-index.md' ),
 		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Example](https://example.com) | Example | ${ today } |\n`
@@ -299,6 +287,46 @@ test( 'manifest rejects platform-dependent path separators', () => {
 	);
 } );
 
+test( 'manifest rejects wrapper paths that collide with their canonical file', () => {
+	const invalidManifest = structuredClone( manifest );
+	const instructions = invalidManifest.platforms.find( ( platform ) => platform.id === 'claude' )
+		.capabilities.instructions;
+	instructions.canonicalPath = instructions.userPath;
+
+	assert.throws(
+		() => validateManifest( invalidManifest ),
+		/wrapper and canonical paths must not be the same/
+	);
+} );
+
+test( 'manifest rejects strategies without a matching artifact builder', () => {
+	const invalidStrategies = [
+		[ 'skills', 'direct' ],
+		[ 'instructions', 'directories' ],
+		[ 'agents', 'direct' ],
+	];
+
+	for ( const [ category, strategy ] of invalidStrategies ) {
+		const invalidManifest = structuredClone( manifest );
+		const capability = invalidManifest.platforms[ 0 ].capabilities[ category ];
+		if ( category === 'agents' ) {
+			Object.assign( capability, {
+				supported: true,
+				format: 'markdown',
+				userPath: '.cursor/agents',
+				projectPath: '.cursor/agents',
+				precedence: 'Project agents take precedence.',
+			} );
+		}
+		capability.strategy = strategy;
+
+		assert.throws(
+			() => validateManifest( invalidManifest ),
+			new RegExp( `cursor\\.${ category }\\.strategy.*${ strategy }` )
+		);
+	}
+} );
+
 test( 'manifest rejects path syntax in generated file names', () => {
 	const invalidExtension = structuredClone( manifest );
 	invalidExtension.platforms[ 0 ].capabilities.instructions.extension = '/../../outside.md';
@@ -365,6 +393,152 @@ test( 'file mutations fail closed when ownership changes after inspection', asyn
 		( error ) => error.code === 'EEXIST'
 	);
 	assert.equal( await readFile( target, 'utf8' ), '# user-owned replacement\n' );
+} );
+
+test( 'managed file transactions restore earlier writes when a later destination changes ownership', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	const next = `${ managedMarker }\n# Next\n`;
+	await writeFile( first, previous );
+
+	await assert.rejects(
+		writeManagedFilesTransactionally(
+			[
+				{ destination: first, content: next },
+				{ destination: second, content: next },
+			],
+			repoDir,
+			{
+				beforeWrite: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		( error ) => error.code === 'EEXIST'
+	);
+	assert.equal( await readFile( first, 'utf8' ), previous );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
+} );
+
+test( 'managed file removal transactions restore earlier removals when ownership changes', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-removal-transaction-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	await writeFile( first, previous );
+	await writeFile( second, previous );
+
+	await assert.rejects(
+		removeManagedFilesTransactionally(
+			[ { destination: first }, { destination: second } ],
+			repoDir,
+			{
+				beforeRemove: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		/ownership changed/
+	);
+	assert.equal( await readFile( first, 'utf8' ), previous );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
+} );
+
+test( 'managed file removal transactions preserve committed removals when cleanup fails', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-removal-cleanup-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	await writeFile( first, previous );
+	await writeFile( second, previous );
+
+	await assert.rejects(
+		removeManagedFilesTransactionally(
+			[ { destination: first }, { destination: second } ],
+			repoDir,
+			{
+				beforeCleanup: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						throw new Error( 'simulated cleanup failure' );
+					}
+				},
+			}
+		),
+		/Managed files were removed, but cleanup failed: simulated cleanup failure/
+	);
+	assert.equal( await pathExists( first ), false );
+	assert.equal( await pathExists( second ), false );
+} );
+
+test( 'managed file transactions restore an owned symlink after a later write fails', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-symlink-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const source = path.join( repoDir, 'AGENTS.md' );
+	const next = `${ managedMarker }\n# Next\n`;
+	await symlink( source, first );
+
+	await assert.rejects(
+		writeManagedFilesTransactionally(
+			[
+				{ destination: first, content: next },
+				{ destination: second, content: next },
+			],
+			repoDir,
+			{
+				beforeWrite: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		( error ) => error.code === 'EEXIST'
+	);
+	assert.ok( ( await lstat( first ) ).isSymbolicLink() );
+	assert.equal( await readlink( first ), source );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
+} );
+
+test( 'managed file transactions report rollback failures', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-rollback-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	const next = `${ managedMarker }\n# Next\n`;
+	await writeFile( first, previous );
+
+	await assert.rejects(
+		writeManagedFilesTransactionally(
+			[
+				{ destination: first, content: next },
+				{ destination: second, content: next },
+			],
+			repoDir,
+			{
+				beforeWrite: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( first, '# User replacement\n' );
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		( error ) => /Rollback failed: Refusing to roll back .*ownership changed/.test( error.message )
+	);
+	assert.equal( await readFile( first, 'utf8' ), '# User replacement\n' );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
 } );
 
 test( 'failed ownership restoration preserves the captured user file', async ( t ) => {
@@ -579,7 +753,7 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 
 test( 'artifact building fails when required instructions are missing', async ( t ) => {
 	const { fixture } = await createContentFixture( t );
-	await rm( path.join( fixture, 'instructions' ), { recursive: true } );
+	await rm( path.join( fixture, 'AGENTS.md' ) );
 
 	await assert.rejects(
 		createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
@@ -824,23 +998,20 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
 	);
 	assert.equal(
 		await readFile( destination( home, '.cursor/rules/core.mdc' ), 'utf8' ),
 		`---\ndescription: 'Core Instructions'\nalwaysApply: true\n---\n${ managedMarker }\n${ instructionSource }`
 	);
-	assert.equal(
-		await readFile( destination( home, '.claude/rules/core.md' ), 'utf8' ),
-		`${ managedMarker }\n${ instructionSource }`
-	);
-	const concatenatedInstructions = await expectedConcatenatedInstructions();
-	for ( const relativePath of [
-		'.codex/AGENTS.md',
-		'.copilot/copilot-instructions.md',
-		'.gemini/GEMINI.md',
+	assert.equal( await readFile( destination( home, '.codex/AGENTS.md' ), 'utf8' ), `${ managedMarker }\n${ instructionSource }` );
+	for ( const [ directory, wrapper ] of [
+		[ '.claude', 'CLAUDE.md' ],
+		[ '.copilot', 'copilot-instructions.md' ],
+		[ '.gemini', 'GEMINI.md' ],
 	] ) {
-		assert.equal( await readFile( destination( home, relativePath ), 'utf8' ), concatenatedInstructions );
+		assert.equal( await readFile( destination( home, `${ directory }/AGENTS.md` ), 'utf8' ), `${ managedMarker }\n${ instructionSource }` );
+		assert.equal( await readFile( destination( home, `${ directory }/${ wrapper }` ), 'utf8' ), `${ managedMarker }\n@AGENTS.md\n` );
 	}
 
 	const skillSource = await readFile(
@@ -939,6 +1110,106 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 	}
 } );
 
+test( 'instruction adapters derive native wrappers from the canonical AGENTS.md', async ( t ) => {
+	const home = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-agents-artifacts-' ) );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	for ( const platform of manifest.platforms ) {
+		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
+	}
+
+	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
+
+	const source = normalizedWithTrailingNewline(
+		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
+	);
+	const canonical = `${ managedMarker }\n${ source }`;
+	assert.equal( await readFile( destination( home, '.codex/AGENTS.md' ), 'utf8' ), canonical );
+	for ( const [ directory, wrapper ] of [
+		[ '.claude', 'CLAUDE.md' ],
+		[ '.copilot', 'copilot-instructions.md' ],
+		[ '.gemini', 'GEMINI.md' ],
+	] ) {
+		assert.equal( await readFile( destination( home, `${ directory }/AGENTS.md` ), 'utf8' ), canonical );
+		assert.equal(
+			await readFile( destination( home, `${ directory }/${ wrapper }` ), 'utf8' ),
+			`${ managedMarker }\n@AGENTS.md\n`
+		);
+	}
+} );
+
+test( 'wrapper adapters do not create a sidecar when the native file is user-owned', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const wrapperPath = destination( home, '.claude/CLAUDE.md' );
+	await writeFile( wrapperPath, '# User Claude instructions\n' );
+
+	const output = runInstaller( home, [ '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( output, /CLAUDE\.md already exists/ );
+	assert.equal( await pathExists( destination( home, '.claude/AGENTS.md' ) ), false );
+	assert.equal( await readFile( wrapperPath, 'utf8' ), '# User Claude instructions\n' );
+} );
+
+test( 'wrapper adapters do not create a native file when the canonical sidecar is user-owned', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const canonicalPath = destination( home, '.claude/AGENTS.md' );
+	const wrapperPath = destination( home, '.claude/CLAUDE.md' );
+	await writeFile( canonicalPath, '# User shared instructions\n' );
+
+	const output = runInstaller( home, [ '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( output, /AGENTS\.md.*was not generated by this script/ );
+	assert.equal( await pathExists( wrapperPath ), false );
+	assert.equal( await readFile( canonicalPath, 'utf8' ), '# User shared instructions\n' );
+} );
+
+test( 'wrapper adapters leave both files untouched when install finds a stale managed wrapper', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'copilot' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const wrapperPath = destination( home, '.copilot/copilot-instructions.md' );
+	const canonicalPath = destination( home, '.copilot/AGENTS.md' );
+	const staleWrapper = `${ managedMarker }\n# Previous instructions\n`;
+	await writeFile( wrapperPath, staleWrapper );
+
+	const output = runInstaller( home, [ '--agent', 'copilot', '--only', 'instructions', '--yes' ] );
+	assert.match( output, /copilot-instructions\.md is out of date; run update to refresh/ );
+	assert.equal( await pathExists( canonicalPath ), false );
+	assert.equal( await readFile( wrapperPath, 'utf8' ), staleWrapper );
+} );
+
+test( 'wrapper conflicts preserve legacy instructions during an update', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const wrapperPath = destination( home, '.claude/CLAUDE.md' );
+	const legacyPath = destination( home, '.claude/rules/core.md' );
+	await mkdir( path.dirname( legacyPath ), { recursive: true } );
+	await writeFile( wrapperPath, '# User Claude instructions\n' );
+	await writeFile( legacyPath, `${ managedMarker }\n# Legacy core\n` );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( output, /CLAUDE\.md already exists/ );
+	assert.equal( await readFile( legacyPath, 'utf8' ), `${ managedMarker }\n# Legacy core\n` );
+	assert.equal( await pathExists( destination( home, '.claude/AGENTS.md' ) ), false );
+} );
+
+test( 'wrapper adapters clean legacy instructions after a successful update', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyPath = destination( home, '.claude/rules/core.md' );
+	await mkdir( path.dirname( legacyPath ), { recursive: true } );
+	await writeFile( legacyPath, `${ managedMarker }\n# Legacy core\n` );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( await readFile( destination( home, '.claude/AGENTS.md' ), 'utf8' ), /^<!-- ai-instructions:managed -->\n# Core Instructions/m );
+	assert.equal( await readFile( destination( home, '.claude/CLAUDE.md' ), 'utf8' ), `${ managedMarker }\n@AGENTS.md\n` );
+	assert.equal( await pathExists( legacyPath ), false );
+	assert.ok( output.indexOf( '[+] AGENTS.md' ) < output.indexOf( `[stale] ${ legacyPath }` ) );
+} );
+
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
 	const home = await createDetectedHome( platform );
@@ -970,16 +1241,24 @@ test( 'Codex check counts managed instructions blocked by an override as broken'
 	assert.equal( await pathExists( managedPath ), true );
 } );
 
-test( 'explicit Copilot repository export refreshes only managed files', async ( t ) => {
+test( 'explicit Copilot repository export manages only AGENTS.md', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'copilot' );
 	const home = await createDetectedHome( platform );
 	const project = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-copilot-' ) );
 	const dryRunProject = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-copilot-dry-run-' ) );
+	const userOwnedProject = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-copilot-user-owned-' ) );
+	const legacyProject = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-copilot-legacy-' ) );
 	t.after( () => rm( home, { recursive: true, force: true } ) );
 	t.after( () => rm( project, { recursive: true, force: true } ) );
 	t.after( () => rm( dryRunProject, { recursive: true, force: true } ) );
-	const target = path.join( project, '.github', 'copilot-instructions.md' );
-	const dryRunTarget = path.join( dryRunProject, '.github', 'copilot-instructions.md' );
+	t.after( () => rm( userOwnedProject, { recursive: true, force: true } ) );
+	t.after( () => rm( legacyProject, { recursive: true, force: true } ) );
+	const canonicalTarget = path.join( project, 'AGENTS.md' );
+	const dryRunCanonicalTarget = path.join( dryRunProject, 'AGENTS.md' );
+	const dryRunCopilotTarget = path.join( dryRunProject, '.github', 'copilot-instructions.md' );
+	const userOwnedCanonicalTarget = path.join( userOwnedProject, 'AGENTS.md' );
+	const userOwnedCopilotTarget = path.join( project, '.github', 'copilot-instructions.md' );
+	const userOwnedLegacyTarget = path.join( userOwnedProject, '.github', 'copilot-instructions.md' );
 	const arguments_ = [
 		'--agent',
 		'copilot',
@@ -996,19 +1275,40 @@ test( 'explicit Copilot repository export refreshes only managed files', async (
 		dryRunProject,
 		'--dry-run',
 	] );
-	assert.match( dryRunOutput, /\[dry-run\] write .*copilot-instructions\.md/ );
-	assert.equal( await pathExists( dryRunTarget ), false );
+	assert.match( dryRunOutput, /\[dry-run\] write .*AGENTS\.md/ );
+	assert.equal( await pathExists( dryRunCanonicalTarget ), false );
+	assert.equal( await pathExists( dryRunCopilotTarget ), false );
+
+	await writeFile( userOwnedCanonicalTarget, '# user-owned\n' );
+	await mkdir( path.dirname( userOwnedLegacyTarget ), { recursive: true } );
+	await writeFile( userOwnedLegacyTarget, '<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->\n<!-- Do not edit manually. Re-run setup.sh to update. -->\n\n@../AGENTS.md\n' );
+	assert.match(
+		runInstaller( home, [ ...arguments_.slice( 0, -1 ), userOwnedProject ] ),
+		/AGENTS\.md already exists/
+	);
+	assert.equal( await readFile( userOwnedCanonicalTarget, 'utf8' ), '# user-owned\n' );
+	assert.equal( await pathExists( userOwnedLegacyTarget ), false );
 
 	runInstaller( home, arguments_ );
-	assert.match( await readFile( target, 'utf8' ), /^<!-- Auto-generated by ai-instructions\/setup\.sh --copilot-concat -->/ );
-	await writeFile( target, '<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->\nstale\n' );
-	assert.match( runInstaller( home, arguments_ ), /outdated; run update/ );
+	assert.match( await readFile( canonicalTarget, 'utf8' ), /^<!-- ai-instructions:managed -->\n# Core Instructions/m );
+	assert.equal( await pathExists( userOwnedCopilotTarget ), false );
+	await mkdir( path.dirname( userOwnedCopilotTarget ), { recursive: true } );
+	await writeFile( userOwnedCopilotTarget, '# Copilot-specific guidance\n' );
+	await writeFile( canonicalTarget, `${ managedMarker }\n# Stale\n` );
+	assert.match( runInstaller( home, arguments_ ), /repository export is outdated; run update/ );
 	runInstaller( home, [ 'update', ...arguments_ ] );
-	assert.doesNotMatch( await readFile( target, 'utf8' ), /\nstale\n/ );
+	assert.doesNotMatch( await readFile( canonicalTarget, 'utf8' ), /# Stale/ );
+	assert.equal( await readFile( userOwnedCopilotTarget, 'utf8' ), '# Copilot-specific guidance\n' );
 
-	await writeFile( target, '# user-owned\n' );
-	assert.match( runInstaller( home, [ 'update', ...arguments_ ] ), /was not generated.*skipping/ );
-	assert.equal( await readFile( target, 'utf8' ), '# user-owned\n' );
+	const exportedLegacyTarget = path.join( legacyProject, '.github', 'copilot-instructions.md' );
+	await mkdir( path.dirname( exportedLegacyTarget ), { recursive: true } );
+	await writeFile( exportedLegacyTarget, '<!-- Auto-generated by ai-instructions/setup.sh --copilot-concat -->\n<!-- Do not edit manually. Re-run setup.sh to update. -->\n\n@../AGENTS.md\n' );
+	const cleanupOutput = runInstaller( home, [ ...arguments_.slice( 0, -1 ), legacyProject ] );
+	assert.match( cleanupOutput, /obsolete duplicate Copilot wrapper/ );
+	assert.match( cleanupOutput, /Stale removed:       1/ );
+	assert.equal( await pathExists( exportedLegacyTarget ), false );
+	assert.match( await readFile( path.join( legacyProject, 'AGENTS.md' ), 'utf8' ), /^<!-- ai-instructions:managed -->\n# Core Instructions/m );
+	assert.equal( await readFile( userOwnedCopilotTarget, 'utf8' ), '# Copilot-specific guidance\n' );
 } );
 
 test( 'POSIX compatibility wrapper delegates to the Node CLI', {

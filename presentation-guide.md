@@ -11,7 +11,7 @@
 
 ## Before presenting
 
-Open [`README.md`](README.md), [`instructions/core.md`](instructions/core.md), [`skills/review-pr/SKILL.md`](skills/review-pr/SKILL.md), [`platforms/manifest.json`](platforms/manifest.json), [`docs/accessibility-review-pilot.md`](docs/accessibility-review-pilot.md), and [`docs/discovery-evidence.md`](docs/discovery-evidence.md).
+Open [`README.md`](README.md), [`AGENTS.md`](AGENTS.md), [`skills/review-pr/SKILL.md`](skills/review-pr/SKILL.md), [`platforms/manifest.json`](platforms/manifest.json), [`docs/accessibility-review-pilot.md`](docs/accessibility-review-pilot.md), and [`docs/discovery-evidence.md`](docs/discovery-evidence.md).
 
 ## 0:00 — Opening
 
@@ -39,7 +39,7 @@ The repository provides four layers:
 4. Evidence and maintenance records for content accuracy, installation safety, migration, and product discovery.
 
 ```text
-instructions/core.md       Always-on personal boundaries
+AGENTS.md                  Always-on personal boundaries
 skills/*/SKILL.md           Task-specific workflows and specialists
 skills/*/references/        Detailed standards loaded only when needed
 platforms/manifest.json     Product paths, formats, and support tiers
@@ -47,11 +47,11 @@ scripts/setup.mjs           Safe lifecycle and format adaptation
 docs/                       Decisions, evidence, migration, and support policy
 ```
 
-The current scale is intentionally modest: a 60-line generated universal core, 17 standard skills, zero distributed custom agents, and five configured product adapters.
+The current scale is intentionally modest: a 55-line generated universal core, 17 standard skills, zero distributed custom agents, and five configured product adapters.
 
 ## 3:00 — Progressive disclosure
 
-Open [`instructions/core.md`](instructions/core.md). It contains only durable cross-task boundaries: concise communication, honest verification, explicit authority, preservation of user-owned work, and basic delivery constraints.
+Open [`AGENTS.md`](AGENTS.md). It contains only durable cross-task boundaries: concise communication, honest verification, explicit authority, preservation of user-owned work, and basic delivery constraints.
 
 Say:
 
@@ -108,7 +108,7 @@ Close with:
 
 ## Optional two-minute demo
 
-1. Show the compact core with `wc -l -c instructions/core.md` and `sed -n '1,100p' instructions/core.md`.
+1. Show the compact core with `wc -l -c AGENTS.md` and `sed -n '1,100p' AGENTS.md`.
 2. Show discoverable skills with `find skills -type f -name SKILL.md -print | sort`.
 3. Show installer health with `./setup.sh check --agent codex`.
 4. Open the pilot and discovery-evidence records.
