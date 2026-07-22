@@ -118,7 +118,3 @@ export function codexAgent( content, source ) {
 	const { name, description, body } = parseFrontmatter( content, source );
 	return `${ TOML_MANAGED_MARKER }\nname = "${ tomlString( name ) }"\ndescription = "${ tomlString( description ) }"\ndeveloper_instructions = """\n${ tomlString( ensureTrailingNewline( body ) ) }"""\n`;
 }
-
-export function copilotProjectExport( content ) {
-	return `${ COPILOT_EXPORT_MARKER }\n<!-- Do not edit manually. Re-run setup.sh to update. -->\n\n${ content }`;
-}

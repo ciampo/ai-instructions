@@ -78,7 +78,7 @@ Rejected. It invites drift, conflicting instructions, and unnecessary always-on 
 2. The manifest has explicit `direct` and `wrapper` strategies. The wrapper strategy writes a managed adjacent `AGENTS.md` and a native file that imports it relatively.
 3. The artifact builder and lifecycle code install, check, update, and remove both files in the wrapper adapter. It preflights the pair for user-owned conflicts before mutating either file.
 4. Codex receives the canonical content directly. Claude, Copilot, and Gemini receive thin native wrappers; Cursor keeps its native rule adapter for user scope.
-5. The compatibility `--copilot-concat` option now explicitly exports project-root `AGENTS.md` and a Copilot wrapper rather than duplicating the full instruction body.
+5. The compatibility `--copilot-concat` option explicitly exports only project-root `AGENTS.md`, which Copilot discovers directly. It removes a repository-owned wrapper from an earlier export and preserves user-owned `.github/copilot-instructions.md` files for genuinely Copilot-specific guidance.
 6. Legacy cleanup and user-owned conflict protection remain under the compatibility policy. The frozen pre-modernization upgrade fixtures continue to pass.
 7. The README, migration guide, support policy, and source index describe the current implementation. Product support remains preview until fresh discovery proves the new wrappers load on current client releases.
 

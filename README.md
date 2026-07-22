@@ -80,7 +80,7 @@ On native Windows, run the Node entrypoint directly and use copy mode:
 node scripts/setup.mjs --agent '*' --copy --yes
 ```
 
-The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside exporting a shared project `AGENTS.md` and a thin Copilot wrapper.
+The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside exporting a shared project `AGENTS.md`.
 
 ### Supported product surfaces
 
@@ -118,7 +118,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
 | `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. `agents` is retained only to safely clean up retired repository-managed agents; the legacy `personas` value remains its alias. |
-| `--copilot-concat [DIR]` | Export `AGENTS.md` and a thin `.github/copilot-instructions.md` wrapper in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
+| `--copilot-concat [DIR]` | Export `AGENTS.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
@@ -135,7 +135,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
 ./setup.sh check --agent cursor                    # Verify managed Cursor configuration
 ./setup.sh install --copy --yes                    # Copy mode for CI
-./setup.sh --copilot-concat ~/Code/my-project      # Standalone: export AGENTS.md and Copilot wrapper
+./setup.sh --copilot-concat ~/Code/my-project      # Standalone: export AGENTS.md
 ```
 
 The installer is non-destructive and idempotent. It stages complete artifacts before publishing them, never clobbers an unexpected destination, and skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only replaces files previously installed by this repository.
@@ -159,7 +159,7 @@ These instructions are global defaults. To override for a specific project:
 - **Cursor**: Add `.cursor/rules/` only for scoped rules or Cursor-specific metadata; use `.cursor/skills/` for project skills.
 - **Claude Code**: Add `CLAUDE.md` with `@AGENTS.md` only for Claude-specific guidance; use `.claude/rules/` or `.claude/skills/` when their scoped behavior is needed.
 - **Codex**: Add nested `AGENTS.md` or `.agents/skills/` for subtree-specific work.
-- **GitHub Copilot CLI**: Add `.github/copilot-instructions.md` with `@../AGENTS.md` only for Copilot-specific guidance, or `.github/skills/` for project skills.
+- **GitHub Copilot CLI**: Add `.github/copilot-instructions.md` only for Copilot-specific guidance; do not re-import `AGENTS.md`, which Copilot already discovers. Use `.github/skills/` for project skills.
 - **Gemini CLI**: Add `GEMINI.md` with `@AGENTS.md` only for Gemini-specific guidance, or `.gemini/skills/` for project skills.
 - Use the project-level config to relax global rules (e.g., "this project uses Tailwind instead of CSS Modules") or add project-specific conventions.
 
