@@ -20,6 +20,7 @@ import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
+	removeManagedFilesTransactionally,
 	SKILL_DIRECTORY_MARKER,
 	writeManagedFilesTransactionally,
 	writeNewFileAtomic,
@@ -419,6 +420,33 @@ test( 'managed file transactions restore earlier writes when a later destination
 			}
 		),
 		( error ) => error.code === 'EEXIST'
+	);
+	assert.equal( await readFile( first, 'utf8' ), previous );
+	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
+} );
+
+test( 'managed file removal transactions restore earlier removals when ownership changes', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-removal-transaction-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	await writeFile( first, previous );
+	await writeFile( second, previous );
+
+	await assert.rejects(
+		removeManagedFilesTransactionally(
+			[ { destination: first }, { destination: second } ],
+			repoDir,
+			{
+				beforeRemove: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						await writeFile( second, '# User instructions\n' );
+					}
+				},
+			}
+		),
+		/ownership changed/
 	);
 	assert.equal( await readFile( first, 'utf8' ), previous );
 	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
@@ -1138,6 +1166,21 @@ test( 'wrapper conflicts preserve legacy instructions during an update', async (
 	assert.match( output, /CLAUDE\.md already exists/ );
 	assert.equal( await readFile( legacyPath, 'utf8' ), `${ managedMarker }\n# Legacy core\n` );
 	assert.equal( await pathExists( destination( home, '.claude/AGENTS.md' ) ), false );
+} );
+
+test( 'wrapper adapters clean legacy instructions after a successful update', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'claude' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyPath = destination( home, '.claude/rules/core.md' );
+	await mkdir( path.dirname( legacyPath ), { recursive: true } );
+	await writeFile( legacyPath, `${ managedMarker }\n# Legacy core\n` );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'claude', '--only', 'instructions', '--yes' ] );
+	assert.match( await readFile( destination( home, '.claude/AGENTS.md' ), 'utf8' ), /^<!-- ai-instructions:managed -->\n# Core Instructions/m );
+	assert.equal( await readFile( destination( home, '.claude/CLAUDE.md' ), 'utf8' ), `${ managedMarker }\n@AGENTS.md\n` );
+	assert.equal( await pathExists( legacyPath ), false );
+	assert.ok( output.indexOf( '[+] AGENTS.md' ) < output.indexOf( `[stale] ${ legacyPath }` ) );
 } );
 
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {

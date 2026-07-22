@@ -310,6 +310,54 @@ export async function writeManagedFilesTransactionally( entries, repoDir, { befo
 	}
 }
 
+export async function removeManagedFilesTransactionally( entries, repoDir, { beforeRemove } = {} ) {
+	const captured = [];
+	try {
+		for ( const [ index, entry ] of entries.entries() ) {
+			await beforeRemove?.( entry, index );
+			const backup = await capturePath( entry.destination );
+			if ( ! backup ) {
+				continue;
+			}
+			const removal = { entry, backup };
+			captured.push( removal );
+			if ( ! await isOwnedPath( backup, repoDir ) ) {
+				throw new Error( `Refusing to remove ${ entry.destination } because its ownership changed.` );
+			}
+		}
+		for ( const removal of captured ) {
+			const stats = await lstat( removal.backup );
+			await rm( removal.backup, {
+				recursive: stats.isDirectory() && ! stats.isSymbolicLink(),
+				force: true,
+			} );
+			removal.backup = null;
+		}
+	} catch ( error ) {
+		const rollbackFailures = [];
+		for ( const removal of captured.reverse() ) {
+			if ( ! removal.backup || ! await lstatSafe( removal.backup ) ) {
+				continue;
+			}
+			try {
+				await recoverCapturedPath( removal.backup, removal.entry.destination, error );
+				removal.backup = null;
+			} catch ( rollbackError ) {
+				rollbackFailures.push( rollbackError );
+			}
+		}
+		if ( rollbackFailures.length > 0 ) {
+			const rollbackError = new Error(
+				`${ error.message } Rollback failed: ${ rollbackFailures.map( ( failure ) => failure.message ).join( ' ' ) }`,
+				{ cause: error }
+			);
+			rollbackError.rollbackFailures = rollbackFailures;
+			throw rollbackError;
+		}
+		throw error;
+	}
+}
+
 export async function writeSymlinkSafely( source, destination, type = 'file', canReplace ) {
 	await mkdir( path.dirname( destination ), { recursive: true } );
 	let captured;

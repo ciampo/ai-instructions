@@ -10,6 +10,7 @@ import {
 	managedFileType,
 	pathsHaveEqualContents,
 	readlinkSafe,
+	removeManagedFilesTransactionally,
 	removeOwnedPath,
 	SKILL_DIRECTORY_MARKER,
 	writeNewFileAtomic,
@@ -575,6 +576,18 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			}
 			return;
 		}
+		if ( command === 'remove' && ! state.options.dryRun ) {
+			const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+			await removeManagedFilesTransactionally( artifacts, repoDir );
+			for ( const [ index, artifact ] of artifacts.entries() ) {
+				if ( ! statuses[ index ].exists ) {
+					continue;
+				}
+				console.log( `  [-] ${ artifact.label }` );
+				state.removed++;
+			}
+			return;
+		}
 
 		for ( const artifact of artifacts ) {
 			await processArtifact( artifact, state );
@@ -800,10 +813,19 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const activeCategories = selectedCategories.filter( ( category ) => ! blocked.has( category ) );
 		const artifacts = await buildArtifacts( platform, activeCategories, home );
 		const groups = groupArtifacts( artifacts );
+		const wrapperCategories = new Set(
+			[ ...groups.values() ]
+				.filter( ( group ) => group.length > 1 )
+				.flatMap( ( group ) => group.map( ( artifact ) => artifact.category ) )
+		);
+		let deferredCleanupCategories = [];
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
 			const cleanupBlockedCategories = await blockedGroupCategories( groups, state );
 			const cleanupCategories = activeCategories.filter(
-				( category ) => ! cleanupBlockedCategories.has( category )
+				( category ) => ! cleanupBlockedCategories.has( category ) && ! wrapperCategories.has( category )
+			);
+			deferredCleanupCategories = activeCategories.filter(
+				( category ) => ! cleanupBlockedCategories.has( category ) && wrapperCategories.has( category )
 			);
 			await processStaleArtifacts( platform, artifacts, cleanupCategories, home, state );
 		}
@@ -813,6 +835,9 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			} else {
 				await processArtifactGroup( group, state );
 			}
+		}
+		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
+			await processStaleArtifacts( platform, artifacts, deferredCleanupCategories, home, state );
 		}
 		if ( [ 'check', 'list', 'remove' ].includes( state.options.command ) ) {
 			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );

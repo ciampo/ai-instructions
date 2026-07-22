@@ -43,8 +43,8 @@ The global installer remains an adapter, not an implicit project exporter:
 1. A user-level install must continue to work when only one supported product is installed.
 2. It must never make `~/.codex/AGENTS.md` the source imported by Claude, Copilot, Gemini, or Cursor. That creates a hidden dependency on a separate product's installation, override state, and removal lifecycle.
 3. Where a product needs a native user-level file, the adapter will derive it from the canonical source and own every generated sidecar or wrapper using the existing no-clobber and managed-marker rules.
-4. A project export remains explicit. It should write the shared root `AGENTS.md` first, then generate only the thin product wrappers that the selected project tools actually need.
-5. A wrapper must use a relative import of the co-located or project-root canonical file. Do not generate absolute imports into a local checkout or another product's home directory.
+4. A project export remains explicit. It writes only the shared root `AGENTS.md`, which the claimed project tools discover directly.
+5. A generated user-level wrapper must use a relative import of its co-located canonical file. Do not generate absolute imports into a local checkout or another product's home directory.
 
 ## Why This Direction
 
