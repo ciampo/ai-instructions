@@ -110,8 +110,7 @@
       ],
       "documentation": [
         "https://code.claude.com/docs/en/memory",
-        "https://code.claude.com/docs/en/skills",
-        "https://code.claude.com/docs/en/sub-agents"
+        "https://code.claude.com/docs/en/skills"
       ]
     },
     {
@@ -165,8 +164,7 @@
       ],
       "documentation": [
         "https://developers.openai.com/codex/guides/agents-md",
-        "https://developers.openai.com/codex/skills",
-        "https://developers.openai.com/codex/subagents"
+        "https://developers.openai.com/codex/skills"
       ]
     },
     {
@@ -213,7 +211,7 @@
       "documentation": [
         "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions",
         "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
-        "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli"
+        "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills"
       ]
     },
     {
@@ -259,8 +257,7 @@
       ],
       "documentation": [
         "https://geminicli.com/docs/cli/gemini-md/",
-        "https://geminicli.com/docs/cli/using-agent-skills/",
-        "https://geminicli.com/docs/core/subagents/"
+        "https://geminicli.com/docs/cli/using-agent-skills/"
       ]
     }
   ]

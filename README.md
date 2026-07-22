@@ -6,7 +6,7 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-See the [modernization plan](modernization-plan.md) for the architecture audit and implementation roadmap. The [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), and [standards index](docs/standards-index.md) cover ongoing maintenance.
+See the [modernization plan](modernization-plan.md) for the architecture audit and implementation roadmap. The [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [skills-first support audit](docs/skills-first-support-audit.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), and [standards index](docs/standards-index.md) cover ongoing maintenance.
 
 ## Structure
 

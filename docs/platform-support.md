@@ -11,7 +11,7 @@ Platform support tiers are limited to verified and preview. The README table lis
 
 The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). `lastAdapterChecked` records the latest filesystem and lifecycle check; it is not product-discovery evidence. Product versions, discovery dates, and capability results live only in the discovery evidence. When a row names several clients, every client must pass before the combined surface can be promoted; otherwise split the surface.
 
-Current product versions, completed checks, and remaining acceptance work are recorded in [discovery evidence](discovery-evidence.md). A documented procedure alone is not verification evidence.
+Current product versions, completed checks, and remaining acceptance work are recorded in [discovery evidence](discovery-evidence.md). The [skills-first support audit](skills-first-support-audit.md) separately records the automated installer contract for the current distribution: core instructions and complete skill directories, with no new custom-agent output. A documented procedure alone is not verification evidence.
 
 ## Discovery Checks
 
