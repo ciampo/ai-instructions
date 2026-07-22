@@ -109,7 +109,7 @@ Close with:
 ## Optional two-minute demo
 
 1. Show the compact core with `wc -l -c instructions/core.md` and `sed -n '1,100p' instructions/core.md`.
-2. Show discoverable skills with `find skills -mindepth 2 -maxdepth 2 -name SKILL.md | sort`.
+2. Show discoverable skills with `find skills -type f -name SKILL.md -print | sort`.
 3. Show installer health with `./setup.sh check --agent codex`.
 4. Open the pilot and discovery-evidence records.
 

@@ -15,7 +15,7 @@
       "product": "Cursor",
       "surface": "Cursor editor and Agent CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".cursor"
       },
@@ -71,7 +71,7 @@
       "product": "Claude Code",
       "surface": "Claude Code CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".claude"
       },
@@ -118,7 +118,7 @@
       "product": "Codex",
       "surface": "Codex app, CLI, and IDE extension",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".codex"
       },
@@ -172,7 +172,7 @@
       "product": "GitHub Copilot CLI",
       "surface": "GitHub Copilot CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".copilot"
       },
@@ -219,7 +219,7 @@
       "product": "Gemini CLI",
       "surface": "Gemini CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-21",
+      "lastAdapterChecked": "2026-07-22",
       "detection": {
         "userPath": ".gemini"
       },

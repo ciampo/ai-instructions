@@ -6,6 +6,7 @@ import {
 	lstat,
 	readdir,
 	readFile,
+	readlink,
 	rm,
 	symlink,
 	writeFile,
@@ -74,7 +75,7 @@ async function filesInDirectory( root, current = '' ) {
 		const relative = path.join( current, entry.name );
 		if ( entry.isDirectory() ) {
 			files.push( ...await filesInDirectory( root, relative ) );
-		} else if ( entry.isFile() ) {
+		} else if ( entry.isFile() || entry.isSymbolicLink() ) {
 			files.push( relative );
 		}
 	}
@@ -907,11 +908,32 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 				`${ platform.id } ${ skillName } must include every bundled skill resource`
 			);
 			for ( const relative of sourceFiles ) {
-				assert.deepEqual(
-					await readFile( path.join( installed, relative ) ),
-					await readFile( path.join( source, relative ) ),
-					`${ platform.id } ${ skillName } ${ relative } must match the source`
+				const sourcePath = path.join( source, relative );
+				const installedPath = path.join( installed, relative );
+				const [ sourceStatus, installedStatus ] = await Promise.all( [
+					lstat( sourcePath ),
+					lstat( installedPath ),
+				] );
+				assert.equal(
+					installedStatus.isSymbolicLink(),
+					sourceStatus.isSymbolicLink(),
+					`${ platform.id } ${ skillName } ${ relative } must preserve its path type`
 				);
+				if ( sourceStatus.isSymbolicLink() ) {
+					assert.equal(
+						await readlink( installedPath ),
+						await readlink( sourcePath ),
+						`${ platform.id } ${ skillName } ${ relative } must preserve its symlink target`
+					);
+				} else {
+					assert.ok( sourceStatus.isFile() );
+					assert.ok( installedStatus.isFile() );
+					assert.deepEqual(
+						await readFile( installedPath ),
+						await readFile( sourcePath ),
+						`${ platform.id } ${ skillName } ${ relative } must match the source`
+					);
+				}
 			}
 		}
 	}

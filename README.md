@@ -90,11 +90,11 @@ The script auto-detects supported product surfaces by scanning `$HOME` for known
 
 | Product surface | Tier | Instructions | Skills | Adapter checked |
 | --- | --- | --- | --- | --- |
-| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | 2026-07-21 |
-| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | 2026-07-21 |
-| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | 2026-07-21 |
-| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | 2026-07-21 |
-| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | 2026-07-21 |
+| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | 2026-07-22 |
+| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | 2026-07-22 |
+| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | 2026-07-22 |
+| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | 2026-07-22 |
+| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | 2026-07-22 |
 
 <!-- platform-support:end -->
 
