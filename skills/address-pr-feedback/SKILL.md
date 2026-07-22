@@ -1,20 +1,24 @@
 ---
 name: address-pr-feedback
-description: Inspect unresolved pull-request feedback, evaluate each suggestion, implement accepted fixes, verify them, and prepare concise replies. Use when addressing PR review comments.
+description: Inspect current pull-request feedback, evaluate each suggestion, implement accepted local fixes, verify them, and draft replies without posting. Use when asked to address PR review comments; do not infer branch integration, commit, push, PR-update, or reply-posting authority.
 ---
 
 # Address PR Feedback
 
 A workflow for systematically addressing review comments on a PR. Invoked when I say "address the feedback" or "work through the review comments."
 
+## Authority
+
+Reading the current remote PR state is allowed. Addressing feedback authorizes accepted local fixes, but not merging or rebasing remote changes into the local branch, committing, pushing, editing PR metadata, resolving threads, or posting replies unless the user separately requests those actions.
+
 ## Steps
 
 1. **Identify the repository**: Derive the base repository from the PR instead of assuming the local `origin` is upstream.
-2. **Gather feedback**: Use the host's GitHub integration when available, otherwise use authenticated `gh`. Fetch review threads, PR conversation, and CI status, including thread resolution state when the API exposes it.
+2. **Gather feedback**: Use the host's GitHub integration when available, otherwise use authenticated `gh`. Refresh read-only remote metadata and fetch review threads, PR conversation, and CI status, including thread resolution state when the API exposes it. Do not integrate branch changes merely to inspect the latest state.
 3. **Categorize each comment**: Classify as must-fix (blocking), should-address (non-blocking but valid), or won't-fix (disagree — needs discussion). Evaluate whether each suggestion is correct before acting and account for issues resolved in previous rounds.
 4. **Keep changes granular**: Group edits by review comment or tightly related concern. If the user asked for commits, keep those commits focused and omit AI-attribution footers (e.g., "Co-Authored-By: Claude").
-5. **Verify**: Run the project's verification suite before pushing.
-6. **Verify fixes against actual code**: When checking whether previously raised issues have been addressed, pull the latest branch, read the review comments, then check the actual code to confirm the fix is correct — do not just trust that a commit exists. Report which issues are properly fixed and which still need work.
+5. **Verify**: Run the project's relevant verification suite after local fixes. Push only when explicitly requested.
+6. **Verify fixes against actual code**: Refresh the PR metadata and remote refs without changing the local branch, read the review comments, then check the actual code to confirm the fix is correct -- do not just trust that a commit exists. Report which issues are properly fixed and which still need work.
 7. **Prepare reply document**:
    - For each addressed comment, draft a short, plain-language reply that starts with the outcome or reason before any code-level detail.
    - When practical, include brief steps the reviewer can use to reproduce or verify the result.

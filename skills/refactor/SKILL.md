@@ -1,11 +1,15 @@
 ---
 name: refactor
-description: Plan and execute a codebase-wide refactor or rename in verified batches while preserving behavior and public contracts. Use for broad migrations and systematic replacements.
+description: Plan and implement a requested codebase-wide refactor or rename in verified local batches while preserving behavior and public contracts. Use for broad migrations and systematic replacements; do not create commits or perform remote writes unless explicitly requested.
 ---
 
 # Refactor
 
 A systematic workflow for codebase-wide refactors. Invoked when I say "refactor X", "rename across codebase", "migrate from A to B", or "replace all uses of X with Y."
+
+## Authority
+
+A refactor request authorizes the scoped local source changes and verification. It does not authorize commits, amendments, pushes, pull requests, releases, or publication. Preserve unrelated work and report adjacent opportunities unless they are required for correctness or explicitly approved.
 
 ## Steps
 
@@ -18,7 +22,7 @@ A systematic workflow for codebase-wide refactors. Invoked when I say "refactor 
    - Then tests.
    - Then documentation, stories, and config.
    - Update the CHANGELOG last.
-5. **Execute in batches**: Make granular commits grouped by concern. Each commit should leave the codebase in a working state. Run the verification suite between batches, not just at the end.
+5. **Execute in batches**: Group edits into verified batches by concern. Each batch should leave the codebase in a working state. Run the relevant verification between batches, not just at the end. If commits were explicitly requested, use the same batch boundaries for coherent commits.
 6. **Handle edge cases**: When instances differ slightly (e.g., a renamed function that some callers use with different argument patterns), handle each variant explicitly. Do not force a one-size-fits-all transformation.
 7. **Clean up**: After the refactor, search the codebase one more time to verify no instances were missed. Remove any temporary compatibility shims, unused imports, or dead code introduced during the migration.
 8. **Verify against baseline**: Re-run the exact verification steps from the baseline (step 3). Compare results — the refactor is only correct if the outcomes match or improve. Fix any regressions before presenting the result.
