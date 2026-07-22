@@ -86,6 +86,12 @@ function artifactPath( platform, category, home ) {
 	return path.join( base, `a11y-reviewer${ capability.extension }` );
 }
 
+function retiredAgentExtension( platform ) {
+	return platform.id === 'codex'
+		? '.toml'
+		: platform.id === 'copilot' ? '.agent.md' : '.md';
+}
+
 function skillPath( platform, home, skillName, relative = 'SKILL.md' ) {
 	return path.join(
 		destination( home, platform.capabilities.skills.userPath ),
@@ -713,9 +719,7 @@ for ( const platform of manifest.platforms ) {
 		t.after( () => rm( home, { recursive: true, force: true } ) );
 		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
 		assert.ok( retiredAgents, `${ platform.id} must declare a retired agent destination` );
-		const staleExtension = platform.id === 'codex'
-			? '.toml'
-			: platform.id === 'copilot' ? '.agent.md' : '.md';
+		const staleExtension = retiredAgentExtension( platform );
 		const staleDir = destination( home, retiredAgents.userPath );
 		const stalePath = path.join( staleDir, `removed-agent${ staleExtension }` );
 		const userAgentPath = path.join( staleDir, `user-agent${ staleExtension }` );
@@ -753,12 +757,13 @@ test( 'retired custom-agent symlinks are cleaned without touching user artifacts
 		const home = await createDetectedHome( platform );
 		t.after( () => rm( home, { recursive: true, force: true } ) );
 		const legacyDir = destination( home, legacyAgents.userPath );
-		const retiredAgent = path.join( legacyDir, 'retired-agent.md' );
-		const userAgent = path.join( legacyDir, 'user-agent.md' );
-		const userSource = path.join( home, 'user-agent-source.md' );
+		const extension = retiredAgentExtension( platform );
+		const retiredAgent = path.join( legacyDir, `retired-agent${ extension }` );
+		const userAgent = path.join( legacyDir, `user-agent${ extension }` );
+		const userSource = path.join( home, `user-agent-source${ extension }` );
 		await mkdir( legacyDir, { recursive: true } );
 		await writeFile( userSource, '# User-authored agent\n' );
-		await symlink( path.join( repoDir, 'agents', 'retired-agent.md' ), retiredAgent );
+		await symlink( path.join( repoDir, 'agents', `retired-agent${ extension }` ), retiredAgent );
 		await symlink( userSource, userAgent );
 
 		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'agents', '--yes' ], 1 );
@@ -768,7 +773,7 @@ test( 'retired custom-agent symlinks are cleaned without touching user artifacts
 		assert.equal( await pathExists( retiredAgent ), false );
 		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
 
-		await symlink( path.join( repoDir, 'agents', 'retired-agent.md' ), retiredAgent );
+		await symlink( path.join( repoDir, 'agents', `retired-agent${ extension }` ), retiredAgent );
 		runInstaller( home, [ 'remove', '--agent', platform.id, '--only', 'agents', '--yes' ] );
 		assert.equal( await pathExists( retiredAgent ), false );
 		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );

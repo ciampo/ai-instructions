@@ -75,7 +75,11 @@ const contracts = {
   gemini: [ 'markdown-agent', '.gemini/agents', '.gemini/agents', '.md' ],
 };
 for ( const platform of manifest.platforms ) {
-  const [ format, userPath, projectPath, extension ] = contracts[ platform.id ];
+  const contract = contracts[ platform.id ];
+  if ( ! contract ) {
+    throw new Error( `Missing agent adapter fixture contract for '${ platform.id }'.` );
+  }
+  const [ format, userPath, projectPath, extension ] = contract;
   platform.capabilities.agents = {
     supported: true,
     strategy: 'files',
