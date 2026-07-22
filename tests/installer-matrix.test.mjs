@@ -139,7 +139,7 @@ async function createContentFixture( t, {
 	const fixtureManifest = structuredClone( manifest );
 	fixtureManifest.lastReviewed = today;
 	for ( const platform of fixtureManifest.platforms ) {
-		platform.lastVerified = today;
+		platform.lastAdapterChecked = today;
 	}
 	await writeFile(
 		path.join( fixture, 'platforms', 'manifest.json' ),
@@ -222,7 +222,7 @@ async function seedLegacyInstallation( home, copy ) {
 }
 
 test( 'manifest declares complete, current platform contracts', () => {
-	assert.equal( manifest.schemaVersion, 1 );
+	assert.equal( manifest.schemaVersion, 2 );
 	assert.deepEqual(
 		manifest.platforms.map( ( platform ) => platform.id ),
 		[ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ]
@@ -230,7 +230,7 @@ test( 'manifest declares complete, current platform contracts', () => {
 
 	for ( const platform of manifest.platforms ) {
 		assert.match( platform.surface, /\S/ );
-		assert.match( platform.lastVerified, /^\d{4}-\d{2}-\d{2}$/ );
+		assert.match( platform.lastAdapterChecked, /^\d{4}-\d{2}-\d{2}$/ );
 		assert.ok( [ 'verified', 'preview' ].includes( platform.supportTier ) );
 		for ( const category of categories ) {
 			assert.equal( typeof platform.capabilities[ category ].supported, 'boolean' );
@@ -302,7 +302,7 @@ test( 'manifest rejects support tiers outside the documented contract', () => {
 	);
 } );
 
-test( 'manifest rejects invalid review and verification dates', () => {
+test( 'manifest rejects invalid review and adapter-check dates', () => {
 	const invalidReviewDate = structuredClone( manifest );
 	invalidReviewDate.lastReviewed = '2026-02-29';
 	assert.throws(
@@ -310,11 +310,11 @@ test( 'manifest rejects invalid review and verification dates', () => {
 		/lastReviewed must use YYYY-MM-DD/
 	);
 
-	const invalidVerificationDate = structuredClone( manifest );
-	invalidVerificationDate.platforms[ 0 ].lastVerified = 'July 21, 2026';
+	const invalidAdapterCheckDate = structuredClone( manifest );
+	invalidAdapterCheckDate.platforms[ 0 ].lastAdapterChecked = 'July 21, 2026';
 	assert.throws(
-		() => validateManifest( invalidVerificationDate ),
-		/cursor\.lastVerified must use YYYY-MM-DD/
+		() => validateManifest( invalidAdapterCheckDate ),
+		/cursor\.lastAdapterChecked must use YYYY-MM-DD/
 	);
 } );
 

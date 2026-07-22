@@ -1,12 +1,12 @@
 # AI instructions modernization plan
 
-Status: implemented across the stacked modernization pull requests. The original audit baseline remains below for historical context.
+Status: core implementation complete; product discovery acceptance remains open. The original audit baseline remains below for historical context.
 
 Audit date: 2026-07-20
 
-Implementation completed: 2026-07-21
+Core implementation completed: 2026-07-21
 
-The delivered architecture has a 51-line universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md).
+The delivered architecture has a budget-constrained universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
 ## Executive assessment
 
@@ -122,7 +122,7 @@ The exact names can change during implementation. The important boundaries are:
 | Claude Code | Installs `~/.claude/rules/*.md` and generated skill copies; no personas | User rules, Agent Skills, and user custom agents are supported | Rules are broadly correct; the reminder to reference them from `CLAUDE.md` is stale; skills are non-portable; agents are omitted | Small user rules, standard skills, valid agents, no redundant reminder |
 | Codex | Concatenates everything into `~/.codex/AGENTS.md`; marks skills and personas unsupported | Global `AGENTS.md`, standard skills, and user custom agents are supported | The matrix is outdated; the 54 KB eager prompt defeats progressive disclosure; routing points to source-repo files; override precedence is not checked | Minimal `AGENTS.md`, skills under `~/.agents/skills`, generated TOML agents under `~/.codex/agents` |
 | GitHub Copilot CLI | Installs generated skill copies; optionally writes a repository-wide concatenated instruction file; no personas | Personal and modular instructions, Agent Skills, and user custom agents are supported | Personal instructions and agents are omitted; skills lack required metadata; concatenated routing can reference files absent from the target repository | Personal CLI instructions, standard skills, valid agents; repository export remains explicit |
-| Gemini CLI | Installs generated skill copies only | `GEMINI.md` context, Agent Skills, and user custom agents are supported | Instructions and agents are omitted; skills without frontmatter may be silently skipped; the product surface is transitioning to Antigravity CLI for some account tiers | Confirm the intended account and product surface, then provide small user context, standard skills, and valid agents |
+| Gemini CLI | Installs generated skill copies only | `GEMINI.md` context, Agent Skills, and user custom agents are supported | Instructions and agents are omitted; skills without frontmatter may be silently skipped | Small user context, standard skills, and valid agents for the explicitly named Gemini CLI surface |
 
 ### Source-of-truth notes
 
@@ -152,10 +152,11 @@ The exact names can change during implementation. The important boundaries are:
   for Copilot CLI.
 - Gemini CLI documents [persistent context](https://geminicli.com/docs/cli/gemini-md/),
   [user and workspace skills](https://geminicli.com/docs/cli/using-agent-skills/),
-  and [custom subagents](https://geminicli.com/docs/core/subagents/). The same
-  official documentation announces a transition to Antigravity CLI for
-  unpaid-tier and Google One users, so support must name the intended account
-  and product surface.
+  [custom subagents](https://geminicli.com/docs/core/subagents/), and
+  [authentication options](https://geminicli.com/docs/get-started/authentication/)
+  for individual, organization, API-key, and Vertex AI users. This repository
+  targets Gemini CLI explicitly; other Google agent products are separate
+  surfaces.
 
 ### Recommended support policy
 
@@ -358,7 +359,7 @@ tested headlessly.
 
 Status: CI coverage, `check` exit behavior, the target-size correction, and the
 dependency audit are complete in [#19](https://github.com/ciampo/ai-instructions/pull/19).
-The broader normative accessibility audit and migration fixtures remain.
+The scoped standards review is complete in [#22](https://github.com/ciampo/ai-instructions/pull/22), and the frozen historical migration fixture is added in [#24](https://github.com/ciampo/ai-instructions/pull/24).
 
 1. Add the existing installer regression suite and `bash -n` to CI.
 2. Add failing tests for stale/conflicting `check` exit codes.
@@ -466,9 +467,9 @@ Recommended defaults are shown first.
    path, symlink, and copy behavior.
 6. **Instruction strictness:** preserve genuine personal boundaries globally;
    scope technology and repository conventions based on detected context.
-7. **Gemini surface:** confirm the intended account tier and whether the target
-   remains Gemini CLI or becomes Antigravity CLI before implementing its
-   adapter.
+7. **Gemini surface:** target Gemini CLI across its documented authentication
+   methods. Record the exact CLI version and authentication context during
+   discovery; treat other Google agent products as separate surfaces.
 
 ## Definition of done
 
@@ -484,3 +485,5 @@ The modernization is complete when:
 - no high-severity dependency advisories remain;
 - normative standards claims include current primary sources and review dates;
 - README support claims are generated from tested configuration.
+
+Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, and dependency gates are implemented. The remaining definition-of-done item is successful instruction, skill, and agent discovery on current releases of every client named by the five product surfaces. Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).
