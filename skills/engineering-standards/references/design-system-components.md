@@ -5,20 +5,20 @@ Patterns for building and maintaining a design system component library. General
 ## Architecture
 
 - **[RULE]** Stay close to the upstream API surface. Do not re-invent props that the primitive already exposes. Deviations need justification.
-- **[STRONG]** Compound component pattern: `Component.Root`, `Component.Header`, `Component.Content`, etc.
-- **[STRONG]** Use React Context for internal communication between sub-components (e.g., sharing IDs, state).
+- **[PREFER]** Use a compound component pattern such as `Component.Root`, `Component.Header`, and `Component.Content` when it matches the repository and the parts need a coherent shared API.
+- **[PREFER]** Use React Context for internal communication when descendants need shared IDs or state and a more explicit composition would be cumbersome.
 - **[STRONG]** Private exports for internally shared utilities. Public API surface should be minimal.
 
 ## Polymorphic Rendering
 
-- **[STRONG]** Use the `render` prop pattern (or equivalent like Ariakit's `render` / Radix's `asChild`) for component composition. This allows consumers to control the rendered element while the component provides behavior.
+- **[STRONG]** Follow the component library's established polymorphic composition pattern, such as a `render` prop, Ariakit's `render`, or Radix's `asChild`. Do not introduce a competing pattern without a concrete need.
 - **[STRONG]** When exposing `render` props, ensure `ref` forwarding works correctly. The component's internal ref and the consumer's ref must be merged.
 - **[PREFER]** Type polymorphic props precisely. The rendered element's props should be available on the component (e.g., if rendering as `<a>`, `href` should be valid).
 
 ## Styling
 
-- **[RULE]** All visual values from design tokens (CSS custom properties). No hardcoded colors, spacing, typography, or radii.
-- **[STRONG]** Typography through a shared `Text` component with semantic variants, not raw CSS font properties.
+- **[RULE]** Use design tokens where the target design system defines them. Do not invent tokens or replace intentional one-off values merely to satisfy a universal rule.
+- **[STRONG]** Follow the library's established typography abstraction when it has one; otherwise use semantic HTML and locally appropriate CSS.
 - **[PREFER]** CSS layer organization when the system supports it (component styles vs composition styles).
 
 ## Theming and Tokens
@@ -29,8 +29,8 @@ Patterns for building and maintaining a design system component library. General
 
 ## Storybook
 
-- **[STRONG]** Each component gets stories with working interactive examples.
-- **[STRONG]** JSDoc on the root component provides the Storybook description automatically -- do not duplicate.
+- **[STRONG]** Add stories when the repository uses Storybook and its contribution policy requires or benefits from an interactive example.
+- **[STRONG]** Reuse public API documentation as the Storybook description only when the repository's tooling supports that flow.
 - **[PREFER]** For props accepting ReactElement or ReactNode, show a custom control accepting strings of text.
 - **[PREFER]** For props with complex types (eg objects), either disable the control or provide a custom choice across a prepared list of viable options.
 - **[PREFER]** Disable irrelevant controls for specific stories. Prefer systematic disabling over one-by-one exclusion.
@@ -44,12 +44,12 @@ Patterns for building and maintaining a design system component library. General
 
 ## Versioning and Deprecation
 
-- **[STRONG]** Deprecate props with a runtime warning in dev mode (e.g., ``console.warn( 'ComponentName: `oldProp` is deprecated. Use `newProp` instead.' )``). Keep the old prop working for at least one major version.
-- **[STRONG]** Document deprecations in the CHANGELOG and JSDoc. Include the migration path.
+- **[STRONG]** When the repository permits a compatibility period, deprecate props with recoverable developer guidance such as a development-only runtime warning. Follow the repository's release policy for how long the old prop remains supported.
+- **[STRONG]** Document deprecations and their migration path in the surfaces the repository uses, such as a changelog, API documentation, or migration guide.
 - **[PREFER]** When removing a feature, check the codebase and downstream consumers for usage before removing. Provide a codemod or migration guide for non-trivial changes.
 
 ## Consistency
 
-- **[RULE]** Sibling components must follow the same patterns. If Dialog has a `modal` prop, AlertDialog should too. If one component uses a `render` prop, all should.
+- **[RULE]** Keep sibling APIs consistent where their semantics support the same capability. Do not force symmetry that creates an invalid state; for example, the [APG alert-dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/) is modal by definition.
 - **[STRONG]** When adding a pattern to one component, audit whether siblings need the same treatment.
 - **[STRONG]** Document deviations from upstream behavior explicitly.

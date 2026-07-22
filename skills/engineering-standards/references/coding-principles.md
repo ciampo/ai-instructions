@@ -7,10 +7,10 @@ How I think about code. These principles apply across all projects.
 - **[RULE]** Simplicity over abstraction. Only expose what is needed now. Avoid premature generalization. If the question "is this overengineered?" comes up -- it probably is.
 - **[RULE]** Minimal API surface. Defer features without immediate use cases. Add capabilities only when a concrete consumer exists. "Let's not add X for now -- we'll add it only when needed."
 - **[STRONG]** Root-cause fixes over patches. When something breaks, find the real cause. Prefer the structural fix over the workaround.
-- **[STRONG]** Scope awareness. Keep the end goal in focus. During feature implementation, it is fine to include related changes in the same PR even if they touch adjacent concerns -- extracting to a separate PR is a decision I will make later if needed.
+- **[STRONG]** Scope awareness. Keep the end goal in focus. Include an adjacent change only when it is required for correctness or explicitly approved; otherwise record it as a follow-up.
 - **[STRONG]** Think before coding. For non-trivial work, plan the approach before writing code. Understand the problem, identify the moving parts, and outline the strategy. This avoids wasted implementation cycles.
 - **[STRONG]** Modern code. Prefer platform-native APIs (especially HTML tags/attributes, CSS properties) over custom JavaScript implementations.
-- **[STRONG]** Feature support. Always rely on up-to-date, official data (MDN, caniuse.com) to check support for a given HTML/CSS/JS API. Choose only APIs supported by evergreen browsers, or APIs that are mostly supported and for which a reasonable fallback is available.
+- **[STRONG]** Feature support. Use current specifications, vendor documentation, and maintained compatibility data such as MDN browser-compatibility tables. Match the target repository's supported environments and provide a reasonable fallback when required.
 
 ## TypeScript
 
@@ -24,30 +24,30 @@ How I think about code. These principles apply across all projects.
 ## JavaScript
 
 - **[PREFER]** Write elegant, idiomatic code. Prefer `array.some()`, `Array.from()`, optional chaining, nullish coalescing -- use modern language features naturally.
-- **[STRONG]** Prefer `throw new Error()` (gated to dev mode when appropriate) over `console.warn()` or silent fallbacks. Errors should be concise: `ComponentName: Summary. Detail.`
-- **[STRONG]** Prefer named exports / imports over default exports / imports.
+- **[STRONG]** Throw for invalid states that cannot safely continue. Use warnings for recoverable developer guidance and deprecations, and avoid silent fallbacks. Messages should be concise: `ComponentName: Summary. Detail.`
+- **[PREFER]** Follow the repository's export convention. Prefer named exports when no local convention or platform requirement favors a default export.
 
 ## CSS
 
-- **[RULE]** Use design tokens and CSS custom properties over hardcoded values. Name internal variables to convey intent (self-documenting).
-- **[PREFER]** Prefer modern CSS properties (`translate`, `rotate` over `transform`).
+- **[RULE]** Use the target system's design tokens and CSS custom properties where they express the intended value. Do not invent tokens or replace intentional one-off values solely to avoid a literal.
+- **[PREFER]** Use [individual transform properties](https://drafts.csswg.org/css-transforms-2/#individual-transforms) such as `translate` and `rotate` for new, isolated transforms when their defined composition order matches the design. Do not mechanically replace an existing `transform`; verify computed behavior, animation, composition, and consumer overrides first.
 - **[STRONG]** DRY up shared styles. If a pattern repeats across sibling components, extract it.
 - **[PREFER]** Use CSS layers (`@layer`) when the system supports it, to manage specificity between component styles and composition overrides.
 - **[PREFER]** Use container queries for component-level responsive behavior instead of viewport media queries where the component's container size is what matters.
 
 ## React
 
-- **[STRONG]** Compound component pattern (`Component.Root`, `Component.Title`) for complex UI.
-- **[STRONG]** React Context for internal component communication.
-- **[STRONG]** Thin wrappers around headless/unstyled primitives. Stay close to the upstream API surface -- easier to maintain, less complex to implement.
-- **[PREFER]** Composition via `render` prop pattern when crossing component boundaries.
+- **[PREFER]** Use compound components when the repository already uses that pattern and the parts form one coherent public API.
+- **[PREFER]** Use React Context for shared descendant state when explicit composition or props would be less clear.
+- **[STRONG]** When wrapping headless or unstyled primitives, stay close to the upstream API unless the local design-system contract requires a deliberate deviation.
+- **[PREFER]** Follow the repository's established composition pattern, such as a `render` prop or `asChild`, rather than introducing a new one by default.
 - **[STRONG]** All components that render a DOM element consumers might need to reference must accept a `ref`. In React 18, use `forwardRef`; in React 19+, accept `ref` as a regular prop. Type the ref precisely (e.g., `HTMLButtonElement`, not `HTMLElement`).
 - **[STRONG]** Extract custom hooks when logic is reused across components or when a component's body becomes difficult to follow. A hook should encapsulate a single concern.
 - **[PREFER]** Split a component when it handles multiple distinct responsibilities, or when a section of JSX grows complex enough to obscure the overall structure.
 
 ## Module Organization
 
-- **[STRONG]** Keep files focused. If a file grows beyond ~300-400 lines, consider whether it is doing too much and should be split.
+- **[STRONG]** Keep files focused. Split them when they combine distinct responsibilities or have become difficult to understand; do not use a universal line-count threshold as the decision.
 - **[PREFER]** Colocate related code: a component's styles, tests, stories, and types should live near the component, not in distant directories.
 - **[PREFER]** Extract shared helpers into a dedicated `utils` or `helpers` file within the same package. Do not export them beyond the package unless there is a clear external consumer.
 
@@ -63,7 +63,7 @@ How I think about code. These principles apply across all projects.
 - **[STRONG]** When updating a dependency, always read its release notes and changelog between the old and new versions. Then:
   - Apply any code changes required by breaking changes.
   - Check for bug fixes that the codebase may have been working around locally -- undo those workarounds.
-  - Check for new features and APIs that the codebase could benefit from -- flag them (or adopt them if straightforward).
+  - Check for new features and APIs that the codebase could benefit from, and report them as follow-ups unless adoption is required or explicitly in scope.
 
 ## Testing
 

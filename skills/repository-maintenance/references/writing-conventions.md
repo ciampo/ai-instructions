@@ -55,7 +55,7 @@ Follow the target repository's branch convention. When none exists, prefer `type
 
 ## JSDoc / API Documentation
 
-- **[STRONG]** Required on all exported components and public API surfaces.
+- **[STRONG]** Follow the target repository's API-documentation policy. Add JSDoc to exported components and public APIs when required locally or when it clarifies behavior, constraints, or non-obvious usage.
 - **[RULE]** Describe behavior and constraints, not implementation internals. Do not mention internal/upstream libraries in public-facing docs.
 - **[PREFER]** Include usage examples when the pattern is non-obvious.
 - **[PREFER]** Prefer guidance over prescription: "Most of the time you should do X because Y. If you do Z instead, the consequence is W" -- not "You must always X."

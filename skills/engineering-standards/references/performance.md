@@ -43,7 +43,7 @@ const sorted = useMemo(
 ## CSS Performance
 
 - **[PREFER]** Use `contain` (layout, paint, size) on isolated UI regions to limit browser layout/paint scope.
-- Prefer `translate`, `scale`, `opacity` for animations -- these properties can be composited on the GPU without triggering layout.
+- Prefer transform or opacity-based animations when measurement shows they avoid layout and paint work. Treat compositor promotion as an implementation decision by the browser, and preserve behavior when choosing between individual transform properties and `transform`.
 - Avoid layout thrashing: batch DOM reads and writes. Do not interleave `getBoundingClientRect()` calls with style mutations.
 
 ## Images and Assets
