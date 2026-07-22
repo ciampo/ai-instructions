@@ -9,8 +9,8 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 
 ## Steps
 
-1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). Identify the repository and diff base from the captured PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Limit review to the PR's own diff.
-2. Capture a fresh CLI-first PR snapshot: use field-limited `gh pr view` to establish the base repository and base/head SHAs, `gh pr diff --name-only` to establish scope, and an explicit local ref at the captured head SHA to inspect targeted source and diffs. Use the connector only for merged discussion or resolved review-thread state that `gh` cannot provide cleanly; use `gh pr checks` and failed Actions logs for CI.
+1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). In the next step, identify the repository and diff base from fresh PR metadata; PRs can be stacked, so do not assume `trunk` or `main`.
+2. Capture a fresh CLI-first PR snapshot: use field-limited `gh pr view` to establish the base repository and base/head SHAs, `gh pr diff --name-only` to establish scope, and an explicit local ref at the captured head SHA to inspect targeted source and diffs. Limit review to that PR's own diff. Use the connector only for merged discussion or resolved review-thread state that `gh` cannot provide cleanly; use `gh pr checks` and failed Actions logs for CI.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
 5. Perform the complete core review: accessibility, consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.

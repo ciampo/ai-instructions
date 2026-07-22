@@ -14,7 +14,7 @@ Reading the current remote PR state is allowed. Addressing feedback authorizes a
 ## Steps
 
 1. **Identify the repository**: Derive the base repository from the PR instead of assuming the local `origin` is upstream.
-2. **Gather feedback**: Start with a CLI-first PR snapshot: use field-limited `gh pr view` to capture base and head SHAs, then inspect relevant code through an explicit ref at that head. Use the connector when merged discussion or resolved review-thread state is material; use `gh pr checks` and failed Actions logs for CI. Do not integrate branch changes merely to inspect the latest state.
+2. **Gather feedback**: Start with a CLI-first PR snapshot: use field-limited `gh pr view` to capture base and head SHAs, then inspect relevant code through an explicit ref at that head. Use the connector when merged discussion or resolved review-thread state is material; use `gh pr checks` and failed Actions logs for CI. Before categorizing or acting on feedback, re-read the PR metadata; if the head SHA changed, discard and rebuild the snapshot. Do not integrate branch changes merely to inspect the latest state.
 3. **Categorize each comment**: Classify as must-fix (blocking), should-address (non-blocking but valid), or won't-fix (disagree — needs discussion). Evaluate whether each suggestion is correct before acting and account for issues resolved in previous rounds.
 4. **Keep changes granular**: Group edits by review comment or tightly related concern. If the user asked for commits, keep those commits focused and omit AI-attribution footers (e.g., "Co-Authored-By: Claude").
 5. **Verify**: Run the project's relevant verification suite after local fixes. Push only when explicitly requested.

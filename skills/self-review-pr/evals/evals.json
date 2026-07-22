@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "review-current-pr-before-ready",
+      "prompt": "Adversarially self-review the current pull request before I mark it ready. Do not change or publish anything.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "review-another-authors-pr",
+      "prompt": "Review https://github.com/example/widgets/pull/42 and return copy-pasteable findings.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "independent-snapshot-self-review",
+      "prompt": "Perform an adversarial self-review of the current PR and do not make changes.",
+      "context": "evals/fixtures/cli-first-self-review.md",
+      "expectedOutcome": "An independent, read-only review that checks the PR description, commit scope, SHA-pinned source, and CI before reporting confirmed findings or no findings.",
+      "assertions": [
+        "The review captures the title and description, base/head revisions, and base-to-head commit history before judging scope or completeness.",
+        "The review uses the CLI and local Git by default, and requests connector state only when resolved threads or merged discussion are material.",
+        "The review does not edit source, commit, push, or change the pull request."
+      ]
+    }
+  ]
+}
