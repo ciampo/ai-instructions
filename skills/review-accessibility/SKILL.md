@@ -27,7 +27,7 @@ Review the scoped user experience deeply enough to find material accessibility r
 
 ## Output contract
 
-For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. For a single chat snippet explicitly requested by the user, return only that finding.
+By default, write one portable Markdown artifact in the OS temporary directory and return its path. When the user explicitly requests chat delivery, return only the requested finding or findings in chat.
 
 Structure a full review as:
 

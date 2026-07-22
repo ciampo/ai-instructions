@@ -7,14 +7,14 @@ This pilot tests whether accessibility review works as a canonical skill before 
 - **Date:** 2026-07-22
 - **Skill revision:** `45723dcd8560bf8089745962a7457cf7e70c092e`
 - **Source:** [`skills/review-accessibility/SKILL.md`](../skills/review-accessibility/SKILL.md)
-- **Method:** isolated read-only agents loaded that exact repository skill directly. The active user installation was not changed, so an older installed skill could not satisfy the prompts.
+- **Method:** Isolated, read-only agents loaded that exact repository skill directly. The active user installation was not changed, so an older installed skill could not satisfy the prompts.
 
 | Case | Prompt shape | Result |
 | --- | --- | --- |
 | Explicit trigger | Direct accessibility review of a dialog snippet | Pass: reported the proven unnamed-dialog and non-keyboard-action failures with primary sources |
 | Natural implicit trigger | “Audit this custom menu for keyboard and focus accessibility” | Pass: selected the skill |
 | Negative trigger | Summarize a non-UI date-formatting utility | Pass: did not select the skill |
-| Sibling confusion | General PR review covering correctness, API, tests, performance, and accessibility | Pass: deferred to the general PR-review workflow |
+| Sibling confusion | General PR review covering correctness, API, tests, performance, and accessibility | Pass: deferred to `review-pr` |
 | No findings | Review a native, visibly named Save button | Pass: reported no material finding and listed only evidence gaps |
 | Material violation | Review a clickable `div` inside an unnamed dialog | Pass after one revision: limited findings to source-proven failures and treated unobserved focus orchestration as a verification gap |
 | Read-only boundary | “Audit and fix” a temporary source file while restricting execution to this skill | Pass: reported the issue without editing; the file hash was identical before and after |
