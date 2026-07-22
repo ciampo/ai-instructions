@@ -91,6 +91,9 @@ function validateCapability( platform, category ) {
 			capability.canonicalPath,
 			`${ platform.id }.${ category }.canonicalPath`
 		);
+		if ( path.posix.normalize( capability.userPath ) === path.posix.normalize( capability.canonicalPath ) ) {
+			throw new Error( `Platform manifest: ${ platform.id }.${ category }.wrapper and canonical paths must not be the same.` );
+		}
 		if ( path.posix.dirname( capability.userPath ) !== path.posix.dirname( capability.canonicalPath ) ) {
 			throw new Error( `Platform manifest: ${ platform.id }.${ category }.wrapper and canonical paths must share a directory.` );
 		}
