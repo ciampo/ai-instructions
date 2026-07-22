@@ -310,7 +310,10 @@ export async function writeManagedFilesTransactionally( entries, repoDir, { befo
 	}
 }
 
-export async function removeManagedFilesTransactionally( entries, repoDir, { beforeRemove } = {} ) {
+export async function removeManagedFilesTransactionally( entries, repoDir, {
+	beforeRemove,
+	beforeCleanup,
+} = {} ) {
 	const captured = [];
 	try {
 		for ( const [ index, entry ] of entries.entries() ) {
@@ -324,14 +327,6 @@ export async function removeManagedFilesTransactionally( entries, repoDir, { bef
 			if ( ! await isOwnedPath( backup, repoDir ) ) {
 				throw new Error( `Refusing to remove ${ entry.destination } because its ownership changed.` );
 			}
-		}
-		for ( const removal of captured ) {
-			const stats = await lstat( removal.backup );
-			await rm( removal.backup, {
-				recursive: stats.isDirectory() && ! stats.isSymbolicLink(),
-				force: true,
-			} );
-			removal.backup = null;
 		}
 	} catch ( error ) {
 		const rollbackFailures = [];
@@ -355,6 +350,27 @@ export async function removeManagedFilesTransactionally( entries, repoDir, { bef
 			throw rollbackError;
 		}
 		throw error;
+	}
+
+	const cleanupFailures = [];
+	for ( const [ index, removal ] of captured.entries() ) {
+		try {
+			await beforeCleanup?.( removal.entry, index );
+			const stats = await lstat( removal.backup );
+			await rm( removal.backup, {
+				recursive: stats.isDirectory() && ! stats.isSymbolicLink(),
+				force: true,
+			} );
+		} catch ( error ) {
+			cleanupFailures.push( { error, backup: removal.backup } );
+		}
+	}
+	if ( cleanupFailures.length > 0 ) {
+		const cleanupError = new Error(
+			`Managed files were removed, but cleanup failed: ${ cleanupFailures.map( ( failure ) => `${ failure.error.message } (${ failure.backup })` ).join( ' ' ) }`
+		);
+		cleanupError.cleanupFailures = cleanupFailures;
+		throw cleanupError;
 	}
 }
 

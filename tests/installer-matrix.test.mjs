@@ -452,6 +452,33 @@ test( 'managed file removal transactions restore earlier removals when ownership
 	assert.equal( await readFile( second, 'utf8' ), '# User instructions\n' );
 } );
 
+test( 'managed file removal transactions preserve committed removals when cleanup fails', async ( t ) => {
+	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-removal-cleanup-' ) );
+	t.after( () => rm( directory, { recursive: true, force: true } ) );
+	const first = path.join( directory, 'AGENTS.md' );
+	const second = path.join( directory, 'copilot-instructions.md' );
+	const previous = `${ managedMarker }\n# Previous\n`;
+	await writeFile( first, previous );
+	await writeFile( second, previous );
+
+	await assert.rejects(
+		removeManagedFilesTransactionally(
+			[ { destination: first }, { destination: second } ],
+			repoDir,
+			{
+				beforeCleanup: async ( _entry, index ) => {
+					if ( index === 1 ) {
+						throw new Error( 'simulated cleanup failure' );
+					}
+				},
+			}
+		),
+		/Managed files were removed, but cleanup failed: simulated cleanup failure/
+	);
+	assert.equal( await pathExists( first ), false );
+	assert.equal( await pathExists( second ), false );
+} );
+
 test( 'managed file transactions restore an owned symlink after a later write fails', async ( t ) => {
 	const directory = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-transaction-symlink-' ) );
 	t.after( () => rm( directory, { recursive: true, force: true } ) );

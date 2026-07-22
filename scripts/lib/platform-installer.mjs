@@ -837,7 +837,11 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			}
 		}
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
-			await processStaleArtifacts( platform, artifacts, deferredCleanupCategories, home, state );
+			const completedCleanupBlockers = await blockedGroupCategories( groups, state );
+			const completedCleanupCategories = deferredCleanupCategories.filter(
+				( category ) => ! completedCleanupBlockers.has( category )
+			);
+			await processStaleArtifacts( platform, artifacts, completedCleanupCategories, home, state );
 		}
 		if ( [ 'check', 'list', 'remove' ].includes( state.options.command ) ) {
 			await processStaleArtifacts( platform, artifacts, activeCategories, home, state );
