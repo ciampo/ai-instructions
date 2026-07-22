@@ -93,11 +93,11 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 | Product surface | Tier | Instructions | Skills | Agents | Adapter checked |
 | --- | --- | --- | --- | --- | --- |
-| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` | 2026-07-21 |
-| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` | 2026-07-21 |
-| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` | 2026-07-21 |
-| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.agent.md` | 2026-07-21 |
-| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | `~/.gemini/agents/*.md` | 2026-07-21 |
+| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | Unsupported: Specialist reviews are distributed as Agent Skills instead of custom agents. | 2026-07-21 |
+| Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | Unsupported: Specialist reviews are distributed as Agent Skills instead of custom agents. | 2026-07-21 |
+| Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | Unsupported: Specialist reviews are distributed as Agent Skills instead of custom agents. | 2026-07-21 |
+| GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | Unsupported: Specialist reviews are distributed as Agent Skills instead of custom agents. | 2026-07-21 |
+| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | Unsupported: Specialist reviews are distributed as Agent Skills instead of custom agents. | 2026-07-21 |
 
 <!-- platform-support:end -->
 

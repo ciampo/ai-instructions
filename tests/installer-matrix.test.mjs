@@ -265,10 +265,10 @@ test( 'manifest rejects Windows-style path traversal', () => {
 
 test( 'manifest rejects platform-dependent path separators', () => {
 	const invalidManifest = structuredClone( manifest );
-	invalidManifest.platforms[ 0 ].capabilities.agents.userPath = '.cursor\\agents';
+	invalidManifest.platforms[ 0 ].capabilities.instructions.userPath = '.cursor\\rules';
 	assert.throws(
 		() => validateManifest( invalidManifest ),
-		/cursor\.agents\.userPath must use forward-slash separators/
+		/cursor\.instructions\.userPath must use forward-slash separators/
 	);
 } );
 
@@ -494,6 +494,14 @@ test( 'content contracts reject unsupported agent keys with CRLF frontmatter', a
 	);
 } );
 
+test( 'content contracts allow a skill-only repository without an agents directory', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await rm( path.join( fixture, 'agents' ), { recursive: true } );
+
+	const result = await validateContent( fixture );
+	assert.equal( result.agentCount, 0 );
+} );
+
 test( 'content contracts validate links in bundled skill references', async ( t ) => {
 	const { fixture } = await createContentFixture( t, {
 		referenceContent: 'Read [the missing detail](missing.md).\n',
@@ -655,7 +663,7 @@ for ( const platform of manifest.platforms ) {
 						`${ selection.join( '+' ) } selection produced unexpected ${ category } state`
 					);
 				} else if ( selection.includes( category ) ) {
-					assert.match( output, /not supported/i );
+					assert.match( output, /unsupported/i );
 				}
 			}
 			runInstaller( partialHome, [
@@ -689,11 +697,11 @@ for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: stale managed artifacts fail check and update safely`, async ( t ) => {
 		const home = await createDetectedHome( platform );
 		t.after( () => rm( home, { recursive: true, force: true } ) );
-		const capability = platform.capabilities.agents;
-		const staleExtension = capability.supported ? capability.extension : '.md';
-		const staleDir = capability.supported
-			? destination( home, capability.userPath )
-			: destination( home, platform.capabilities.skills.userPath );
+		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		const staleExtension = platform.id === 'codex'
+			? '.toml'
+			: platform.id === 'copilot' ? '.agent.md' : '.md';
+		const staleDir = destination( home, retiredAgents.userPath );
 		const stalePath = path.join( staleDir, `removed-agent${ staleExtension }` );
 		await mkdir( staleDir, { recursive: true } );
 		await writeFile(
@@ -787,37 +795,6 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		);
 	}
 
-	const agentSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'agents', 'a11y-reviewer.md' ), 'utf8' )
-	);
-	for ( const platform of manifest.platforms.filter( ( entry ) => entry.id !== 'codex' ) ) {
-		assert.equal(
-			await readFile( artifactPath( platform, 'agents', home ), 'utf8' ),
-			`${ agentSource }${ managedMarker }\n`
-		);
-	}
-
-	const codexAgent = await readFile( destination( home, '.codex/agents/a11y-reviewer.toml' ), 'utf8' );
-	assert.match( codexAgent, /^# ai-instructions:managed\nname = "a11y-reviewer"\n/ );
-	assert.match( codexAgent, /description = ".+"\ndeveloper_instructions = """\n/ );
-	assert.match( codexAgent, /\n"""\n$/ );
-} );
-
-test( 'install directs stale owned generated artifacts to update', async ( t ) => {
-	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
-	const home = await createDetectedHome( platform );
-	t.after( () => rm( home, { recursive: true, force: true } ) );
-	runInstaller( home, [ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ] );
-	const target = artifactPath( platform, 'agents', home );
-	const staleContent = '# ai-instructions:managed\nname = "stale"\n';
-	await writeFile( target, staleContent );
-
-	const output = runInstaller(
-		home,
-		[ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ]
-	);
-	assert.match( output, /a11y-reviewer\.toml.*out of date; run update to refresh/ );
-	assert.equal( await readFile( target, 'utf8' ), staleContent );
 } );
 
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {

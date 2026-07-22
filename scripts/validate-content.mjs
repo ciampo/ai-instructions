@@ -139,8 +139,17 @@ async function validateSkills( repoDir ) {
 
 async function validateAgents( repoDir ) {
 	const agentsDirectory = path.join( repoDir, 'agents' );
+	let agentEntries;
+	try {
+		agentEntries = await entries( agentsDirectory );
+	} catch ( error ) {
+		if ( error.code === 'ENOENT' ) {
+			return 0;
+		}
+		throw error;
+	}
 	let count = 0;
-	for ( const entry of await entries( agentsDirectory ) ) {
+	for ( const entry of agentEntries ) {
 		if ( ! entry.isFile() || ! entry.name.endsWith( '.md' ) ) {
 			throw new Error( `${ path.join( agentsDirectory, entry.name ) }: agents must be Markdown files.` );
 		}

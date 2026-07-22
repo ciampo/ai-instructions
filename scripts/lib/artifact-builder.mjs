@@ -21,7 +21,16 @@ export function createArtifactBuilder( { repoDir } ) {
 	}
 
 	async function sourceMarkdownFiles( directory ) {
-		return ( await readdir( directory, { withFileTypes: true } ) )
+		let directoryEntries;
+		try {
+			directoryEntries = await readdir( directory, { withFileTypes: true } );
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				return [];
+			}
+			throw error;
+		}
+		return directoryEntries
 			.filter( ( entry ) => entry.isFile() && entry.name.endsWith( '.md' ) )
 			.map( ( entry ) => entry.name )
 			.sort();

@@ -61,6 +61,35 @@ copy_installer_runtime() {
   cp -R "$REPO_DIR/platforms" "$destination/platforms"
 }
 
+enable_agent_adapter_fixtures() {
+  local destination="$1"
+  node - "$destination/platforms/manifest.json" <<'NODE'
+const fs = require( 'node:fs' );
+const manifestPath = process.argv[ 2 ];
+const manifest = JSON.parse( fs.readFileSync( manifestPath, 'utf8' ) );
+const contracts = {
+  cursor: [ 'markdown-agent', '.cursor/agents', '.cursor/agents', '.md' ],
+  claude: [ 'markdown-agent', '.claude/agents', '.claude/agents', '.md' ],
+  codex: [ 'codex-agent-toml', '.codex/agents', '.codex/agents', '.toml' ],
+  copilot: [ 'markdown-agent', '.copilot/agents', '.github/agents', '.agent.md' ],
+  gemini: [ 'markdown-agent', '.gemini/agents', '.gemini/agents', '.md' ],
+};
+for ( const platform of manifest.platforms ) {
+  const [ format, userPath, projectPath, extension ] = contracts[ platform.id ];
+  platform.capabilities.agents = {
+    supported: true,
+    strategy: 'files',
+    format,
+    userPath,
+    projectPath,
+    extension,
+    precedence: 'Fixture-only adapter contract.',
+  };
+}
+fs.writeFileSync( manifestPath, `${ JSON.stringify( manifest, null, 2 ) }\n` );
+NODE
+}
+
 skills_are_portable() {
   local root="$1" status
   if grep -R -E -q '/Users/|skills/[^/[:space:]]+\.md' "$root"; then
@@ -98,10 +127,13 @@ for skill in "$REPO_DIR"/skills/*/SKILL.md; do
   assert_frontmatter_file "$skill" "$skill_name"
 done
 
-for agent in "$REPO_DIR"/agents/*.md; do
-  agent_name="$(basename "$agent" .md)"
-  assert_frontmatter_file "$agent" "$agent_name"
-done
+if [ -d "$REPO_DIR/agents" ]; then
+  for agent in "$REPO_DIR"/agents/*.md; do
+    [ -e "$agent" ] || continue
+    agent_name="$(basename "$agent" .md)"
+    assert_frontmatter_file "$agent" "$agent_name"
+  done
+fi
 
 PORTABILITY_FIXTURE="$TMP_ROOT/portability-fixture"
 mkdir -p "$PORTABILITY_FIXTURE/example/references"
@@ -142,26 +174,11 @@ assert_file_exists "$ENGINEERING_REFERENCE"
 assert_file_contains "$ENGINEERING_REFERENCE" "# Accessibility Reference"
 assert_file_contains "$TMP_HOME/.agents/skills/engineering-standards/.ai-instructions-managed" "ai-instructions:managed"
 
-HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/dev/null
-
-for agent_path in \
-  "$TMP_HOME/.cursor/agents/a11y-reviewer.md" \
-  "$TMP_HOME/.claude/agents/a11y-reviewer.md" \
-  "$TMP_HOME/.copilot/agents/a11y-reviewer.agent.md" \
-  "$TMP_HOME/.gemini/agents/a11y-reviewer.md"; do
-  assert_frontmatter_file "$agent_path" "a11y-reviewer"
-done
-
-CODEX_AGENT="$TMP_HOME/.codex/agents/a11y-reviewer.toml"
-assert_file_exists "$CODEX_AGENT"
-assert_file_contains "$CODEX_AGENT" "# ai-instructions:managed"
-assert_file_contains "$CODEX_AGENT" 'name = "a11y-reviewer"'
-assert_file_contains "$CODEX_AGENT" "developer_instructions ="
-
 QUOTED_REPO="$TMP_ROOT/quoted-repo"
 QUOTED_HOME="$TMP_ROOT/quoted-home"
 mkdir -p "$QUOTED_REPO/agents" "$QUOTED_HOME/.codex"
 copy_installer_runtime "$QUOTED_REPO"
+enable_agent_adapter_fixtures "$QUOTED_REPO"
 cat > "$QUOTED_REPO/agents/quoted-agent.md" <<'EOF'
 ---
   name: "quoted-agent"
@@ -191,6 +208,7 @@ mkdir -p \
   "$INVALID_HOME/.copilot" \
   "$INVALID_HOME/.gemini"
 copy_installer_runtime "$INVALID_REPO"
+enable_agent_adapter_fixtures "$INVALID_REPO"
 cat > "$INVALID_REPO/agents/a-valid-agent.md" <<'EOF'
 ---
 name: a-valid-agent
@@ -240,6 +258,7 @@ FOLDED_REPO="$TMP_ROOT/folded-repo"
 FOLDED_HOME="$TMP_ROOT/folded-home"
 mkdir -p "$FOLDED_REPO/agents" "$FOLDED_HOME/.codex"
 copy_installer_runtime "$FOLDED_REPO"
+enable_agent_adapter_fixtures "$FOLDED_REPO"
 cat > "$FOLDED_REPO/agents/folded-agent.md" <<'EOF'
 ---
 name: folded-agent
@@ -413,7 +432,6 @@ HOME="$TMP_HOME" "$REPO_DIR/setup.sh" remove --agent '*' --only skills --only ag
 assert_path_missing "$CURSOR_SKILL"
 assert_path_missing "$CODEX_SKILL"
 assert_path_missing "$ENGINEERING_REFERENCE"
-assert_path_missing "$CODEX_AGENT"
 
 LEGACY_HOME="$TMP_ROOT/legacy"
 mkdir -p "$LEGACY_HOME/.cursor/skills-cursor/review-pr" "$LEGACY_HOME/.cursor/agents"
@@ -435,6 +453,6 @@ assert_file_contains "$LEGACY_HOME/.cursor/skills/review-pr/.ai-instructions-man
 [ ! -L "$LEGACY_HOME/.cursor/skills/review-pr" ] || fail "Expected legacy Cursor skill copy migration to preserve copy mode"
 
 HOME="$LEGACY_HOME" "$REPO_DIR/setup.sh" update --agent cursor --only agents --copy --yes >/dev/null
-assert_frontmatter_file "$LEGACY_HOME/.cursor/agents/a11y-reviewer.md" "a11y-reviewer"
+assert_path_missing "$LEGACY_HOME/.cursor/agents/a11y-reviewer.md"
 
 echo "skills and agents installer regression test passed"
