@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Record live product-discovery results, scope Gemini CLI preview support to non-individual authentication, and track Google Antigravity as a separate surface. ([#41](https://github.com/ciampo/ai-instructions/pull/41))
 - Keep platform support in preview until in-product discovery evidence is recorded, and define compatibility-removal and native-distribution policies. ([#25](https://github.com/ciampo/ai-instructions/pull/25))
 - Preserve upgrades from pre-modernization default and copy-mode installations, and retain the former `release-publish` skill as a deprecated compatibility route. ([#24](https://github.com/ciampo/ai-instructions/pull/24))
 - Add guidance for clear, phase-aware task titles across supported AI runtimes. ([#23](https://github.com/ciampo/ai-instructions/pull/23))
