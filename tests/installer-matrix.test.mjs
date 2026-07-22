@@ -744,6 +744,36 @@ test( 'content contracts reject incomplete skill evaluation fixtures', async ( t
 	);
 } );
 
+test( 'content contracts require an existing output evaluation context', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	const evalsDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
+	await mkdir( evalsDirectory );
+	await writeFile(
+		path.join( evalsDirectory, 'evals.json' ),
+		JSON.stringify( {
+			schemaVersion: 1,
+			triggerCases: [
+				{ id: 'positive', prompt: 'Use this skill.', shouldTrigger: true },
+				{ id: 'negative', prompt: 'Do not use this skill.', shouldTrigger: false },
+			],
+			outputCases: [
+				{
+					id: 'output',
+					prompt: 'Use this skill.',
+					context: 'evals/fixtures/missing.md',
+					expectedOutcome: 'A useful result.',
+					assertions: [ 'The result is useful.' ],
+				},
+			],
+		}, null, 2 )
+	);
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/outputCases\[0\]\.context does not exist: evals\/fixtures\/missing\.md/
+	);
+} );
+
 test( 'content contracts ignore link-shaped examples in inline code', async ( t ) => {
 	const { fixture } = await createContentFixture( t, {
 		referenceContent: 'Use `([#123](URL))` as the changelog link format.\n',

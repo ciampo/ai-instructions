@@ -111,7 +111,7 @@ function requireNonEmptyString( value, field, source ) {
 	}
 }
 
-function validateSkillEvaluation( content, source ) {
+async function validateSkillEvaluation( content, source, skillDirectory ) {
 	let evaluation;
 	try {
 		evaluation = JSON.parse( content );
@@ -163,7 +163,24 @@ function validateSkillEvaluation( content, source ) {
 		}
 		requireNonEmptyString( outputCase.id, `${ field }.id`, source );
 		requireNonEmptyString( outputCase.prompt, `${ field }.prompt`, source );
+		requireNonEmptyString( outputCase.context, `${ field }.context`, source );
 		requireNonEmptyString( outputCase.expectedOutcome, `${ field }.expectedOutcome`, source );
+		const contextSource = path.resolve( skillDirectory, outputCase.context );
+		if ( ! isInside( contextSource, skillDirectory ) ) {
+			throw new Error( `${ source }: ${ field }.context must stay within the skill directory.` );
+		}
+		let contextStats;
+		try {
+			contextStats = await lstat( contextSource );
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				throw new Error( `${ source }: ${ field }.context does not exist: ${ outputCase.context }.` );
+			}
+			throw error;
+		}
+		if ( ! contextStats.isFile() ) {
+			throw new Error( `${ source }: ${ field }.context must reference a file.` );
+		}
 		if ( ! Array.isArray( outputCase.assertions ) || outputCase.assertions.length === 0 ) {
 			throw new Error( `${ source }: ${ field }.assertions must contain at least one assertion.` );
 		}
@@ -203,7 +220,7 @@ async function validateSkills( repoDir ) {
 		}
 		if ( bundledFiles.includes( path.join( 'evals', 'evals.json' ) ) ) {
 			const evaluationSource = path.join( skillDirectory, 'evals', 'evals.json' );
-			validateSkillEvaluation( await readFile( evaluationSource, 'utf8' ), evaluationSource );
+			await validateSkillEvaluation( await readFile( evaluationSource, 'utf8' ), evaluationSource, skillDirectory );
 			evaluationCount++;
 		}
 		count++;

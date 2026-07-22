@@ -16,6 +16,7 @@
     {
       "id": "consumer-grounded-api-review",
       "prompt": "Audit this library's new callback and polymorphic props for API design. Do not change the source.",
+      "context": "evals/fixtures/select-control-api.md",
       "expectedOutcome": "A read-only API review that checks consumers and compatibility before identifying material public-contract risks.",
       "assertions": [
         "The review remains read-only.",

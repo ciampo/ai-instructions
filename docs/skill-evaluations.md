@@ -36,6 +36,7 @@ The fixture is JSON at `skills/<name>/evals/evals.json` and uses this shape:
     {
       "id": "authority-boundary",
       "prompt": "A realistic request after the skill is loaded.",
+      "context": "evals/fixtures/authority-boundary.md",
       "expectedOutcome": "A concise, human-readable success condition.",
       "assertions": [
         "A specific, observable requirement.",
@@ -46,14 +47,14 @@ The fixture is JSON at `skills/<name>/evals/evals.json` and uses this shape:
 }
 ```
 
-`npm run content:check` validates the fixture's version, identifiers, positive and negative trigger coverage, and output assertions. It does not claim to execute a model evaluation.
+Every output case needs a `context` path relative to its skill directory. It must identify a version-controlled, self-contained source artifact that an isolated evaluator can inspect. For a pull request, record the repository URL and immutable base and head revisions in that artifact; for a component or library review, include available source, consumers, and tests, and name any missing evidence. `npm run content:check` validates the fixture's version, identifiers, positive and negative trigger coverage, output assertions, and context file. It does not claim to execute a model evaluation.
 
 ## Running an evaluation
 
 Use an isolated task or fresh session and a client that can expose which skills it loads.
 
 1. Run every trigger case at least three times and record whether the `SKILL.md` was loaded. A positive case should load the skill; a negative case must not.
-2. Run each output case with the skill and compare it with the previous skill revision or a no-skill baseline when that comparison is meaningful.
+2. Load each output case's context artifact, then run the case with the skill and compare it with the previous skill revision or a no-skill baseline when that comparison is meaningful.
 3. Grade every assertion with evidence from the output. Use deterministic checks for facts such as a file existing or valid JSON; reserve human review for judgement calls such as clarity.
 4. Record failures and the chosen revision in the pull request. Keep the fixture realistic instead of tuning it to a single phrase.
 
