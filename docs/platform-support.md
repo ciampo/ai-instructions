@@ -20,25 +20,26 @@ After installation, start a new session unless the product documents live reload
 ### Cursor editor and Agent CLI (preview)
 
 1. Open Cursor's Customize page and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear at user scope.
-2. Open the slash-command menu and invoke one specialist review skill.
-3. Confirm the core rule appears at user scope. File-backed global rules remain preview because Cursor also exposes user rules through product-managed settings.
+2. Open the slash-command menu and invoke `/review-pr`.
+3. Invoke `review-accessibility` on an interactive UI and confirm the source-verified specialist method is used.
+4. Confirm the core rule appears at user scope. File-backed global rules remain preview because Cursor also exposes user rules through product-managed settings.
 
 ### Claude Code CLI
 
 1. Type `/review-pr`; Claude Code exposes skills by name and also loads them automatically when their descriptions match.
-2. Confirm the three specialist review skills are available and invoke one directly.
+2. Invoke `review-accessibility` directly and confirm a general PR prompt remains with `review-pr` instead.
 3. Change a bundled reference, run `./setup.sh update --agent claude` when using copy mode, and verify the skill uses the updated reference.
 
 ### Codex app, CLI, and IDE extension
 
 1. Run `/skills` or type `$` in CLI/IDE and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear.
-2. Invoke one specialist review skill directly.
+2. Invoke each specialist directly on a matching prompt and confirm `review-pr` uses them only when the domain is material.
 3. Confirm the effective global instructions include the `Core Instructions` heading. If `~/.codex/AGENTS.override.md` exists, it intentionally takes precedence over the managed `AGENTS.md`.
 
 ### GitHub Copilot CLI
 
 1. Invoke `/review-pr`; Copilot CLI exposes skills as slash commands and may also invoke them automatically.
-2. Confirm the three specialist review skills are available and invoke one directly.
+2. Invoke `/review-accessibility` on a matching UI example and verify a non-UI prompt does not select it.
 3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
 ### Gemini CLI (preview; non-individual authentication only)
@@ -46,7 +47,7 @@ After installation, start a new session unless the product documents live reload
 Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth with `UNSUPPORTED_CLIENT`. Run these checks only with a supported enterprise, Google Cloud, or paid API authentication context, and record that context with the result. Individual users are directed to Google Antigravity CLI, which is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
 1. Run `/skills reload`, then `/skills list`; confirm `review-pr`, the three specialist review skills, and the scoped standards skills appear.
-2. Invoke one specialist review skill directly.
+2. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr`.
 3. Ask Gemini to summarize one core instruction to confirm `~/.gemini/GEMINI.md` is loaded.
 
 ### Google Antigravity CLI (not yet advertised)

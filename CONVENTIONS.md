@@ -1,6 +1,6 @@
 # Conventions
 
-Meta-conventions used across all instruction and skill files in this repo.
+Meta-conventions used across instruction and skill files in this repository.
 
 ## Severity Tags
 
@@ -33,12 +33,16 @@ description: Perform a read-only, multi-round pull-request review. Use when aske
 
 Procedural workflows belong in skills instead of always-on instructions. Native skill descriptions replace the former generated workflow-routing file.
 
-## Retired Custom Agents
+## Specialist Execution
 
 The repository no longer distributes custom-agent sources or platform adapters. Specialist reviews are direct Agent Skills. The installer retains legacy agent destinations solely to identify and remove repository-owned artifacts from earlier installations; it never manages or removes user-authored agents.
+
+The review method, evidence requirements, authority boundary, output contract, and completion criteria for a reusable specialist belong in one canonical skill. General workflows may load that skill directly and synthesize its findings.
+
+Add a custom agent only when evaluation demonstrates value from context isolation, an independent parallel pass, restricted tools or permissions, a different model configuration, or a separately inspectable result. A custom agent must not restate or silently diverge from the canonical skill. This repository currently distributes no custom agents.
 
 ## Universal Instructions
 
 `instructions/core.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
 
-The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, bundled-reference, and manifest contracts.
+The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, bundled-reference, optional agent metadata, and manifest contracts.

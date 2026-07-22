@@ -8,6 +8,7 @@ The installer supports direct updates from the pre-modernization layout recorded
 | --- | --- |
 | `setup.sh` | Keep as the stable POSIX entrypoint. There is no planned removal date. |
 | `--only personas` | Keep as a deprecated alias for `agents` through at least 2026-10-21 and one tagged major release after the modernization stack merges. |
+| Retired specialist agents | Keep managed-marker and repository-owned symlink cleanup at each former agent destination through the supported upgrade window. Do not recreate the agents. |
 | Legacy Cursor and Codex destinations | Keep cleanup adapters while direct upgrades from the frozen baseline are supported. Their maintenance cost is small and removing them would strand old installations. |
 | `release-publish` skill | Keep as a deprecated route through at least 2026-10-21 and one tagged major release after the modernization stack merges. |
 | Managed-marker recognition | Keep for every installation format still present in a supported upgrade fixture. |

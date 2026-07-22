@@ -2,7 +2,7 @@
 
 Support tiers require evidence from the target product, not only proof that files were installed. This record separates the automated adapter contract from product discovery.
 
-Entries before the specialist-agent retirement record the then-current installation and discovery results. They remain historical evidence and do not describe the current distribution contract, which provides specialist reviews as direct Agent Skills.
+The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
 ## 2026-07-21 and 2026-07-22 adapter and live discovery checks
 
@@ -41,19 +41,25 @@ The active installation was generated from `main` at `6ca999444033ef095d9f8539f6
 
 Codex context isolation also passed in a fresh delegated task: a non-engineering prose prompt produced only the requested prose, without engineering, release, or pull-request procedures. The combined Codex surface remains preview because the app version, IDE extension version, and independent CLI and IDE checks are still missing. No other support tier changes are justified by this evidence.
 
+## 2026-07-22 specialist architecture decision
+
+The direct accessibility skill passed explicit, implicit, negative, sibling-confusion, no-findings, material-violation, and read-only-boundary cases. Comparisons for accessibility, API design, and performance found no distinct tool, isolation, or result-quality benefit from the parallel custom-agent prompts; the prompts instead introduced evidence and output-taxonomy drift. The repository now distributes 17 skills and no custom agents. Full evidence and the decision are recorded in the [pilot](accessibility-review-pilot.md) and [ADR 0004](decisions/0004-skill-first-specialists.md).
+
+This source-level decision and the installer lifecycle tests do not replace current in-product discovery. All five product surfaces remain preview until the revised direct-skill checks below are completed on every named client.
+
 ## Acceptance matrix
 
 Run these checks from a disposable home on a current product version. Use product introspection where available, pair it with the repository-specific canaries below, and record pass, fail, or blocked above for each capability and client before promoting a platform to verified.
 
 | Capability | Check | Expected result |
 | --- | --- | --- |
-| Installed-source introspection | Use the product's diagnostics, settings UI, or plugin/resource listing to inspect loaded instruction, skill, and agent sources. | The repository-managed user paths are visible. If the product exposes no source introspection, record this check as blocked and rely on a canary instead. |
+| Installed-source introspection | Use the product's diagnostics, settings UI, or plugin/resource listing to inspect loaded instruction and skill sources. | The repository-managed user paths are visible. If the product exposes no source introspection, record this check as blocked and rely on a canary instead. |
 | Persistent instructions | Ask for a task title for reviewing PR 789, “Improve Dialog focus handling,” without supplying a format. | The title starts with `👀 [R#789]` and preserves the subject, demonstrating the repository's title convention loaded. |
 | Skill listing | Use the product's skill-listing command or picker. | `review-pr`, `engineering-standards`, and `repository-maintenance` are present at user scope. |
 | Skill invocation | Explicitly invoke `review-pr` without providing a pull request. | The skill requests or identifies a PR and keeps the review read-only; it does not invent a target. |
 | Context isolation | Ask for a prose summary unrelated to engineering. | Engineering, release, and PR-review guidance is not injected as task instructions. |
 | Context activation | Ask whether a 44x44 CSS-pixel touch target is required for WCAG 2.2 Level AA. | The response identifies 24x24 with exceptions as the Level AA minimum and 44x44 as the stronger Level AAA preference from the accessibility reference. |
-| Specialist review skills | List and invoke `review-accessibility`, `review-api-design`, and `review-performance`. | All three skills are available at user scope and each direct review follows its scoped output and read-only contract. |
+| Specialist reviews | List and invoke `review-accessibility`, `review-api-design`, and `review-performance` on matching prompts. | Each skill is directly available, preserves its read-only boundary, and leaves unrelated or general PR prompts to the appropriate workflow. |
 | Release boundary | Invoke the legacy `release-publish` name with a preparation-only request. | The request routes to preparation and performs no publish, tag, or push action. |
 
 If a product cannot expose one of these checks non-interactively, perform it in the product UI and record the result. A plausible generic response is not proof of discovery when source introspection or a repository-specific canary is available. Do not infer discovery from file presence.
