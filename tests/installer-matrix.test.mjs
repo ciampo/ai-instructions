@@ -907,9 +907,9 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 				`${ platform.id } ${ skillName } must include every bundled skill resource`
 			);
 			for ( const relative of sourceFiles ) {
-				assert.equal(
-					await readFile( path.join( installed, relative ), 'utf8' ),
-					await readFile( path.join( source, relative ), 'utf8' ),
+				assert.deepEqual(
+					await readFile( path.join( installed, relative ) ),
+					await readFile( path.join( source, relative ) ),
 					`${ platform.id } ${ skillName } ${ relative } must match the source`
 				);
 			}
