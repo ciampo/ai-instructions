@@ -497,17 +497,36 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		return groups;
 	}
 
-	async function groupConflicts( artifacts ) {
-		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
-		return artifacts.filter( ( artifact, index ) =>
-			statuses[ index ].exists && ! statuses[ index ].owned
-		);
+	function installWouldSkipArtifact( artifact, status ) {
+		return status.exists &&
+			! status.current &&
+			! ( artifact.generated && status.kind === 'symlink' && status.owned );
 	}
 
-	async function blockedGroupCategories( groups ) {
+	async function groupBlockers( artifacts, command ) {
+		const statuses = await Promise.all( artifacts.map( inspectArtifact ) );
+		return artifacts.flatMap( ( artifact, index ) => {
+			const status = statuses[ index ];
+			const blocksGroup = command === 'install'
+				? installWouldSkipArtifact( artifact, status )
+				: status.exists && ! status.owned;
+			return blocksGroup ? [ { artifact, status } ] : [];
+		} );
+	}
+
+	function logGroupBlocker( { artifact, status }, state ) {
+		if ( state.options.command === 'install' && status.owned ) {
+			console.warn( `  [warning] ${ path.basename( artifact.destination ) } is out of date; run update to refresh` );
+			state.skipped++;
+			return;
+		}
+		logConflict( artifact, state );
+	}
+
+	async function blockedGroupCategories( groups, state ) {
 		const blocked = new Set();
 		for ( const group of groups.values() ) {
-			if ( group.length < 2 || ( await groupConflicts( group ) ).length === 0 ) {
+			if ( group.length < 2 || ( await groupBlockers( group, state.options.command ) ).length === 0 ) {
 				continue;
 			}
 			for ( const artifact of group ) {
@@ -526,10 +545,10 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			return;
 		}
 
-		const conflicts = await groupConflicts( artifacts );
-		if ( conflicts.length > 0 ) {
-			for ( const artifact of conflicts ) {
-				logConflict( artifact, state );
+		const blockers = await groupBlockers( artifacts, command );
+		if ( blockers.length > 0 ) {
+			for ( const blocker of blockers ) {
+				logGroupBlocker( blocker, state );
 			}
 			return;
 		}
@@ -759,7 +778,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 		const artifacts = await buildArtifacts( platform, activeCategories, home );
 		const groups = groupArtifacts( artifacts );
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
-			const cleanupBlockedCategories = await blockedGroupCategories( groups );
+			const cleanupBlockedCategories = await blockedGroupCategories( groups, state );
 			const cleanupCategories = activeCategories.filter(
 				( category ) => ! cleanupBlockedCategories.has( category )
 			);

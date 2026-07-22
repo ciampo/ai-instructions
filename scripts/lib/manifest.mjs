@@ -3,7 +3,11 @@ import path from 'node:path';
 
 const PLATFORM_IDS = [ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ];
 const CATEGORIES = [ 'instructions', 'skills', 'agents' ];
-const STRATEGIES = new Set( [ 'direct', 'directories', 'files', 'wrapper' ] );
+const STRATEGIES_BY_CATEGORY = {
+	instructions: new Set( [ 'direct', 'files', 'wrapper' ] ),
+	skills: new Set( [ 'directories' ] ),
+	agents: new Set( [ 'files' ] ),
+};
 const SUPPORT_TIERS = new Set( [ 'verified', 'preview' ] );
 
 function assertString( value, field ) {
@@ -66,8 +70,10 @@ function validateCapability( platform, category ) {
 		return;
 	}
 
-	if ( ! STRATEGIES.has( capability.strategy ) ) {
-		throw new Error( `Platform manifest: unsupported strategy for ${ platform.id }.${ category }.` );
+	if ( ! STRATEGIES_BY_CATEGORY[ category ].has( capability.strategy ) ) {
+		throw new Error(
+			`Platform manifest: ${ platform.id }.${ category }.strategy must be one of ${ [ ...STRATEGIES_BY_CATEGORY[ category ] ].join( ', ' ) }; received ${ capability.strategy }.`
+		);
 	}
 	assertString( capability.format, `${ platform.id }.${ category }.format` );
 	validateRelativePath( capability.userPath, `${ platform.id }.${ category }.userPath` );
