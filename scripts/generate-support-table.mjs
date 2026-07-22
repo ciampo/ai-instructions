@@ -14,7 +14,7 @@ const endMarker = '<!-- platform-support:end -->';
 
 function displayPath( capability ) {
 	if ( ! capability.supported ) {
-		return `Unsupported: ${ capability.reason }`;
+		return `Not distributed: ${ capability.reason }`;
 	}
 	const root = `~/${ capability.userPath }`;
 	if ( capability.strategy === 'concat' ) {
@@ -28,12 +28,12 @@ function displayPath( capability ) {
 
 export function renderSupportTable( manifest ) {
 	const rows = [
-		'| Product surface | Tier | Instructions | Skills | Agents | Adapter checked |',
-		'| --- | --- | --- | --- | --- | --- |',
+		'| Product surface | Tier | Instructions | Skills | Adapter checked |',
+		'| --- | --- | --- | --- | --- |',
 	];
 	for ( const platform of manifest.platforms ) {
 		rows.push(
-			`| ${ platform.surface } | ${ platform.supportTier } | ${ displayPath( platform.capabilities.instructions ) } | ${ displayPath( platform.capabilities.skills ) } | ${ displayPath( platform.capabilities.agents ) } | ${ platform.lastAdapterChecked } |`
+			`| ${ platform.surface } | ${ platform.supportTier } | ${ displayPath( platform.capabilities.instructions ) } | ${ displayPath( platform.capabilities.skills ) } | ${ platform.lastAdapterChecked } |`
 		);
 	}
 	return `${ startMarker }\n\n<!-- Generated from platforms/manifest.json. Do not edit this table directly. -->\n\n${ rows.join( '\n' ) }\n\n${ endMarker }`;

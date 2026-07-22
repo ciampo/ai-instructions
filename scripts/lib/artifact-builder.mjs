@@ -20,8 +20,17 @@ export function createArtifactBuilder( { repoDir } ) {
 		throw new Error( message );
 	}
 
-	async function sourceMarkdownFiles( directory ) {
-		return ( await readdir( directory, { withFileTypes: true } ) )
+	async function sourceMarkdownFiles( directory, optional = false ) {
+		let directoryEntries;
+		try {
+			directoryEntries = await readdir( directory, { withFileTypes: true } );
+		} catch ( error ) {
+			if ( optional && error.code === 'ENOENT' ) {
+				return [];
+			}
+			throw error;
+		}
+		return directoryEntries
 			.filter( ( entry ) => entry.isFile() && entry.name.endsWith( '.md' ) )
 			.map( ( entry ) => entry.name )
 			.sort();
@@ -133,7 +142,7 @@ export function createArtifactBuilder( { repoDir } ) {
 				continue;
 			}
 
-			for ( const name of await sourceMarkdownFiles( agentsDir ) ) {
+			for ( const name of await sourceMarkdownFiles( agentsDir, true ) ) {
 				const source = path.join( agentsDir, name );
 				const content = await readFile( source, 'utf8' );
 				const metadata = parseFrontmatter( content, source );

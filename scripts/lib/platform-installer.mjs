@@ -40,7 +40,8 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 	}
 
 	function logUnsupported( platform, category, reason ) {
-		console.log( `  [unsupported] ${ platform.surface } ${ category}: ${ reason }` );
+		const status = category === 'agents' ? 'not distributed' : 'unsupported';
+		console.log( `  [${ status }] ${ platform.surface } ${ category}: ${ reason }` );
 	}
 
 	async function inspectArtifact( artifact ) {

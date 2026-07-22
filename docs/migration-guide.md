@@ -48,9 +48,11 @@ Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that 
 
 - **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. Managed instruction rules not present in the new core are removed. User-owned files remain.
 - **Codex**: managed files under the former `~/.codex/instructions/` layout are removed. The current global file is `~/.codex/AGENTS.md`; `AGENTS.override.md` still takes precedence and is never modified.
-- **GitHub Copilot CLI**: user agents use `.agent.md`. Managed legacy `.md` agents are removed during update. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` for each generated project file.
-- **Gemini CLI**: update creates the global `~/.gemini/GEMINI.md` core file and installs complete skills and agents in their native user directories.
-- **Claude Code**: the obsolete reminder to import rules from `CLAUDE.md` is gone. User rules, complete skills, and agents are installed directly in their native directories.
+- **GitHub Copilot CLI**: repository-owned retired custom-agent artifacts under `~/.copilot/agents/` are removed during lifecycle operations regardless of their former adapter extension. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` for each generated project file.
+- **Gemini CLI**: update creates the global `~/.gemini/GEMINI.md` core file and installs complete skills in their native user directory.
+- **Claude Code**: the obsolete reminder to import rules from `CLAUDE.md` is gone. User rules and complete skills are installed directly in their native directories.
+
+For every supported product surface, `install`, `update`, and `remove` also clean only repository-owned artifacts from the retired custom-agent layout. User-authored agents are preserved.
 
 ## Troubleshooting
 

@@ -8,7 +8,7 @@ Core implementation completed: 2026-07-21
 
 Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity CLI is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
-The delivered architecture has a budget-constrained universal core, standard Agent Skills with bundled references, native custom-agent adapters, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
+The delivered architecture has a budget-constrained universal core, standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. Specialist reviews are direct skills; legacy custom-agent destinations remain only for ownership-safe cleanup. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
 ## Executive assessment
 
@@ -81,6 +81,8 @@ Cursor and Codex layouts. They do not demonstrate that current product versions
 discover or apply those artifacts.
 
 ## Target architecture
+
+The following is the original modernization target and audit record. Its proposed custom-agent source and adapter layer was superseded after the direct-skill comparison documented in [`docs/accessibility-review-pilot.md`](docs/accessibility-review-pilot.md); the current distribution contract is described above and in the platform-support guide.
 
 ```text
 core/                         Small, product-neutral personal defaults

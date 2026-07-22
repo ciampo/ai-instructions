@@ -86,6 +86,12 @@ function artifactPath( platform, category, home ) {
 	return path.join( base, `a11y-reviewer${ capability.extension }` );
 }
 
+function retiredAgentExtension( platform ) {
+	return platform.id === 'codex'
+		? '.toml'
+		: platform.id === 'copilot' ? '.agent.md' : '.md';
+}
+
 function skillPath( platform, home, skillName, relative = 'SKILL.md' ) {
 	return path.join(
 		destination( home, platform.capabilities.skills.userPath ),
@@ -265,10 +271,10 @@ test( 'manifest rejects Windows-style path traversal', () => {
 
 test( 'manifest rejects platform-dependent path separators', () => {
 	const invalidManifest = structuredClone( manifest );
-	invalidManifest.platforms[ 0 ].capabilities.agents.userPath = '.cursor\\agents';
+	invalidManifest.platforms[ 0 ].capabilities.instructions.userPath = '.cursor\\rules';
 	assert.throws(
 		() => validateManifest( invalidManifest ),
-		/cursor\.agents\.userPath must use forward-slash separators/
+		/cursor\.instructions\.userPath must use forward-slash separators/
 	);
 } );
 
@@ -494,6 +500,14 @@ test( 'content contracts reject unsupported agent keys with CRLF frontmatter', a
 	);
 } );
 
+test( 'content contracts allow a skill-only repository without an agents directory', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await rm( path.join( fixture, 'agents' ), { recursive: true } );
+
+	const result = await validateContent( fixture );
+	assert.equal( result.agentCount, 0 );
+} );
+
 test( 'content contracts validate links in bundled skill references', async ( t ) => {
 	const { fixture } = await createContentFixture( t, {
 		referenceContent: 'Read [the missing detail](missing.md).\n',
@@ -540,6 +554,20 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 		fixture
 	);
 	assert.equal( artifact.expectedContent, source );
+} );
+
+test( 'artifact building fails when required instructions are missing', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await rm( path.join( fixture, 'instructions' ), { recursive: true } );
+
+	await assert.rejects(
+		createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
+			manifest.platforms[ 0 ],
+			[ 'instructions' ],
+			fixture
+		),
+		{ code: 'ENOENT' }
+	);
 } );
 
 async function assertSkillInstallMode( platform, home, skillName, expectedMode ) {
@@ -610,7 +638,7 @@ for ( const platform of manifest.platforms ) {
 		runInstaller( home, [ '--agent', platform.id, '--copy', '--yes' ] );
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ] );
 		const listOutput = runInstaller( home, [ 'list', '--agent', platform.id, '--copy', '--yes' ] );
-		assert.match( listOutput, /\[(?:ok|unsupported)\]/ );
+		assert.match( listOutput, /\[(?:ok|not distributed)\]/ );
 		assert.match(
 			runInstaller( home, [ '--agent', platform.id, '--copy', '--yes' ] ),
 			/Already up to date/
@@ -655,7 +683,7 @@ for ( const platform of manifest.platforms ) {
 						`${ selection.join( '+' ) } selection produced unexpected ${ category } state`
 					);
 				} else if ( selection.includes( category ) ) {
-					assert.match( output, /not supported/i );
+					assert.match( output, /not distributed/i );
 				}
 			}
 			runInstaller( partialHome, [
@@ -689,12 +717,12 @@ for ( const platform of manifest.platforms ) {
 	test( `${ platform.id }: stale managed artifacts fail check and update safely`, async ( t ) => {
 		const home = await createDetectedHome( platform );
 		t.after( () => rm( home, { recursive: true, force: true } ) );
-		const capability = platform.capabilities.agents;
-		const staleExtension = capability.supported ? capability.extension : '.md';
-		const staleDir = capability.supported
-			? destination( home, capability.userPath )
-			: destination( home, platform.capabilities.skills.userPath );
+		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		assert.ok( retiredAgents, `${ platform.id} must declare a retired agent destination` );
+		const staleExtension = retiredAgentExtension( platform );
+		const staleDir = destination( home, retiredAgents.userPath );
 		const stalePath = path.join( staleDir, `removed-agent${ staleExtension }` );
+		const userAgentPath = path.join( staleDir, `user-agent${ staleExtension }` );
 		await mkdir( staleDir, { recursive: true } );
 		await writeFile(
 			stalePath,
@@ -702,6 +730,7 @@ for ( const platform of manifest.platforms ) {
 				? '# ai-instructions:managed\nname = "removed-agent"\n'
 				: `---\nname: removed-agent\ndescription: stale\n---\n${ managedMarker }\n`
 		);
+		await writeFile( userAgentPath, '# User-authored agent\n' );
 		const staleSkill = skillPath( platform, home, 'removed-skill', 'SKILL.md' );
 		await mkdir( path.dirname( staleSkill ), { recursive: true } );
 		await writeFile( staleSkill, '---\nname: removed-skill\ndescription: stale\n---\n' );
@@ -711,11 +740,45 @@ for ( const platform of manifest.platforms ) {
 		);
 
 		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ], 1 );
+		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
 		runInstaller( home, [ 'update', '--agent', platform.id, '--copy', '--yes' ] );
 		assert.equal( await pathExists( stalePath ), false );
+		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
 		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
 	} );
 }
+
+test( 'retired custom-agent symlinks are cleaned without touching user artifacts', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	for ( const platform of manifest.platforms ) {
+		const legacyAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		assert.ok( legacyAgents, `${ platform.id} must declare a retired agent destination` );
+		const home = await createDetectedHome( platform );
+		t.after( () => rm( home, { recursive: true, force: true } ) );
+		const legacyDir = destination( home, legacyAgents.userPath );
+		const extension = retiredAgentExtension( platform );
+		const retiredAgent = path.join( legacyDir, `retired-agent${ extension }` );
+		const userAgent = path.join( legacyDir, `user-agent${ extension }` );
+		const userSource = path.join( home, `user-agent-source${ extension }` );
+		await mkdir( legacyDir, { recursive: true } );
+		await writeFile( userSource, '# User-authored agent\n' );
+		await symlink( path.join( repoDir, 'agents', `retired-agent${ extension }` ), retiredAgent );
+		await symlink( userSource, userAgent );
+
+		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'agents', '--yes' ], 1 );
+		assert.equal( await pathExists( retiredAgent ), true );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+		runInstaller( home, [ 'update', '--agent', platform.id, '--only', 'agents', '--yes' ] );
+		assert.equal( await pathExists( retiredAgent ), false );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+
+		await symlink( path.join( repoDir, 'agents', `retired-agent${ extension }` ), retiredAgent );
+		runInstaller( home, [ 'remove', '--agent', platform.id, '--only', 'agents', '--yes' ] );
+		assert.equal( await pathExists( retiredAgent ), false );
+		assert.equal( await readFile( userAgent, 'utf8' ), '# User-authored agent\n' );
+	}
+} );
 
 test( 'portable artifacts use symlinks on POSIX and remain checkable', {
 	skip: process.platform === 'win32',
@@ -787,37 +850,6 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		);
 	}
 
-	const agentSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'agents', 'a11y-reviewer.md' ), 'utf8' )
-	);
-	for ( const platform of manifest.platforms.filter( ( entry ) => entry.id !== 'codex' ) ) {
-		assert.equal(
-			await readFile( artifactPath( platform, 'agents', home ), 'utf8' ),
-			`${ agentSource }${ managedMarker }\n`
-		);
-	}
-
-	const codexAgent = await readFile( destination( home, '.codex/agents/a11y-reviewer.toml' ), 'utf8' );
-	assert.match( codexAgent, /^# ai-instructions:managed\nname = "a11y-reviewer"\n/ );
-	assert.match( codexAgent, /description = ".+"\ndeveloper_instructions = """\n/ );
-	assert.match( codexAgent, /\n"""\n$/ );
-} );
-
-test( 'install directs stale owned generated artifacts to update', async ( t ) => {
-	const platform = manifest.platforms.find( ( entry ) => entry.id === 'codex' );
-	const home = await createDetectedHome( platform );
-	t.after( () => rm( home, { recursive: true, force: true } ) );
-	runInstaller( home, [ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ] );
-	const target = artifactPath( platform, 'agents', home );
-	const staleContent = '# ai-instructions:managed\nname = "stale"\n';
-	await writeFile( target, staleContent );
-
-	const output = runInstaller(
-		home,
-		[ '--agent', 'codex', '--only', 'agents', '--copy', '--yes' ]
-	);
-	assert.match( output, /a11y-reviewer\.toml.*out of date; run update to refresh/ );
-	assert.equal( await readFile( target, 'utf8' ), staleContent );
 } );
 
 test( 'Codex override precedence is explicit and non-destructive', async ( t ) => {

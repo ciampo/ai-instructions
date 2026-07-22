@@ -1,6 +1,6 @@
 # Conventions
 
-Meta-conventions used across all instruction, skill, and custom-agent files in this repo.
+Meta-conventions used across all instruction and skill files in this repo.
 
 ## Severity Tags
 
@@ -33,16 +33,12 @@ description: Perform a read-only, multi-round pull-request review. Use when aske
 
 Procedural workflows belong in skills instead of always-on instructions. Native skill descriptions replace the former generated workflow-routing file.
 
-## Custom Agents
+## Retired Custom Agents
 
-Shared custom-agent sources live at `agents/<name>.md` with `name` and `description` YAML frontmatter. Keep shared definitions to the common metadata subset; platform-specific adapters generate any required native format.
-
-Keep required metadata as single-line plain or quoted scalars. The portable Codex adapter rejects block scalars and quoted escape sequences that it cannot translate safely.
-
-The Markdown body is the canonical prompt for Markdown-based products. Codex TOML is generated from the same name, description, and body. Never add a platform-only field to the shared frontmatter unless every direct consumer supports it.
+The repository no longer distributes custom-agent sources or platform adapters. Specialist reviews are direct Agent Skills. The installer retains legacy agent destinations solely to identify and remove repository-owned artifacts from earlier installations; it never manages or removes user-authored agents.
 
 ## Universal Instructions
 
 `instructions/core.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
 
-The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, agent metadata, bundled-reference, and manifest contracts.
+The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, bundled-reference, and manifest contracts.
