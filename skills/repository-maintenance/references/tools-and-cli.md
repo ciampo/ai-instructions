@@ -1,23 +1,31 @@
 # Tools and CLI Reference
 
-How AI agents should use command-line tools, especially `gh` and `git`.
+How AI agents should use GitHub access, `gh`, and `git`.
+
+## GitHub Access for Pull-Request Review
+
+- **[STRONG]** Prefer the host's GitHub connector for remote pull-request review state: PR metadata, changed files, targeted patches, merged discussion, inline comments, and review threads including their resolved state. A connector avoids reconstructing review state from separate REST calls and remains usable when a local `gh` token is stale.
+- **[RULE]** Capture `base_sha` and `head_sha` in one initial connector PR-info call before reading the review. Inspect repository source at that captured `head_sha`, not at an assumed branch name or an unpinned local checkout.
+- **[PREFER]** Request only the relevant file patches after examining changed filenames. Avoid a full PR patch unless it is necessary to understand the change.
+- **[RULE]** Re-read PR info before delivering a review. If `head_sha` changed, discard the stale snapshot and repeat the review-data collection.
+- **[STRONG]** Reserve `gh` for CI summaries and failed Actions logs: use `gh pr checks` narrowly, then `gh run view --log-failed` for a relevant failed run. Do not request a full check-rollup payload when the summary is enough.
 
 ## GitHub CLI (`gh`)
 
-- **[STRONG]** Prefer `gh` subcommands over raw `gh api` calls whenever a subcommand covers the need: `gh issue view`, `gh issue list`, `gh pr view`, `gh pr list`, `gh pr diff`, `gh pr checks`, `gh release list`, etc.
-- **[PREFER]** `gh api` is acceptable for **read-only** queries where no subcommand exists (e.g., fetching PR review comments).
+- **[STRONG]** Outside the connector-first PR-review path, prefer `gh` subcommands over raw `gh api` calls whenever a subcommand covers the need: `gh issue view`, `gh issue list`, `gh pr list`, `gh pr checks`, `gh release list`, etc.
+- **[PREFER]** Use read-only `gh api` only as a fallback when the connector is unavailable or lacks the required data.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
 - **[STRONG]** When accessing a GitHub Enterprise instance (e.g., `github.a8c.com`), always include the full URL in the command. This triggers shell-level overrides (proxy routing, host config) that the user has set up. Do NOT explicitly include `HTTPS_PROXY` or similar environment variables in the command -- the user's `gh` wrapper handles this automatically as long as the Enterprise URL is present.
 
 ## GitHub API Patterns
 
-### Repository Identification
+### Fallback Repository Identification
 
-- **[RULE]** Before any `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, prefer the PR's base repository (e.g., `gh pr view <N> --json baseRepository --jq '.baseRepository.nameWithOwner'`). Otherwise, prefer `gh repo view --json nameWithOwner`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
+- **[RULE]** Before any fallback `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, use the connector's PR metadata when available; otherwise prefer `gh pr view <N> --json baseRepository --jq '.baseRepository.nameWithOwner'`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
 
-### Fetching PR Review Comments
+### Fallback PR Review Comments
 
-- **[STRONG]** Use the documented [`repos/{owner}/{repo}/pulls/{number}/comments` endpoint](https://docs.github.com/en/rest/pulls/comments#list-review-comments-on-a-pull-request) first to list all review comments on a pull request. If a GitHub Enterprise version, permission boundary, or host-specific compatibility issue prevents it, fall back to listing reviews and fetching `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments` for each review.
+- **[STRONG]** When the connector is unavailable, use the documented [`repos/{owner}/{repo}/pulls/{number}/comments` endpoint](https://docs.github.com/en/rest/pulls/comments#list-review-comments-on-a-pull-request) first to list all review comments on a pull request. If a GitHub Enterprise version, permission boundary, or host-specific compatibility issue prevents it, fall back to listing reviews and fetching `repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/comments` for each review.
 
 ### zsh and `--jq`
 

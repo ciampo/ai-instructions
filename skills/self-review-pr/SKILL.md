@@ -15,7 +15,7 @@ The review and any local Markdown artifact are read-only with respect to reposit
 
 ## Steps
 
-1. Gather context: full diff against the base branch, commit log, CI status, and the PR description.
+1. Gather a fresh PR snapshot: capture base and head SHAs through the host's GitHub connector, read the full diff and PR description at that head, collect discussion and resolved review threads, and use an explicit local ref at the captured head SHA. Use `gh pr checks` and failed Actions logs only for CI. Re-read PR info before concluding and refresh the snapshot if the head changed.
 2. Launch a read-only subagent with the captured context when available. Otherwise, start a fresh review pass without relying on the implementation rationale. Cover correctness, accessibility, consistency, completeness, risks, and suggestions.
 3. Use the `draft-review-comment` skill for delivery. By default, write the self-review to `<pr-number>-self-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery. Use exact file paths and line ranges for inline findings, file paths for file-level findings, and no fabricated location for general findings.
 4. When local fixes were not already requested, let me decide what to act on.

@@ -9,8 +9,8 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 
 ## Steps
 
-1. Read [the code-review reference](references/code-review.md), then identify the repository and diff base. Resolve the PR's base repository and actual base branch from PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Refresh the base and limit review to the PR's own diff.
-2. Fetch PR metadata, diff, comments, existing reviews, thread resolution state, and CI status using the host's GitHub integration or authenticated `gh` fallback.
+1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). Identify the repository and diff base from the captured PR metadata. PRs can be stacked, so do not assume `trunk` or `main`. Limit review to the PR's own diff.
+2. Capture a fresh connector-first PR snapshot: one PR-info call establishes the base and head SHAs; collect changed filenames, targeted patches, merged discussion, and resolved review threads from that same head; then inspect local source through an explicit ref at the captured head SHA. Use authenticated `gh` only when the connector is unavailable or for CI summaries and failed Actions logs.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
 5. Perform the complete core review: accessibility, consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.
@@ -20,9 +20,10 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
    - Use `review-performance` when the change plausibly affects bundle loading, a user-critical runtime path, rendering or layout work, or behavior at meaningful scale. Do not invoke it for generic optimization ideas or harmless local computation.
 7. When invoking a specialist, request an internal findings handoff instead of its standalone delivery. The specialist must return structured findings and verification gaps to this workflow without creating a separate review artifact or returning a user-facing path.
 8. Synthesize specialist results into the main review. Recheck each finding against the actual PR diff and consumers, normalize severity to the shared `[critical]`, `[major]`, `[minor]`, and `[nit]` scale, remove duplicates, and keep verification gaps separate from confirmed findings. The main review owns prioritization and final delivery.
-9. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.
-10. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
-11. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
+9. Re-read connector PR info before concluding. If the head SHA changed, refresh the snapshot and repeat the review rather than mixing state from different heads.
+10. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.
+11. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
+12. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
 
 ## Output Format
 
