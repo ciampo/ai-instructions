@@ -28,12 +28,12 @@ function displayPath( capability ) {
 
 export function renderSupportTable( manifest ) {
 	const rows = [
-		'| Product surface | Tier | Instructions | Skills | Agents | Checked |',
+		'| Product surface | Tier | Instructions | Skills | Agents | Adapter checked |',
 		'| --- | --- | --- | --- | --- | --- |',
 	];
 	for ( const platform of manifest.platforms ) {
 		rows.push(
-			`| ${ platform.surface } | ${ platform.supportTier } | ${ displayPath( platform.capabilities.instructions ) } | ${ displayPath( platform.capabilities.skills ) } | ${ displayPath( platform.capabilities.agents ) } | ${ platform.lastVerified } |`
+			`| ${ platform.surface } | ${ platform.supportTier } | ${ displayPath( platform.capabilities.instructions ) } | ${ displayPath( platform.capabilities.skills ) } | ${ displayPath( platform.capabilities.agents ) } | ${ platform.lastAdapterChecked } |`
 		);
 	}
 	return `${ startMarker }\n\n<!-- Generated from platforms/manifest.json. Do not edit this table directly. -->\n\n${ rows.join( '\n' ) }\n\n${ endMarker }`;

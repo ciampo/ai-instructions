@@ -1,8 +1,7 @@
 # ADR 0003: Keep Native Distribution as an Adapter
 
-## Status
-
-Accepted
+- **Status:** Accepted
+- **Date:** 2026-07-21
 
 ## Context
 

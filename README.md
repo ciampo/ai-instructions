@@ -90,9 +90,9 @@ The script auto-detects which agents are installed by scanning `$HOME` for known
 
 <!-- Generated from platforms/manifest.json. Do not edit this table directly. -->
 
-| Product surface | Tier | Instructions | Skills | Agents | Checked |
+| Product surface | Tier | Instructions | Skills | Agents | Adapter checked |
 | --- | --- | --- | --- | --- | --- |
-| Cursor editor and CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` | 2026-07-21 |
+| Cursor editor and Agent CLI | preview | `~/.cursor/rules/*.mdc` | `~/.cursor/skills/*/SKILL.md` | `~/.cursor/agents/*.md` | 2026-07-21 |
 | Claude Code CLI | preview | `~/.claude/rules/*.md` | `~/.claude/skills/*/SKILL.md` | `~/.claude/agents/*.md` | 2026-07-21 |
 | Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | `~/.codex/agents/*.toml` | 2026-07-21 |
 | GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | `~/.copilot/agents/*.agent.md` | 2026-07-21 |

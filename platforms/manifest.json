@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "lastReviewed": "2026-07-21",
   "installPolicy": {
     "scope": "user",
@@ -13,9 +13,9 @@
     {
       "id": "cursor",
       "product": "Cursor",
-      "surface": "Cursor editor and CLI",
+      "surface": "Cursor editor and Agent CLI",
       "supportTier": "preview",
-      "lastVerified": "2026-07-21",
+      "lastAdapterChecked": "2026-07-21",
       "detection": {
         "userPath": ".cursor"
       },
@@ -69,7 +69,7 @@
       "product": "Claude Code",
       "surface": "Claude Code CLI",
       "supportTier": "preview",
-      "lastVerified": "2026-07-21",
+      "lastAdapterChecked": "2026-07-21",
       "detection": {
         "userPath": ".claude"
       },
@@ -114,7 +114,7 @@
       "product": "Codex",
       "surface": "Codex app, CLI, and IDE extension",
       "supportTier": "preview",
-      "lastVerified": "2026-07-21",
+      "lastAdapterChecked": "2026-07-21",
       "detection": {
         "userPath": ".codex"
       },
@@ -167,7 +167,7 @@
       "product": "GitHub Copilot CLI",
       "surface": "GitHub Copilot CLI",
       "supportTier": "preview",
-      "lastVerified": "2026-07-21",
+      "lastAdapterChecked": "2026-07-21",
       "detection": {
         "userPath": ".copilot"
       },
@@ -211,7 +211,7 @@
       "product": "Gemini CLI",
       "surface": "Gemini CLI",
       "supportTier": "preview",
-      "lastVerified": "2026-07-21",
+      "lastAdapterChecked": "2026-07-21",
       "detection": {
         "userPath": ".gemini"
       },

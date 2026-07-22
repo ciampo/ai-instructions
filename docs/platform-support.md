@@ -4,12 +4,12 @@ The installer targets user-level configuration for specific product surfaces. Re
 
 ## Tiers
 
-- **Verified**: the path and format are documented by the vendor, the shared install/update/check/remove contract passes, generated output is validated, and successful instruction, skill, and agent discovery is recorded for a current product version.
+- **Verified**: the path and format are documented by the vendor, the shared install/update/check/remove contract passes, generated output is validated, and successful instruction, skill, and agent discovery is recorded for current versions of every client named by the product surface.
 - **Preview**: the adapter and lifecycle tests pass, but part of discovery or the user-level surface still requires product-specific confirmation.
 
 Platform support tiers are limited to verified and preview. Individual capabilities can be unsupported; the manifest marks those explicitly and the installer does not generate an implied substitute.
 
-The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). Its date records the latest adapter contract check; the tier records whether product discovery is complete. Change support claims in the manifest, update its verification date and official documentation links, then run `npm run docs:generate`.
+The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). `lastAdapterChecked` records the latest filesystem and lifecycle check; it is not product-discovery evidence. Product versions, discovery dates, and capability results live only in the discovery evidence. When a row names several clients, every client must pass before the combined surface can be promoted; otherwise split the surface.
 
 Current product versions, completed checks, and remaining acceptance work are recorded in [discovery evidence](discovery-evidence.md). A documented procedure alone is not verification evidence.
 
@@ -17,7 +17,7 @@ Current product versions, completed checks, and remaining acceptance work are re
 
 After installation, start a new session unless the product documents live reload.
 
-### Cursor editor and CLI (preview)
+### Cursor editor and Agent CLI (preview)
 
 1. Open Cursor's Customize page and confirm `review-pr` and `a11y-reviewer` appear at user scope.
 2. Open the slash-command menu and invoke `/review-pr`.
@@ -51,15 +51,16 @@ After installation, start a new session unless the product documents live reload
 
 ## Release Verification Checklist
 
-Before changing a support tier or verification date:
+Before changing a support tier or adapter-check date:
 
 1. Read the linked vendor documentation and release notes for every affected product.
 2. Run `npm ci`, `npm run lint`, `npm run content:check`, `npm run docs:check`, `npm test`, and `npm audit --audit-level=high`.
 3. Confirm the Linux, macOS, and Windows installer matrix passes. Windows support covers native Node copy mode; symlink mode depends on host permissions.
 4. In a disposable home directory, exercise install, idempotent reinstall, check, list, update, and remove for the adapter.
 5. Confirm a user-owned conflict is preserved and a managed stale artifact is removed only by update/remove.
-6. Perform the product discovery checks above on a current release and record the date in the manifest.
-7. Record the product version, exact checks, and results in `docs/discovery-evidence.md`. Promote a tier only when instructions, skills, and agents all pass.
-8. Regenerate the README support table and review its diff.
+6. Update `lastAdapterChecked` only after steps 2-5 pass for that adapter.
+7. Perform the product discovery checks above on a current release of every client named by the product surface.
+8. Record the date, exact version, and a pass, fail, or blocked result for each capability and client in `docs/discovery-evidence.md`. Promote a tier only when instructions, skills, and agents all pass.
+9. Regenerate the README support table and review its diff.
 
 Native plugin and extension distribution is evaluated in [ADR 0003](decisions/0003-native-distribution.md). Compatibility retention and removal gates are defined in the [compatibility policy](compatibility-policy.md).

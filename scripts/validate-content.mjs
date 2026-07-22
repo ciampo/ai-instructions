@@ -205,7 +205,7 @@ export function assertRecentDate( value, source ) {
 async function validateReviewDates( repoDir, manifest ) {
 	assertRecentDate( manifest.lastReviewed, 'platforms/manifest.json lastReviewed' );
 	for ( const platform of manifest.platforms ) {
-		assertRecentDate( platform.lastVerified, `platforms/manifest.json ${ platform.id }.lastVerified` );
+		assertRecentDate( platform.lastAdapterChecked, `platforms/manifest.json ${ platform.id }.lastAdapterChecked` );
 	}
 	const standardsPath = path.join( repoDir, 'docs', 'standards-index.md' );
 	const standards = normalizeMarkdown( await readFile( standardsPath, 'utf8' ) );

@@ -108,7 +108,7 @@ function validateLegacyDestination( platform, legacy, index ) {
 }
 
 export function validateManifest( manifest ) {
-	if ( manifest.schemaVersion !== 1 ) {
+	if ( manifest.schemaVersion !== 2 ) {
 		throw new Error( 'Platform manifest: unsupported schemaVersion.' );
 	}
 	validateDate( manifest.lastReviewed, 'lastReviewed' );
@@ -126,7 +126,7 @@ export function validateManifest( manifest ) {
 		if ( ! SUPPORT_TIERS.has( platform.supportTier ) ) {
 			throw new Error( `Platform manifest: ${ platform.id }.supportTier is invalid.` );
 		}
-		validateDate( platform.lastVerified, `${ platform.id }.lastVerified` );
+		validateDate( platform.lastAdapterChecked, `${ platform.id }.lastAdapterChecked` );
 		validateRelativePath( platform.detection?.userPath, `${ platform.id }.detection.userPath` );
 		for ( const category of CATEGORIES ) {
 			validateCapability( platform, category );
