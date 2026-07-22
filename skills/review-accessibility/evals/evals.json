@@ -15,7 +15,7 @@
   "outputCases": [
     {
       "id": "source-proven-read-only-finding",
-      "prompt": "Audit and fix the focus behavior in this dialog component.",
+      "prompt": "Audit the focus behavior in this dialog component for accessibility. Do not modify the source.",
       "expectedOutcome": "A read-only accessibility assessment that distinguishes source-proven failures from behavior that requires runtime verification.",
       "assertions": [
         "The assessment does not modify the component.",

@@ -15,7 +15,7 @@
   "outputCases": [
     {
       "id": "read-only-synthesized-review",
-      "prompt": "Review https://github.com/example/widgets/pull/42 and give me copy-pasteable findings.",
+      "prompt": "Review https://github.com/ciampo/ai-instructions/pull/45 and give me copy-pasteable findings.",
       "expectedOutcome": "A read-only review that uses the actual base and current head, avoids duplicate comments, and returns prioritized findings or an explicit no-findings result.",
       "assertions": [
         "The review does not modify repository source or post to GitHub.",
