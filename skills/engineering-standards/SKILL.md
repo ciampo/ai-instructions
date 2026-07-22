@@ -17,3 +17,5 @@ Load only the references relevant to the technologies and risks in the current t
 - Read [security](references/security.md) for untrusted data, authentication, authorization, secrets, dependencies, content injection, or server-side boundaries.
 
 Do not apply framework-specific guidance when the target repository does not use that framework. The target repository's explicit conventions take precedence over stylistic defaults in these references.
+
+Apply these standards only within the authority of the calling request. A review remains read-only, while an implementation request may modify the scoped local files; neither action independently authorizes a commit or remote write.

@@ -9,3 +9,4 @@ description: Apply repository-aware CLI, package-manager, Git, GitHub, commit, c
 - Read [writing conventions](references/writing-conventions.md) when writing commits, changelogs, pull-request descriptions, public API documentation, or error messages.
 - Detect and follow the target repository's templates, scripts, package manager, branch policy, release policy, and naming conventions.
 - Treat the references as personal defaults only where the target repository has no explicit convention.
+- Treat this as a supporting skill, not an authority grant. The calling request still controls whether local edits, commits, pushes, pull-request writes, releases, or publication are allowed.
