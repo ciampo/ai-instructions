@@ -170,7 +170,7 @@ These are living documents. In the default mode, portable instructions are symli
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), and the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md). A concise walkthrough is available in the [presentation guide](docs/presentation-guide.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), and the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md).
 
 ```bash
 npm ci
