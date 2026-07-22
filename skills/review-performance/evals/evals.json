@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "rendering-cost-audit",
+      "prompt": "Review this repeated list rendering change for bundle, layout, and runtime performance risks.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "general-style-review",
+      "prompt": "Review this CSS rename for consistency and test coverage; it does not affect rendering cost or scale.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "evidence-based-performance-review",
+      "prompt": "Audit this component's performance and suggest improvements without changing the source.",
+      "expectedOutcome": "A read-only performance review that separates source-proven cost from measurement gaps and avoids generic optimization advice.",
+      "assertions": [
+        "The review remains read-only.",
+        "Each confirmed concern identifies the affected execution path and realistic scale.",
+        "Unmeasured concerns are recorded as verification gaps with a repeatable measurement."
+      ]
+    }
+  ]
+}

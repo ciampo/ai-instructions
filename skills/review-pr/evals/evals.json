@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "review-a-shared-pr",
+      "prompt": "Please review https://github.com/example/widgets/pull/42 for correctness, tests, and accessibility.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "focused-accessibility-audit",
+      "prompt": "Audit this dialog's focus and keyboard behavior for accessibility. Do not review the rest of the pull request.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "read-only-synthesized-review",
+      "prompt": "Review https://github.com/example/widgets/pull/42 and give me copy-pasteable findings.",
+      "expectedOutcome": "A read-only review that uses the actual base and current head, avoids duplicate comments, and returns prioritized findings or an explicit no-findings result.",
+      "assertions": [
+        "The review does not edit local files or post to GitHub.",
+        "Each confirmed finding is tied to the pull request diff and relevant consumers.",
+        "Focused specialist findings are synthesized instead of delivered as competing reports."
+      ]
+    }
+  ]
+}

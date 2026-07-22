@@ -12,6 +12,7 @@ const MAX_UNIVERSAL_BYTES = 8 * 1024;
 const MAX_UNIVERSAL_LINES = 150;
 const MAX_REVIEW_AGE_DAYS = 120;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SKILL_EVALUATION_VERSION = 1;
 
 async function entries( directory ) {
 	return ( await readdir( directory, { withFileTypes: true } ) )
@@ -104,9 +105,82 @@ async function validateSkillLinks( content, skillDirectory, source ) {
 	}
 }
 
+function requireNonEmptyString( value, field, source ) {
+	if ( typeof value !== 'string' || value.trim() === '' ) {
+		throw new Error( `${ source }: ${ field } must be a non-empty string.` );
+	}
+}
+
+function validateSkillEvaluation( content, source ) {
+	let evaluation;
+	try {
+		evaluation = JSON.parse( content );
+	} catch {
+		throw new Error( `${ source }: evaluation fixture must be valid JSON.` );
+	}
+
+	if ( ! evaluation || typeof evaluation !== 'object' || Array.isArray( evaluation ) ) {
+		throw new Error( `${ source }: evaluation fixture must be an object.` );
+	}
+	if ( evaluation.schemaVersion !== SKILL_EVALUATION_VERSION ) {
+		throw new Error( `${ source }: schemaVersion must be ${ SKILL_EVALUATION_VERSION }.` );
+	}
+	if ( ! Array.isArray( evaluation.triggerCases ) || evaluation.triggerCases.length < 2 ) {
+		throw new Error( `${ source }: triggerCases must contain at least two cases.` );
+	}
+
+	const triggerIds = new Set();
+	const triggerOutcomes = new Set();
+	for ( const [ index, triggerCase ] of evaluation.triggerCases.entries() ) {
+		const field = `triggerCases[${ index }]`;
+		if ( ! triggerCase || typeof triggerCase !== 'object' || Array.isArray( triggerCase ) ) {
+			throw new Error( `${ source }: ${ field } must be an object.` );
+		}
+		requireNonEmptyString( triggerCase.id, `${ field }.id`, source );
+		requireNonEmptyString( triggerCase.prompt, `${ field }.prompt`, source );
+		if ( typeof triggerCase.shouldTrigger !== 'boolean' ) {
+			throw new Error( `${ source }: ${ field }.shouldTrigger must be a boolean.` );
+		}
+		if ( triggerIds.has( triggerCase.id ) ) {
+			throw new Error( `${ source }: trigger case IDs must be unique.` );
+		}
+		triggerIds.add( triggerCase.id );
+		triggerOutcomes.add( triggerCase.shouldTrigger );
+	}
+	if ( ! triggerOutcomes.has( true ) || ! triggerOutcomes.has( false ) ) {
+		throw new Error( `${ source }: triggerCases must include both triggering and non-triggering cases.` );
+	}
+
+	if ( ! Array.isArray( evaluation.outputCases ) || evaluation.outputCases.length === 0 ) {
+		throw new Error( `${ source }: outputCases must contain at least one case.` );
+	}
+
+	const outputIds = new Set();
+	for ( const [ index, outputCase ] of evaluation.outputCases.entries() ) {
+		const field = `outputCases[${ index }]`;
+		if ( ! outputCase || typeof outputCase !== 'object' || Array.isArray( outputCase ) ) {
+			throw new Error( `${ source }: ${ field } must be an object.` );
+		}
+		requireNonEmptyString( outputCase.id, `${ field }.id`, source );
+		requireNonEmptyString( outputCase.prompt, `${ field }.prompt`, source );
+		requireNonEmptyString( outputCase.expectedOutcome, `${ field }.expectedOutcome`, source );
+		if ( ! Array.isArray( outputCase.assertions ) || outputCase.assertions.length === 0 ) {
+			throw new Error( `${ source }: ${ field }.assertions must contain at least one assertion.` );
+		}
+		for ( const [ assertionIndex, assertion ] of outputCase.assertions.entries() ) {
+			requireNonEmptyString( assertion, `${ field }.assertions[${ assertionIndex }]`, source );
+		}
+		if ( outputIds.has( outputCase.id ) ) {
+			throw new Error( `${ source }: output case IDs must be unique.` );
+		}
+		outputIds.add( outputCase.id );
+	}
+}
+
 async function validateSkills( repoDir ) {
 	const skillsDirectory = path.join( repoDir, 'skills' );
 	let count = 0;
+	let evaluationCount = 0;
 	for ( const entry of await entries( skillsDirectory ) ) {
 		if ( ! entry.isDirectory() ) {
 			throw new Error( `${ path.join( skillsDirectory, entry.name ) }: skills must be directories.` );
@@ -127,9 +201,14 @@ async function validateSkills( repoDir ) {
 				source
 			);
 		}
+		if ( bundledFiles.includes( 'evals/evals.json' ) ) {
+			const evaluationSource = path.join( skillDirectory, 'evals', 'evals.json' );
+			validateSkillEvaluation( await readFile( evaluationSource, 'utf8' ), evaluationSource );
+			evaluationCount++;
+		}
 		count++;
 	}
-	return count;
+	return { skillCount: count, evaluationCount };
 }
 
 async function validateAgents( repoDir ) {
@@ -231,19 +310,19 @@ async function validateReviewDates( repoDir, manifest ) {
 
 export async function validateContent( repoDir ) {
 	const manifest = await loadManifest( repoDir );
-	const [ skillCount, agentCount, universal ] = await Promise.all( [
+	const [ skills, agentCount, universal ] = await Promise.all( [
 		validateSkills( repoDir ),
 		validateAgents( repoDir ),
 		validateUniversalInstructions( repoDir ),
 	] );
 	await validateReviewDates( repoDir, manifest );
-	return { skillCount, agentCount, universal };
+	return { ...skills, agentCount, universal };
 }
 
 async function main() {
 	const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
 	const result = await validateContent( repoDir );
-	console.log( `Content contracts passed: ${ result.skillCount } skills, ${ result.agentCount } agents, ${ result.universal.lines } universal lines / ${ result.universal.bytes } bytes.` );
+	console.log( `Content contracts passed: ${ result.skillCount } skills, ${ result.evaluationCount } evaluation fixtures, ${ result.agentCount } agents, ${ result.universal.lines } universal lines / ${ result.universal.bytes } bytes.` );
 }
 
 if ( process.argv[ 1 ] && path.resolve( process.argv[ 1 ] ) === fileURLToPath( import.meta.url ) ) {
