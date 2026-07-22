@@ -20,12 +20,12 @@ export function createArtifactBuilder( { repoDir } ) {
 		throw new Error( message );
 	}
 
-	async function sourceMarkdownFiles( directory ) {
+	async function sourceMarkdownFiles( directory, optional = false ) {
 		let directoryEntries;
 		try {
 			directoryEntries = await readdir( directory, { withFileTypes: true } );
 		} catch ( error ) {
-			if ( error.code === 'ENOENT' ) {
+			if ( optional && error.code === 'ENOENT' ) {
 				return [];
 			}
 			throw error;
@@ -142,7 +142,7 @@ export function createArtifactBuilder( { repoDir } ) {
 				continue;
 			}
 
-			for ( const name of await sourceMarkdownFiles( agentsDir ) ) {
+			for ( const name of await sourceMarkdownFiles( agentsDir, true ) ) {
 				const source = path.join( agentsDir, name );
 				const content = await readFile( source, 'utf8' );
 				const metadata = parseFrontmatter( content, source );

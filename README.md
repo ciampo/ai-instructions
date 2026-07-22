@@ -76,7 +76,7 @@ On native Windows, run the Node entrypoint directly and use copy mode:
 node scripts/setup.mjs --agent '*' --copy --yes
 ```
 
-The script auto-detects which agents are installed by scanning `$HOME` for known config directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected agents), or `--agent <name>` to target specific ones. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected agents alongside generating the concatenated file.
+The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside generating the concatenated file.
 
 ### Supported product surfaces
 

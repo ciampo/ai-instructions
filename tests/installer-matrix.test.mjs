@@ -550,6 +550,20 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 	assert.equal( artifact.expectedContent, source );
 } );
 
+test( 'artifact building fails when required instructions are missing', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await rm( path.join( fixture, 'instructions' ), { recursive: true } );
+
+	await assert.rejects(
+		createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
+			manifest.platforms[ 0 ],
+			[ 'instructions' ],
+			fixture
+		),
+		{ code: 'ENOENT' }
+	);
+} );
+
 async function assertSkillInstallMode( platform, home, skillName, expectedMode ) {
 	const skillDirectory = path.dirname( skillPath( platform, home, skillName ) );
 	const stats = await lstat( skillDirectory );
@@ -698,6 +712,7 @@ for ( const platform of manifest.platforms ) {
 		const home = await createDetectedHome( platform );
 		t.after( () => rm( home, { recursive: true, force: true } ) );
 		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
+		assert.ok( retiredAgents, `${ platform.id} must declare a retired agent destination` );
 		const staleExtension = platform.id === 'codex'
 			? '.toml'
 			: platform.id === 'copilot' ? '.agent.md' : '.md';
