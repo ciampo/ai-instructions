@@ -255,9 +255,14 @@ async function processCopilotExport( directory, state ) {
 		} ) ),
 		repoDir
 	);
-	for ( const { artifact } of statuses ) {
-		console.log( `  [+] ${ artifact.destination }` );
-		state.new++;
+	for ( const [ index, { artifact } ] of statuses.entries() ) {
+		if ( isCurrent[ index ] ) {
+			console.log( `  [=] ${ artifact.destination }` );
+			state.upToDate++;
+		} else {
+			console.log( `  [+] ${ artifact.destination }` );
+			state.new++;
+		}
 	}
 }
 

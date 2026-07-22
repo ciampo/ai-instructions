@@ -299,7 +299,12 @@ export async function writeManagedFilesTransactionally( entries, repoDir, { befo
 			}
 		}
 		if ( rollbackFailures.length > 0 ) {
-			error.rollbackFailures = rollbackFailures;
+			const rollbackError = new Error(
+				`${ error.message } Rollback failed: ${ rollbackFailures.map( ( failure ) => failure.message ).join( ' ' ) }`,
+				{ cause: error }
+			);
+			rollbackError.rollbackFailures = rollbackFailures;
+			throw rollbackError;
 		}
 		throw error;
 	}
