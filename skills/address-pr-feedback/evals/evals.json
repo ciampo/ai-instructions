@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "address-current-pr-feedback",
+      "prompt": "Address the unresolved feedback on the current pull request, but do not post replies or resolve threads.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "write-a-single-review-reply",
+      "prompt": "Draft a reply to this one GitHub review comment without changing code.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "fresh-feedback-snapshot",
+      "prompt": "Address the valid feedback in this PR and prepare replies locally. Do not post anything.",
+      "context": "evals/fixtures/cli-first-feedback.md",
+      "expectedOutcome": "A feedback pass that uses a SHA-pinned CLI snapshot, rebuilds it if either PR boundary changes, and separates valid fixes from resolved or non-actionable feedback.",
+      "assertions": [
+        "The workflow collects source and feedback from the same pinned PR snapshot before categorizing feedback.",
+        "The workflow retrieves the ordinary conversation, inline comments, and thread-aware state when material.",
+        "The workflow refreshes both PR boundaries before acting and rebuilds the snapshot if either changed.",
+        "The workflow stops and reports the missing capability instead of categorizing feedback or changing code from an incomplete snapshot.",
+        "The workflow has a supported path when the CLI cannot provide required review state and does not post replies or resolve threads."
+      ]
+    }
+  ]
+}

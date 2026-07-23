@@ -20,6 +20,9 @@
       "expectedOutcome": "A read-only review that uses the actual base and current head, avoids duplicate comments, and returns prioritized findings or an explicit no-findings result.",
       "assertions": [
         "The review does not modify repository source or post to GitHub.",
+        "The review pins and rechecks both PR boundaries, then inspects every changed file from the merge-base diff.",
+        "The review retrieves needed remote state through narrow CLI reads by default, with a connector fallback for resolved state, merged discussion, or a CLI capability gap.",
+        "The review refreshes the remote review state it used before delivery and accounts for new or resolved feedback.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "Focused specialist findings are synthesized instead of delivered as competing reports."
       ]
