@@ -7,13 +7,13 @@ description: Compatibility route for the former combined release workflow. Use w
 
 This deprecated skill preserves the former `release-publish` trigger while keeping preparation and publication as separate authority boundaries.
 
-If the request is limited to planning, inspection, or reporting, or prohibits local file modifications without explicitly authorizing publication of an already prepared release, route it to the plan-only behavior in `prepare-release`. Do not create an auxiliary plan file or any local release artifact.
+If the request prohibits local file modifications, do not prepare or publish a release. When it also explicitly asks to publish an already prepared release, explain that publication requires local verification plus a release commit and tag, then request authorization for those actions. Otherwise, route planning, inspection, and reporting requests to the plan-only behavior in `prepare-release`. Do not create an auxiliary plan file or any local release artifact.
 
 ## Route the request
 
 1. Use the `prepare-release` skill for version selection, changelog updates, local release artifacts, or any request to prepare or cut a release without explicit publication authorization.
 2. When the user explicitly asks to prepare and publish a release, use `prepare-release` first, then continue with `publish-release` after preparation succeeds. Carry the original publication authorization forward; stop if the target, credentials, prepared state, or authorization becomes ambiguous.
-3. Use the `publish-release` skill directly when the user explicitly asks to publish an already prepared release.
+3. Use the `publish-release` skill directly when the user explicitly asks to publish an already prepared release and authorizes its required local actions.
 4. If the request is ambiguous, stop after preparation and report the remote actions that still require authorization.
 
 Prefer the replacement skill name in new prompts. Do not combine preparation and publication merely because this compatibility name was invoked.

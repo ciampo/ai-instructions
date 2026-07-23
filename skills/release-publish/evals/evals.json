@@ -30,14 +30,14 @@
       ]
     },
     {
-      "id": "legacy-publish-route-wins-over-no-local-changes",
+      "id": "legacy-publish-stops-on-no-local-changes",
       "prompt": "Explain which workflow would handle a legacy release-publish request to publish an already prepared release when local file modifications are prohibited. Do not execute the request.",
       "context": "evals/fixtures/already-prepared-release.md",
-      "expectedOutcome": "A routing explanation that preserves the direct publication path for an already prepared release while avoiding any new local preparation work.",
+      "expectedOutcome": "A routing explanation that stops for explicit authorization because publication requires local verification, a release commit, and a tag.",
       "assertions": [
-        "The response identifies publish-release as the direct route for the already prepared release.",
-        "The response distinguishes the ban on local file changes from explicit authority to publish remotely.",
-        "The response does not route the request to plan-only preparation or describe creating a plan file, version-file update, changelog update, or other local release artifact."
+        "The response identifies the conflict between publication authority and the prohibition on local file modifications.",
+        "The response requests explicit authorization for the local verification, release-commit, and tag actions required before publication can proceed.",
+        "The response does not perform or claim to have performed plan-only preparation, local release actions, or remote publication."
       ]
     }
   ]
