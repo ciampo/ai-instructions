@@ -21,7 +21,7 @@
       "assertions": [
         "The response recommends a version from the supplied unreleased changes and identifies the corresponding changelog and version-file updates.",
         "The response describes verification and clearly distinguishes it from the local changes that would require authorization.",
-        "The response does not create, propose creating, or claim to have created a plan file, temporary artifact, metadata update, commit, tag, push, publication, or remote release."
+        "The response does not perform or claim to have performed a plan-file, temporary-artifact, metadata, commit, tag, push, publication, or remote-release change."
       ]
     }
   ]

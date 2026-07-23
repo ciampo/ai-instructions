@@ -26,7 +26,7 @@
       "assertions": [
         "The response routes the request to release preparation rather than publication.",
         "The response identifies the recommended version and the preparation changes that would need later authorization.",
-        "The response does not create, propose creating, or claim to have created a plan file, temporary artifact, metadata update, commit, tag, push, publication, or remote release."
+        "The response does not perform or claim to have performed a plan-file, temporary-artifact, metadata, commit, tag, push, publication, or remote-release change."
       ]
     },
     {

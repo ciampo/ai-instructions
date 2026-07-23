@@ -1,6 +1,6 @@
 ---
 name: prepare-release
-description: Inspect, plan, or prepare a package or application release locally by recommending a version, updating release metadata, and running verification. Use for planning-only or preparation requests without publication.
+description: Inspect or plan a package or application release without local writes, or prepare one by recommending a version, updating release metadata, and running verification. Use when publication is not requested.
 ---
 
 # Prepare Release
