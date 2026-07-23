@@ -51,7 +51,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 
 ### Specialist reviews
 
-Accessibility, API-design, and performance reviews are direct skills. A focused pilot found no distinct tools, isolation benefit, or analysis quality from maintaining parallel custom-agent prompts, so this repository bundles no custom agents. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md) and the [pilot record](docs/accessibility-review-pilot.md).
+Accessibility, API-design, and performance reviews are direct skills. A focused pilot found no distinct tools, isolation benefit, or analysis quality from maintaining parallel custom-agent prompts, so this repository bundles no custom agents. [ADR 0006](docs/decisions/0006-review-coordinator.md) proposes an evidence-gated coordinator evaluation; it does not change the current distribution. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md) and the [pilot record](docs/accessibility-review-pilot.md).
 
 ## Conventions
 
@@ -172,7 +172,7 @@ These are living documents. In the default mode, portable skills are symlinked a
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md). The proposed coordinator evaluation is recorded separately in [ADR 0006](docs/decisions/0006-review-coordinator.md).
 
 ```bash
 npm ci
