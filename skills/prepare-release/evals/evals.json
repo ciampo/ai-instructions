@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "plan-release-without-local-writes",
+      "prompt": "Review the unreleased changes and recommend the next version, but do not modify files or create a plan document.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "publish-prepared-release",
+      "prompt": "Publish the already prepared 2.4.0 release and create its GitHub release.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "no-write-release-plan",
+      "prompt": "Inspect the release state, recommend a version, and report the preparation steps. Do not modify files or create a plan document.",
+      "context": "evals/fixtures/no-write-release-plan.md",
+      "expectedOutcome": "A read-only release recommendation that identifies the proposed local changes and verification without creating files or release artifacts.",
+      "assertions": [
+        "The response recommends a version from the supplied unreleased changes and identifies the corresponding changelog and version-file updates.",
+        "The response describes verification and clearly distinguishes it from the local changes that would require authorization.",
+        "The response does not perform or claim to have performed a plan-file, temporary-artifact, metadata, commit, tag, push, publication, or remote-release change."
+      ]
+    }
+  ]
+}

@@ -1,11 +1,15 @@
 ---
 name: prepare-release
-description: Prepare a package or application release locally by choosing a version, updating release metadata, and running verification. Use when asked to prepare or cut a release without publishing it.
+description: Inspect or plan a package or application release without local writes, or prepare one by recommending a version, updating release metadata, and running verification. Use when publication is not requested.
 ---
 
 # Prepare Release
 
 This workflow prepares a release without publishing packages, pushing tags, or creating a remote release.
+
+## No-write requests
+
+If the user asks only to inspect, report, or plan a release, or explicitly says not to modify files, work in plan-only mode. Inspect the release state and report the recommended version, the exact metadata and changelog changes that preparation would make, and the checks to run. Do not create a plan file, temporary artifact, or any other auxiliary file, and do not apply those changes unless the user explicitly authorizes local modifications.
 
 ## Steps
 
