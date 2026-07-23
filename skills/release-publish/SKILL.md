@@ -7,7 +7,7 @@ description: Compatibility route for the former combined release workflow. Use w
 
 This deprecated skill preserves the former `release-publish` trigger while keeping preparation and publication as separate authority boundaries.
 
-If the request is limited to planning, inspection, or reporting, or prohibits file modifications, route it to the plan-only behavior in `prepare-release`. Do not create an auxiliary plan file or any local release artifact.
+If the request is limited to planning, inspection, or reporting, or prohibits local file modifications without explicitly authorizing publication of an already prepared release, route it to the plan-only behavior in `prepare-release`. Do not create an auxiliary plan file or any local release artifact.
 
 ## Route the request
 

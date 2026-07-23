@@ -10,6 +10,11 @@
       "id": "publish-an-existing-release",
       "prompt": "Publish the verified release that is already prepared locally.",
       "shouldTrigger": false
+    },
+    {
+      "id": "legacy-publish-prepared-release-without-local-changes",
+      "prompt": "Use release-publish to publish the already prepared 4.1.3 release. Do not modify local files.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
@@ -22,6 +27,17 @@
         "The response routes the request to release preparation rather than publication.",
         "The response identifies the recommended version and the preparation changes that would need later authorization.",
         "The response does not create, propose creating, or claim to have created a plan file, temporary artifact, metadata update, commit, tag, push, publication, or remote release."
+      ]
+    },
+    {
+      "id": "legacy-publish-route-wins-over-no-local-changes",
+      "prompt": "Explain which workflow would handle a legacy release-publish request to publish an already prepared release when local file modifications are prohibited. Do not execute the request.",
+      "context": "evals/fixtures/already-prepared-release.md",
+      "expectedOutcome": "A routing explanation that preserves the direct publication path for an already prepared release while avoiding any new local preparation work.",
+      "assertions": [
+        "The response identifies publish-release as the direct route for the already prepared release.",
+        "The response distinguishes the ban on local file changes from explicit authority to publish remotely.",
+        "The response does not route the request to plan-only preparation or describe creating a plan file, version-file update, changelog update, or other local release artifact."
       ]
     }
   ]
