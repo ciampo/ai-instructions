@@ -21,6 +21,7 @@
       "assertions": [
         "The review captures the title and description, base/head revisions, and base-to-head commit history before judging scope or completeness.",
         "The review pins both boundaries, inspects the merge-base diff and every changed file, and can obtain needed review state when the CLI cannot provide it.",
+        "The review stops and reports the missing capability when required state cannot be verified.",
         "The review does not edit source, commit, push, or change the pull request."
       ]
     }
