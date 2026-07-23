@@ -7,7 +7,7 @@
 
 ## Executive conclusion
 
-The modernization plan has been implemented. The repository now has a small universal instruction core, 17 standard Agent Skills with bundled references, direct accessibility/API-design/performance specialists, no distributed custom agents, and a manifest-driven installer for five product surfaces.
+The modernization plan has been implemented. The repository now has a small universal instruction core, 17 standard Agent Skills with bundled references, direct accessibility/API-design/performance specialists, one opt-in review coordinator, and a manifest-driven installer for five product surfaces.
 
 The remaining work is product acceptance and routine maintenance, not another architecture migration. All five manifest surfaces remain preview until the current direct-skill architecture passes its acceptance matrix on every named client.
 
@@ -25,6 +25,9 @@ skills/
   */SKILL.md                      17 on-demand workflows and specialists
   */references/                   Detailed standards loaded only when needed
 
+agents/
+  review-coordinator.md           Opt-in orchestration over canonical review skills
+
 platforms/
   manifest.json                   Paths, formats, capabilities, and support tiers
 
@@ -39,7 +42,7 @@ docs/
   platform-support.md             Acceptance procedures and support policy
 ```
 
-There is deliberately no canonical `agents/` directory on current `main`. Installer support for old agent paths exists only to validate fixtures and remove repository-owned artifacts without touching user-authored agents.
+The canonical `agents/` directory contains only the opt-in coordinator. Installer support for old specialist-agent paths also validates fixtures and removes repository-owned retired artifacts without touching user-authored agents.
 
 ## Plan completion matrix
 

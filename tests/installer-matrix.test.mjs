@@ -904,7 +904,11 @@ for ( const platform of manifest.platforms ) {
 		for ( const category of categories ) {
 			const target = artifactPath( platform, category, home );
 			if ( target ) {
-				assert.equal( await pathExists( target ), true, `${ category } artifact missing` );
+				assert.equal(
+					await pathExists( target ),
+					category !== 'agents',
+					`${ category } artifact has an unexpected default-install state`
+				);
 			}
 		}
 
@@ -996,9 +1000,9 @@ for ( const platform of manifest.platforms ) {
 			'ai-instructions:managed\n'
 		);
 
-		runInstaller( home, [ 'check', '--agent', platform.id, '--copy', '--yes' ], 1 );
+		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'skills', '--only', 'agents', '--copy', '--yes' ], 1 );
 		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
-		runInstaller( home, [ 'update', '--agent', platform.id, '--copy', '--yes' ] );
+		runInstaller( home, [ 'update', '--agent', platform.id, '--only', 'skills', '--only', 'agents', '--copy', '--yes' ] );
 		assert.equal( await pathExists( stalePath ), false );
 		assert.equal( await readFile( userAgentPath, 'utf8' ), '# User-authored agent\n' );
 		assert.equal( await pathExists( path.dirname( staleSkill ) ), false );
@@ -1057,7 +1061,7 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	for ( const platform of manifest.platforms ) {
 		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
 	}
-	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
+	runInstaller( home, [ '--agent', '*', '--only', 'instructions', '--only', 'skills', '--only', 'agents', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
 		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
@@ -1129,6 +1133,14 @@ test( 'all platforms distribute complete skills and the optional review coordina
 	const coordinatorSource = path.join( repoDir, 'agents', 'review-coordinator.md' );
 	assert.equal( await pathExists( coordinatorSource ), true );
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
+	for ( const platform of manifest.platforms ) {
+		assert.equal(
+			await pathExists( artifactPath( platform, 'agents', home ) ),
+			false,
+			`${ platform.id } must not install the optional coordinator by default`
+		);
+	}
+	runInstaller( home, [ '--agent', '*', '--only', 'agents', '--copy', '--yes' ] );
 
 	for ( const platform of manifest.platforms ) {
 		assert.equal( platform.capabilities.agents.supported, true );

@@ -11,7 +11,7 @@ That decision does not rule out an agent that has a distinct job: coordinate ind
 
 ## Decision
 
-Distribute one thin, opt-in `review-coordinator` agent. It loads `review-pr` as the canonical workflow, delegates only to the existing specialist skills, and owns final synthesis. It does not duplicate specialist methods, set a model, or claim a cost saving.
+Distribute one thin, opt-in `review-coordinator` agent. It is installed only when the user selects `--only agents`; it loads `review-pr` as the canonical workflow, delegates only to the existing specialist skills, and owns final synthesis. It does not duplicate specialist methods, set a model, or claim a cost saving.
 
 The agent uses the runtime's configured model and reasoning defaults because model identifiers, availability, and per-agent routing are product-specific. A shared agent source must not encode a model field that only some adapters understand.
 

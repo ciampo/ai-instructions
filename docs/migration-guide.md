@@ -48,7 +48,7 @@ Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that 
 
 Accessibility, public API-design, and performance reviews use the `review-accessibility`, `review-api-design`, and `review-performance` skills directly. The optional `review-coordinator` agent loads those existing skills only when their domains are material; it does not replace or duplicate their methods.
 
-During `update` or `remove`, the installer adds or refreshes the coordinator and recognizes the former specialist-agent destinations on all five product surfaces. It removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this lifecycle work during the compatibility window.
+The coordinator is opt-in: install, refresh, or remove it with `--only agents`. Those operations recognize the former specialist-agent destinations on all five product surfaces and remove only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. The deprecated `--only personas` alias remains available for this lifecycle work during the compatibility window.
 
 ### Legacy product paths
 

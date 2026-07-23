@@ -70,8 +70,8 @@ The installer requires Node.js 22 or newer. Clone the repo and run the POSIX wra
 ```bash
 git clone <repo-url> ~/Code/ai-instructions
 cd ~/Code/ai-instructions
-./setup.sh                   # Auto-detect installed agents, interactively select
-./setup.sh --yes --dry-run   # Auto-detect, select all, preview changes
+./setup.sh                   # Auto-detect installed agents, install instructions and skills
+./setup.sh --yes --dry-run   # Auto-detect, select all, preview the default install
 ./setup.sh --agent cursor    # Target a specific agent
 ```
 
@@ -118,7 +118,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 | Flag | What it does |
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
-| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. `agents` installs the optional review coordinator and cleans up retired repository-managed specialist agents; the legacy `personas` value remains its alias. |
+| `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. The default install includes instructions and skills; `--only agents` explicitly installs the optional review coordinator and cleans up retired repository-managed specialist agents. The legacy `personas` value remains its alias. |
 | `--copilot-concat [DIR]` | Export `AGENTS.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
@@ -127,11 +127,12 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 ### Examples
 
 ```bash
-./setup.sh                                        # Interactive: detect + prompt
-./setup.sh --yes                                   # Non-interactive: all detected agents
+./setup.sh                                        # Interactive: install instructions and skills for detected products
+./setup.sh --yes                                   # Non-interactive: default install for all detected products
 ./setup.sh --agent cursor --agent claude           # Target specific agents
 ./setup.sh --agent '*' --dry-run                   # Preview for all agents
-./setup.sh update --agent '*' --only agents        # Install the coordinator and remove retired specialist agents
+./setup.sh --agent '*' --only agents               # Explicitly install the coordinator
+./setup.sh update --agent '*' --only agents        # Refresh the coordinator and remove retired specialist agents
 ./setup.sh remove --agent cursor                   # Remove Cursor symlinks
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
 ./setup.sh check --agent cursor                    # Verify managed Cursor configuration
@@ -166,7 +167,7 @@ These instructions are global defaults. To override for a specific project:
 
 ## Updating
 
-These are living documents. In the default mode, portable skills and Markdown agents are symlinked as complete units. Cursor rules, the managed `AGENTS.md`/native-wrapper instruction artifacts, and the Codex coordinator are generated files; refresh them after source changes with `./setup.sh update --agent '*'`. Copy-mode installations require `update --copy`. In every mode, `update` removes stale repository-owned entries, including retired custom agents, while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
+These are living documents. The default install symlinks portable skills as complete units; opt in to the coordinator with `--only agents`. Cursor rules, the managed `AGENTS.md`/native-wrapper instruction artifacts, and the Codex coordinator are generated files; refresh default artifacts with `./setup.sh update --agent '*'` and the coordinator with `./setup.sh update --agent '*' --only agents`. Copy-mode installations require `update --copy`. Each update removes stale repository-owned entries in its selected categories while preserving user-maintained files. See the [migration guide](docs/migration-guide.md) before upgrading an older installation.
 
 ## Development
 

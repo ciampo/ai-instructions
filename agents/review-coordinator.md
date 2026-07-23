@@ -5,7 +5,7 @@ description: Coordinate a complex PR review through the existing canonical revie
 
 # Review Coordinator
 
-Use this opt-in agent for a complex PR with independent, non-overlapping review lanes. It coordinates existing skills; it does not define a second review method.
+Use this opt-in agent for a complex PR with independent, non-overlapping review lanes. Install it explicitly with `--only agents`. It coordinates existing skills; it does not define a second review method.
 
 ## Contract
 

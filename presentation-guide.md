@@ -66,7 +66,7 @@ The project compared direct accessibility, API-design, and performance skills wi
 The resulting decision is simple:
 
 - `review-accessibility`, `review-api-design`, and `review-performance` are direct skills.
-- The repository distributes no custom agents.
+- The opt-in `review-coordinator` has a separate orchestration role: it loads `review-pr`, delegates only material specialist passes, and returns one rechecked result.
 - A custom agent is justified only by measured execution value, such as isolation, parallelism, different tools or permissions, model configuration, or independently inspectable output.
 
 `review-pr` still owns the complete review. It loads a specialist only when material, rechecks the handoff against the actual diff and consumers, normalizes severity, and produces one final artifact.

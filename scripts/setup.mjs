@@ -20,6 +20,7 @@ import { createPlatformInstaller } from './lib/platform-installer.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
 const canonicalInstructionsPath = path.join( repoDir, 'AGENTS.md' );
+const defaultCategories = categories.filter( ( category ) => category !== 'agents' );
 
 function fail( message ) {
 	throw new Error( message );
@@ -126,7 +127,7 @@ Commands:
 
 Options:
   --agent <name>       Target ${ platformIds.join( ', ' ) }; repeatable; '*' selects all
-  --only <category>    Limit to instructions, skills, or agents; repeatable
+  --only <category>    Limit to instructions, skills, or agents; repeatable (agents are opt-in)
   --copilot-concat [DIR]  Export a shared AGENTS.md explicitly
   --copy               Copy portable files instead of symlinking them
   -y, --yes            Select every detected product without prompting
@@ -287,7 +288,7 @@ async function main() {
 		return;
 	}
 	await choosePlatforms( manifest, home, options );
-	const selectedCategories = options.only.size > 0 ? [ ...options.only ] : categories;
+	const selectedCategories = options.only.size > 0 ? [ ...options.only ] : defaultCategories;
 	const state = createState( options );
 	const installer = createPlatformInstaller( { repoDir, home, state } );
 
