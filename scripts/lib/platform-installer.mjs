@@ -761,8 +761,12 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			} else {
 				for ( const entry of await directoryEntries( root ) ) {
 					if ( entry.isFile() || entry.isSymbolicLink() ) {
+						const candidate = path.join( root, entry.name );
+						if ( expected.has( path.resolve( candidate ) ) ) {
+							continue;
+						}
 						await handleStalePath(
-							path.join( root, entry.name ),
+							candidate,
 							state,
 							legacyDetail,
 							path.join( repoDir, legacy.sourceRoot )

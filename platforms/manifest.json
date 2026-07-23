@@ -40,8 +40,13 @@
           "precedence": "Project skills can override user skills with the same name."
         },
         "agents": {
-          "supported": false,
-          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
+          "supported": true,
+          "strategy": "files",
+          "format": "markdown-agent",
+          "userPath": ".cursor/agents",
+          "projectPath": ".cursor/agents",
+          "extension": ".md",
+          "precedence": "Project agents can specialize a repository; user agents remain available globally."
         }
       },
       "legacyDestinations": [
@@ -96,8 +101,13 @@
           "precedence": "Enterprise skills override personal skills, which override project skills."
         },
         "agents": {
-          "supported": false,
-          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
+          "supported": true,
+          "strategy": "files",
+          "format": "markdown-agent",
+          "userPath": ".claude/agents",
+          "projectPath": ".claude/agents",
+          "extension": ".md",
+          "precedence": "Project agents take precedence over user agents with the same name."
         }
       },
       "legacyDestinations": [
@@ -150,8 +160,13 @@
           "precedence": "Repository and user skills with duplicate names remain distinct."
         },
         "agents": {
-          "supported": false,
-          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
+          "supported": true,
+          "strategy": "files",
+          "format": "codex-agent-toml",
+          "userPath": ".codex/agents",
+          "projectPath": ".codex/agents",
+          "extension": ".toml",
+          "precedence": "A custom agent with a built-in name takes precedence over the built-in agent."
         }
       },
       "legacyDestinations": [
@@ -204,8 +219,13 @@
           "precedence": "The first discovered skill wins for duplicate names."
         },
         "agents": {
-          "supported": false,
-          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
+          "supported": true,
+          "strategy": "files",
+          "format": "markdown-agent",
+          "userPath": ".copilot/agents",
+          "projectPath": ".github/agents",
+          "extension": ".agent.md",
+          "precedence": "User agents take precedence over repository agents with the same name in Copilot CLI."
         }
       },
       "legacyDestinations": [
@@ -252,8 +272,13 @@
           "precedence": "Workspace skills override user skills with the same name."
         },
         "agents": {
-          "supported": false,
-          "reason": "No repository-managed custom agents are distributed; specialist reviews are direct Agent Skills."
+          "supported": true,
+          "strategy": "files",
+          "format": "markdown-agent",
+          "userPath": ".gemini/agents",
+          "projectPath": ".gemini/agents",
+          "extension": ".md",
+          "precedence": "Workspace agents can be reloaded independently from user agents."
         }
       },
       "legacyDestinations": [

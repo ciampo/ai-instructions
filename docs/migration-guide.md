@@ -44,11 +44,11 @@ Legacy managed skill copies retain copy mode during their first update, even whe
 
 Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that marker to a user-maintained directory.
 
-### Specialist reviews and retired agents
+### Specialist reviews, the coordinator, and retired agents
 
-Accessibility, public API-design, and performance reviews now use the `review-accessibility`, `review-api-design`, and `review-performance` skills directly. The repository no longer installs custom-agent definitions for those capabilities.
+Accessibility, public API-design, and performance reviews use the `review-accessibility`, `review-api-design`, and `review-performance` skills directly. The optional `review-coordinator` agent loads those existing skills only when their domains are material; it does not replace or duplicate their methods.
 
-During `update` or `remove`, the installer recognizes the former agent destinations on all five product surfaces and removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this cleanup during the compatibility window.
+During `update` or `remove`, the installer adds or refreshes the coordinator and recognizes the former specialist-agent destinations on all five product surfaces. It removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this lifecycle work during the compatibility window.
 
 ### Legacy product paths
 
@@ -58,7 +58,7 @@ During `update` or `remove`, the installer recognizes the former agent destinati
 - **GitHub Copilot CLI**: update creates managed `~/.copilot/AGENTS.md` and a thin `~/.copilot/copilot-instructions.md` wrapper. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` to create project-root `AGENTS.md`. During this export, a repository-owned wrapper from an earlier export is removed to prevent duplicated instructions; user-owned `.github/copilot-instructions.md` files are preserved for Copilot-specific guidance.
 - **Gemini CLI**: update creates managed `~/.gemini/AGENTS.md` and `~/.gemini/GEMINI.md`; the latter imports the former. Complete skills remain in their native user directory.
 
-For every supported product surface, `install`, `update`, and `remove` also clean only repository-owned artifacts from the retired custom-agent layout. User-authored agents are preserved.
+For every supported product surface, `install`, `update`, and `remove` manage the optional coordinator and clean only repository-owned artifacts from the retired specialist-agent layout. User-authored agents are preserved.
 
 ## Troubleshooting
 

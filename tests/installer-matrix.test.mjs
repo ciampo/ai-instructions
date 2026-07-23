@@ -17,6 +17,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { assertRecentDate, validateContent } from '../scripts/validate-content.mjs';
 import { createArtifactBuilder } from '../scripts/lib/artifact-builder.mjs';
+import { codexAgent, managedMarkdown } from '../scripts/lib/formats.mjs';
 import { resolveUserChildPath, validateManifest } from '../scripts/lib/manifest.mjs';
 import {
 	removeOwnedPath,
@@ -107,7 +108,7 @@ function artifactPath( platform, category, home ) {
 	if ( category === 'skills' ) {
 		return path.join( base, 'review-pr', 'SKILL.md' );
 	}
-	return path.join( base, `a11y-reviewer${ capability.extension }` );
+	return path.join( base, `review-coordinator${ capability.extension }` );
 }
 
 function retiredAgentExtension( platform ) {
@@ -670,6 +671,7 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 test( 'content contracts enforce the universal instruction budget', async () => {
 	const result = await validateContent( repoDir );
 	assert.equal( result.evaluationCount, 6 );
+	assert.equal( result.agentCount, 1 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
@@ -1102,9 +1104,20 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 		);
 	}
 
+	const coordinatorSourcePath = path.join( repoDir, 'agents', 'review-coordinator.md' );
+	const coordinatorSource = await readFile( coordinatorSourcePath, 'utf8' );
+	for ( const platform of manifest.platforms ) {
+		assert.equal(
+			await readFile( artifactPath( platform, 'agents', home ), 'utf8' ),
+			platform.capabilities.agents.format === 'codex-agent-toml'
+				? codexAgent( coordinatorSource, coordinatorSourcePath )
+				: managedMarkdown( coordinatorSource )
+		);
+	}
+
 } );
 
-test( 'all platforms distribute complete skills and no current custom agents', async ( t ) => {
+test( 'all platforms distribute complete skills and the optional review coordinator', async ( t ) => {
 	const home = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-skills-first-' ) );
 	t.after( () => rm( home, { recursive: true, force: true } ) );
 	for ( const platform of manifest.platforms ) {
@@ -1113,21 +1126,18 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 
 	const skillNames = await sourceSkillNames();
 	assert.ok( skillNames.length > 0 );
-	assert.equal( await pathExists( path.join( repoDir, 'agents' ) ), false );
+	const coordinatorSource = path.join( repoDir, 'agents', 'review-coordinator.md' );
+	assert.equal( await pathExists( coordinatorSource ), true );
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	for ( const platform of manifest.platforms ) {
-		assert.equal( platform.capabilities.agents.supported, false );
-		assert.equal( artifactPath( platform, 'agents', home ), null );
-		assert.match(
-			runInstaller( home, [ 'list', '--agent', platform.id, '--only', 'agents', '--yes' ] ),
-			/not distributed/i
-		);
+		assert.equal( platform.capabilities.agents.supported, true );
+		assert.equal( await pathExists( artifactPath( platform, 'agents', home ) ), true );
+		assert.match( runInstaller( home, [ 'list', '--agent', platform.id, '--only', 'agents', '--yes' ] ), /\[ok\]/ );
 		runInstaller( home, [ 'check', '--agent', platform.id, '--only', 'agents', '--yes' ] );
 
 		const retiredAgents = platform.legacyDestinations.find( ( legacy ) => legacy.category === 'agents' );
 		assert.ok( retiredAgents, `${ platform.id } must retain a retired-agent cleanup destination` );
-		assert.equal( await pathExists( destination( home, retiredAgents.userPath ) ), false );
 
 		for ( const skillName of skillNames ) {
 			const source = path.join( repoDir, 'skills', skillName );

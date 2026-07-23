@@ -59,7 +59,7 @@ Codex context isolation also passed in a fresh delegated task: a non-engineering
 
 ## 2026-07-22 specialist architecture decision
 
-The direct accessibility skill passed explicit, implicit, negative, sibling-confusion, no-findings, material-violation, and read-only-boundary cases. Comparisons for accessibility, API design, and performance found no distinct tool, isolation, or result-quality benefit from the parallel custom-agent prompts; the prompts instead introduced evidence and output-taxonomy drift. The repository now distributes 17 skills and no custom agents. Full evidence and the decision are recorded in the [pilot](accessibility-review-pilot.md) and [ADR 0004](decisions/0004-skill-first-specialists.md).
+The direct accessibility skill passed explicit, implicit, negative, sibling-confusion, no-findings, material-violation, and read-only-boundary cases. Comparisons for accessibility, API design, and performance found no distinct tool, isolation, or result-quality benefit from the parallel custom-agent prompts; the prompts instead introduced evidence and output-taxonomy drift. At the recorded revision, the repository distributed 17 skills and no custom agents. The current optional coordinator has a separate orchestration role and requires its own live checks. Full evidence and the decision are recorded in the [pilot](accessibility-review-pilot.md), [ADR 0004](decisions/0004-skill-first-specialists.md), and [ADR 0006](decisions/0006-review-coordinator.md).
 
 This source-level decision and the installer lifecycle tests do not replace current in-product discovery. All five product surfaces remain preview until the revised direct-skill checks below are completed on every named client.
 
