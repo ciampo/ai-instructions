@@ -4,7 +4,7 @@ How AI agents should use GitHub access, `gh`, and `git`.
 
 ## Pull-Request Review
 
-- **[STRONG]** Prefer `gh` and local Git for routine PR review data. Use field-limited `gh pr view` to capture the base repository plus `baseRefOid` and `headRefOid`; use `gh pr diff --name-only` for scope; then inspect targeted changes through Git at those captured SHAs. This is discoverable, keeps responses small, and avoids broad remote payloads.
+- **[STRONG]** Prefer `gh` and local Git for routine PR review data. Use field-limited `gh pr view` to capture the canonical PR URL, base branch, `baseRefOid`, and `headRefOid`; use `gh pr diff --name-only` for scope; then inspect targeted changes through Git at those captured SHAs. This is discoverable, keeps responses small, and avoids broad remote payloads.
 - **[RULE]** Treat the captured base and head SHAs as the review boundary. Resolve both to explicit local refs before local inspection, not assumed branch names or `FETCH_HEAD`, which another fetch can replace.
 - **[PREFER]** After examining changed filenames, fetch and review each changed file's diff separately and read its full source. Avoid a monolithic full-PR patch unless it is necessary to understand the change.
 - **[PREFER]** Use the host's GitHub connector for information that `gh` does not expose cleanly in one read, especially merged discussion and review threads with their resolved state. It is also the fallback when the local CLI authentication is stale or lacks the needed capability.
@@ -22,7 +22,7 @@ How AI agents should use GitHub access, `gh`, and `git`.
 
 ### Repository Identification
 
-- **[RULE]** Before any `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, prefer `gh pr view <N> --json baseRepository --jq '.baseRepository.nameWithOwner'`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
+- **[RULE]** Before any `gh api` call, determine `owner/repo` from the resource you are operating on. For PR-related queries, derive it from the canonical PR URL returned by `gh pr view <N> --json url --jq '.url'`. Do not guess or hardcode the repository path. Only fall back to `git remote get-url origin` after confirming it matches the repository you intend to query, since in fork workflows `origin` may point to a contributor fork rather than the upstream PR repository.
 
 ### PR Review Comments
 
