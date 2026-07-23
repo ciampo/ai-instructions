@@ -1,11 +1,11 @@
 # Pull-Request Snapshot Procedure
 
-Use this procedure before a remote PR review, self-review, or feedback pass. It keeps repository state, discussion, and source inspection pinned to one PR base and head.
+Use this procedure before a remote PR review, self-review, or feedback pass. It pins repository state, discussion, and source inspection to one PR base and head.
 
-1. **Capture the head.** Use field-limited `gh pr view` to record the base repository, base branch, `baseRefOid`, and `headRefOid`. Treat those SHAs as the review boundary; do not infer them from the current local branch or `FETCH_HEAD`.
-2. **Establish scope.** Use `gh pr diff --name-only` to find changed files. Fetch both captured OIDs into explicit local refs, verify that each ref resolves to its recorded OID, and use local Git to read the relevant base-to-head file diffs and full source. Do not inspect mutable branch names, and do not rely on `FETCH_HEAD`, which another fetch can replace.
-3. **Add remote review state only when needed.** Use the GitHub connector for merged discussion and review threads with resolved state, which `gh` does not expose cleanly in one small request. Otherwise, prefer `gh` subcommands and field-limited output. Use `gh api` only when neither path supplies the needed read.
-4. **Check CI separately.** Use `gh pr checks` for a concise check summary. For a relevant failure, use `gh run view --log-failed` on that run. Do not retrieve a complete check rollup merely to identify a failing job.
-5. **Confirm freshness.** Re-read field-limited PR metadata immediately before forming conclusions. If either `baseRefOid` or `headRefOid` changed, the snapshot is stale: repeat these steps and review only the new snapshot.
+1. **Pin the boundary.** Use narrow `gh pr view` metadata to record the base repository, base branch, `baseRefOid`, and `headRefOid`. Do not infer them from the local branch or `FETCH_HEAD`.
+2. **Inspect the PR.** Use `gh pr diff --name-only` for initial scope. Fetch both OIDs into explicit refs, verify them, then use the merge-base diff (`base...head`) and full source to inspect every changed file. Do not inspect mutable branch names.
+3. **Add only needed remote state.** Prefer field-limited `gh` reads. Use the connector for merged discussion, resolved review threads, or a CLI authentication/capability gap. Use read-only `gh api` only when neither provides the needed state.
+4. **Check CI separately.** Use `gh pr checks`; retrieve failed Actions logs only for a relevant failure.
+5. **Confirm freshness.** Re-read narrow PR metadata before concluding. If either SHA changed, discard the snapshot and repeat.
 
-The CLI-first path is the default because its commands and fields are discoverable, and narrow queries minimize tokens. Use the GitHub connector as the targeted exception for resolved review state, merged discussion, or a CLI authentication/capability gap.
+The CLI-first path is the default because it is discoverable and narrow; the connector is the targeted exception.

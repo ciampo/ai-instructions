@@ -17,12 +17,12 @@
       "id": "fresh-feedback-snapshot",
       "prompt": "Address the valid feedback in this PR and prepare replies locally. Do not post anything.",
       "context": "evals/fixtures/cli-first-feedback.md",
-      "expectedOutcome": "A feedback pass that uses a SHA-pinned CLI snapshot, rebuilds it if the PR head changes, and separates valid fixes from resolved or non-actionable feedback.",
+      "expectedOutcome": "A feedback pass that uses a SHA-pinned CLI snapshot, rebuilds it if either PR boundary changes, and separates valid fixes from resolved or non-actionable feedback.",
       "assertions": [
-        "The workflow captures the base and head revisions before reading code or categorizing feedback.",
-        "The workflow fetches the ordinary PR conversation and all inline review comments before categorizing feedback, including thread-aware state when material.",
-        "The workflow refreshes PR metadata before acting and discards the snapshot if either captured boundary changed.",
-        "The workflow uses the connector for merged discussion, resolved thread state, or a CLI authentication or capability gap and does not post replies or resolve threads."
+        "The workflow collects source and feedback from the same pinned PR snapshot before categorizing feedback.",
+        "The workflow retrieves the ordinary conversation, inline comments, and thread-aware state when material.",
+        "The workflow refreshes both PR boundaries before acting and rebuilds the snapshot if either changed.",
+        "The workflow has a supported path when the CLI cannot provide required review state and does not post replies or resolve threads."
       ]
     }
   ]
