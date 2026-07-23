@@ -7,8 +7,8 @@
       "shouldTrigger": true
     },
     {
-      "id": "summarize-prose-without-repository-work",
-      "prompt": "Summarize these meeting notes in three short paragraphs.",
+      "id": "summarize-enterprise-access-guidance",
+      "prompt": "Summarize this GitHub Enterprise CLI access guidance in three short paragraphs for a nontechnical reader. Do not inspect a repository, run commands, or configure anything.",
       "shouldTrigger": false
     }
   ],
