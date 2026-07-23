@@ -9,6 +9,7 @@
 
 1. **`skills/review-pr/SKILL.md:12-13`** — "Step 1 refers to captured PR metadata before Step 2 captures it. Make the dependency order explicit."
 2. **`skills/address-pr-feedback/SKILL.md:17`** — "Before acting on feedback, refresh both captured PR boundaries and rebuild the snapshot if either changed."
+3. **`skills/address-pr-feedback/SKILL.md:17`** — "Fetch the ordinary PR conversation and all inline review comments before categorizing feedback."
 
 ## Source excerpts
 
