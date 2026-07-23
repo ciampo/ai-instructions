@@ -669,7 +669,7 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 
 test( 'content contracts enforce the universal instruction budget and evaluation fixture coverage', async () => {
 	const result = await validateContent( repoDir );
-	assert.equal( result.evaluationCount, 8 );
+	assert.equal( result.evaluationCount, 9 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );

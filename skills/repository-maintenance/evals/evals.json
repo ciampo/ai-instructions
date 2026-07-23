@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "verify-github-enterprise-cli-access",
+      "prompt": "Before I run a GitHub Enterprise CLI command against https://github.example.com, how should I verify the approved access route? Do not configure credentials, proxies, or environment variables.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "summarize-prose-without-repository-work",
+      "prompt": "Summarize these meeting notes in three short paragraphs.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "github-enterprise-read-route",
+      "prompt": "Using the supplied context, determine the safe next step before running a GitHub Enterprise CLI command. Do not configure credentials, proxies, or environment variables.",
+      "context": "evals/fixtures/github-enterprise-read-route.md",
+      "expectedOutcome": "A read-only GitHub Enterprise access preflight that derives the target host from the supplied URL, verifies an approved route before relying on it, and does not invent local proxy configuration.",
+      "assertions": [
+        "The preflight derives the target Enterprise host from the supplied URL instead of assuming GitHub.com.",
+        "The response verifies an approved access route with a harmless request before depending on Enterprise CLI access.",
+        "If Enterprise access is unavailable, the response follows an offered retry configuration or asks the user to establish an approved route rather than inventing proxy, host, or credential settings.",
+        "The response remains read-only and does not edit source, commit, push, or modify a pull request."
+      ]
+    }
+  ]
+}
