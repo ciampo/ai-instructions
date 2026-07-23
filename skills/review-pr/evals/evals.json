@@ -21,7 +21,7 @@
       "assertions": [
         "The review does not modify repository source or post to GitHub.",
         "The review captures the base and head revisions with narrow CLI metadata, uses verified explicit local refs for both boundaries, and refreshes the snapshot if either revision changes.",
-        "The review uses the connector only when merged discussion or resolved thread state is needed and unavailable through a concise CLI read.",
+        "The review uses the connector for merged discussion, resolved thread state, or a CLI authentication or capability gap.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "Focused specialist findings are synthesized instead of delivered as competing reports."
       ]
