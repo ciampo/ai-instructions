@@ -46,11 +46,11 @@ New or materially changed skills should include `evals/evals.json` with realisti
 
 ## Specialist Execution
 
-Specialist reviews are direct Agent Skills. The repository distributes one opt-in `review-coordinator` agent for orchestration, installed only with `--only agents`; it reuses the canonical review and specialist skills rather than duplicating their methods. The installer also retains legacy agent destinations to identify and remove repository-owned specialist artifacts; it never manages or removes user-authored agents.
+The repository no longer distributes custom-agent sources or platform adapters. Specialist reviews are direct Agent Skills. The installer retains legacy agent destinations solely to identify and remove repository-owned artifacts from earlier installations; it never manages or removes user-authored agents.
 
 The review method, evidence requirements, authority boundary, output contract, and completion criteria for a reusable specialist belong in one canonical skill. General workflows may load that skill directly and synthesize its findings.
 
-Add a custom agent only when evaluation demonstrates value from context isolation, an independent parallel pass, restricted tools or permissions, a different model configuration, or a separately inspectable result. A custom agent must not restate or silently diverge from the canonical skill. The `review-coordinator` is the repository's sole distributed agent and remains subject to that evidence threshold.
+Add a custom agent only when evaluation demonstrates value from context isolation, an independent parallel pass, restricted tools or permissions, a different model configuration, or a separately inspectable result. A custom agent must not restate or silently diverge from the canonical skill. This repository currently distributes no custom agents.
 
 ## Universal Instructions
 

@@ -11,7 +11,7 @@ Platform support tiers are limited to verified and preview. The README table lis
 
 The generated table in the README comes from [`platforms/manifest.json`](../platforms/manifest.json). `lastAdapterChecked` records the latest filesystem and lifecycle check; it is not product-discovery evidence. Product versions, discovery dates, and capability results live only in the discovery evidence. When a row names several clients, every client must pass before the combined surface can be promoted; otherwise split the surface.
 
-Current product versions, completed checks, and remaining acceptance work are recorded in [discovery evidence](discovery-evidence.md). The [skills-first support audit](skills-first-support-audit.md) separately records the prior skills-only installer contract; the current distribution also includes the optional coordinator. A documented procedure alone is not verification evidence.
+Current product versions, completed checks, and remaining acceptance work are recorded in [discovery evidence](discovery-evidence.md). The [skills-first support audit](skills-first-support-audit.md) separately records the automated installer contract for the current distribution: core instructions and complete skill directories, with no new custom-agent output. A documented procedure alone is not verification evidence.
 
 ## Discovery Checks
 
@@ -22,29 +22,25 @@ After installation, start a new session unless the product documents live reload
 1. Open Cursor's Customize page and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear at user scope.
 2. Open the slash-command menu and invoke `/review-pr`.
 3. Invoke `review-accessibility` on an interactive UI and confirm the source-verified specialist method is used.
-4. Invoke `review-coordinator` on a mixed UI and public-API PR; confirm it delegates only material specialist passes and returns one synthesized review.
-5. Confirm the core rule appears at user scope. File-backed global rules remain preview because Cursor also exposes user rules through product-managed settings.
+4. Confirm the core rule appears at user scope. File-backed global rules remain preview because Cursor also exposes user rules through product-managed settings.
 
 ### Claude Code CLI
 
 1. Type `/review-pr`; Claude Code exposes skills by name and also loads them automatically when their descriptions match.
 2. Invoke `review-accessibility` directly and confirm a general PR prompt remains with `review-pr` instead.
-3. Invoke `review-coordinator` on a mixed-scope PR and confirm its specialist handoffs are synthesized instead of delivered separately.
-4. Change a bundled reference, run `./setup.sh update --agent claude` when using copy mode, and verify the skill uses the updated reference.
+3. Change a bundled reference, run `./setup.sh update --agent claude` when using copy mode, and verify the skill uses the updated reference.
 
 ### Codex app, CLI, and IDE extension
 
 1. Run `/skills` or type `$` in CLI/IDE and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear.
 2. Invoke each specialist directly on a matching prompt and confirm `review-pr` uses them only when the domain is material.
-3. Invoke `review-coordinator` on a PR with independent material specialist lanes; confirm it has no hard-coded model requirement and returns one rechecked review.
-4. Confirm the effective global instructions include the `Core Instructions` heading. If `~/.codex/AGENTS.override.md` exists, it intentionally takes precedence over the managed `AGENTS.md`.
+3. Confirm the effective global instructions include the `Core Instructions` heading. If `~/.codex/AGENTS.override.md` exists, it intentionally takes precedence over the managed `AGENTS.md`.
 
 ### GitHub Copilot CLI
 
 1. Invoke `/review-pr`; Copilot CLI exposes skills as slash commands and may also invoke them automatically.
 2. Invoke `/review-accessibility` on a matching UI example and verify a non-UI prompt does not select it.
-3. Invoke `review-coordinator` on a mixed-scope PR and confirm it uses the installed skills without duplicate reports.
-4. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
+3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
 ### Gemini CLI (preview; non-individual authentication only)
 
@@ -52,8 +48,7 @@ Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth w
 
 1. Run `/skills reload`, then `/skills list`; confirm `review-pr`, the three specialist review skills, and the scoped standards skills appear.
 2. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr`.
-3. Invoke `review-coordinator` on a mixed-scope PR and confirm direct-skill fallback if parallel subagents are unavailable.
-4. Ask Gemini to summarize one core instruction to confirm `~/.gemini/GEMINI.md` is loaded.
+3. Ask Gemini to summarize one core instruction to confirm `~/.gemini/GEMINI.md` is loaded.
 
 ### Google Antigravity CLI (not yet advertised)
 

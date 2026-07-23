@@ -160,7 +160,6 @@ TMP_HOME="$TMP_ROOT/home"
 mkdir -p "$TMP_HOME/.cursor" "$TMP_HOME/.claude" "$TMP_HOME/.codex" "$TMP_HOME/.copilot" "$TMP_HOME/.gemini"
 
 HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only skills --copy --yes >/dev/null
-HOME="$TMP_HOME" "$REPO_DIR/setup.sh" --agent '*' --only agents --copy --yes >/dev/null
 
 CURSOR_SKILL="$TMP_HOME/.cursor/skills/review-pr/SKILL.md"
 CLAUDE_SKILL="$TMP_HOME/.claude/skills/review-pr/SKILL.md"
@@ -178,16 +177,6 @@ done
 assert_file_exists "$ENGINEERING_REFERENCE"
 assert_file_contains "$ENGINEERING_REFERENCE" "# Accessibility Reference"
 assert_file_contains "$TMP_HOME/.agents/skills/engineering-standards/.ai-instructions-managed" "ai-instructions:managed"
-
-for installed_agent in \
-  "$TMP_HOME/.cursor/agents/review-coordinator.md" \
-  "$TMP_HOME/.claude/agents/review-coordinator.md" \
-  "$TMP_HOME/.codex/agents/review-coordinator.toml" \
-  "$TMP_HOME/.copilot/agents/review-coordinator.agent.md" \
-  "$TMP_HOME/.gemini/agents/review-coordinator.md"; do
-  assert_file_exists "$installed_agent"
-  assert_file_contains "$installed_agent" "review-coordinator"
-done
 
 QUOTED_REPO="$TMP_ROOT/quoted-repo"
 QUOTED_HOME="$TMP_ROOT/quoted-home"
