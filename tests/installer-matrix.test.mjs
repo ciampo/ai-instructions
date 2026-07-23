@@ -667,9 +667,9 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 	assert.equal( await readFile( removable, 'utf8' ), '# Original file\n' );
 } );
 
-test( 'content contracts enforce the universal instruction budget', async () => {
+test( 'content contracts enforce the universal instruction budget and evaluation fixture coverage', async () => {
 	const result = await validateContent( repoDir );
-	assert.equal( result.evaluationCount, 6 );
+	assert.equal( result.evaluationCount, 8 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );

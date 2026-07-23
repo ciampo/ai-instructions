@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "legacy-plan-only-release-request",
+      "prompt": "Use release-publish to inspect the unreleased changes and tell me how to prepare the next release. Do not modify files.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "publish-an-existing-release",
+      "prompt": "Publish the verified release that is already prepared locally.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "legacy-route-preserves-no-write-boundary",
+      "prompt": "Use release-publish to recommend the next release, but do not modify files or create a plan document.",
+      "context": "evals/fixtures/no-write-legacy-route.md",
+      "expectedOutcome": "A compatibility-route response that reports a read-only preparation plan and leaves every local and remote release action unperformed.",
+      "assertions": [
+        "The response routes the request to release preparation rather than publication.",
+        "The response identifies the recommended version and the preparation changes that would need later authorization.",
+        "The response does not create, propose creating, or claim to have created a plan file, temporary artifact, metadata update, commit, tag, push, publication, or remote release."
+      ]
+    }
+  ]
+}
