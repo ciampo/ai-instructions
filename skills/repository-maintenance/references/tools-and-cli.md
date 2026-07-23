@@ -16,7 +16,8 @@ How AI agents should use GitHub access, `gh`, and `git`.
 - **[STRONG]** Prefer `gh` subcommands over raw `gh api` calls whenever a subcommand covers the need: `gh issue view`, `gh issue list`, `gh pr view`, `gh pr list`, `gh pr diff`, `gh pr checks`, `gh release list`, etc.
 - **[PREFER]** Use read-only `gh api` only when neither a `gh` subcommand nor the connector provides the required data cleanly.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
-- **[STRONG]** When accessing a GitHub Enterprise instance (e.g., `github.a8c.com`), always include the full URL in the command. This triggers shell-level overrides (proxy routing, host config) that the user has set up. Do NOT explicitly include `HTTPS_PROXY` or similar environment variables in the command -- the user's `gh` wrapper handles this automatically as long as the Enterprise URL is present.
+- **[RULE]** A GitHub Enterprise URL identifies the target host; it does not configure `gh`, authentication, or proxy routing. Do not assume a user-level wrapper is installed. Before relying on GitHub Enterprise CLI access, verify an approved route with a harmless read-only request against the intended host.
+- **[STRONG]** Prefer an enabled, approved Enterprise integration or local wrapper. If it blocks a command and provides a retry configuration, use that configuration. Otherwise, do not invent `HTTPS_PROXY`, `GH_HOST`, or local proxy endpoints: ask the user to establish the approved access path before retrying.
 
 ## GitHub API Patterns
 
