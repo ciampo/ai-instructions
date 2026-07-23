@@ -8,7 +8,7 @@ How AI agents should use GitHub access, `gh`, and `git`.
 - **[RULE]** Treat the captured base and head SHAs as the review boundary. Resolve both to explicit local refs before local inspection, not assumed branch names or `FETCH_HEAD`, which another fetch can replace.
 - **[PREFER]** After examining changed filenames, fetch and review each changed file's diff separately and read its full source. Avoid a monolithic full-PR patch unless it is necessary to understand the change.
 - **[PREFER]** Use the host's GitHub connector for information that `gh` does not expose cleanly in one read, especially merged discussion and review threads with their resolved state. It is also the fallback when the local CLI authentication is stale or lacks the needed capability.
-- **[RULE]** Re-read field-limited PR metadata before delivering a review. If either `baseRefOid` or `headRefOid` changed, discard the stale snapshot and repeat the review-data collection.
+- **[RULE]** Re-read field-limited PR metadata and refresh the remote discussion or thread state used by the review before delivery. If either `baseRefOid` or `headRefOid` changed, discard the stale snapshot and repeat the review-data collection; otherwise account for new or resolved feedback.
 - **[STRONG]** Use `gh pr checks` narrowly for CI summaries, then `gh run view --log-failed` for a relevant failed run. Do not request a full check-rollup payload when the summary is enough.
 
 ## GitHub CLI (`gh`)
