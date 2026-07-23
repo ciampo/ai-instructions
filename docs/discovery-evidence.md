@@ -4,6 +4,20 @@ Support tiers require evidence from the target product, not only proof that file
 
 The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
+## 2026-07-23 Codex desktop app source-discovery check
+
+The active Codex desktop task used the installed user configuration generated from `main` at `347549177f4861d0a290fd0b5162c90b870385f6`. `./setup.sh check --agent codex --yes` reported all 18 current artifacts as healthy: the managed `~/.codex/AGENTS.md` plus all 17 user skills in `~/.agents/skills/`. `~/.codex/AGENTS.override.md` was absent. The desktop runtime listed the direct review skills at user scope, and this task loaded `repository-maintenance` and `engineering-standards` from that installed skill set.
+
+| Capability | Result | Limitation |
+| --- | --- | --- |
+| Installed-source introspection | Pass | The managed instruction file and all 17 complete skill directories resolve to the installed `main` checkout. |
+| Direct-skill discovery | Pass | `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` were available in the desktop runtime alongside the other installed skills. |
+| Direct-skill activation | Partial | This task activated the maintenance and engineering-standards skills; the retained review, isolation, and release-boundary canaries still need a dedicated app session. |
+| Persistent instructions | Partial | The task title followed the managed convention, but this repository workspace also has a root `AGENTS.md`, so the current session cannot independently attribute that behavior to the user-level file. |
+| Product version | Blocked | The active desktop runtime did not expose an app version. |
+
+This is product-level source-discovery evidence, not a complete app acceptance matrix and not evidence for the IDE extension. Codex remains `preview`; a fresh app task outside a workspace with equivalent instructions must run the retained behavior canaries, and the IDE extension must be exercised independently before the combined surface can be promoted.
+
 ## 2026-07-22 direct-skill verification
 
 The active user installation was generated from `main` at `34007084d2070f5abb6ddbc11269e6568139d5ab`. Its owner installer passed `./setup.sh check --agent '*' --yes` with all 90 expected core-instruction and complete-skill artifacts current. The skills are repository-owned symlinks to that checkout; the audit branch did not overwrite them across worktrees.
