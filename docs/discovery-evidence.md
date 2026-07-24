@@ -26,6 +26,14 @@ Gemini CLI is unsupported by default. Individual OAuth is unavailable, and no au
 
 Antigravity remains `preview`. Its earlier 1.1.5 canary ran through Gemini-compatible locations, so the native-path `review-pr`, isolation, and release-boundary checks remain outstanding before promotion.
 
+## 2026-07-24 Antigravity native-path acceptance attempt
+
+The installed `agy` command reported version 1.1.5. The current profile contained the managed `~/.gemini/AGENTS.md` and `~/.gemini/GEMINI.md` wrapper pair, but `~/.gemini/antigravity-cli/skills/` was absent. There were therefore no installed native global `SKILL.md` files to inspect or invoke. This check deliberately did not update configuration outside its disposable workspace, so the existing wrapper files are not evidence that the merged adapter's global skill path is discovered.
+
+An isolated workspace containing a copied `AGENTS.md` and complete `review-pr` skill directory was used for a read-only, plan-mode canary. In headless mode, Antigravity denied its required `read_file` request before producing a response because that mode cannot present a scoped approval prompt. The interactive attempt reached the disposable-workspace trust prompt but reported that the current CLI was not signed in. No blanket permission bypass, settings change, repository change, publication, or credential copy was used. These attempts do not establish `review-pr` activation, isolation, or the release boundary.
+
+The native-path acceptance result is **blocked**, not failed: update an authenticated disposable profile with the current adapter, confirm the native global skills appear in the product, and rerun the canaries interactively with only the displayed disposable-workspace reads approved. Antigravity remains `preview`.
+
 ## 2026-07-22 direct-skill verification
 
 The active user installation was generated from `main` at `34007084d2070f5abb6ddbc11269e6568139d5ab`. Its owner installer passed `./setup.sh check --agent '*' --yes` with all 90 expected core-instruction and complete-skill artifacts current. The skills are repository-owned symlinks to that checkout; the audit branch did not overwrite them across worktrees.

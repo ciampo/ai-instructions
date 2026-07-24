@@ -46,10 +46,12 @@ After installation, start a new session unless the product documents live reload
 
 Antigravity CLI 1.1.5 enforces global `~/.gemini/GEMINI.md` context and imports global skills from `~/.gemini/antigravity-cli/skills/`. The installer owns those paths and migrates only its managed Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain in place.
 
-1. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
-2. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr` instead.
-3. Ask for the title of a review for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied.
-4. Run the isolation and preparation-only release-boundary canaries in a disposable workspace with tools disabled where supported.
+1. In an authenticated disposable profile updated from the current revision, confirm `~/.gemini/antigravity-cli/skills/review-pr/SKILL.md` exists before opening the client. A managed wrapper alone is not evidence that native global skills were installed.
+2. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
+3. Invoke `review-pr` without supplying a pull-request identifier. The authenticated disposable profile's native global `review-pr` directory must be a nonsecret copy that includes `references/`; if the client prompts before sending a reference, approve only that displayed disposable copy. Confirm it requests or identifies a pull request and does not invent a target or write outside the review's read-only boundary.
+4. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr` instead.
+5. Ask for the title of a review for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied.
+6. Run the isolation and preparation-only release-boundary canaries in a disposable workspace with tools disabled where supported. In headless mode, a denied scoped file-read permission is a blocked result, not a discovery pass. Prefer an interactive, plan-mode session that approves only the displayed reads in the disposable workspace; do not use a blanket permission bypass.
 
 ### Gemini CLI (unsupported by default)
 
