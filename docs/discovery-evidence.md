@@ -40,7 +40,7 @@ At that point the native-path acceptance result was **blocked**, not failed: the
 
 ## 2026-07-24 Antigravity authenticated direct-skill canaries
 
-The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The agent read the installed skill files and performed only workspace/repository inspection; it did not modify files, commit, tag, push, publish, or copy credentials.
+The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The recorded sessions performed read-only skill, filesystem, and repository inspection; they did not modify files, commit, tag, push, publish, or copy credentials.
 
 | Capability | Result | Evidence | Remaining gap |
 | --- | --- | --- | --- |
