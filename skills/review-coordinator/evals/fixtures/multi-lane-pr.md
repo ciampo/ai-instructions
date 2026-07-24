@@ -3,7 +3,11 @@
 This is a static, version-controlled evaluation fixture, not a live pull request. Treat the evidence below as the complete immutable review boundary; do not fetch or refresh a remote branch.
 
 - Fixture revision: `coordinator-multi-lane-v1`
+- Repository: `example/coordinator-review-fixture`
+- Base revision: `b4f0f8c5fbf24e05d4307c413be1cda7e73d4caa`
+- Head revision: `e71df9a73ed7a0e43cae7271c1e68b7cbd2e6a9b`
 - Existing review state: no comments or reviews
+- Target audience: maintainers deciding whether the change is ready to merge
 - Changed areas: account-deletion authorization, persisted-preference migration, and settings-dialog regression coverage
 
 ## Account-deletion route
