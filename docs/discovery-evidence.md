@@ -4,6 +4,28 @@ Support tiers require evidence from the target product, not only proof that file
 
 The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
+## 2026-07-23 Codex desktop app source-discovery check
+
+The active Codex desktop task used the installed user configuration generated from `main` at `347549177f4861d0a290fd0b5162c90b870385f6`. `./setup.sh check --agent codex --yes` reported all 18 current artifacts as healthy: the managed `~/.codex/AGENTS.md` plus all 17 user skills in `~/.agents/skills/`. `~/.codex/AGENTS.override.md` was absent. The desktop runtime listed the direct review skills at user scope, and this task loaded `repository-maintenance` and `engineering-standards` from that installed skill set.
+
+| Capability | Result | Limitation |
+| --- | --- | --- |
+| Installed-source introspection | Blocked | The installer check is supporting evidence for managed artifact integrity, but the desktop runtime did not expose the loaded instruction or skill source paths. |
+| Direct-skill discovery | Pass | `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` were available in the desktop runtime alongside the other installed skills. |
+| Direct-skill activation | Partial | This task activated the maintenance and engineering-standards skills; the retained review, isolation, and release-boundary canaries still need a dedicated app session. |
+| Persistent instructions | Partial | The task title followed the managed convention, but this repository workspace also has a root `AGENTS.md`, so the current session cannot independently attribute that behavior to the user-level file. |
+| Product version | Blocked | The active desktop runtime did not expose an app version. |
+
+This is product-level source-discovery evidence, not a complete app acceptance matrix and not evidence for the IDE extension. Codex remains `preview`; a fresh app task outside a workspace with equivalent instructions must run the retained behavior canaries, and the IDE extension must be exercised independently before the combined surface can be promoted.
+
+## 2026-07-23 Antigravity adapter and Gemini policy
+
+Google Antigravity CLI 1.1.5 is now the preview Google adapter. Its current CLI documentation identifies `~/.gemini/GEMINI.md` as global context and `~/.gemini/antigravity-cli/skills/` as the global skill path. Local inspection of the installed 1.1.5 CLI also confirms that both global and workspace skills are directories containing `SKILL.md`. The installer owns those paths and migrates only repository-managed legacy Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain untouched. The adapter contract covers install, idempotent reinstall, check, list, update, remove, copy mode, symlink mode, stale cleanup, and the managed-versus-user-owned migration boundary.
+
+Gemini CLI is unsupported by default. Individual OAuth is unavailable, and no authenticated enterprise, Google Cloud, or paid API context has current direct-skill evidence. Its legacy product result remains historical evidence only; adding Gemini again requires a distinct adapter and a complete authenticated acceptance matrix.
+
+Antigravity remains `preview`. Its earlier 1.1.5 canary ran through Gemini-compatible locations, so the native-path `review-pr`, isolation, and release-boundary checks remain outstanding before promotion.
+
 ## 2026-07-22 direct-skill verification
 
 The active user installation was generated from `main` at `34007084d2070f5abb6ddbc11269e6568139d5ab`. Its owner installer passed `./setup.sh check --agent '*' --yes` with all 90 expected core-instruction and complete-skill artifacts current. The skills are repository-owned symlinks to that checkout; the audit branch did not overwrite them across worktrees.
@@ -39,7 +61,7 @@ The complete GitHub Copilot CLI and Codex IDE results are product-level evidence
 
 ### Google CLI migration finding
 
-The Gemini authentication failure is not a local login or stale-client problem. The installed `@google/gemini-cli` release was current, and the [Gemini CLI maintainer announcement](https://github.com/google-gemini/gemini-cli/discussions/27274) confirms that individual-tier access ended on 2026-06-18. Google's [Antigravity migration guide](https://antigravity.google/docs/cli/gcli-migration) directs individual users to Antigravity and defines new configuration locations. The current manifest still targets Gemini paths, so Antigravity must be modeled as a separate product surface rather than silently inheriting the Gemini support claim.
+The Gemini authentication failure is not a local login or stale-client problem. The installed `@google/gemini-cli` release was current, and the [Gemini CLI maintainer announcement](https://github.com/google-gemini/gemini-cli/discussions/27274) confirms that individual-tier access ended on 2026-06-18. Google's [Antigravity migration guide](https://antigravity.google/docs/cli/gcli-migration) directs individual users to Antigravity and defines new configuration locations. At the time, the manifest still targeted Gemini paths, so Antigravity needed to be modeled as a separate product surface rather than silently inheriting the Gemini support claim.
 
 The Antigravity CLI was installed through the [official installation and authentication flow](https://antigravity.google/docs/cli/install). Its onboarding was completed with optional interaction-data collection disabled. Headless verification used plan mode, terminal sandboxing, and an isolated clean repository. A blanket permission bypass was not used.
 

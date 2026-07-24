@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const PLATFORM_IDS = [ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ];
+const PLATFORM_IDS = [ 'cursor', 'claude', 'codex', 'copilot', 'antigravity' ];
 const CATEGORIES = [ 'instructions', 'skills', 'agents' ];
 const STRATEGIES_BY_CATEGORY = {
 	instructions: new Set( [ 'direct', 'files', 'wrapper' ] ),

@@ -189,7 +189,8 @@ function legacyManagedContent( format, label ) {
 async function seedLegacyInstallation( home, copy ) {
 	for ( const platform of manifest.platforms ) {
 		await mkdir( destination( home, platform.detection.userPath ), { recursive: true } );
-		const legacyPlatform = legacyFixture.platforms[ platform.id ];
+		const legacyPlatform = legacyFixture.platforms[ platform.id ]
+			?? legacyFixture.platforms.gemini;
 		const legacyInstructions = legacyPlatform.instructions;
 		if ( legacyInstructions?.kind === 'single' ) {
 			const target = destination( home, legacyInstructions.userPath );
@@ -240,7 +241,7 @@ test( 'manifest declares complete, current platform contracts', () => {
 	assert.equal( manifest.schemaVersion, 2 );
 	assert.deepEqual(
 		manifest.platforms.map( ( platform ) => platform.id ),
-		[ 'cursor', 'claude', 'codex', 'copilot', 'gemini' ]
+		[ 'cursor', 'claude', 'codex', 'copilot', 'antigravity' ]
 	);
 
 	for ( const platform of manifest.platforms ) {
@@ -862,7 +863,9 @@ async function verifyLegacyUpgrade( t, copy ) {
 		.map( ( entry ) => entry.name );
 	const newSkillNames = currentSkillNames.filter( ( name ) => ! legacyFixture.skills.includes( name ) );
 	for ( const platform of manifest.platforms ) {
-		const legacySkillMode = copy || legacyFixture.platforms[ platform.id ].skillsPath
+		const legacyPlatform = legacyFixture.platforms[ platform.id ]
+			?? legacyFixture.platforms.gemini;
+		const legacySkillMode = copy || legacyPlatform.skillsPath
 			? 'copy'
 			: 'symlink';
 		for ( const skillName of legacyFixture.skills ) {
@@ -882,6 +885,128 @@ test( 'pre-modernization default installations upgrade in place', {
 
 test( 'pre-modernization copy installations upgrade in place', async ( t ) => {
 	await verifyLegacyUpgrade( t, true );
+} );
+
+test( 'Antigravity migrates managed Gemini skills without replacing user-owned skills', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyRoot = destination( home, '.gemini/skills' );
+	const managedSkill = path.join( legacyRoot, 'review-pr', 'SKILL.md' );
+	const userSkill = path.join( legacyRoot, 'user-skill', 'SKILL.md' );
+	await mkdir( path.dirname( managedSkill ), { recursive: true } );
+	await mkdir( path.dirname( userSkill ), { recursive: true } );
+	await writeFile( managedSkill, `${ managedMarker }\n# Legacy review skill\n` );
+	await writeFile( userSkill, '# User-authored skill\n' );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'antigravity', '--copy', '--yes' ] );
+	assert.match( output, /Former Gemini CLI global skill directory migrated to Antigravity/ );
+	assert.equal( await pathExists( managedSkill ), false );
+	assert.equal( await readFile( userSkill, 'utf8' ), '# User-authored skill\n' );
+	assert.equal(
+		await pathExists( skillPath( platform, home, 'review-pr' ) ),
+		true
+	);
+	runInstaller( home, [ 'check', '--agent', 'antigravity', '--copy', '--yes' ] );
+} );
+
+test( 'Antigravity preserves user additions while removing the migrated Gemini skill entrypoint', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyDirectory = destination( home, '.gemini/skills/review-pr' );
+	const legacySkill = path.join( legacyDirectory, 'SKILL.md' );
+	const userNote = path.join( legacyDirectory, 'notes.md' );
+	await mkdir( legacyDirectory, { recursive: true } );
+	await writeFile( legacySkill, `${ managedMarker }\n# Legacy review skill\n` );
+	await writeFile( userNote, '# User note\n' );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'antigravity', '--copy', '--yes' ] );
+	assert.match( output, /Former Gemini CLI global skill directory migrated to Antigravity/ );
+	assert.equal( await pathExists( legacySkill ), false );
+	assert.equal( await readFile( userNote, 'utf8' ), '# User note\n' );
+	assert.equal( await pathExists( skillPath( platform, home, 'review-pr' ) ), true );
+	runInstaller( home, [ 'check', '--agent', 'antigravity', '--copy', '--yes' ] );
+} );
+
+test( 'Antigravity keeps a user-augmented legacy skill symlink when its native destination conflicts', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyDirectory = destination( home, '.gemini/skills/review-pr' );
+	const legacySkill = path.join( legacyDirectory, 'SKILL.md' );
+	const userNote = path.join( legacyDirectory, 'notes.md' );
+	const nativeSkill = skillPath( platform, home, 'review-pr' );
+	await mkdir( legacyDirectory, { recursive: true } );
+	await symlink( path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ), legacySkill );
+	await writeFile( userNote, '# User note\n' );
+	await mkdir( path.dirname( nativeSkill ), { recursive: true } );
+	await writeFile( nativeSkill, '# User-owned native skill\n' );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'antigravity', '--yes' ] );
+	assert.match( output, /could not be installed; preserving/ );
+	assert.equal( ( await lstat( legacySkill ) ).isSymbolicLink(), true );
+	assert.equal( await readFile( userNote, 'utf8' ), '# User note\n' );
+	assert.equal( await readFile( nativeSkill, 'utf8' ), '# User-owned native skill\n' );
+} );
+
+test( 'Antigravity dry-run previews cleanup of a migrated legacy skill entrypoint', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacyDirectory = destination( home, '.gemini/skills/review-pr' );
+	const legacySkill = path.join( legacyDirectory, 'SKILL.md' );
+	await mkdir( legacyDirectory, { recursive: true } );
+	await writeFile( legacySkill, `${ managedMarker }\n# Legacy review skill\n` );
+	await writeFile( path.join( legacyDirectory, 'notes.md' ), '# User note\n' );
+
+	const output = runInstaller( home, [ 'update', '--agent', 'antigravity', '--copy', '--dry-run', '--yes' ] );
+	assert.match( output, /\[stale\].*Former Gemini CLI global skill directory/ );
+	assert.equal( await pathExists( legacySkill ), true );
+	assert.equal( await pathExists( skillPath( platform, home, 'review-pr' ) ), false );
+} );
+
+test( 'Antigravity migrates repository-owned Gemini skill symlinks', {
+	skip: process.platform === 'win32',
+}, async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	const legacySkill = destination( home, '.gemini/skills/review-pr' );
+	await mkdir( path.dirname( legacySkill ), { recursive: true } );
+	await symlink( path.join( repoDir, 'skills', 'review-pr' ), legacySkill, 'dir' );
+
+	runInstaller( home, [ 'check', '--agent', 'antigravity', '--yes' ], 1 );
+	runInstaller( home, [ 'update', '--agent', 'antigravity', '--yes' ] );
+	assert.equal( await pathExists( legacySkill ), false );
+	assert.equal( await pathExists( path.join( repoDir, 'skills', 'review-pr', 'SKILL.md' ) ), true );
+	assert.equal(
+		( await lstat( path.dirname( skillPath( platform, home, 'review-pr' ) ) ) ).isSymbolicLink(),
+		true
+	);
+	runInstaller( home, [ 'check', '--agent', 'antigravity', '--yes' ] );
+} );
+
+test( 'Antigravity is detected from a legacy Gemini configuration directory', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+
+	const output = runInstaller( home, [ '--only', 'skills', '--copy', '--yes' ] );
+	assert.match( output, /Google Antigravity CLI/ );
+	assert.equal( await pathExists( skillPath( platform, home, 'review-pr' ) ), true );
+} );
+
+test( 'Gemini target alias migrates to Antigravity', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'antigravity' );
+	const home = await createDetectedHome( platform );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+
+	const output = runInstaller( home, [ '--agent', 'gemini', '--only', 'skills', '--copy', '--yes' ] );
+	assert.match( output, /--agent gemini is deprecated; using antigravity instead/ );
+	assert.equal( await pathExists( skillPath( platform, home, 'review-pr' ) ), true );
 } );
 
 for ( const platform of manifest.platforms ) {

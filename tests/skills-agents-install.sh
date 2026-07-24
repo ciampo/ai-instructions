@@ -72,7 +72,7 @@ const contracts = {
   claude: [ 'markdown-agent', '.claude/agents', '.claude/agents', '.md' ],
   codex: [ 'codex-agent-toml', '.codex/agents', '.codex/agents', '.toml' ],
   copilot: [ 'markdown-agent', '.copilot/agents', '.github/agents', '.agent.md' ],
-  gemini: [ 'markdown-agent', '.gemini/agents', '.gemini/agents', '.md' ],
+  antigravity: [ 'markdown-agent', '.gemini/antigravity-cli/agents', '.agents/agents', '.md' ],
 };
 for ( const platform of manifest.platforms ) {
   const contract = contracts[ platform.id ];
@@ -165,10 +165,10 @@ CURSOR_SKILL="$TMP_HOME/.cursor/skills/review-pr/SKILL.md"
 CLAUDE_SKILL="$TMP_HOME/.claude/skills/review-pr/SKILL.md"
 CODEX_SKILL="$TMP_HOME/.agents/skills/review-pr/SKILL.md"
 COPILOT_SKILL="$TMP_HOME/.copilot/skills/review-pr/SKILL.md"
-GEMINI_SKILL="$TMP_HOME/.gemini/skills/review-pr/SKILL.md"
+ANTIGRAVITY_SKILL="$TMP_HOME/.gemini/antigravity-cli/skills/review-pr/SKILL.md"
 ENGINEERING_REFERENCE="$TMP_HOME/.agents/skills/engineering-standards/references/accessibility.md"
 
-for installed_skill in "$CURSOR_SKILL" "$CLAUDE_SKILL" "$CODEX_SKILL" "$COPILOT_SKILL" "$GEMINI_SKILL"; do
+for installed_skill in "$CURSOR_SKILL" "$CLAUDE_SKILL" "$CODEX_SKILL" "$COPILOT_SKILL" "$ANTIGRAVITY_SKILL"; do
   assert_frontmatter_file "$installed_skill" "review-pr"
   if grep -Fq "$REPO_DIR" "$installed_skill"; then
     fail "Installed skill contains an absolute source path: $installed_skill"
@@ -333,7 +333,7 @@ for resource_root in \
   "$RESOURCE_HOME/.claude/skills" \
   "$RESOURCE_HOME/.agents/skills" \
   "$RESOURCE_HOME/.copilot/skills" \
-  "$RESOURCE_HOME/.gemini/skills"; do
+  "$RESOURCE_HOME/.gemini/antigravity-cli/skills"; do
   assert_file_contains "$resource_root/resource-skill/references/example.md" "# Bundled reference"
   cmp -s \
     "$RESOURCE_REPO/skills/resource-skill/assets/example.bin" \

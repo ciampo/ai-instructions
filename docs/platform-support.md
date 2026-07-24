@@ -42,17 +42,18 @@ After installation, start a new session unless the product documents live reload
 2. Invoke `/review-accessibility` on a matching UI example and verify a non-UI prompt does not select it.
 3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
-### Gemini CLI (preview; non-individual authentication only)
+### Google Antigravity CLI (preview)
 
-Gemini CLI 0.51.0 rejects individual Google AI Pro, Ultra, and free-tier OAuth with `UNSUPPORTED_CLIENT`. Run these checks only with a supported enterprise, Google Cloud, or paid API authentication context, and record that context with the result. Individual users are directed to Google Antigravity CLI, which is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
+Antigravity CLI 1.1.5 enforces global `~/.gemini/GEMINI.md` context and imports global skills from `~/.gemini/antigravity-cli/skills/`. The installer owns those paths and migrates only its managed Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain in place.
 
-1. Run `/skills reload`, then `/skills list`; confirm `review-pr`, the three specialist review skills, and the scoped standards skills appear.
-2. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr`.
-3. Ask Gemini to summarize one core instruction to confirm `~/.gemini/GEMINI.md` is loaded.
+1. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
+2. Invoke `review-accessibility` on a matching UI example and verify a general PR prompt selects `review-pr` instead.
+3. Ask for the title of a review for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied.
+4. Run the isolation and preparation-only release-boundary canaries in a disposable workspace with tools disabled where supported.
 
-### Google Antigravity CLI (not yet advertised)
+### Gemini CLI (unsupported by default)
 
-Antigravity is not covered by the Gemini adapter or support tier. Discovery evidence may be recorded while [issue #40](https://github.com/ciampo/ai-instructions/issues/40) establishes current native paths, lifecycle behavior, migration safety, and an explicit manifest entry.
+Gemini CLI is no longer an active installer surface. Individual OAuth is unavailable, and this repository has no current product evidence for a retained enterprise, Google Cloud, or paid API context. The Antigravity update migrates repository-managed global Gemini skills to the current Antigravity path without deleting user-owned files. Reintroducing Gemini requires a separately source-verified adapter and authenticated direct-skill acceptance evidence.
 
 ## Release Verification Checklist
 

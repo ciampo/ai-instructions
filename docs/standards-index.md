@@ -17,7 +17,7 @@ Review technical claims against these primary sources instead of relying on reme
 | [Codex `AGENTS.md` guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | Codex global and project instruction discovery, precedence, and size limits | 2026-07-22 |
 | [Claude Code memory guidance](https://code.claude.com/docs/en/memory) | `CLAUDE.md` scope, imports, `AGENTS.md` wrappers, and rules | 2026-07-22 |
 | [GitHub Copilot CLI custom instructions](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions) | Copilot instruction discovery, agent-instruction filenames, imports, and precedence limits | 2026-07-22 |
-| [Gemini CLI context files](https://geminicli.com/docs/cli/gemini-md/) | `GEMINI.md` imports and configurable context filenames | 2026-07-22 |
+| [Antigravity CLI migration](https://antigravity.google/docs/cli/gcli-migration) | Shared `GEMINI.md` context and current global skill paths | 2026-07-23 |
 | [Cursor rules](https://cursor.com/docs) | Root `AGENTS.md` support and the boundary with scoped project rules | 2026-07-22 |
 | [Evaluating AGENTS.md](https://arxiv.org/abs/2602.11988) | Preliminary empirical evidence on repository context-file cost and task outcomes | 2026-07-22 |
 | [Configuration Smells in AGENTS.md Files](https://arxiv.org/abs/2606.15828) | Preliminary catalog of context-bloat, lint-leakage, and conflicting-guidance risks | 2026-07-22 |
