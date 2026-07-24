@@ -7,6 +7,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "implicit-multi-lane-review",
+      "prompt": "Review this pull request that changes an account-deletion authorization route, migrates persisted preferences, and replaces a settings-dialog regression test.",
+      "shouldTrigger": true
+    },
+    {
       "id": "ordinary-pr-review",
       "prompt": "Review this small pull request for correctness and test coverage.",
       "shouldTrigger": false
