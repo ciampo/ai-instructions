@@ -14,14 +14,25 @@
   ],
   "outputCases": [
     {
-      "id": "evidence-based-performance-review",
+      "id": "unmeasured-rendering-hypothesis",
       "prompt": "Audit this component's performance and suggest improvements without changing the source.",
       "context": "evals/fixtures/repeated-list.md",
-      "expectedOutcome": "A read-only performance review that identifies source-backed execution paths to measure, keeps unmeasured cost as a verification gap, and avoids generic optimization advice.",
+      "expectedOutcome": "A read-only performance review that identifies the candidate path to measure, records the missing scale and profile as verification gaps, and makes no severity-rated performance finding.",
       "assertions": [
         "The review remains read-only.",
-        "Each confirmed concern identifies the affected execution path and realistic scale.",
-        "Unmeasured costs remain verification gaps with a repeatable measurement, never critical or major findings."
+        "The review identifies the affected execution path without inventing realistic scale, latency, or user impact.",
+        "Unmeasured costs remain verification gaps with a repeatable measurement and receive no severity finding."
+      ]
+    },
+    {
+      "id": "measured-rendering-regression",
+      "prompt": "Audit this measured rendering regression and suggest the smallest verifiable direction without changing the source.",
+      "context": "evals/fixtures/measured-rendering-regression.md",
+      "expectedOutcome": "A read-only performance review that connects the observed budget breach to the scoped rendering path and proposes a measurement-backed next step.",
+      "assertions": [
+        "The review remains read-only.",
+        "Any finding cites the supplied measured budget breach and affected user interaction.",
+        "The recommendation includes a focused alternative and repeatable before-and-after verification."
       ]
     }
   ]
