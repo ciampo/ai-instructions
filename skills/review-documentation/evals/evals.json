@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "migration-guide-review",
+      "prompt": "Review this migration guide and inline code comments for accuracy and unnecessary generated prose.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "implementation-correctness",
+      "prompt": "Review this internal data transformation for correctness and test coverage.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "reader-impactful-concision",
+      "prompt": "Perform a read-only documentation review of this setup guide and comment.",
+      "context": "evals/fixtures/setup-guide.md",
+      "expectedOutcome": "A read-only documentation review that identifies incorrect instructions and redundant commentary by their reader impact, not presumed authorship.",
+      "assertions": [
+        "The review checks the documented command against the supplied implementation.",
+        "It recommends removing or rewriting the redundant comment only with a concrete reader benefit.",
+        "It does not describe text as AI-generated."
+      ]
+    }
+  ]
+}

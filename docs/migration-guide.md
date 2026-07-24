@@ -46,7 +46,7 @@ Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that 
 
 ### Specialist reviews and retired agents
 
-Accessibility, public API-design, and performance reviews now use the `review-accessibility`, `review-api-design`, and `review-performance` skills directly. The repository no longer installs custom-agent definitions for those capabilities.
+Accessibility, public API design, compatibility, performance, security, test quality, internationalization, and documentation reviews use direct `review-*` skills. `review-coordinator` can organize the material lanes into one response when the host provides subagents, with a sequential fallback. The repository does not install custom-agent definitions for those capabilities.
 
 During `update` or `remove`, the installer recognizes the former agent destinations on all five product surfaces and removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this cleanup during the compatibility window.
 

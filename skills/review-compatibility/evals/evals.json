@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "persisted-format-upgrade",
+      "prompt": "Review this configuration-format migration for upgrade and rollback compatibility.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "public-prop-ergonomics",
+      "prompt": "Review these new exported component props for API design and type ergonomics.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "supported-transition-evidence",
+      "prompt": "Review this change for backwards compatibility without modifying the source.",
+      "context": "evals/fixtures/config-migration.md",
+      "expectedOutcome": "A read-only compatibility review that identifies a supported-state transition only when the incompatibility is evidenced.",
+      "assertions": [
+        "The review identifies the supported old and new states from the supplied evidence.",
+        "Missing rollback coverage is a verification gap unless an incompatible transition is established.",
+        "Public API shape concerns are not duplicated from review-api-design."
+      ]
+    }
+  ]
+}

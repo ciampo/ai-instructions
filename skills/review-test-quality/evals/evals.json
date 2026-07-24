@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "semantic-ui-regression",
+      "prompt": "Review these UI tests to make sure they prove the user-visible behavior instead of implementation details.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "aria-semantics-audit",
+      "prompt": "Audit this dialog for keyboard and screen-reader accessibility.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "behavioral-ui-assertion",
+      "prompt": "Review the regression test for this UI change without modifying the source.",
+      "context": "evals/fixtures/save-dialog.md",
+      "expectedOutcome": "A read-only test-quality review that proposes an observable user interaction instead of preserving an implementation-specific assertion.",
+      "assertions": [
+        "The review explains how the current test could pass while the visible behavior regresses.",
+        "The suggested verification uses the control's accessible role or name and user interaction.",
+        "Accessibility conformance is kept separate from test-query advice."
+      ]
+    }
+  ]
+}

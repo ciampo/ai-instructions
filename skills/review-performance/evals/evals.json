@@ -21,7 +21,7 @@
       "assertions": [
         "The review remains read-only.",
         "Each confirmed concern identifies the affected execution path and realistic scale.",
-        "Unmeasured concerns are recorded as verification gaps with a repeatable measurement."
+        "Unmeasured costs remain verification gaps with a repeatable measurement, never critical or major findings."
       ]
     }
   ]

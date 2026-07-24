@@ -16,7 +16,7 @@ Identify costs that can materially affect users in the scoped execution context,
 ## Review method
 
 1. **Define the user-critical path**: Identify where and how often the code runs, realistic data sizes and instance counts, target devices, and the latency, responsiveness, memory, or bundle budget that matters.
-2. **Establish available evidence**: Prefer existing profiles, bundle reports, benchmarks, production build output, and reproducible traces. When measurement is unavailable, distinguish a source-proven cost from a hypothesis that still needs profiling.
+2. **Establish available evidence**: Prefer existing profiles, bundle reports, benchmarks, production build output, and reproducible traces. When measurement is unavailable, use source inspection to identify what needs profiling, but keep the cost and its severity as a hypothesis.
 3. **Inspect loading and bundle impact**: Trace new dependencies and entrypoints, duplicated code, side-effect metadata, code-splitting boundaries, media, and work moved onto critical startup paths.
 4. **Inspect runtime work**: Look for repeated expensive computation, unnecessary subscriptions or effects, avoidable renders in hot paths, unbounded collections, memory retention, main-thread blocking, and work whose cost grows poorly at realistic scale.
 5. **Inspect layout and paint behavior**: Check forced synchronous layout, read/write interleaving, large invalidation regions, expensive visual effects, layout shifts, and animations that create meaningful rendering cost in the target browsers.
@@ -30,13 +30,13 @@ When `review-pr` invokes this skill for its own review, return the scoped findin
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 
-Start with the reviewed path, assumed scale, and available measurements. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on user impact and likelihood. Each finding must connect code to a concrete cost and include evidence, a focused alternative, and a repeatable verification method. Put unmeasured but material hypotheses under verification gaps rather than presenting them as confirmed regressions.
+Start with the reviewed path, assumed scale, and available measurements. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on measured user impact and likelihood. Each finding must connect code to a measured cost or an observed breach of an explicit performance contract, plus a focused alternative and a repeatable verification method. Put unmeasured but material hypotheses under verification gaps rather than presenting them as confirmed regressions.
 
-No findings is a valid result. Do not report generic best practices or micro-optimizations without a plausible, scoped impact.
+No findings is a valid result. Unmeasured costs remain hypotheses and cannot be `[critical]` or `[major]` findings. Do not report generic best practices or micro-optimizations without a plausible, scoped impact.
 
 ## Completion criteria
 
 - The relevant execution path, consumers, and realistic scale were inspected.
-- Confirmed findings are backed by source-proven cost or measurement.
+- Confirmed findings are backed by a measured cost or an observed breach of an explicit performance contract; unmeasured costs remain hypotheses.
 - Measurement gaps and assumptions are explicit.
 - Source and remote state remain unchanged.

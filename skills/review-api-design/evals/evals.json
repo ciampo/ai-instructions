@@ -20,7 +20,7 @@
       "expectedOutcome": "A read-only API review that checks consumers and compatibility before identifying material public-contract risks.",
       "assertions": [
         "The review remains read-only.",
-        "It distinguishes confirmed compatibility risks from missing consumer evidence.",
+        "Missing API types, consumers, or compatibility policy remain verification gaps unless a concrete public-contract failure is evidenced.",
         "Recommendations keep the public API minimal and explain the consumer impact."
       ]
     }

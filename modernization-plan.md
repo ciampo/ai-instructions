@@ -8,7 +8,7 @@ Implementation completed: 2026-07-22
 
 Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity CLI is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
-The delivered architecture has a budget-constrained universal core, 17 standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. The specialist pilot retained accessibility, API-design, and performance reviews as direct skills and retired the duplicated custom-agent prompts. Product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
+The initial delivered architecture had a budget-constrained universal core, 17 standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. The specialist pilot retained accessibility, API-design, and performance reviews as direct skills and retired the duplicated custom-agent prompts. The current specialist MVP extends that direct-skill approach with the optional `review-coordinator`; product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
 ## Current architecture and remaining work
 
@@ -16,7 +16,7 @@ The delivered architecture has a budget-constrained universal core, 17 standard 
 | --- | --- |
 | Persistent context | `AGENTS.md`, 54 lines and 4,705 bytes |
 | On-demand capability | 17 self-contained `skills/<name>/SKILL.md` directories |
-| Specialist reviews | Direct accessibility, API-design, and performance skills; no bundled custom agents |
+| Specialist reviews | Direct specialist skills plus an optional subagent-capable coordinator; no bundled custom agents |
 | Orchestration | `review-pr` owns the complete review, material specialist routing, severity normalization, deduplication, and final delivery |
 | Distribution | One manifest-driven installer for instructions, skills, migration, and ownership-safe lifecycle operations |
 | Support | Five explicitly named preview product surfaces with versioned discovery evidence |
