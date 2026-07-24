@@ -95,13 +95,13 @@ The script auto-detects supported product surfaces by scanning `$HOME` for known
 | Claude Code CLI | preview | `~/.claude/CLAUDE.md` | `~/.claude/skills/*/SKILL.md` | 2026-07-22 |
 | Codex app, CLI, and IDE extension | preview | `~/.codex/AGENTS.md` | `~/.agents/skills/*/SKILL.md` | 2026-07-22 |
 | GitHub Copilot CLI | preview | `~/.copilot/copilot-instructions.md` | `~/.copilot/skills/*/SKILL.md` | 2026-07-22 |
-| Gemini CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/skills/*/SKILL.md` | 2026-07-22 |
+| Google Antigravity CLI | preview | `~/.gemini/GEMINI.md` | `~/.gemini/antigravity-cli/skills/*/SKILL.md` | 2026-07-23 |
 
 <!-- platform-support:end -->
 
 See [platform support](docs/platform-support.md) for tier definitions, current product discovery checks, and the release verification checklist.
 
-Gemini CLI preview support now applies only to its enterprise, Google Cloud, and paid API authentication contexts. Individual users are directed to Google Antigravity CLI, which is tracked as a separate product surface in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
+Google Antigravity CLI is the preview Google surface. Gemini CLI is unsupported by default until a supported authenticated context has current product evidence; managed legacy Gemini skills migrate to Antigravity’s native global skill path.
 
 ### Commands
 
@@ -117,7 +117,7 @@ Gemini CLI preview support now applies only to its enterprise, Google Cloud, and
 
 | Flag | What it does |
 | --- | --- |
-| `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `gemini`). Repeatable. `--agent '*'` for all. |
+| `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `antigravity`). Repeatable. `--agent '*'` for all. `gemini` remains a deprecated alias for `antigravity` during the migration window. |
 | `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. `agents` is retained only to safely clean up retired repository-managed agents; the legacy `personas` value remains its alias. |
 | `--copilot-concat [DIR]` | Export `AGENTS.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
@@ -149,7 +149,7 @@ If you prefer to set things up manually or use a different tool:
 - **Claude Code**: Managed `~/.claude/CLAUDE.md` imports adjacent `~/.claude/AGENTS.md`; skills go to `~/.claude/skills/`
 - **Codex**: Instructions to managed `~/.codex/AGENTS.md` and skills to the shared `~/.agents/skills/` location
 - **GitHub Copilot CLI**: Managed `~/.copilot/copilot-instructions.md` imports adjacent `~/.copilot/AGENTS.md`; skills go to `~/.copilot/skills/`; use `--copilot-concat` only for explicit repository export
-- **Gemini CLI**: Managed `~/.gemini/GEMINI.md` imports adjacent `~/.gemini/AGENTS.md`; skills go to `~/.gemini/skills/`
+- **Google Antigravity CLI**: Managed `~/.gemini/GEMINI.md` imports adjacent `~/.gemini/AGENTS.md`; skills go to `~/.gemini/antigravity-cli/skills/`. Repository-managed legacy Gemini skills migrate there during install or update.
 - **Other tools** (Windsurf, Zed, etc.): Include instruction files as system prompt context, or copy them into the tool's configuration directory
 
 ### Per-project overrides
@@ -161,7 +161,7 @@ These instructions are global defaults. To override for a specific project:
 - **Claude Code**: Add `CLAUDE.md` with `@AGENTS.md` only for Claude-specific guidance; use `.claude/rules/` or `.claude/skills/` when their scoped behavior is needed.
 - **Codex**: Add nested `AGENTS.md` or `.agents/skills/` for subtree-specific work.
 - **GitHub Copilot CLI**: Add `.github/copilot-instructions.md` only for Copilot-specific guidance; do not re-import `AGENTS.md`, which Copilot already discovers. Use `.github/skills/` for project skills.
-- **Gemini CLI**: Add `GEMINI.md` with `@AGENTS.md` only for Gemini-specific guidance, or `.gemini/skills/` for project skills.
+- **Google Antigravity CLI**: Add `GEMINI.md` with `@AGENTS.md` only for Antigravity-specific guidance, or `.agents/skills/` for project skills.
 - Use the project-level config to relax global rules (e.g., "this project uses Tailwind instead of CSS Modules") or add project-specific conventions.
 
 ## Updating
@@ -172,7 +172,7 @@ These are living documents. In the default mode, portable skills are symlinked a
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md). The proposed coordinator evaluation is recorded separately in [ADR 0006](docs/decisions/0006-review-coordinator.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md), and the Antigravity/Gemini policy in [ADR 0007](docs/decisions/0007-antigravity-adapter-and-gemini-policy.md). The proposed coordinator evaluation is recorded separately in [ADR 0006](docs/decisions/0006-review-coordinator.md).
 
 ```bash
 npm ci

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastReviewed": "2026-07-22",
+  "lastReviewed": "2026-07-23",
   "installPolicy": {
     "scope": "user",
     "portableDefault": "symlink",
@@ -224,11 +224,11 @@
       ]
     },
     {
-      "id": "gemini",
-      "product": "Gemini CLI",
-      "surface": "Gemini CLI",
+      "id": "antigravity",
+      "product": "Google Antigravity CLI",
+      "surface": "Google Antigravity CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-22",
+      "lastAdapterChecked": "2026-07-23",
       "detection": {
         "userPath": ".gemini"
       },
@@ -239,17 +239,17 @@
           "format": "gemini-md",
           "userPath": ".gemini/GEMINI.md",
           "canonicalPath": ".gemini/AGENTS.md",
-          "projectPath": "GEMINI.md",
-          "precedence": "GEMINI.md imports the adjacent managed AGENTS.md; global, workspace, and just-in-time context files are concatenated."
+          "projectPath": "AGENTS.md",
+          "precedence": "Antigravity CLI enforces the global GEMINI.md context and shared workspace AGENTS.md rules."
         },
         "skills": {
           "supported": true,
           "strategy": "directories",
           "format": "agent-skill",
-          "userPath": ".gemini/skills",
-          "projectPath": ".gemini/skills",
+          "userPath": ".gemini/antigravity-cli/skills",
+          "projectPath": ".agents/skills",
           "fileName": "SKILL.md",
-          "precedence": "Workspace skills override user skills with the same name."
+          "precedence": "Workspace skills supplement global skills; matching skills must be kept in one location to avoid duplicate slash commands."
         },
         "agents": {
           "supported": false,
@@ -257,6 +257,14 @@
         }
       },
       "legacyDestinations": [
+        {
+          "category": "skills",
+          "userPath": ".gemini/skills",
+          "layout": "nested",
+          "fileName": "SKILL.md",
+          "sourceRoot": "skills",
+          "reason": "Former Gemini CLI global skill directory migrated to Antigravity's native global path."
+        },
         {
           "category": "agents",
           "userPath": ".gemini/agents",
@@ -266,8 +274,8 @@
         }
       ],
       "documentation": [
-        "https://geminicli.com/docs/cli/gemini-md/",
-        "https://geminicli.com/docs/cli/using-agent-skills/"
+        "https://antigravity.google/docs/cli/gcli-migration",
+        "https://antigravity.google/docs/cli/plugins"
       ]
     }
   ]

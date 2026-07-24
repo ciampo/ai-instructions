@@ -14,7 +14,7 @@ Current vendor guidance has converged substantially around repository-root `AGEN
 | Codex | Reads global and hierarchical `AGENTS.md` files, with nearer project files taking precedence. | Use `AGENTS.md` directly. |
 | Claude Code | Reads `CLAUDE.md`; its documentation explicitly recommends a `CLAUDE.md` containing `@AGENTS.md` when a project already has shared instructions. | Keep only Claude-specific additions in the wrapper. |
 | GitHub Copilot CLI | Discovers `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` in standard repository locations; its instruction files support `@` references. | A shared root file avoids a second full instruction body. |
-| Gemini CLI | Supports `@` imports and can be configured to recognize `AGENTS.md` as a context filename. | Prefer the shared file; use `GEMINI.md` only for Gemini-specific behavior. |
+| Google Antigravity CLI | Enforces the shared global `GEMINI.md` context and workspace `AGENTS.md` rules. | Keep `GEMINI.md` as a thin wrapper around the adjacent managed `AGENTS.md`. |
 | Cursor | Supports root `AGENTS.md` as a simple alternative to project rules; rules remain appropriate for metadata or path scoping. | Use the shared file for the common core and rules only when their extra capability is needed. |
 
 This is convergence, not a uniform standard. In particular, global discovery, nesting, override precedence, settings, and import trust boundaries still vary by product. The installer must not treat a generated file in one product's home directory as another product's canonical input.
@@ -30,7 +30,7 @@ The implemented model is:
 ```text
 AGENTS.md                         shared, concise repository guidance
 CLAUDE.md                         @AGENTS.md, then Claude-only guidance if needed
-GEMINI.md                         @AGENTS.md, then Gemini-only guidance if needed
+GEMINI.md                         @AGENTS.md, then Antigravity-only guidance if needed
 .cursor/rules/*.mdc              only metadata- or path-scoped Cursor guidance
 .github/copilot-instructions.md  only Copilot-specific guidance where required
 skills/*/SKILL.md                 reusable procedures and detailed references
@@ -41,7 +41,7 @@ skills/*/SKILL.md                 reusable procedures and detailed references
 The global installer remains an adapter, not an implicit project exporter:
 
 1. A user-level install must continue to work when only one supported product is installed.
-2. It must never make `~/.codex/AGENTS.md` the source imported by Claude, Copilot, Gemini, or Cursor. That creates a hidden dependency on a separate product's installation, override state, and removal lifecycle.
+2. It must never make `~/.codex/AGENTS.md` the source imported by Claude, Copilot, Antigravity, or Cursor. That creates a hidden dependency on a separate product's installation, override state, and removal lifecycle.
 3. Where a product needs a native user-level file, the adapter will derive it from the canonical source and own every generated sidecar or wrapper using the existing no-clobber and managed-marker rules.
 4. A project export remains explicit. It writes only the shared root `AGENTS.md`, which the claimed project tools discover directly.
 5. A generated user-level wrapper must use a relative import of its co-located canonical file. Do not generate absolute imports into a local checkout or another product's home directory.
@@ -49,8 +49,8 @@ The global installer remains an adapter, not an implicit project exporter:
 ## Why This Direction
 
 - It gives supported coding agents one human-maintained repository contract instead of five full copies.
-- It follows the interoperable path already documented by Codex, Claude Code, Copilot CLI, Gemini CLI, and Cursor.
-- It preserves native features rather than flattening them: Claude, Gemini, Cursor, and Copilot retain their own scoped or product-specific mechanisms.
+- It follows the interoperable path already documented by Codex, Claude Code, Copilot CLI, Antigravity CLI, and Cursor.
+- It preserves native features rather than flattening them: Claude, Antigravity, Cursor, and Copilot retain their own scoped or product-specific mechanisms.
 - It keeps current safety properties. The manifest-driven installer remains responsible for copy versus symlink mode, conflicts, stale cleanup, update, check, and remove.
 - It avoids confusing personal global preferences with project-owned conventions. A repository can adopt the shared artifact without also adopting this repository's global installer.
 
@@ -77,7 +77,7 @@ Rejected. It invites drift, conflicting instructions, and unnecessary always-on 
 1. Root `AGENTS.md` now contains the previous universal core without changing its scope or budget.
 2. The manifest has explicit `direct` and `wrapper` strategies. The wrapper strategy writes a managed adjacent `AGENTS.md` and a native file that imports it relatively.
 3. The artifact builder and lifecycle code install, check, update, and remove both files in the wrapper adapter. It preflights the pair for user-owned conflicts before mutating either file.
-4. Codex receives the canonical content directly. Claude, Copilot, and Gemini receive thin native wrappers; Cursor keeps its native rule adapter for user scope.
+4. Codex receives the canonical content directly. Claude, Copilot, and Antigravity receive thin native wrappers; Cursor keeps its native rule adapter for user scope.
 5. The compatibility `--copilot-concat` option explicitly exports only project-root `AGENTS.md`, which Copilot discovers directly. It removes a repository-owned wrapper from an earlier export and preserves user-owned `.github/copilot-instructions.md` files for genuinely Copilot-specific guidance.
 6. Legacy cleanup and user-owned conflict protection remain under the compatibility policy. The frozen pre-modernization upgrade fixtures continue to pass.
 7. The README, migration guide, support policy, and source index describe the current implementation. Product support remains preview until fresh discovery proves the new wrappers load on current client releases.
@@ -86,7 +86,7 @@ Rejected. It invites drift, conflicting instructions, and unnecessary always-on 
 
 Before promoting a support claim:
 
-1. Verify the documented project-level behavior on current releases of Codex, Claude Code, Copilot CLI, Gemini CLI, and Cursor. Record exact versions and results in discovery evidence.
+1. Verify the documented project-level behavior on current releases of Codex, Claude Code, Copilot CLI, Antigravity CLI, and Cursor. Record exact versions and results in discovery evidence.
 2. In disposable homes, cover install, idempotent reinstall, list, check, update, remove, copy mode, user-owned conflicts, managed stale sidecars, and interrupted replacement for every changed adapter.
 3. In a disposable repository, verify that a project containing only `AGENTS.md` supplies the common rule to every claimed product surface.
 4. For every generated wrapper, verify that it resolves the intended relative import once, does not duplicate the shared content, and leaves product-specific additions ordered after the shared content.
@@ -102,12 +102,12 @@ Before promoting a support claim:
 - Coupling a product's global configuration to another product's installation.
 - Promoting any support tier without fresh product discovery evidence.
 
-## Sources Reviewed on 2026-07-22
+## Sources Reviewed on 2026-07-22 and 2026-07-23
 
 - [Codex `AGENTS.md` guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 - [Claude Code memory and `AGENTS.md` import guidance](https://code.claude.com/docs/en/memory)
 - [GitHub Copilot CLI custom instructions](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
-- [Gemini CLI context files](https://geminicli.com/docs/cli/gemini-md/)
+- [Antigravity CLI migration](https://antigravity.google/docs/cli/gcli-migration)
 - [Cursor rules and `AGENTS.md`](https://cursor.com/docs)
 - [Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?](https://arxiv.org/abs/2602.11988)
 - [Configuration Smells in AGENTS.md Files](https://arxiv.org/abs/2606.15828)

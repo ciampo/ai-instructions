@@ -10,6 +10,7 @@ The installer supports direct updates from the pre-modernization layout recorded
 | `--only personas` | Keep as a deprecated alias for `agents` through at least 2026-10-21 and one tagged major release after the modernization stack merges. |
 | Retired specialist agents | Keep managed-marker and repository-owned symlink cleanup at each former agent destination through the supported upgrade window. Do not recreate the agents. |
 | Legacy Cursor and Codex destinations | Keep cleanup adapters while direct upgrades from the frozen baseline are supported. Their maintenance cost is small and removing them would strand old installations. |
+| `--agent gemini` | Keep as a deprecated alias for `antigravity` through the supported upgrade window so existing Gemini installation commands can complete the ownership-safe skill migration. |
 | `release-publish` skill | Keep as a deprecated route through at least 2026-10-21 and one tagged major release after the modernization stack merges. |
 | Managed-marker recognition | Keep for every installation format still present in a supported upgrade fixture. |
 

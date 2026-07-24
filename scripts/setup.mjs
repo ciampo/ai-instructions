@@ -20,6 +20,9 @@ import { createPlatformInstaller } from './lib/platform-installer.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
 const canonicalInstructionsPath = path.join( repoDir, 'AGENTS.md' );
+const DEPRECATED_AGENT_ALIASES = {
+	gemini: 'antigravity',
+};
 
 function fail( message ) {
 	throw new Error( message );
@@ -62,6 +65,10 @@ function parseArguments( argv, platformIds ) {
 					}
 				} else if ( platformIds.includes( value ) ) {
 					options.selected.add( value );
+				} else if ( DEPRECATED_AGENT_ALIASES[ value ] && platformIds.includes( DEPRECATED_AGENT_ALIASES[ value ] ) ) {
+					const replacement = DEPRECATED_AGENT_ALIASES[ value ];
+					console.warn( `[warning] --agent ${ value } is deprecated; using ${ replacement } instead.` );
+					options.selected.add( replacement );
 				} else {
 					fail( `Unknown agent '${ value }'. Available: ${ platformIds.join( ', ' ) }.` );
 				}
