@@ -20,7 +20,7 @@
   "outputCases": [
     {
       "id": "single-evidence-backed-review",
-      "prompt": "Coordinate a read-only review of this PR using the material specialist lanes.",
+      "prompt": "Coordinate a read-only review of this self-contained change set using the material specialist lanes.",
       "context": "evals/fixtures/multi-lane-pr.md",
       "expectedOutcome": "One rechecked review response that uses independent specialist handoffs without treating agreement as proof.",
       "assertions": [
