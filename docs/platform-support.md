@@ -50,7 +50,7 @@ Antigravity CLI 1.1.6 enforces global `~/.gemini/GEMINI.md` context and imports 
 2. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
 3. Invoke `review-pr` without supplying a pull-request identifier. The authenticated profile's native global `review-pr` directory must be a nonsecret complete skill directory (a managed symlink or copy) that includes `references/`; if the client prompts before sending a reference, approve only that displayed directory. Confirm it requests or identifies a pull request and does not invent a target or write outside the review's read-only boundary.
 4. Invoke `review-accessibility` on a matching UI example with explicit chat-only, no-artifact delivery. Confirm it preserves that boundary, and verify a general PR prompt selects `review-pr` instead.
-5. Ask for the title of a review for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied.
+5. Ask the model to produce a title for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied. Do not infer this result from a client-generated conversation label.
 6. Run the isolation and preparation-only release-boundary canaries in a disposable workspace with tools disabled where supported. In headless mode, a denied scoped file-read permission is a blocked result, not a discovery pass. Prefer an interactive, plan-mode session that approves only the displayed reads in the disposable workspace; do not use a blanket permission bypass.
 
 ### Gemini CLI (unsupported by default)

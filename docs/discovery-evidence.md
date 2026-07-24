@@ -40,12 +40,12 @@ At that point the native-path acceptance result was **blocked**, not failed: the
 
 ## 2026-07-24 Antigravity authenticated direct-skill canaries
 
-The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The recorded sessions performed read-only skill, filesystem, and repository inspection; they did not modify files, commit, tag, push, publish, or copy credentials.
+The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The recorded sessions performed read-only skill, filesystem, and repository inspection. They did not modify workspace source, commit, tag, push, publish, or copy credentials; the `review-accessibility` canary did create the temporary artifact documented below.
 
 | Capability | Result | Evidence | Remaining gap |
 | --- | --- | --- | --- |
 | Native skill listing | Pass | `/skills` listed 19 skills: all 17 repository-managed global skills from `~/.gemini/antigravity-cli/skills/` plus two Antigravity built-ins. It included `review-pr` and all three specialist review skills. | Confirm the managed title convention. |
-| Managed conversation title | Fail | The client automatically named a fresh review conversation `Review Pull Request 789`. The title omitted both the required `👀 [R#789]` prefix and the supplied `Improve Dialog focus handling` subject. | Investigate how the product generates conversation titles and whether the core title convention can be applied through a supported Antigravity mechanism. |
+| Managed conversation title | Blocked | The client automatically named a fresh review conversation `Review Pull Request 789`, but that client-generated label did not exercise the managed title instruction or a supported agent title mechanism. | Ask the model to produce the title for PR 789, “Improve Dialog focus handling.” If Antigravity exposes no supported title mechanism, record the capability as blocked rather than treating the generated label as an instruction failure. |
 | `review-pr` invocation | Pass | A prompt without a PR identifier replied by requesting a URL or number and did not inspect files first. | Run a complete review only when a real PR is in scope. |
 | Context isolation | Pass | A two-sentence prose prompt about autumn leaves returned only the requested prose. | Retain this result when the remaining direct-skill checks run. |
 | Preparation-only release boundary | Pass | A plan-only release request loaded `prepare-release`, inspected the empty workspace, and explicitly withheld local, Git, remote, and publication actions. | Run against a disposable repository if release-metadata behavior needs product evidence. |
