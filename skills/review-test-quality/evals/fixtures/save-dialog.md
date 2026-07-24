@@ -4,7 +4,7 @@ Review this component and test as a read-only test-quality exercise.
 
 ```jsx
 export function SettingsDialog( { onSave } ) {
-  return <button onClick={ onSave }>Save changes</button>;
+  return <button className="save-button" onClick={ onSave }>Save changes</button>;
 }
 ```
 

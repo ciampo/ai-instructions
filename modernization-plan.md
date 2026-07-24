@@ -14,8 +14,8 @@ The initial delivered architecture had a budget-constrained universal core, 17 s
 
 | Area | Current contract |
 | --- | --- |
-| Persistent context | `AGENTS.md`, 54 lines and 4,705 bytes |
-| On-demand capability | 17 self-contained `skills/<name>/SKILL.md` directories |
+| Persistent context | `AGENTS.md`, 55 lines and 4,738 bytes |
+| On-demand capability | 23 self-contained `skills/<name>/SKILL.md` directories |
 | Specialist reviews | Direct specialist skills plus an optional subagent-capable coordinator; no bundled custom agents |
 | Orchestration | `review-pr` owns the complete review, material specialist routing, severity normalization, deduplication, and final delivery |
 | Distribution | One manifest-driven installer for instructions, skills, migration, and ownership-safe lifecycle operations |

@@ -26,7 +26,7 @@ Review the public contract from the consumer's perspective and report only mater
 
 ## Output contract
 
-When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
+When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 

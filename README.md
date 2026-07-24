@@ -35,7 +35,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
 | [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
 | [review-accessibility](skills/review-accessibility/SKILL.md) | accessibility, WCAG, ARIA, keyboard, focus, or screen-reader audit | Read-only, source-verified accessibility review |
-| [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or compatibility | Read-only, consumer-focused API review |
+| [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or public-contract compatibility | Read-only, consumer-focused API review |
 | [review-compatibility](skills/review-compatibility/SKILL.md) | upgrade, migration, backward compatibility, persisted state, or wire format | Read-only, supported-state compatibility review |
 | [review-performance](skills/review-performance/SKILL.md) | performance, bundle, rendering, layout, paint, or scale | Read-only, evidence-based performance review |
 | [review-security](skills/review-security/SKILL.md) | security, privacy, authorization, injection, secrets, or sensitive data | Read-only, trust-boundary security review |
