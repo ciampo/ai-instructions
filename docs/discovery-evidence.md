@@ -36,7 +36,20 @@ A plan-mode, sandboxed prompt run from the user's Terminal returned `authenticat
 
 An isolated workspace containing a copied `AGENTS.md` and complete `review-pr` skill directory was used for a read-only, plan-mode canary. In headless mode, Antigravity denied its required `read_file` request before producing a response because that mode cannot present a scoped approval prompt. The automated interactive attempt reached the disposable-workspace trust prompt but could not continue across the authentication boundary. No blanket permission bypass, settings change, repository change, publication, or credential copy was used. These attempts do not establish `review-pr` activation, isolation, or the release boundary.
 
-The native-path acceptance result is **blocked**, not failed: from the authenticated Terminal session or product UI, confirm the native global skills appear in the product and rerun the canaries interactively with only the displayed disposable-workspace reads approved. Antigravity remains `preview`.
+At that point the native-path acceptance result was **blocked**, not failed: the canaries had to run from the authenticated Terminal session or product UI with only the displayed disposable-workspace reads approved. Antigravity remained `preview`.
+
+## 2026-07-24 Antigravity authenticated direct-skill canaries
+
+The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The agent read the installed skill files and performed only workspace/repository inspection; it did not modify files, commit, tag, push, publish, or copy credentials.
+
+| Capability | Result | Evidence | Remaining gap |
+| --- | --- | --- | --- |
+| `review-pr` invocation | Pass | A prompt without a PR identifier replied by requesting a URL or number and did not inspect files first. | Confirm native skill listing and specialist skill discovery in the product UI. |
+| Context isolation | Pass | A two-sentence prose prompt about autumn leaves returned only the requested prose. | Retain this result when the remaining direct-skill checks run. |
+| Preparation-only release boundary | Pass | A plan-only release request loaded `prepare-release`, inspected the empty workspace, and explicitly withheld local, Git, remote, and publication actions. | Run against a disposable repository if release-metadata behavior needs product evidence. |
+| Legacy `release-publish` route | Pass | The legacy-name request loaded `release-publish` and `prepare-release`, remained in plan mode, and withheld all local and remote release actions. | Confirm the same route in a disposable repository with release metadata. |
+
+These direct-skill results establish the requested core behavior canaries from the native global installation. They do not yet establish complete Antigravity acceptance: record native `/skills` discovery, the three specialist review skills, and the managed title convention before changing the `preview` tier.
 
 ## 2026-07-22 direct-skill verification
 

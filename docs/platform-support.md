@@ -44,7 +44,7 @@ After installation, start a new session unless the product documents live reload
 
 ### Google Antigravity CLI (preview)
 
-Antigravity CLI 1.1.5 enforces global `~/.gemini/GEMINI.md` context and imports global skills from `~/.gemini/antigravity-cli/skills/`. The installer owns those paths and migrates only its managed Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain in place.
+Antigravity CLI 1.1.6 enforces global `~/.gemini/GEMINI.md` context and imports global skills from `~/.gemini/antigravity-cli/skills/`. The installer owns those paths and migrates only its managed Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain in place.
 
 1. In an authenticated disposable profile updated from the current revision, confirm `~/.gemini/antigravity-cli/skills/review-pr/SKILL.md` exists before opening the client. A managed wrapper alone is not evidence that native global skills were installed.
 2. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
