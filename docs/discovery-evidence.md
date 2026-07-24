@@ -26,6 +26,36 @@ Gemini CLI is unsupported by default. Individual OAuth is unavailable, and no au
 
 Antigravity remains `preview`. Its earlier 1.1.5 canary ran through Gemini-compatible locations, so the native-path `review-pr`, isolation, and release-boundary checks remain outstanding before promotion.
 
+## 2026-07-24 Antigravity native-path acceptance attempt
+
+The installed `agy` command reported version 1.1.5. Before the native-path update, the current profile contained the managed `~/.gemini/AGENTS.md` and `~/.gemini/GEMINI.md` wrapper pair, but `~/.gemini/antigravity-cli/skills/` was absent. There were therefore no installed native global `SKILL.md` files to inspect or invoke. This check deliberately did not update configuration outside its disposable workspace, so the existing wrapper files were not evidence that the merged adapter's global skill path was discovered.
+
+Later on 2026-07-24, the owner installer ran `./setup.sh update --agent antigravity --yes` from the canonical checkout. It migrated all 17 repository-managed legacy Gemini skills to `~/.gemini/antigravity-cli/skills/`, removed only their corresponding stale legacy entries, and retained the managed wrapper pair. A follow-up `./setup.sh check --agent antigravity --yes` reported all 19 expected Antigravity artifacts healthy. This establishes the native-path installation precondition, but not in-product discovery or model behavior.
+
+A plan-mode, sandboxed prompt run from the user's Terminal returned `authenticated`, proving the configured Antigravity profile can invoke a model. By contrast, an equivalent canary subprocess launched from the automated environment reported that it was not signed in. That is an execution-environment authentication boundary, not contrary product evidence. The remaining model-backed canaries must run in the authenticated Terminal session or product UI, with their outputs captured there.
+
+An isolated workspace containing a copied `AGENTS.md` and complete `review-pr` skill directory was used for a read-only, plan-mode canary. In headless mode, Antigravity denied its required `read_file` request before producing a response because that mode cannot present a scoped approval prompt. The automated interactive attempt reached the disposable-workspace trust prompt but could not continue across the authentication boundary. No blanket permission bypass, settings change, repository change, publication, or credential copy was used. These attempts do not establish `review-pr` activation, isolation, or the release boundary.
+
+At that point the native-path acceptance result was **blocked**, not failed: the canaries had to run from the authenticated Terminal session or product UI with only the displayed disposable-workspace reads approved. Antigravity remained `preview`.
+
+## 2026-07-24 Antigravity authenticated direct-skill canaries
+
+The authenticated Antigravity CLI 1.1.6 Terminal session used the native global installation in a disposable empty workspace. Plan mode and sandboxing remained enabled throughout. The recorded sessions performed read-only skill, filesystem, and repository inspection. They did not modify workspace source, commit, tag, push, publish, or copy credentials; the `review-accessibility` canary did create the temporary artifact documented below.
+
+| Capability | Result | Evidence | Remaining gap |
+| --- | --- | --- | --- |
+| Native skill listing | Pass | `/skills` listed 19 skills: all 17 repository-managed global skills from `~/.gemini/antigravity-cli/skills/` plus two Antigravity built-ins. It included `review-pr` and all three specialist review skills. | Confirm the managed title convention. |
+| Managed conversation title | Blocked | The client automatically named a fresh review conversation `Review Pull Request 789`, but that client-generated label did not exercise the managed title instruction or a supported agent title mechanism. | Ask the model to produce the title for PR 789, “Improve Dialog focus handling.” If Antigravity exposes no supported title mechanism, record the capability as blocked rather than treating the generated label as an instruction failure. |
+| `review-pr` invocation | Pass | A prompt without a PR identifier replied by requesting a URL or number and did not inspect files first. | Run a complete review only when a real PR is in scope. |
+| Context isolation | Pass | A two-sentence prose prompt about autumn leaves returned only the requested prose. | Retain this result when the remaining direct-skill checks run. |
+| Preparation-only release boundary | Pass | A plan-only release request loaded `prepare-release`, inspected the empty workspace, and explicitly withheld local, Git, remote, and publication actions. | Run against a disposable repository if release-metadata behavior needs product evidence. |
+| Legacy `release-publish` route | Pass | The legacy-name request loaded `release-publish` and `prepare-release`, remained in plan mode, and withheld all local and remote release actions. | Confirm the same route in a disposable repository with release metadata. |
+| `review-accessibility` activation and output boundary | Partial | The client read the native global skill and identified the snippet's native-semantic and keyboard failures, but created its default review artifact despite the request not to modify files. The artifact was outside the workspace source, so no source was changed. | Rerun with explicit chat-only, no-artifact delivery; then confirm source citations and report quality on a representative repository review. |
+| `review-api-design` activation and quality | Partial | The client read the native global skill, but an isolated use-site snippet produced concrete severity findings without API types, consumers, sibling contracts, or compatibility policy. | Rerun with a complete API and consumer fixture; unobserved contract risks must remain verification gaps. |
+| `review-performance` activation and quality | Partial | The client read the native global skill and honored explicit chat delivery, but presented unmeasured latency ranges and generic virtualization/memoization prescriptions as confirmed high-severity findings. | Rerun with a profile or source-backed execution context; unmeasured risks must remain verification gaps. |
+
+These direct-skill results establish the requested core behavior canaries and native skill discovery from the global installation. They do not yet establish complete Antigravity acceptance: the managed title-convention check remains blocked, and the API-design and performance quality gaps remain unresolved. Keep the `preview` tier.
+
 ## 2026-07-22 direct-skill verification
 
 The active user installation was generated from `main` at `34007084d2070f5abb6ddbc11269e6568139d5ab`. Its owner installer passed `./setup.sh check --agent '*' --yes` with all 90 expected core-instruction and complete-skill artifacts current. The skills are repository-owned symlinks to that checkout; the audit branch did not overwrite them across worktrees.
