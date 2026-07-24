@@ -35,8 +35,14 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
 | [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
 | [review-accessibility](skills/review-accessibility/SKILL.md) | accessibility, WCAG, ARIA, keyboard, focus, or screen-reader audit | Read-only, source-verified accessibility review |
-| [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or compatibility | Read-only, consumer-focused API review |
+| [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or public-contract compatibility | Read-only, consumer-focused API review |
+| [review-compatibility](skills/review-compatibility/SKILL.md) | upgrade, migration, backward compatibility, persisted state, or wire format | Read-only, supported-state compatibility review |
 | [review-performance](skills/review-performance/SKILL.md) | performance, bundle, rendering, layout, paint, or scale | Read-only, evidence-based performance review |
+| [review-security](skills/review-security/SKILL.md) | security, privacy, authorization, injection, secrets, or sensitive data | Read-only, trust-boundary security review |
+| [review-test-quality](skills/review-test-quality/SKILL.md) | test strategy, behavioral testing, UI tests, or verification | Read-only, user-observable test-quality review |
+| [review-internationalization](skills/review-internationalization/SKILL.md) | i18n, localization, translation, locale, or RTL | Read-only, locale and translation review |
+| [review-documentation](skills/review-documentation/SKILL.md) | documentation, examples, JSDoc, comments, or developer experience | Read-only, source-verified documentation review |
+| [review-coordinator](skills/review-coordinator/SKILL.md) | panel, subagent, coordinated, or multi-specialist PR review | One rechecked response from material specialist handoffs |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with a no-subagent fallback |
 | [write-pr-description](skills/write-pr-description/SKILL.md) | "write/update PR description" | PR description writer following the repository template |
 | [draft-review-comment](skills/draft-review-comment/SKILL.md) | "craft a comment" | GitHub review comment drafter that never posts directly |
@@ -51,7 +57,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 
 ### Specialist reviews
 
-Accessibility, API-design, and performance reviews are direct skills. A focused pilot found no distinct tools, isolation benefit, or analysis quality from maintaining parallel custom-agent prompts, so this repository bundles no custom agents. [ADR 0006](docs/decisions/0006-review-coordinator.md) proposes an evidence-gated coordinator evaluation; it does not change the current distribution. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md) and the [pilot record](docs/accessibility-review-pilot.md).
+Accessibility, API design, compatibility, performance, security, test quality, internationalization, and documentation reviews are direct skills. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) is an MVP workflow: it assigns only material lanes, supports host-provided subagents when available, and rechecks one final response. The repository still bundles no custom agents.
 
 ## Conventions
 
@@ -60,7 +66,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 - **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
 - **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
-- **Specialist execution**: Reusable review methods live in skills. Add a custom agent only when delegated execution demonstrates measurable value beyond loading the skill directly.
+- **Specialist execution**: Reusable review methods live in skills. The coordinator can use host-provided subagents for independent, material lanes and has a sequential fallback; add a custom agent only when it demonstrates value beyond that workflow.
 - **Skill evaluation**: New or materially changed skills use versioned trigger and output fixtures; see the [evaluation guide](docs/skill-evaluations.md).
 
 ## Setup
@@ -172,7 +178,7 @@ These are living documents. In the default mode, portable skills are symlinked a
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md), and the Antigravity/Gemini policy in [ADR 0007](docs/decisions/0007-antigravity-adapter-and-gemini-policy.md). The proposed coordinator evaluation is recorded separately in [ADR 0006](docs/decisions/0006-review-coordinator.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), the coordinated-review MVP in [ADR 0006](docs/decisions/0006-review-coordinator.md), the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md), and the Antigravity/Gemini policy in [ADR 0007](docs/decisions/0007-antigravity-adapter-and-gemini-policy.md).
 
 ```bash
 npm ci

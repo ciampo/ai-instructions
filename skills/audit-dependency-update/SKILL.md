@@ -20,3 +20,9 @@ When reviewing or auditing an existing update, inspect and report without modify
 5. **Security check**: Run the project's audit command (`npm audit`, `pnpm audit`, etc.) to check for known vulnerabilities.
 6. **Build and test**: Run the relevant verification suite. Review visual-regression or snapshot deltas when they exist; update them only as part of an explicitly requested implementation.
 7. **Summarize findings**: Present what changed, compatibility and security conclusions, verification, whether local files were modified, and any follow-up work. A valid audit may recommend no change.
+
+## Output contract
+
+When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff. Preserve the supplied repository, base revision, head revision, and target audience; include the scope checked, old and target resolved versions, release and compatibility evidence, audit and build results, confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+
+For direct use, present the same evidence in the requested delivery format.

@@ -1,6 +1,6 @@
 ---
 name: review-api-design
-description: Perform a read-only review of a public component, library, or package API for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use when the user explicitly requests API-design review of exports, types, props, callbacks, composition, or compatibility. Do not use as a standalone general PR review, internal implementation review, or API implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
+description: Perform a read-only review of a public component, library, or package API for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use when the user explicitly requests API-design review of exports, types, props, callbacks, composition, or public-contract compatibility; use review-compatibility for supported-version, upgrade, migration, or persisted-state behavior. Do not use as a standalone general PR review, internal implementation review, or API implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review API Design
@@ -26,13 +26,13 @@ Review the public contract from the consumer's perspective and report only mater
 
 ## Output contract
 
-When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
+When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 
 Start with a short surface assessment, then order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on concrete consumer impact and likelihood. Each finding must include the affected public member, evidence from consumers or established contracts, the compatibility or usability consequence, and a concise alternative. Use exact lines only for inline findings; do not invent a location for a package-level concern.
 
-No findings is a valid result. Record material verification gaps separately from findings, and do not pad the review with speculative future-proofing or style preferences.
+No findings is a valid result. Record material verification gaps separately from findings. Missing types, consumers, compatibility policy, or runtime evidence must remain verification gaps unless the available evidence establishes a concrete public-contract failure; do not promote them to a severity finding or pad the review with speculative future-proofing or style preferences.
 
 ## Completion criteria
 

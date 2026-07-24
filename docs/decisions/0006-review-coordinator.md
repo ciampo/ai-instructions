@@ -1,37 +1,49 @@
-# ADR 0006: Evaluate an Optional Review Coordinator
+# ADR 0006: Provide a Coordinated Review MVP
 
-- **Status:** Proposed
-- **Date:** 2026-07-23
+- **Status:** Accepted
+- **Date:** 2026-07-24
 
 ## Context
 
-[ADR 0004](0004-skill-first-specialists.md) keeps accessibility, public API-design, and performance review methods in direct skills. Its evaluated specialist agents duplicated those methods and introduced output and evidence drift.
+[ADR 0004](0004-skill-first-specialists.md) keeps review methods in direct skills because the earlier accessibility, API-design, and performance agents duplicated those methods and introduced evidence and output drift.
 
-That decision does not rule out an agent that has a distinct job: coordinate independent, materially relevant skill passes for a complex PR, then produce one rechecked review. A coordinator can reduce wall-clock time when the host can run isolated subagents in parallel, but it can also duplicate PR context and increase cost. No representative direct-versus-coordinated comparison has established that value yet.
+That decision does not rule out a distinct coordination job. Complex pull requests can have independent material lanes, such as authorization, persisted-data migration, behavioral UI verification, localization, and documentation. A host that can run isolated subagents may investigate those lanes concurrently, but it must still deliver one evidence-backed review instead of competing reports.
 
 ## Decision
 
-Do not distribute a `review-coordinator` yet. First evaluate a thin coordinator that uses `review-pr` as the canonical workflow and replaces its conditional specialist-routing step with independent, materially relevant handoffs to the existing specialist skills. It must recheck and synthesize those handoffs into one review.
+Distribute `review-coordinator` as an optional direct-skill MVP. It uses `review-pr` as the canonical snapshot, core-review, severity, deduplication, and delivery workflow; it assigns only materially relevant direct specialist skills to bounded independent handoffs.
 
-The evaluation should use runtime model and reasoning defaults because model identifiers, availability, and per-agent routing are product-specific. It must not encode a shared model field that only some adapters understand.
+The coordinator may use host-provided subagents in parallel. Where that capability is unavailable, it performs the same handoffs sequentially. It is not a custom-agent definition and does not introduce adapter-specific model routing.
+
+The specialist set is:
+
+- accessibility, public API design, compatibility, performance, security, test quality, internationalization, and documentation;
+- dependency-specific security work remains with `audit-dependency-update`.
+
+The coordinator rechecks every candidate against the pinned diff, consumers, repository policy, and existing review state. It treats agreement as a prompt to verify, never as proof. A single final response contains only confirmed, deduplicated findings; uncertainty stays in verification gaps.
 
 ## Consequences
 
-- `review-pr` remains the default and canonical general PR-review workflow; the current distribution does not add a custom agent or adapter output.
-- Evaluate only PRs with independent material specialist lanes; do not run several generic full reviews.
-- Before distribution, compare direct and coordinated review on representative PRs and measure confirmed findings, false positives, duplicates, wall time, and token use.
-- Add model routing only if that evidence shows a quality or cost benefit.
+- `review-pr` remains the default for ordinary PRs and products without subagent support.
+- `review-coordinator` is appropriate only when a user requests a panel or two or more independent specialist lanes are material.
+- Specialists retain one canonical evidence and output contract in their direct skills; the coordinator does not duplicate their methods in custom-agent prompts.
+- The MVP must be assessed on representative PRs for confirmed findings, false positives, duplicates, wall time, token use, and whether the synthesized review improves author actionability.
+- No custom-agent output or product-specific model configuration is distributed.
 
 ## Alternatives considered
 
-### Keep no distributed agents
+### Keep no coordinator
 
-Selected until the evaluation demonstrates measurable value.
-
-### Assign a cheaper specialist model in the shared agent
-
-Rejected. The shared source has no portable model-routing field, and a cheaper model has not been evaluated against the evidence and severity requirements for review findings.
+Rejected for the MVP. The direct skills remain necessary, but they do not provide a reusable contract for parallel, independent handoffs and one rechecked delivery.
 
 ### Replace `review-pr` with the coordinator
 
 Rejected. Most PRs do not benefit from parallel delegation, and `review-pr` must remain directly usable on products without subagent support.
+
+### Use a panel vote
+
+Rejected. Multiple agents can share the same unsupported assumption. Evidence, not a vote count, establishes a review finding.
+
+### Assign a cheaper specialist model in the shared agent
+
+Deferred. Model identifiers, availability, and routing remain product-specific; no quality or cost evidence supports a portable model rule.

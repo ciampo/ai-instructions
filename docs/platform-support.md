@@ -19,27 +19,27 @@ After installation, start a new session unless the product documents live reload
 
 ### Cursor editor and Agent CLI (preview)
 
-1. Open Cursor's Customize page and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear at user scope.
+1. Open Cursor's Customize page and confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills appear at user scope.
 2. Open the slash-command menu and invoke `/review-pr`.
 3. Invoke `review-accessibility` on an interactive UI and confirm the source-verified specialist method is used.
 4. Confirm the core rule appears at user scope. File-backed global rules remain preview because Cursor also exposes user rules through product-managed settings.
 
 ### Claude Code CLI
 
-1. Type `/review-pr`; Claude Code exposes skills by name and also loads them automatically when their descriptions match.
-2. Invoke `review-accessibility` directly and confirm a general PR prompt remains with `review-pr` instead.
+1. Use Claude Code's skill discovery or matching prompts to confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills are available at user scope.
+2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`, while a two-lane PR selects `review-coordinator` and retains its sequential fallback where subagents are unavailable.
 3. Change a bundled reference, run `./setup.sh update --agent claude` when using copy mode, and verify the skill uses the updated reference.
 
 ### Codex app, CLI, and IDE extension
 
-1. Run `/skills` or type `$` in CLI/IDE and confirm `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` appear.
-2. Invoke each specialist directly on a matching prompt and confirm `review-pr` uses them only when the domain is material.
+1. Run `/skills` or type `$` in CLI/IDE and confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills appear.
+2. Invoke each specialist directly on a matching prompt and confirm `review-pr` uses them only when the domain is material; confirm `review-coordinator` keeps a sequential fallback where subagents are unavailable.
 3. Confirm the effective global instructions include the `Core Instructions` heading. If `~/.codex/AGENTS.override.md` exists, it intentionally takes precedence over the managed `AGENTS.md`.
 
 ### GitHub Copilot CLI
 
-1. Invoke `/review-pr`; Copilot CLI exposes skills as slash commands and may also invoke them automatically.
-2. Invoke `/review-accessibility` on a matching UI example and verify a non-UI prompt does not select it.
+1. Use Copilot CLI's skill discovery or slash commands to confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills are available at user scope.
+2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`, while a two-lane PR selects `review-coordinator` and retains its sequential fallback where subagents are unavailable.
 3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
 ### Google Antigravity CLI (preview)
@@ -47,7 +47,7 @@ After installation, start a new session unless the product documents live reload
 Antigravity CLI 1.1.6 enforces global `~/.gemini/GEMINI.md` context and imports global skills from `~/.gemini/antigravity-cli/skills/`. The installer owns those paths and migrates only its managed Gemini skill directories from `~/.gemini/skills/`; user-authored directories remain in place.
 
 1. In an authenticated profile updated from the current revision, create a disposable workspace and confirm `~/.gemini/antigravity-cli/skills/review-pr/SKILL.md` exists before opening the client. A managed wrapper alone is not evidence that native global skills were installed.
-2. Start a new session, open `/skills`, and confirm `review-pr` plus the three specialist review skills appear from the Antigravity global path.
+2. Start a new session, open `/skills`, and confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills appear from the Antigravity global path.
 3. Invoke `review-pr` without supplying a pull-request identifier. The authenticated profile's native global `review-pr` directory must be a nonsecret complete skill directory (a managed symlink or copy) that includes `references/`; if the client prompts before sending a reference, approve only that displayed directory. Confirm it requests or identifies a pull request and does not invent a target or write outside the review's read-only boundary.
 4. Invoke `review-accessibility` on a matching UI example with explicit chat-only, no-artifact delivery. Confirm it preserves that boundary, and verify a general PR prompt selects `review-pr` instead.
 5. Ask the model to produce a title for PR 789, “Improve Dialog focus handling,” and confirm the managed title convention is applied. Do not infer this result from a client-generated conversation label.

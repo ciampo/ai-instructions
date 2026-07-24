@@ -10,6 +10,11 @@
       "id": "focused-accessibility-audit",
       "prompt": "Audit this dialog's focus and keyboard behavior for accessibility. Do not review the rest of the pull request.",
       "shouldTrigger": false
+    },
+    {
+      "id": "multi-lane-pr-review",
+      "prompt": "Review this pull request with independent authorization and persisted-state migration changes, then give one evidence-backed response.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
@@ -25,6 +30,28 @@
         "The review refreshes the remote review state it used before delivery and accounts for new or resolved feedback.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "Focused specialist findings are synthesized instead of delivered as competing reports."
+      ]
+    },
+    {
+      "id": "ordinary-direct-specialist-routing",
+      "prompt": "Review this pull request for the settings-dialog regression and provide one copy-pasteable response.",
+      "context": "evals/fixtures/direct-specialist-routing.md",
+      "expectedOutcome": "One read-only review that keeps review-pr responsible for the ordinary direct-specialist path and final delivery.",
+      "assertions": [
+        "The response is a single synthesized review, not a separate specialist artifact.",
+        "The review keeps this one-lane case on the ordinary review-pr delivery path without a panel transcript.",
+        "It treats the behavioral test gap as a test-quality concern without claiming unobserved browser behavior."
+      ]
+    },
+    {
+      "id": "coordinator-handoff-routing",
+      "prompt": "Review this pull request with authorization and persisted-state migration changes, then provide one evidence-backed response.",
+      "context": "evals/fixtures/coordinator-handoff-routing.md",
+      "expectedOutcome": "One read-only review that hands the completed core result to the coordinator for the two material specialist lanes and receives its single final delivery.",
+      "assertions": [
+        "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
+        "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
+        "Authorization and persisted-state evidence are assessed as separate material domains."
       ]
     }
   ]

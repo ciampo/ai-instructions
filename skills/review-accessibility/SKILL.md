@@ -27,7 +27,7 @@ Review the scoped user experience deeply enough to find material accessibility r
 
 ## Output contract
 
-When `review-pr` invokes this skill for its own review, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; `review-pr` owns the single synthesized deliverable.
+When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
 By default, write one portable Markdown artifact in the OS temporary directory and return its path. When the user explicitly requests chat delivery, return only the requested finding or findings in chat.
 

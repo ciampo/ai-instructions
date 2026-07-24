@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "authorization-boundary",
+      "prompt": "Audit this new account-deletion endpoint for authorization and privacy risks.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "visual-copy-review",
+      "prompt": "Review this button-label change for clarity and visual consistency.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "reachable-authorization-failure",
+      "prompt": "Perform a read-only security review of this account endpoint.",
+      "context": "evals/fixtures/account-deletion.md",
+      "expectedOutcome": "A read-only security review that distinguishes a reachable authorization failure from unsupported threat-model speculation.",
+      "assertions": [
+        "The finding identifies the request boundary, missing control, and affected account data.",
+        "The review does not expose or request credentials.",
+        "Unspecified deployment protections remain verification gaps."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "localized-message-and-rtl",
+      "prompt": "Review this translated settings screen for pluralization, locale formatting, and RTL behavior.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "security-boundary-review",
+      "prompt": "Review this API route for authorization and input-validation risks.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "full-sentence-message",
+      "prompt": "Perform a read-only i18n review of this status message.",
+      "context": "evals/fixtures/file-count.md",
+      "expectedOutcome": "A read-only localization review that identifies a sentence assembled outside the translation system and preserves unobserved RTL behavior as a verification gap.",
+      "assertions": [
+        "The review identifies the translatable sentence boundary and pluralization concern.",
+        "It does not assume RTL failure without rendered evidence.",
+        "It recommends repository-consistent locale-aware message construction."
+      ]
+    }
+  ]
+}
