@@ -45,6 +45,7 @@ The authenticated Antigravity CLI 1.1.6 Terminal session used the native global 
 | Capability | Result | Evidence | Remaining gap |
 | --- | --- | --- | --- |
 | Native skill listing | Pass | `/skills` listed 19 skills: all 17 repository-managed global skills from `~/.gemini/antigravity-cli/skills/` plus two Antigravity built-ins. It included `review-pr` and all three specialist review skills. | Confirm the managed title convention. |
+| Managed conversation title | Fail | The client automatically named a fresh review conversation `Review Pull Request 789`. The title omitted both the required `👀 [R#789]` prefix and the supplied `Improve Dialog focus handling` subject. | Investigate how the product generates conversation titles and whether the core title convention can be applied through a supported Antigravity mechanism. |
 | `review-pr` invocation | Pass | A prompt without a PR identifier replied by requesting a URL or number and did not inspect files first. | Run a complete review only when a real PR is in scope. |
 | Context isolation | Pass | A two-sentence prose prompt about autumn leaves returned only the requested prose. | Retain this result when the remaining direct-skill checks run. |
 | Preparation-only release boundary | Pass | A plan-only release request loaded `prepare-release`, inspected the empty workspace, and explicitly withheld local, Git, remote, and publication actions. | Run against a disposable repository if release-metadata behavior needs product evidence. |
@@ -53,7 +54,7 @@ The authenticated Antigravity CLI 1.1.6 Terminal session used the native global 
 | `review-api-design` activation and quality | Partial | The client read the native global skill, but an isolated use-site snippet produced concrete severity findings without API types, consumers, sibling contracts, or compatibility policy. | Rerun with a complete API and consumer fixture; unobserved contract risks must remain verification gaps. |
 | `review-performance` activation and quality | Partial | The client read the native global skill and honored explicit chat delivery, but presented unmeasured latency ranges and generic virtualization/memoization prescriptions as confirmed high-severity findings. | Rerun with a profile or source-backed execution context; unmeasured risks must remain verification gaps. |
 
-These direct-skill results establish the requested core behavior canaries and native skill discovery from the global installation. They do not yet establish complete Antigravity acceptance: record the managed title convention and resolve the API-design and performance quality gaps before changing the `preview` tier.
+These direct-skill results establish the requested core behavior canaries and native skill discovery from the global installation. They do not yet establish complete Antigravity acceptance: the managed title convention fails, and the API-design and performance quality gaps remain unresolved. Keep the `preview` tier.
 
 ## 2026-07-22 direct-skill verification
 
