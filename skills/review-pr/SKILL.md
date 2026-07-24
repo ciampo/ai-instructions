@@ -20,7 +20,8 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
    - Use `review-api-design` when the PR adds or materially changes a public component, library, or package API. Ordinary internal type or implementation correctness stays in the core pass.
    - Use `review-compatibility` for supported-version behavior, upgrades, migrations, persisted state, wire formats, or integration compatibility. Keep public API shape in `review-api-design`.
    - Use `review-performance` when the change plausibly affects bundle loading, a user-critical runtime path, rendering or layout work, or behavior at meaningful scale. Do not invoke it for generic optimization ideas or harmless local computation.
-   - Use `review-security` for untrusted input, authentication, authorization, secrets, sensitive data, injection, or security-sensitive dependency changes. Use `audit-dependency-update` for a dependency-specific audit.
+   - Use `review-security` for untrusted input, authentication, authorization, secrets, sensitive data, injection, or security-sensitive dependency changes.
+   - Use `audit-dependency-update` for every dependency addition, removal, or version change. Include its version, release, compatibility, audit, and build evidence in the synthesized review.
    - Use `review-test-quality` when behavioral evidence, UI semantics, regression coverage, mocks, or verification quality are material to the change.
    - Use `review-internationalization` for user-facing translations, locale formatting, pluralization, or directional UI.
    - Use `review-documentation` when public or developer documentation, examples, migration guidance, or meaningful code comments change.
