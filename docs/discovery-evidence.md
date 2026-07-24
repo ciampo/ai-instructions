@@ -10,7 +10,7 @@ The active Codex desktop task used the installed user configuration generated fr
 
 | Capability | Result | Limitation |
 | --- | --- | --- |
-| Installed-source introspection | Pass | The managed instruction file and all 17 complete skill directories resolve to the installed `main` checkout. |
+| Installed-source introspection | Blocked | The installer check is supporting evidence for managed artifact integrity, but the desktop runtime did not expose the loaded instruction or skill source paths. |
 | Direct-skill discovery | Pass | `review-pr`, `review-accessibility`, `review-api-design`, and `review-performance` were available in the desktop runtime alongside the other installed skills. |
 | Direct-skill activation | Partial | This task activated the maintenance and engineering-standards skills; the retained review, isolation, and release-boundary canaries still need a dedicated app session. |
 | Persistent instructions | Partial | The task title followed the managed convention, but this repository workspace also has a root `AGENTS.md`, so the current session cannot independently attribute that behavior to the user-level file. |

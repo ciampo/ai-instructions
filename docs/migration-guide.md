@@ -38,7 +38,7 @@ User-authored rules are left untouched. A conflict reported by `check` requires 
 
 Current installations link or copy each complete `skills/<name>/` directory instead of installing only `SKILL.md`. This preserves bundled `references/`, `scripts/`, and `assets/`.
 
-The installer automatically migrates an old skill directory only when its `SKILL.md` is repository-owned or managed and any other entries are known operating-system metadata (`.DS_Store` or `Thumbs.db`). If you added files to an installed skill directory, it is treated as user-owned and preserved. Back up those additions, remove or relocate the conflict, and rerun update.
+The installer automatically migrates an old skill directory only when its `SKILL.md` is repository-owned or managed and any other entries are known operating-system metadata (`.DS_Store` or `Thumbs.db`). If you added files to an installed skill directory, update installs the current native skill, removes only the repository-owned legacy `SKILL.md`, and preserves your added files. Move any additions that must remain active into the current skill directory.
 
 Legacy managed skill copies retain copy mode during their first update, even when `--copy` is omitted. Newly installed skills still use the requested mode. The former combined `release-publish` skill remains available as a deprecated compatibility route to `prepare-release` or `publish-release`.
 

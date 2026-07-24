@@ -24,6 +24,7 @@ import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 export function createPlatformInstaller( { repoDir, home, state } ) {
 	const { buildArtifacts } = createArtifactBuilder( { repoDir } );
 	const migratedSkillDestinations = new Set();
+	const deferredLegacySkillEntrypoints = new Map();
 
 	function fail( message ) {
 		throw new Error( message );
@@ -743,6 +744,23 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 						const managedSkillCopy = ! entry.isSymbolicLink() && Boolean(
 							await managedFileType( candidate )
 						);
+						const managedSkillCopyContent = managedSkillCopy
+							? await readFile( candidate, 'utf8' )
+							: null;
+						const entrypointLink = ! entry.isSymbolicLink()
+							? await readlinkSafe( candidate )
+							: null;
+						const resolvedEntrypointLink = entrypointLink
+							? path.resolve( path.dirname( candidate ), entrypointLink )
+							: null;
+						const managedSkillEntrypointLink = Boolean(
+							artifact &&
+							resolvedEntrypointLink &&
+							isInside(
+								resolvedEntrypointLink,
+								path.join( repoDir, legacy.sourceRoot )
+							)
+						);
 						const managedSkillCopyCanReplace = managedSkillCopy && await legacySkillDirectoryCanReplace(
 							legacyDirectory,
 							path.join( repoDir, legacy.sourceRoot )
@@ -781,10 +799,28 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 							artifact &&
 							legacy.category === 'skills' &&
 							[ 'install', 'update' ].includes( state.options.command ) &&
-							managedSkillCopy
+							( managedSkillCopy || managedSkillEntrypointLink )
 						) {
-							console.warn( `  [warning] ${ legacyDirectory } contains files not installed by this script; preserving the legacy directory` );
-							state.skipped++;
+							deferredLegacySkillEntrypoints.set( candidate, {
+								artifact,
+								canRemove: managedSkillCopy
+									? async ( target ) => {
+										const targetStats = await lstatSafe( target );
+										return Boolean(
+											targetStats?.isFile() &&
+											! targetStats.isSymbolicLink() &&
+											await readFile( target, 'utf8' ) === managedSkillCopyContent
+										);
+									}
+									: async ( target ) => {
+										const currentLink = await readlinkSafe( target );
+										return Boolean(
+											currentLink &&
+											path.resolve( path.dirname( target ), currentLink ) === resolvedEntrypointLink
+										);
+									},
+								legacyDetail,
+							} );
 							continue;
 						}
 						await handleStalePath(
@@ -808,6 +844,48 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 				}
 			}
 		}
+	}
+
+	function skillArtifactWillBeCurrent( status, state ) {
+		if ( status.current ) {
+			return true;
+		}
+		if ( ! state.options.dryRun || ! [ 'install', 'update' ].includes( state.options.command ) ) {
+			return false;
+		}
+		if ( ! status.exists ) {
+			return true;
+		}
+		if ( state.options.command === 'install' ) {
+			return false;
+		}
+		if ( status.legacyOwned && status.unknownEntries.length > 0 ) {
+			return false;
+		}
+		if ( status.legacyCopy && ! state.options.copy ) {
+			return true;
+		}
+		if ( status.kind === 'directory' && status.owned && ! state.options.copy ) {
+			return false;
+		}
+		return status.owned || status.legacySafe;
+	}
+
+	async function cleanDeferredLegacySkillEntrypoints( state ) {
+		for ( const [ entrypoint, { artifact, canRemove, legacyDetail } ] of deferredLegacySkillEntrypoints ) {
+			const destinationStatus = await inspectSkillArtifact( artifact );
+			if ( ! skillArtifactWillBeCurrent( destinationStatus, state ) ) {
+				console.warn( `  [warning] ${ artifact.label } could not be installed; preserving ${ entrypoint } and its legacy directory` );
+				state.skipped++;
+				continue;
+			}
+			if ( ! state.options.dryRun ) {
+				await removeArtifactPath( entrypoint, canRemove );
+			}
+			console.log( `  [stale] ${ entrypoint } (${ legacyDetail })` );
+			state.stale++;
+		}
+		deferredLegacySkillEntrypoints.clear();
 	}
 
 	async function blockingCategory( platform, selectedCategories, home, state ) {
@@ -874,6 +952,7 @@ export function createPlatformInstaller( { repoDir, home, state } ) {
 			}
 		}
 		if ( [ 'install', 'update' ].includes( state.options.command ) ) {
+			await cleanDeferredLegacySkillEntrypoints( state );
 			const completedCleanupBlockers = await blockedGroupCategories( groups, state );
 			const completedCleanupCategories = deferredCleanupCategories.filter(
 				( category ) => ! completedCleanupBlockers.has( category )
