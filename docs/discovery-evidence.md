@@ -54,7 +54,7 @@ The authenticated Antigravity CLI 1.1.6 Terminal session used the native global 
 | `review-api-design` activation and quality | Partial | The client read the native global skill, but an isolated use-site snippet produced concrete severity findings without API types, consumers, sibling contracts, or compatibility policy. | Rerun with a complete API and consumer fixture; unobserved contract risks must remain verification gaps. |
 | `review-performance` activation and quality | Partial | The client read the native global skill and honored explicit chat delivery, but presented unmeasured latency ranges and generic virtualization/memoization prescriptions as confirmed high-severity findings. | Rerun with a profile or source-backed execution context; unmeasured risks must remain verification gaps. |
 
-These direct-skill results establish the requested core behavior canaries and native skill discovery from the global installation. They do not yet establish complete Antigravity acceptance: the managed title convention fails, and the API-design and performance quality gaps remain unresolved. Keep the `preview` tier.
+These direct-skill results establish the requested core behavior canaries and native skill discovery from the global installation. They do not yet establish complete Antigravity acceptance: the managed title-convention check remains blocked, and the API-design and performance quality gaps remain unresolved. Keep the `preview` tier.
 
 ## 2026-07-22 direct-skill verification
 
