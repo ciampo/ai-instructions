@@ -8,4 +8,4 @@ export function UploadStatus( { count } ) {
 }
 ```
 
-The project uses `t( key, values )` and `plural( singularKey, pluralKey, count, values )` for translated messages. It supports Arabic and German, but no rendered screenshots or RTL test are supplied.
+The project uses count-aware `t( key, { count } )` for translated messages; its catalog resolves the locale's CLDR plural categories from that count. It supports Arabic and German, but no rendered screenshots or RTL test are supplied.

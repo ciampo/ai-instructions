@@ -17,7 +17,7 @@
       "id": "evidence-based-performance-review",
       "prompt": "Audit this component's performance and suggest improvements without changing the source.",
       "context": "evals/fixtures/repeated-list.md",
-      "expectedOutcome": "A read-only performance review that separates source-proven cost from measurement gaps and avoids generic optimization advice.",
+      "expectedOutcome": "A read-only performance review that identifies source-backed execution paths to measure, keeps unmeasured cost as a verification gap, and avoids generic optimization advice.",
       "assertions": [
         "The review remains read-only.",
         "Each confirmed concern identifies the affected execution path and realistic scale.",
