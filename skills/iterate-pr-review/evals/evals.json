@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "repeat-copilot-and-self-review",
+      "prompt": "Iterate on this PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "review-before-handoff",
+      "prompt": "Before handing off my PR, run Copilot review and independent self-review loops until the current revision has no actionable feedback.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "one-time-external-review",
+      "prompt": "Review this contributor's PR and give me copy-pasteable comments without changing anything.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "current-head-convergence",
+      "prompt": "Iterate this authored PR through Copilot review and adversarial self-review. Apply valid feedback, commit and push approved fixes, then recap the iterations.",
+      "context": "evals/fixtures/current-head-convergence.md",
+      "expectedOutcome": "A bounded, SHA-aware loop that independently collects both review sources, applies only verified feedback, and does not claim convergence while Copilot is pending or stale.",
+      "assertions": [
+        "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
+        "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
+        "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
+        "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop."
+      ]
+    }
+  ]
+}
