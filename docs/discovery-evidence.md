@@ -4,6 +4,22 @@ Support tiers require evidence from the target product, not only proof that file
 
 The dated tables below are historical snapshots of the architecture tested at their stated revisions. The final specialist pilot retained accessibility, API-design, and performance as direct skills and retired the three bundled custom agents. Agent results from the earlier snapshots therefore document the decision input; they are no longer an acceptance requirement for the current source architecture.
 
+## 2026-07-27 Codex IDE extension discovery check
+
+Visual Studio Code 1.129.1 with the ChatGPT extension 26.721.41059 was tested in a disposable `ai-instructions-discovery` workspace. The canonical installer source was `main` at `36b8def2a100492340a7ee1c223b88cb0345f619`; its owner-side `./setup.sh check --agent codex --yes` reported the managed `~/.codex/AGENTS.md` and all 24 user skills in `~/.agents/skills/` healthy. The extension did not expose the loaded source paths, so that lifecycle result supports installation integrity but does not establish in-product source introspection.
+
+| Capability | Result | Evidence | Remaining gap |
+| --- | --- | --- | --- |
+| Persistent instructions | Pass | In the empty disposable workspace, the requested title for PR 789, “Improve Dialog focus handling,” was returned exactly as `👀 [R#789] Improve Dialog focus handling`. | Confirm the same canary in the Codex desktop app. |
+| Direct-skill discovery | Pass | Typing `$` opened the extension picker. It labelled the repository's current skills as Personal, including `review-pr`, `review-coordinator`, and every `review-*` specialist. | The extension does not show the loaded filesystem paths. |
+| `review-pr` invocation | Pass | Invoking `$review-pr` without a target returned a request for a PR URL or `owner/repo#number`, noting that the disposable workspace had no commits, remote, or source files. It did not invent a review boundary or perform a write. | Exercise a complete pinned review only when a real PR is in scope. |
+| Context isolation | Pass | A prompt for exactly two sentences about autumn leaves returned only the requested prose, with no engineering, review, or release procedure injected. | Confirm the same canary in the Codex desktop app. |
+| Accessibility context activation | Pass | The 44-by-44 target prompt correctly identified 24 × 24 CSS pixels and its exceptions as WCAG 2.2 AA, and 44 × 44 as the AAA preference. | Confirm the same canary in the Codex desktop app. |
+| Specialist review behavior | Partial | `review-accessibility` returned a source-linked keyboard finding for a `div[role="button"]` and honored chat-only delivery. `review-api-design` and `review-performance` each requested the missing public-contract or performance evidence instead of inventing a severity finding. | Run API-design and performance reviews on complete, matching fixtures, then confirm `review-coordinator` behavior on a two-lane PR. |
+| Preparation-only release boundary | Pass | The legacy `$release-publish` route selected `prepare-release` in plan-only mode and stated that it changed no files and contacted no remote service. | Run against a disposable checkout with release metadata if release-preparation behavior needs product evidence. |
+
+This is fresh IDE-extension evidence for the current direct-skill distribution, not a complete extension matrix. Source introspection, complete API-design and performance fixtures, and coordinator behavior on a two-lane review remain open. The desktop app and current CLI must also be verified independently before the combined Codex surface can move beyond `preview`.
+
 ## 2026-07-23 Codex desktop app source-discovery check
 
 The active Codex desktop task used the installed user configuration generated from `main` at `347549177f4861d0a290fd0b5162c90b870385f6`. `./setup.sh check --agent codex --yes` reported all 18 current artifacts as healthy: the managed `~/.codex/AGENTS.md` plus all 17 user skills in `~/.agents/skills/`. `~/.codex/AGENTS.override.md` was absent. The desktop runtime listed the direct review skills at user scope, and this task loaded `repository-maintenance` and `engineering-standards` from that installed skill set.
