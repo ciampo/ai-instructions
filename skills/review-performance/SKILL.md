@@ -34,7 +34,7 @@ For multiple findings, write one portable Markdown artifact in the OS temporary 
 
 Start with the reviewed path, supplied scale, available measurements, and material unknowns. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on measured user impact and likelihood. Each finding must connect code to a measured cost or an observed breach of an explicit performance contract, plus a focused alternative and a repeatable verification method. Put unmeasured but material hypotheses under verification gaps rather than presenting them as confirmed regressions.
 
-No findings is a valid result. Unmeasured costs remain hypotheses and cannot be `[critical]` or `[major]` findings. Do not report generic best practices or micro-optimizations without a plausible, scoped impact.
+No findings is a valid result. Unmeasured costs remain hypotheses and receive no severity-rated finding. Do not report generic best practices or micro-optimizations without a plausible, scoped impact.
 
 ## Completion criteria
 

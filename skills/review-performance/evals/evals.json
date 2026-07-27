@@ -31,7 +31,7 @@
       "expectedOutcome": "A read-only performance review that connects the observed budget breach to the scoped rendering path and proposes a measurement-backed next step.",
       "assertions": [
         "The review remains read-only.",
-        "Any finding cites the supplied measured budget breach and affected user interaction.",
+        "The review reports a severity-rated finding that cites the supplied 112 ms result, 50 ms budget, and customer search keystroke interaction.",
         "The recommendation includes a focused alternative and repeatable before-and-after verification."
       ]
     }

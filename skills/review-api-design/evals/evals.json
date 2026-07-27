@@ -31,7 +31,7 @@
       "expectedOutcome": "A read-only scope assessment that records the absent API contract as verification gaps instead of inventing severity-rated compatibility or usability findings.",
       "assertions": [
         "The review remains read-only.",
-        "The review identifies that exports, types, documentation, and other consumers are unavailable.",
+        "The review identifies the absent public contract or implementation, prop types, documentation, sibling patterns, tests, other consumers, and compatibility policy.",
         "The review does not rate an inferred API or compatibility risk as a finding without supplied contract evidence."
       ]
     }
