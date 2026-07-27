@@ -9,8 +9,8 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 
 ## Authority and boundary
 
-- Treat the invoking request as the authority for requesting a Copilot review, editing source, committing, pushing, or changing pull-request metadata. Do not infer authority to mark ready, merge, resolve threads, or post replies.
-- Establish an iteration limit before starting. Default to three completed change rounds unless the request specifies another limit. Stop at that limit and report remaining work rather than continuing indefinitely.
+- Treat only actions explicitly named in the invoking request as authorized. Requesting review does not authorize source edits, commits, pushes, pull-request metadata changes, thread resolution, replies, marking ready, or merging.
+- Establish a maximum number of completed change rounds before starting. Default to three unless the request specifies another limit, and reserve a final review-only pass for the head created by the last allowed change.
 - Use `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. Do not duplicate their detailed procedures here.
 - Treat a missing, failed, or pending Copilot review as incomplete evidence, never as a clean result.
 
@@ -20,7 +20,7 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 2. Request a Copilot review for that recorded head through the supported GitHub surface when authorized. Record when it was requested and do not reuse a review for an earlier head.
 3. Independently run the adversarial self-review for the same head. Do not give it Copilot's conclusions before its first pass. Wait for the Copilot review and local review to complete before deciding whether to change code.
 4. Consolidate both results. Account for every current comment or finding as accepted, already fixed, stale, or declined with source-backed reasoning. Deduplicate overlapping reports; a suggestion is actionable only when it identifies a real problem or a required change.
-5. Implement accepted fixes only when authorized. Verify the changed behavior with the relevant project checks, then commit, push, and refresh the PR only when the request authorizes each action. Start the next round from the resulting head revision.
+5. Implement accepted fixes only when authorized. Verify the changed behavior with the relevant project checks, then commit, push, and refresh the PR only when the request separately authorizes each action. Start the next round from the resulting head revision.
 6. Finish only when the Copilot review for the current head is complete with no actionable feedback and the independent self-review for that same head has no actionable findings. Re-read the PR revisions and review state immediately before declaring completion.
 
 ## Wait and recover
@@ -28,7 +28,7 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 - Wait only for a known pending review or check, using the platform's normal monitoring mechanism. Refresh the PR state after it completes.
 - If Copilot is unavailable, cannot be requested, or never completes, stop with that verification gap. Do not substitute an unrequested human review or silently omit the Copilot condition.
 - If the head changes outside this loop, discard stale results and restart the affected round from a fresh snapshot.
-- If the iteration limit is reached, stop and deliver the unresolved actionable feedback and the next recommended action.
+- After the last allowed change round, complete the reserved review-only pass for its resulting head. If either review finds actionable feedback, stop and deliver it with the next recommended action rather than making another change round.
 
 ## Recap
 

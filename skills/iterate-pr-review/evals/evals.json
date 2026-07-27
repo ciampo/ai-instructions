@@ -15,6 +15,11 @@
       "id": "one-time-external-review",
       "prompt": "Review this contributor's PR and give me copy-pasteable comments without changing anything.",
       "shouldTrigger": false
+    },
+    {
+      "id": "one-time-authored-review",
+      "prompt": "Perform one adversarial self-review of my current PR and do not change anything.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [
@@ -27,6 +32,7 @@
         "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
         "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
         "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
+        "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
         "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop."
       ]
     }

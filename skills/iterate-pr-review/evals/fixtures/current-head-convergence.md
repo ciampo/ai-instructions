@@ -8,4 +8,24 @@
 - Independent self-review: not yet started
 - Authority: request the Copilot review, make accepted local fixes, commit, push, and update the draft PR. Do not mark it ready, merge it, resolve threads, or post replies.
 
-The prior Copilot review found a test that no longer exercises the changed behavior. Inspect the current diff and source before deciding whether it remains actionable. The current review must cover the recorded head revision, not the earlier revision.
+The prior Copilot review found a test that no longer exercises the changed behavior. Inspect the self-contained source and test corpus below before deciding whether it remains actionable. The current review must cover the recorded head revision, not the earlier revision.
+
+## Current-head source
+
+```js
+export function getChangeRoundLimit( requestedLimit ) {
+  return requestedLimit ?? 3;
+}
+```
+
+## Current-head test
+
+```js
+import assert from 'node:assert/strict';
+import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
+
+assert.equal( getChangeRoundLimit(), 3 );
+assert.equal( getChangeRoundLimit( 2 ), 2 );
+```
+
+The changed source replaces an inline `requestedLimit ?? 3` expression at its call site with `getChangeRoundLimit()`. The test above calls that new function for both its default and explicit-input paths.
