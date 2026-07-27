@@ -36,7 +36,8 @@
       "assertions": [
         "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
         "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
-        "The workflow reuses a completed Copilot review for the recorded head instead of requesting a redundant review.",
+        "When no limit is specified, the workflow permits up to five completed change rounds and reserves a final review-only pass.",
+        "The workflow waits for the pending Copilot review for the recorded head without requesting a duplicate review or reusing the earlier-head review.",
         "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
         "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
         "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
@@ -45,11 +46,11 @@
     },
     {
       "id": "review-only-authority",
-      "prompt": "Request Copilot review and independently self-review this authored PR, but do not change or publish anything.",
+      "prompt": "Read the existing Copilot review and independently self-review this authored PR, but do not change or publish anything.",
       "context": "evals/fixtures/review-only-authority.md",
       "expectedOutcome": "A current-head review result that reports actionable feedback without editing source, committing, pushing, or changing pull-request state.",
       "assertions": [
-        "The workflow requests and assesses both reviews for one recorded head revision.",
+        "The workflow reuses and assesses the completed current-head reviews without requesting duplicate reviews.",
         "The workflow reports the accepted finding instead of editing source, committing, pushing, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
     },

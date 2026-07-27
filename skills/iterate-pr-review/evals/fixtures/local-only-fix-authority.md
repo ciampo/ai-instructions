@@ -10,7 +10,7 @@
 
 ```js
 export function getChangeRoundLimit( requestedLimit ) {
-  return requestedLimit ?? 3;
+  return requestedLimit ?? 5;
 }
 ```
 
@@ -20,7 +20,7 @@ export function getChangeRoundLimit( requestedLimit ) {
 import assert from 'node:assert/strict';
 import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
-assert.equal( getChangeRoundLimit(), 3 );
+assert.equal( getChangeRoundLimit(), 5 );
 ```
 
 Add the missing `getChangeRoundLimit( 2 )` assertion locally and run the relevant test. Because that new local state is not committed and pushed, report it and stop instead of starting a new remote-review round.

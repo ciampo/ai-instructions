@@ -5,13 +5,13 @@
 - Current head revision: `f433b7eb0c92f2b2fa9769280f17330e602f2e72`
 - Copilot review for the current head: complete; it correctly reports that the current test omits the explicit-limit path.
 - Independent self-review: complete; it confirms the missing explicit-limit path.
-- Authority: request and read reviews only. Do not edit source, commit, push, update pull-request metadata, resolve threads, post replies, mark ready, or merge.
+- Authority: read the existing reviews only. Do not edit source, request duplicate reviews, commit, push, update pull-request metadata, resolve threads, post replies, mark ready, or merge.
 
 ## Current-head source
 
 ```js
 export function getChangeRoundLimit( requestedLimit ) {
-  return requestedLimit ?? 3;
+  return requestedLimit ?? 5;
 }
 ```
 
@@ -21,7 +21,7 @@ export function getChangeRoundLimit( requestedLimit ) {
 import assert from 'node:assert/strict';
 import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
-assert.equal( getChangeRoundLimit(), 3 );
+assert.equal( getChangeRoundLimit(), 5 );
 ```
 
 The evidence establishes an accepted missing-test finding, but the authority boundary permits reporting it only.

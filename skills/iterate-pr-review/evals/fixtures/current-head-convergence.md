@@ -14,7 +14,7 @@ The prior Copilot review found a test that no longer exercises the changed behav
 
 ```js
 export function getChangeRoundLimit( requestedLimit ) {
-  return requestedLimit ?? 3;
+  return requestedLimit ?? 5;
 }
 ```
 
@@ -24,8 +24,8 @@ export function getChangeRoundLimit( requestedLimit ) {
 import assert from 'node:assert/strict';
 import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
-assert.equal( getChangeRoundLimit(), 3 );
+assert.equal( getChangeRoundLimit(), 5 );
 assert.equal( getChangeRoundLimit( 2 ), 2 );
 ```
 
-The changed source replaces an inline `requestedLimit ?? 3` expression at its call site with `getChangeRoundLimit()`. The test above calls that new function for both its default and explicit-input paths.
+The changed source replaces an inline `requestedLimit ?? 5` expression at its call site with `getChangeRoundLimit()`. The test above calls that new function for both its default and explicit-input paths.

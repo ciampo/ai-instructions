@@ -13,7 +13,7 @@
 
 ```js
 export function getChangeRoundLimit( requestedLimit ) {
-  return requestedLimit ?? 3;
+  return requestedLimit ?? 5;
 }
 ```
 
@@ -23,7 +23,7 @@ export function getChangeRoundLimit( requestedLimit ) {
 import assert from 'node:assert/strict';
 import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
-assert.equal( getChangeRoundLimit(), 3 );
+assert.equal( getChangeRoundLimit(), 5 );
 ```
 
 The available feedback is correct: the test does not cover `getChangeRoundLimit( 2 )`. Use the bounded fallback to report that finding without mutating the pull request.
