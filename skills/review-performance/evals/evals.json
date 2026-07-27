@@ -25,9 +25,9 @@
       ]
     },
     {
-      "id": "measured-rendering-regression",
-      "prompt": "Audit this measured rendering regression and suggest the smallest verifiable direction without changing the source.",
-      "context": "evals/fixtures/measured-rendering-regression.md",
+      "id": "measured-rendering-budget-breach",
+      "prompt": "Audit this measured rendering budget breach and suggest the smallest verifiable direction without changing the source.",
+      "context": "evals/fixtures/measured-rendering-budget-breach.md",
       "expectedOutcome": "A read-only performance review that connects the observed budget breach to the scoped rendering path and proposes a measurement-backed next step.",
       "assertions": [
         "The review remains read-only.",

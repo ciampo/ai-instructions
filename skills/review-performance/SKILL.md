@@ -24,7 +24,7 @@ Identify costs that can materially affect users in the scoped execution context,
 6. **Inspect layout and paint behavior**: Check forced synchronous layout, read/write interleaving, large invalidation regions, expensive visual effects, layout shifts, and animations that create meaningful rendering cost in the target browsers.
 7. **Trace consumers and scale**: A pattern that is harmless once may matter in a repeated list or interactive loop. Confirm the actual fan-out instead of assuming a benchmark size.
 8. **Measure before prescribing**: Use the repository's existing tools and comparable before/after conditions. Do not recommend memoization, virtualization, lazy loading, containment, or a new dependency without evidence that it addresses the identified bottleneck and does not create a larger trade-off.
-9. **Recommend a verifiable direction**: State the cost, affected scenario, evidence, smallest plausible improvement, and the measurement that would confirm it without implementing the change.
+9. **Recommend the next verifiable direction**: For a confirmed bottleneck, state the cost, affected scenario, evidence, smallest plausible improvement, and the measurement that would confirm it without implementing the change. Otherwise, state only the missing measurement or performance contract needed to decide; do not prescribe an optimization.
 
 ## Output contract
 

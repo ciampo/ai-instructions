@@ -1,4 +1,4 @@
-# Measured rendering regression context
+# Measured rendering budget-breach context
 
 Review the following source and measurement as a read-only performance exercise.
 
