@@ -24,7 +24,7 @@ Review the public contract from the consumer's perspective and report only mater
 6. **Evaluate consistency by semantics**: Align names, callback shapes, composition, and return types when sibling semantics match. Do not force symmetry that exposes an invalid state or contradicts the underlying platform or primitive.
 7. **Assess evolution from current evidence**: Identify concrete compatibility traps, required-versus-optional mistakes, and difficult-to-reverse decisions. Missing compatibility policy is a verification gap unless supplied evidence establishes a break. Do not add escape hatches or extension points without a current use case.
 8. **Investigate uncertainty privately**: Resolve questions through installed types, source, consumers, tests, and current official documentation. If the required evidence is unavailable, report the exact verification gap rather than a severity-rated risk.
-9. **Recommend the smallest coherent alternative**: Explain the consumer impact, the established pattern, and a focused design direction without implementing it.
+9. **Recommend the smallest coherent alternative for confirmed findings**: Explain the consumer impact, the established pattern, and a focused design direction without implementing it. If no finding is confirmed, stop after the verification gaps; do not propose speculative API advice.
 
 ## Output contract
 

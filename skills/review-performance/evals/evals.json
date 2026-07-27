@@ -21,7 +21,7 @@
       "assertions": [
         "The review remains read-only.",
         "The review identifies the affected execution path without inventing realistic scale, latency, or user impact.",
-        "Unmeasured costs remain verification gaps with a repeatable measurement and receive no severity finding."
+        "Unmeasured costs remain verification gaps with a repeatable measurement, receive no severity finding, and do not produce an optimization recommendation."
       ]
     },
     {
@@ -43,7 +43,7 @@
       "assertions": [
         "The review remains read-only.",
         "The review identifies that the supplied profile and scale lack an explicit performance budget or comparable impact contract.",
-        "The review produces no severity-rated finding and requests the smallest measurement or product contract needed to evaluate impact."
+        "The review produces no severity-rated finding or optimization recommendation and requests the smallest measurement or product contract needed to evaluate impact."
       ]
     }
   ]

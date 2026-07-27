@@ -32,7 +32,7 @@
       "assertions": [
         "The review remains read-only.",
         "The review identifies the absent public contract or implementation, prop types, documentation, sibling patterns, tests, other consumers, and compatibility policy.",
-        "The review does not rate an inferred API or compatibility risk as a finding without supplied contract evidence."
+        "The review does not rate an inferred API or compatibility risk as a finding or propose a speculative API alternative without supplied contract evidence."
       ]
     }
   ]
