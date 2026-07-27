@@ -1,4 +1,4 @@
 interface:
   display_name: "Iterate PR Review"
   short_description: "Iterate PR feedback until reviews converge"
-  default_prompt: "Iterate on this pull request through up to three change rounds until Copilot and an independent self-review have no actionable feedback."
+  default_prompt: "Iterate on this pull request through up to three change rounds, then report any actionable feedback remaining after the final review-only pass."

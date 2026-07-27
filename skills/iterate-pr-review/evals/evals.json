@@ -20,6 +20,11 @@
       "id": "one-time-authored-review",
       "prompt": "Perform one adversarial self-review of my current PR and do not change anything.",
       "shouldTrigger": false
+    },
+    {
+      "id": "iterative-external-review",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [
@@ -33,7 +38,29 @@
         "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
         "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
         "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
+        "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
         "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop."
+      ]
+    },
+    {
+      "id": "review-only-authority",
+      "prompt": "Request Copilot review and independently self-review this authored PR, but do not change or publish anything.",
+      "context": "evals/fixtures/review-only-authority.md",
+      "expectedOutcome": "A current-head review result that reports actionable feedback without editing source, committing, pushing, or changing pull-request state.",
+      "assertions": [
+        "The workflow requests and assesses both reviews for one recorded head revision.",
+        "The workflow reports the accepted finding instead of editing source, committing, pushing, updating the pull request, resolving threads, posting replies, marking ready, or merging."
+      ]
+    },
+    {
+      "id": "limit-reached-final-pass",
+      "prompt": "Iterate on this authored PR with a maximum of three change rounds and report the final recap.",
+      "context": "evals/fixtures/limit-reached-final-pass.md",
+      "expectedOutcome": "A final review-only pass for the third-round head that reports actionable feedback rather than making a fourth change round.",
+      "assertions": [
+        "The workflow treats the recorded third-round head as the only review boundary for the final pass.",
+        "The workflow does not make a fourth change round when the final review-only pass finds actionable feedback.",
+        "The recap identifies the iteration-limit stop and names the remaining actionable feedback and next action."
       ]
     }
   ]

@@ -11,7 +11,7 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 
 - Treat only actions explicitly named in the invoking request as authorized. Requesting review does not authorize source edits, commits, pushes, pull-request metadata changes, thread resolution, replies, marking ready, or merging.
 - Establish a maximum number of completed change rounds before starting. Default to three unless the request specifies another limit, and reserve a final review-only pass for the head created by the last allowed change.
-- Use `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. Do not duplicate their detailed procedures here.
+- Load `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. If either is unavailable, report that missing capability and stop before consolidating findings or changing source.
 - Treat a missing, failed, or pending Copilot review as incomplete evidence, never as a clean result.
 
 ## Iterate
