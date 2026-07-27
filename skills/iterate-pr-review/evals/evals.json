@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "repeat-copilot-and-self-review",
+      "prompt": "Iterate on this PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "review-before-handoff",
+      "prompt": "Before handing off my PR, run Copilot review and independent self-review loops until the current revision has no actionable feedback.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "one-time-external-review",
+      "prompt": "Review this contributor's PR and give me copy-pasteable comments without changing anything.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "one-time-authored-review",
+      "prompt": "Perform one adversarial self-review of my current PR and do not change anything.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "iterative-external-review",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "current-head-convergence",
+      "prompt": "Iterate this authored PR through Copilot review and adversarial self-review. Apply valid feedback, commit and push approved fixes, then recap the iterations.",
+      "context": "evals/fixtures/current-head-convergence.md",
+      "expectedOutcome": "A bounded, SHA-aware loop that independently collects both review sources, applies only verified feedback, and does not claim convergence while Copilot is pending or stale.",
+      "assertions": [
+        "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
+        "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
+        "When no limit is specified, the workflow permits up to five completed change rounds and reserves a final review-only pass.",
+        "The workflow waits for the pending Copilot review for the recorded head without requesting a duplicate review or reusing the earlier-head review.",
+        "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
+        "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
+        "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
+        "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop."
+      ]
+    },
+    {
+      "id": "review-only-authority",
+      "prompt": "Read the existing Copilot review and independently self-review this authored PR, but do not change or publish anything.",
+      "context": "evals/fixtures/review-only-authority.md",
+      "expectedOutcome": "A current-head review result that reports actionable feedback without editing source, committing, pushing, or changing pull-request state.",
+      "assertions": [
+        "The workflow reuses and assesses the completed current-head reviews without requesting duplicate reviews.",
+        "The workflow reports the accepted finding instead of editing source, committing, pushing, updating the pull request, resolving threads, posting replies, marking ready, or merging."
+      ]
+    },
+    {
+      "id": "limit-reached-final-pass",
+      "prompt": "Iterate on this authored PR with a maximum of three change rounds and report the final recap.",
+      "context": "evals/fixtures/limit-reached-final-pass.md",
+      "expectedOutcome": "A final review-only pass for the third-round head that reports actionable feedback rather than making a fourth change round.",
+      "assertions": [
+        "The workflow treats the recorded third-round head as the only review boundary for the final pass.",
+        "The workflow does not make a fourth change round when the final review-only pass finds actionable feedback.",
+        "The recap identifies the iteration-limit stop and names the remaining actionable feedback and next action."
+      ]
+    },
+    {
+      "id": "fallback-without-sibling-skills",
+      "prompt": "Iterate on this authored PR through the available review tools, but the self-review and feedback-handling skills are unavailable.",
+      "context": "evals/fixtures/fallback-without-sibling-skills.md",
+      "expectedOutcome": "A read-only, source-backed fallback review that does not mutate remote review state.",
+      "assertions": [
+        "The fallback captures one current PR boundary and independently checks its diff, source, tests, feedback, and CI.",
+        "The fallback categorizes the review concern with source-backed reasoning and does not post, resolve, or otherwise mutate remote review state."
+      ]
+    },
+    {
+      "id": "local-only-fix-authority",
+      "prompt": "Address accepted PR feedback locally and run the relevant checks, but do not commit or push.",
+      "context": "evals/fixtures/local-only-fix-authority.md",
+      "expectedOutcome": "Verified local fixes that stop before a new remote-review round because the updated head is not published.",
+      "assertions": [
+        "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
+        "The workflow reports the uncommitted or unpushed local state and does not request a review for a remote head that lacks the fix."
+      ]
+    }
+  ]
+}
