@@ -23,6 +23,17 @@
         "Missing API types, consumers, or compatibility policy remain verification gaps unless a concrete public-contract failure is evidenced.",
         "Recommendations keep the public API minimal and explain the consumer impact."
       ]
+    },
+    {
+      "id": "incomplete-api-context",
+      "prompt": "Review this usage example for public API design. Do not change the source.",
+      "context": "evals/fixtures/incomplete-api-use-site.md",
+      "expectedOutcome": "A read-only scope assessment that records the absent API contract as verification gaps instead of inventing severity-rated compatibility or usability findings.",
+      "assertions": [
+        "The review remains read-only.",
+        "The review identifies the absent public contract or implementation, prop types, documentation, sibling patterns, tests, other consumers, and compatibility policy.",
+        "The review does not rate an inferred API or compatibility risk as a finding or propose a speculative API alternative without supplied contract evidence."
+      ]
     }
   ]
 }
