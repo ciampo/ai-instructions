@@ -36,6 +36,7 @@
       "assertions": [
         "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
         "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
+        "The workflow reuses a completed Copilot review for the recorded head instead of requesting a redundant review.",
         "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
         "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
         "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
@@ -61,6 +62,26 @@
         "The workflow treats the recorded third-round head as the only review boundary for the final pass.",
         "The workflow does not make a fourth change round when the final review-only pass finds actionable feedback.",
         "The recap identifies the iteration-limit stop and names the remaining actionable feedback and next action."
+      ]
+    },
+    {
+      "id": "fallback-without-sibling-skills",
+      "prompt": "Iterate on this authored PR through the available review tools, but the self-review and feedback-handling skills are unavailable.",
+      "context": "evals/fixtures/fallback-without-sibling-skills.md",
+      "expectedOutcome": "A read-only, source-backed fallback review that does not mutate remote review state.",
+      "assertions": [
+        "The fallback captures one current PR boundary and independently checks its diff, source, tests, feedback, and CI.",
+        "The fallback categorizes the review concern with source-backed reasoning and does not post, resolve, or otherwise mutate remote review state."
+      ]
+    },
+    {
+      "id": "local-only-fix-authority",
+      "prompt": "Address accepted PR feedback locally and run the relevant checks, but do not commit or push.",
+      "context": "evals/fixtures/local-only-fix-authority.md",
+      "expectedOutcome": "Verified local fixes that stop before a new remote-review round because the updated head is not published.",
+      "assertions": [
+        "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
+        "The workflow reports the uncommitted or unpushed local state and does not request a review for a remote head that lacks the fix."
       ]
     }
   ]
