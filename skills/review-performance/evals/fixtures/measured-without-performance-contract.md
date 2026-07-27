@@ -11,4 +11,4 @@ export function SearchResults( { items, query } ) {
 }
 ```
 
-`SearchResults` runs after every search keystroke with 5,000 results. A production-build profile on a supported low-end Android test device attributes 112 ms of main-thread work per keystroke to `SearchResults`. No interaction budget, comparable baseline, user-impact measurement, or documented performance contract is available.
+`SearchResults` runs after every search keystroke with 5,000 results. A production-build profile on a supported low-end Android test device attributes 112 ms of main-thread work per keystroke to `SearchResults`. No interaction budget, comparable baseline, user-impact measurement, or documented performance contract is available. No `ResultRow` source, consumer map, or relevant test is provided; this is the complete supplied context.
