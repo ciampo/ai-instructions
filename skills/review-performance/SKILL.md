@@ -17,7 +17,7 @@ Identify costs that can materially affect users in the scoped execution context,
 ## Review method
 
 1. **Inventory the evidence and path**: Identify the supplied execution path, invocation frequency, realistic data sizes and instance counts, target devices, and applicable latency, responsiveness, memory, or bundle budgets. Label absent inputs as unknown rather than supplying typical values.
-2. **Gate severity findings**: Without a measured cost or observed breach of an explicit performance contract in the supplied context, report candidate costs only as verification gaps. Do not assign a severity, estimate a latency range, or prescribe an optimization from source inspection alone.
+2. **Gate severity findings**: Require a measured cost from the supplied execution scenario and an observed breach of an explicit supplied performance contract before assigning a severity. Otherwise report candidate costs only as verification gaps. Do not assign a severity, estimate a latency range, or prescribe an optimization from source inspection alone.
 3. **Establish available evidence**: Prefer existing profiles, bundle reports, benchmarks, production build output, and reproducible traces. When measurement is unavailable, use source inspection to identify what needs profiling and state the smallest repeatable measurement that would decide it.
 4. **Inspect loading and bundle impact**: Trace new dependencies and entrypoints, duplicated code, side-effect metadata, code-splitting boundaries, media, and work moved onto critical startup paths.
 5. **Inspect runtime work**: Look for repeated expensive computation, unnecessary subscriptions or effects, avoidable renders in hot paths, unbounded collections, memory retention, main-thread blocking, and work whose cost grows poorly at realistic scale.
@@ -32,13 +32,13 @@ When `review-pr` or `review-coordinator` invokes this skill as an internal speci
 
 For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
 
-Start with the reviewed path, supplied scale, available measurements, and material unknowns. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on measured user impact and likelihood. Each finding must connect code to a measured cost or an observed breach of an explicit performance contract, plus a focused alternative and a repeatable verification method. Put unmeasured but material hypotheses under verification gaps rather than presenting them as confirmed regressions.
+Start with the reviewed path, supplied scale, available measurements, and material unknowns. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on measured user impact and likelihood. Each finding must connect code to a measured cost in the supplied execution scenario and an observed breach of an explicit supplied performance contract, plus a focused alternative and a repeatable verification method. Put unmeasured or contract-free hypotheses under verification gaps rather than presenting them as confirmed regressions.
 
 No findings is a valid result. Unmeasured costs remain hypotheses and receive no severity-rated finding. Do not report generic best practices or micro-optimizations without a plausible, scoped impact.
 
 ## Completion criteria
 
 - The relevant execution path, consumers, and realistic scale were inspected.
-- Confirmed findings are backed by a measured cost or an observed breach of an explicit performance contract; unmeasured costs remain hypotheses.
+- Confirmed findings are backed by a measured cost in the supplied realistic execution scenario and an observed breach of an explicit supplied performance contract; unmeasured or contract-free costs remain hypotheses.
 - Measurement gaps and assumptions are explicit.
 - Source and remote state remain unchanged.

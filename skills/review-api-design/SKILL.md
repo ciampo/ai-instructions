@@ -38,7 +38,7 @@ No findings is a valid result. Record material verification gaps separately from
 
 ## Completion criteria
 
-- The full scoped public surface and meaningful consumers were inspected.
-- Sibling and upstream comparisons account for semantic differences.
+- The full scoped public surface and meaningful consumers were inspected, or their absence is recorded as a verification gap.
+- Available sibling and upstream comparisons account for semantic differences; unavailable comparisons are recorded as verification gaps.
 - Findings describe concrete consumer or compatibility impact.
 - Source and remote state remain unchanged.

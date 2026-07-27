@@ -34,6 +34,17 @@
         "The review reports a severity-rated finding that cites the supplied 112 ms result, 50 ms budget, and customer search keystroke interaction.",
         "The recommendation includes a focused alternative and repeatable before-and-after verification."
       ]
+    },
+    {
+      "id": "measured-without-performance-contract",
+      "prompt": "Audit this measured rendering cost and suggest improvements without changing the source.",
+      "context": "evals/fixtures/measured-without-performance-contract.md",
+      "expectedOutcome": "A read-only performance review that treats a measured cost without a supplied performance contract as a verification gap, not a severity-rated finding.",
+      "assertions": [
+        "The review remains read-only.",
+        "The review identifies that the supplied profile and scale lack an explicit performance budget or comparable impact contract.",
+        "The review produces no severity-rated finding and requests the smallest measurement or product contract needed to evaluate impact."
+      ]
     }
   ]
 }
