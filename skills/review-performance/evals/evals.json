@@ -43,7 +43,7 @@
       "assertions": [
         "The review remains read-only.",
         "The review identifies that the supplied profile and scale lack an explicit performance budget or comparable impact contract.",
-        "The review produces no severity-rated finding or optimization recommendation and requests the smallest measurement or product contract needed to evaluate impact."
+        "The review produces no severity-rated finding or optimization recommendation and requests the missing explicit performance budget or comparable impact contract needed to evaluate the measured cost."
       ]
     }
   ]
