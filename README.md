@@ -43,6 +43,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [review-test-quality](skills/review-test-quality/SKILL.md) | test strategy, behavioral testing, UI tests, or verification | Read-only, user-observable test-quality review |
 | [review-internationalization](skills/review-internationalization/SKILL.md) | i18n, localization, translation, locale, or RTL | Read-only, locale and translation review |
 | [review-documentation](skills/review-documentation/SKILL.md) | documentation, examples, JSDoc, comments, or developer experience | Read-only, source-verified documentation review |
+| [review-simplicity](skills/review-simplicity/SKILL.md) | simplification, code removal, code bloat, duplication, or overengineering | Read-only, deletion-first implementation review |
 | [review-coordinator](skills/review-coordinator/SKILL.md) | panel, subagent, coordinated, or multi-specialist PR review | One rechecked response from material specialist handoffs |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with a no-subagent fallback |
 | [iterate-pr-review](skills/iterate-pr-review/SKILL.md) | repeated Copilot and self-review loop | Bounded authored-PR review iterations with an evidence-based recap |
@@ -59,7 +60,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 
 ### Specialist reviews
 
-Accessibility, API design, compatibility, performance, security, test quality, internationalization, and documentation reviews are direct skills. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) is an MVP workflow: it assigns only material lanes, supports host-provided subagents when available, and rechecks one final response. The repository still bundles no custom agents.
+Accessibility, API design, compatibility, performance, security, test quality, internationalization, documentation, and simplicity reviews are direct skills. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) is an MVP workflow: it assigns only material lanes, supports host-provided subagents when available, and rechecks one final response. The repository still bundles no custom agents.
 
 ## Conventions
 

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "deletion-first-review",
+      "prompt": "Can this implementation be much simpler? Look for code we can remove instead of adding more machinery.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "implementation-request",
+      "prompt": "Simplify this module, update its tests, and commit the refactor.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "performance-only-review",
+      "prompt": "Profile this list and review whether it meets our rendering budget.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "remove-duplicated-derived-state",
+      "prompt": "Perform a read-only simplification review of this change. Focus on achieving the same behavior with less code.",
+      "context": "evals/fixtures/derived-product-filter.md",
+      "expectedOutcome": "A deletion-first review that replaces duplicated synchronized state with the existing shared filter while preserving the stated UI contract.",
+      "assertions": [
+        "The review identifies the existing filterProducts function as the direct path and names the new state, effect, and normalization helper that can be removed.",
+        "The proposed alternative preserves synchronous filtering, case-insensitive matching, and the required live result count.",
+        "The review does not add a new abstraction, dependency, or speculative memoization layer.",
+        "Any unproven requirement or runtime claim remains a verification gap rather than justification for deletion."
+      ]
+    }
+  ]
+}

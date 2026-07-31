@@ -27,6 +27,7 @@ Coordinate independent specialist investigations without replacing the core `rev
    - `review-test-quality` when behavior, regressions, UI semantics, mocks, or verification evidence are material.
    - `review-internationalization` for localized text, formatting, pluralization, or directional UI.
    - `review-documentation` when user or developer documentation, examples, migration guidance, or meaningful comments change.
+   - `review-simplicity` for an explicitly requested deletion-first pass or material avoidable state, indirection, dependencies, duplication, or speculative abstraction.
 3. **Assign bounded, independent handoffs**: Ask each specialist to inspect only its lane and return the repository, base revision, head revision, target audience, and scope checked unchanged; confirmed candidate findings with exact evidence and impact; verification gaps; and an explicit no-findings result. Do not give specialists another lane's conclusions before their first pass.
 4. **Hold an evidence review, not a vote**: Group duplicate or conflicting candidates. For a disputed, cross-domain, or `[critical]`/`[major]` candidate, request a narrowly scoped recheck from the relevant specialist or inspect the source directly. Agreement alone never confirms a finding.
 5. **Synthesize one response**: Recheck every retained candidate against the pinned diff, consumers, repository policy, and existing feedback. Remove duplicates, normalize severity to `[critical]`, `[major]`, `[minor]`, or `[nit]`, and keep unproven concerns as verification gaps.
