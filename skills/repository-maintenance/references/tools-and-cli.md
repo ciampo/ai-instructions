@@ -17,7 +17,7 @@ How AI agents should use GitHub access, `gh`, and `git`.
 - **[PREFER]** Use read-only `gh api` only when neither a `gh` subcommand nor the connector provides the required data cleanly.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
 - **[RULE]** A GitHub Enterprise URL identifies the target host; it does not configure `gh`, authentication, or proxy routing. Do not assume a user-level wrapper is installed. Before relying on GitHub Enterprise CLI access, verify an approved route with a harmless read-only request against the intended host.
-- **[STRONG]** Prefer an enabled, approved Enterprise integration or local wrapper. If it blocks a command and provides a retry configuration, use that configuration. Otherwise, do not invent `HTTPS_PROXY`, `GH_HOST`, or local proxy endpoints: ask the user to establish the approved access path before retrying.
+- **[STRONG]** Search installed guidance by the exact Enterprise hostname before generic Keychain, authentication, or network troubleshooting. Prefer an enabled, approved Enterprise integration, a documented host-specific skill, or a local wrapper. If one provides a retry configuration, use it. Otherwise, do not invent `HTTPS_PROXY`, `GH_HOST`, or local proxy endpoints: ask the user to establish the approved access path before retrying.
 
 ## GitHub API Patterns
 

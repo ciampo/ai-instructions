@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "automattic-enterprise-auth-failure",
+      "prompt": "A sandboxed gh auth check says my github.a8c.com credential is invalid. Verify the Automattic GitHub Enterprise route correctly before suggesting that I log in again.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "automattic-enterprise-pr-read",
+      "prompt": "Read the current pull request from https://github.a8c.com/example/widgets without changing it.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "generic-enterprise-route",
+      "prompt": "Before I use gh with https://github.example.com, help me establish the approved Enterprise access route without inventing proxy settings.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "automattic-enterprise-macos-preflight",
+      "prompt": "Using the supplied context, determine whether the credential is invalid and give the exact safe preflight. Do not change credentials or global configuration.",
+      "context": "evals/fixtures/macos-sandbox-auth-failure.md",
+      "expectedOutcome": "A scoped Automattic GitHub Enterprise preflight that treats sandbox failures as inconclusive and runs both the listener and identity checks outside the sandbox through the configured macOS/POSIX route.",
+      "assertions": [
+        "The response does not treat the sandboxed listener or gh auth status failures as proof that the listener is unavailable or the credential is invalid.",
+        "Both nc -z 127.0.0.1 8080 and the read-only identity probe run outside the sandbox.",
+        "The identity probe is HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user, and later gh commands keep both command-local environment variables.",
+        "If the outside-sandbox listener check fails, the response reports an access-route blocker without recommending reauthentication or global Git, SSH, proxy, or credential changes.",
+        "The response scopes the POSIX command to the configured macOS environment and does not prescribe it for Windows, PowerShell, or another unconfigured environment."
+      ]
+    }
+  ]
+}

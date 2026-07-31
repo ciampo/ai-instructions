@@ -33,6 +33,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | --- | --- | --- |
 | [engineering-standards](skills/engineering-standards/SKILL.md) | implementation or code review | Routes to only the relevant accessibility, design-system, language, i18n, security, performance, naming, or error-handling reference |
 | [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
+| [automattic-github-enterprise](skills/automattic-github-enterprise/SKILL.md) | `github.a8c.com` or Automattic GitHub Enterprise access | Applies the approved macOS/POSIX route and avoids sandbox authentication false negatives |
 | [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
 | [review-accessibility](skills/review-accessibility/SKILL.md) | accessibility, WCAG, ARIA, keyboard, focus, or screen-reader audit | Read-only, source-verified accessibility review |
 | [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or public-contract compatibility | Read-only, consumer-focused API review |
