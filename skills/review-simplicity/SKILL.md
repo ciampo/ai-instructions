@@ -1,6 +1,6 @@
 ---
 name: review-simplicity
-description: Perform a read-only, deletion-first review of an existing implementation or proposed change for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction while preserving required behavior and contracts. Use when asked whether code can be simpler, smaller, less overengineered, or removed; for code-bloat or complexity review; or as a targeted `review-pr` or `review-coordinator` specialist pass. Do not use when the user asks to implement the simplification. Never edit source, commit, or write remotely.
+description: Perform a read-only, deletion-first review of an existing implementation or proposed change for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction while preserving required behavior and contracts. Always use as a baseline pass within `review-pr`, `review-coordinator`, and `self-review-pr`, even when simplification was not explicitly requested; also use for direct code-bloat, overengineering, code-removal, or complexity review. Do not use when the user asks to implement the simplification. Never edit source, commit, or write remotely.
 ---
 
 # Review Simplicity
@@ -25,7 +25,7 @@ Find the smallest coherent way to achieve the required outcome. Prefer deleting 
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr`, `review-coordinator`, or `self-review-pr` invokes this mandatory baseline skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. For each finding, describe the unnecessary machinery, its concrete cost, the smaller alternative, what can be removed, and the evidence that required behavior remains intact. Use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when the impact supports that severity.
 

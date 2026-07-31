@@ -7,6 +7,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "ordinary-pr-review",
+      "prompt": "Review this pull request for correctness and test coverage.",
+      "shouldTrigger": true
+    },
+    {
       "id": "implementation-request",
       "prompt": "Simplify this module, update its tests, and commit the refactor.",
       "shouldTrigger": false

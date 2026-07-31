@@ -11,13 +11,14 @@ That decision does not rule out a distinct coordination job. Complex pull reques
 
 ## Decision
 
-Distribute `review-coordinator` as an optional direct-skill MVP. It uses `review-pr` as the canonical snapshot, core-review, severity, deduplication, and delivery workflow; it assigns only materially relevant direct specialist skills to bounded independent handoffs.
+Distribute `review-coordinator` as an optional direct-skill MVP. It uses `review-pr` as the canonical snapshot, core-review, severity, deduplication, and delivery workflow; it always includes the `review-simplicity` baseline, then assigns only materially relevant additional specialist skills to bounded independent handoffs.
 
 The coordinator may use host-provided subagents in parallel. Where that capability is unavailable, it performs the same handoffs sequentially. It is not a custom-agent definition and does not introduce adapter-specific model routing.
 
 The specialist set is:
 
-- accessibility, public API design, compatibility, performance, security, test quality, internationalization, and documentation;
+- simplicity as a mandatory baseline for every review;
+- accessibility, public API design, compatibility, performance, security, test quality, internationalization, and documentation when material;
 - dependency-specific security work remains with `audit-dependency-update`.
 
 The coordinator rechecks every candidate against the pinned diff, consumers, repository policy, and existing review state. It treats agreement as a prompt to verify, never as proof. A single final response contains only confirmed, deduplicated findings; uncertainty stays in verification gaps.
@@ -25,7 +26,7 @@ The coordinator rechecks every candidate against the pinned diff, consumers, rep
 ## Consequences
 
 - `review-pr` remains the default for ordinary PRs and products without subagent support.
-- `review-coordinator` is appropriate only when a user requests a panel or two or more independent specialist lanes are material.
+- `review-coordinator` is appropriate only when a user requests a panel or two or more independent additional specialist lanes are material; the mandatory simplicity baseline does not trigger escalation.
 - Specialists retain one canonical evidence and output contract in their direct skills; the coordinator does not duplicate their methods in custom-agent prompts.
 - The MVP must be assessed on representative PRs for confirmed findings, false positives, duplicates, wall time, token use, and whether the synthesized review improves author actionability.
 - No custom-agent output or product-specific model configuration is distributed.

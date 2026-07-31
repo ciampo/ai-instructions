@@ -25,6 +25,7 @@
       "expectedOutcome": "One rechecked review response that uses independent specialist handoffs without treating agreement as proof.",
       "assertions": [
         "The final response states one fixture repository, base revision, head revision, and target audience before its deduplicated findings.",
+        "The coordinator includes the mandatory review-simplicity baseline in addition to the selected material specialist lanes.",
         "The final response deduplicates evidence and keeps unproven concerns as verification gaps.",
         "The response does not expose a panel transcript or vote count."
       ]
