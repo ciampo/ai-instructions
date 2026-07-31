@@ -23,7 +23,7 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 
 | File | What it covers |
 | --- | --- |
-| [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
+| [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, delivery boundaries, and critical host-specific access preflights that apply in every session |
 
 The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost.
 

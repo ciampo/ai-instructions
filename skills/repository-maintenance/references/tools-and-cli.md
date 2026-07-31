@@ -17,7 +17,13 @@ How AI agents should use GitHub access, `gh`, and `git`.
 - **[PREFER]** Use read-only `gh api` only when neither a `gh` subcommand nor the connector provides the required data cleanly.
 - **[RULE]** **Do NOT use `gh api` with `-X`/`--method` flags** (POST, PUT, PATCH, DELETE) without asking first. For mutative operations, prefer the corresponding `gh` subcommand (`gh issue create`, `gh pr create`, `gh pr merge`, etc.) -- these surface in permission prompts with clear intent, making them easier to review.
 - **[RULE]** A GitHub Enterprise URL identifies the target host; it does not configure `gh`, authentication, or proxy routing. Do not assume a user-level wrapper is installed. Before relying on GitHub Enterprise CLI access, verify an approved route with a harmless read-only request against the intended host.
-- **[STRONG]** Prefer an enabled, approved Enterprise integration or local wrapper. If it blocks a command and provides a retry configuration, use that configuration. Otherwise, do not invent `HTTPS_PROXY`, `GH_HOST`, or local proxy endpoints: ask the user to establish the approved access path before retrying.
+- **[STRONG]** Prefer an enabled, approved Enterprise integration, a documented host-specific route, or a local wrapper. If one provides a retry configuration, use that configuration. Otherwise, do not invent `HTTPS_PROXY`, `GH_HOST`, or local proxy endpoints: ask the user to establish the approved access path before retrying.
+
+### Automattic GitHub Enterprise
+
+- **[RULE]** For `github.a8c.com`, first verify that the local AutoProxy listener is available at `127.0.0.1:8080`, for example with `nc -z 127.0.0.1 8080`. Apply `HTTPS_PROXY=socks5://127.0.0.1:8080` and `GH_HOST=github.a8c.com` directly to every `gh` invocation; an Enterprise URL does not set either value.
+- **[RULE]** Before diagnosing authentication, run the harmless read-only probe `HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user` outside the sandbox. Do not conclude that the credential is invalid or recommend `gh auth login` or `gh auth logout` from a sandboxed `gh auth status` result alone.
+- **[STRONG]** Search guidance by the exact hostname before falling back to generic Keychain, authentication, or network troubleshooting. If the listener or approved outside-sandbox execution is unavailable, report that access-route blocker without changing global Git, SSH, proxy, or credential configuration.
 
 ## GitHub API Patterns
 
