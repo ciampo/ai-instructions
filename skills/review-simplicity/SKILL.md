@@ -25,7 +25,7 @@ Find the smallest coherent way to achieve the required outcome. Prefer deleting 
 
 ## Output contract
 
-When `review-pr`, `review-coordinator`, or `self-review-pr` invokes this mandatory baseline skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr`, `review-coordinator`, `self-review-pr`, or the `iterate-pr-review` fallback invokes this mandatory baseline skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. For each finding, describe the unnecessary machinery, its concrete cost, the smaller alternative, what can be removed, and the evidence that required behavior remains intact. Use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when the impact supports that severity.
 

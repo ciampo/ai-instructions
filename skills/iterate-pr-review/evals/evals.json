@@ -72,7 +72,7 @@
       "expectedOutcome": "A read-only, source-backed fallback review that does not mutate remote review state.",
       "assertions": [
         "The fallback captures one current PR boundary and independently checks its diff, source, tests, feedback, and CI.",
-        "The fallback applies the mandatory deletion-first review-simplicity baseline and permits an explicit no-findings result even when sibling workflow skills are unavailable.",
+        "The fallback applies the mandatory deletion-first review-simplicity baseline through an internal handoff and permits an explicit no-findings result even when sibling workflow skills are unavailable.",
         "The fallback categorizes the review concern with source-backed reasoning and does not post, resolve, or otherwise mutate remote review state."
       ]
     },
