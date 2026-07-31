@@ -59,12 +59,13 @@ To avoid noise, do not raise comments on:
 
 1. **Accessibility**: semantic HTML, accessible names, keyboard behavior, focus management, announcements, contrast, motion, zoom, and pointer targets. Use `review-accessibility` for the deeper method when UI or interaction changes make this domain material.
 2. **Consistency**: Does this follow established patterns across sibling modules and the broader codebase?
-3. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive? Use `review-api-design` when a public API is added or materially changed.
-4. **Test adequacy**: Do tests exist? Do they test the right behavior? Would they fail on the bug they claim to fix? Would they pass against the previous (broken) code?
-5. **Blast radius**: What else in the codebase consumes the modified API/utility? Are those consumers affected?
-6. **Build, dependency, and performance correctness**: Missing or unused dependencies, `sideEffects` configuration, tree-shaking implications, critical-path loading, repeated runtime work, and CSS module versus global CSS distinctions. Use `review-performance` only when bundle, runtime, rendering, layout, or scale risks are material.
-7. **Documentation**: CHANGELOGs, JSDoc, README updates, Storybook stories.
-8. **Scope discipline**: Are there unrelated changes that should be in separate PRs?
+3. **Simplicity**: Does the outcome require all of the new state, branches, wrappers, dependencies, and abstractions? Always use `review-simplicity` for a dedicated deletion-first baseline pass.
+4. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive? Use `review-api-design` when a public API is added or materially changed.
+5. **Test adequacy**: Do tests exist? Do they test the right behavior? Would they fail on the bug they claim to fix? Would they pass against the previous (broken) code?
+6. **Blast radius**: What else in the codebase consumes the modified API/utility? Are those consumers affected?
+7. **Build, dependency, and performance correctness**: Missing or unused dependencies, `sideEffects` configuration, tree-shaking implications, critical-path loading, repeated runtime work, and CSS module versus global CSS distinctions. Use `review-performance` only when bundle, runtime, rendering, layout, or scale risks are material.
+8. **Documentation**: CHANGELOGs, JSDoc, README updates, Storybook stories.
+9. **Scope discipline**: Are there unrelated changes that should be in separate PRs?
 
 Specialist skills deepen a relevant domain; they do not replace the complete core review. The main workflow verifies and deduplicates their findings before delivery.
 

@@ -3,7 +3,7 @@
 ## Core review
 
 - Read the full merge-base diff, every modified source file, and relevant consumers before forming findings.
-- Cover accessibility, consistency, API correctness, test adequacy, blast radius, build and dependency correctness, documentation, and scope before selecting specialist lanes.
+- Cover accessibility, consistency, simplicity, API correctness, test adequacy, blast radius, build and dependency correctness, documentation, and scope. Always complete the `review-simplicity` baseline before selecting additional specialist lanes.
 - Treat specialist findings as inputs: verify and deduplicate them before delivery.
 - Use `[critical]`, `[major]`, `[minor]`, and `[nit]` only for confirmed evidence-backed findings. Material uncertainty belongs in verification gaps.
 

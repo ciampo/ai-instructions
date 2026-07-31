@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "deletion-first-review",
+      "prompt": "Can this implementation be much simpler? Look for code we can remove instead of adding more machinery.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "ordinary-pr-review",
+      "prompt": "Review this pull request for correctness and test coverage.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "implementation-request",
+      "prompt": "Simplify this module, update its tests, and commit the refactor.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "performance-only-review",
+      "prompt": "Profile this list and review whether it meets our rendering budget.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "remove-duplicated-derived-state",
+      "prompt": "Perform a read-only simplification review of this change. Focus on achieving the same behavior with less code.",
+      "context": "evals/fixtures/derived-product-filter.md",
+      "expectedOutcome": "A deletion-first review that replaces duplicated synchronized state with the existing shared filter while preserving the stated UI contract.",
+      "assertions": [
+        "The review identifies the existing filterProducts function as the direct path and names the new state, effect, and normalization helper that can be removed.",
+        "The proposed alternative preserves synchronous filtering, case-insensitive matching, and the required live result count.",
+        "The review does not add a new abstraction, dependency, or speculative memoization layer.",
+        "Any unproven requirement or runtime claim remains a verification gap rather than justification for deletion."
+      ]
+    },
+    {
+      "id": "retain-minimal-public-component",
+      "prompt": "Perform the mandatory read-only simplicity pass and report whether this implementation can be materially simplified.",
+      "context": "evals/fixtures/minimal-save-button.md",
+      "expectedOutcome": "An explicit no-findings result that preserves the minimal implementation and does not invent an optional refactor.",
+      "assertions": [
+        "The review reports no material simplification finding because every part of the implementation serves a stated public contract.",
+        "The review does not propose deleting the component, changing its public API, replacing it with a new abstraction, or moving its behavior into a helper.",
+        "The review distinguishes a shorter aesthetic rewrite from a material deletion opportunity.",
+        "The review records no unsupported runtime, accessibility, or consumer claims."
+      ]
+    }
+  ]
+}

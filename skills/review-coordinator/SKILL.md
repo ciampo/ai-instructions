@@ -1,6 +1,6 @@
 ---
 name: review-coordinator
-description: Coordinate a read-only panel review of a complex pull request by assigning independent, materially relevant specialist investigations and synthesizing one rechecked response. Use when a user explicitly asks for a panel, subagent, coordinated, or multi-specialist review, or when a complex PR has two or more independent specialist lanes. Keep review-pr as the default for ordinary PRs. Never edit source, commit, or write remotely.
+description: Coordinate a read-only panel review of a complex pull request with a mandatory deletion-first simplicity pass plus independent, materially relevant specialist investigations, then synthesize one rechecked response. Use when a user explicitly asks for a panel, subagent, coordinated, or multi-specialist review, or when a complex PR has two or more independent additional specialist lanes. Keep review-pr as the default for ordinary PRs. Never edit source, commit, or write remotely.
 ---
 
 # Review Coordinator
@@ -10,14 +10,14 @@ Coordinate independent specialist investigations without replacing the core `rev
 ## Authority and scope
 
 - Keep the review read-only. For direct remote-PR use, follow the bundled [snapshot procedure](references/pr-snapshot.md) and [core-review and delivery reference](references/code-review.md) before assigning work.
-- Use this workflow when a user explicitly requests a panel or when at least two specialist lanes are materially independent. An explicit request with fewer than two material lanes may use only the applicable lane; do not invent filler work to form a panel.
+- Use this workflow when a user explicitly requests a panel or when at least two additional specialist lanes are materially independent. The mandatory simplicity baseline does not count toward that threshold. An explicit request with fewer than two material additional lanes may use only the applicable lanes; do not invent filler work to form a panel.
 - Use host subagents in parallel when available. Otherwise run the same bounded handoffs sequentially and disclose that fallback only when it affects the requested outcome.
 - Do not modify source, tests, generated files, pull-request metadata, comments, or remote state.
 
 ## Coordinate the review
 
 1. **Capture one immutable review boundary**: Record the repository, base and head revisions, changed files, existing review state, and target audience. Every specialist receives this same snapshot.
-2. **Establish the core review result**: When `review-pr` invokes the coordinator, use its completed core-review result and pinned snapshot; do not re-enter `review-pr` or repeat its delivery steps. When invoked directly, follow the bundled snapshot and core-review references without re-entering coordinator routing. In either path, cover correctness, scope, consumers, accessibility baseline, dependencies, and documentation baseline before selecting only material specialist lanes:
+2. **Establish the core and simplicity results**: When `review-pr` invokes the coordinator, use its completed core-review result, `review-simplicity` handoff, and pinned snapshot; do not re-enter `review-pr` or repeat either pass. When invoked directly, follow the bundled snapshot and core-review references, then assign `review-simplicity` before selecting only material additional specialist lanes:
    - `review-accessibility` for substantial UI or interaction risk.
    - `review-api-design` for public API shape and consumer ergonomics.
    - `review-compatibility` for supported versions, upgrades, persisted state, migrations, wire formats, or integrations.
@@ -40,7 +40,7 @@ A retained finding must include an exact location when available, concrete impac
 
 ## Completion criteria
 
-- All specialists reviewed one pinned boundary and only material lanes.
+- The mandatory simplicity pass and all selected material specialists reviewed one pinned boundary.
 - The final response is a single, deduplicated, evidence-backed review.
 - The result remains useful on hosts without subagent support.
 - Source and remote state remain unchanged.

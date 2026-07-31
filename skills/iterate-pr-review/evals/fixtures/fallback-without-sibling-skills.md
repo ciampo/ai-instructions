@@ -6,7 +6,7 @@
 - Copilot review for the current head: complete; it reports that the explicit-limit test is missing.
 - PR comments and review threads: no other feedback.
 - CI: the current-head test suite passed.
-- Capability gap: `self-review-pr` and `address-pr-feedback` are unavailable.
+- Capability gap: `self-review-pr` and `address-pr-feedback` are unavailable; `review-simplicity` remains available.
 - Authority: read-only review. Do not edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge.
 
 ## Current-head source
