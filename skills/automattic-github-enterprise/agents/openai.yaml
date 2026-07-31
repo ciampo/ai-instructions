@@ -1,0 +1,4 @@
+interface:
+  display_name: "Automattic GitHub Enterprise"
+  short_description: "Use the approved Automattic GitHub route"
+  default_prompt: "Use $automattic-github-enterprise to verify and access github.a8c.com safely before diagnosing authentication."

@@ -7,11 +7,6 @@
       "shouldTrigger": true
     },
     {
-      "id": "verify-automattic-enterprise-auth",
-      "prompt": "A sandboxed gh auth check says my github.a8c.com credential is invalid. Verify the Automattic GitHub Enterprise route correctly before suggesting that I log in again.",
-      "shouldTrigger": true
-    },
-    {
       "id": "summarize-enterprise-access-guidance",
       "prompt": "Summarize this GitHub Enterprise CLI access guidance in three short paragraphs for a nontechnical reader. Do not inspect a repository, run commands, or configure anything.",
       "shouldTrigger": false
@@ -28,18 +23,6 @@
         "The response verifies an approved access route with a harmless request before depending on Enterprise CLI access.",
         "If Enterprise access is unavailable, the response follows an offered retry configuration or asks the user to establish an approved route rather than inventing proxy, host, or credential settings.",
         "The response remains read-only and does not edit source, commit, push, or modify a pull request."
-      ]
-    },
-    {
-      "id": "automattic-github-enterprise-auth-route",
-      "prompt": "Using the supplied context, determine whether the GitHub Enterprise credential is invalid and give the exact safe preflight. Do not change credentials or global configuration.",
-      "context": "evals/fixtures/automattic-github-enterprise-auth-route.md",
-      "expectedOutcome": "An Automattic GitHub Enterprise preflight that treats the sandbox failure as inconclusive, verifies the local AutoProxy listener, and checks the credential through the documented command-local route outside the sandbox.",
-      "assertions": [
-        "The response does not treat the sandboxed gh auth status failure as proof that the credential is invalid.",
-        "The preflight verifies that the local AutoProxy listener is available at 127.0.0.1:8080 before attempting Enterprise access.",
-        "The read-only identity probe runs outside the sandbox as HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user.",
-        "If the listener or approved outside-sandbox execution is unavailable, the response reports an access-route blocker without recommending reauthentication or global Git, SSH, proxy, or credential changes."
       ]
     }
   ]

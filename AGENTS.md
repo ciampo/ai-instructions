@@ -1,6 +1,6 @@
 # Core Instructions
 
-Universal preferences and boundaries for every session. Detailed technology and workflow guidance lives in discoverable skills.
+Universal preferences and boundaries for every session. Technology and workflow guidance lives in discoverable skills.
 
 ## Communication
 
@@ -52,9 +52,3 @@ Universal preferences and boundaries for every session. Detailed technology and 
 - **[RULE]** Use `--force-with-lease`, never `--force`, when an explicitly authorized force push is required.
 - **[RULE]** Open pull requests as drafts unless asked otherwise.
 - **[STRONG]** Base stacked pull requests on the preceding branch and describe only their own diff.
-
-## Automattic GitHub Enterprise
-
-- **[RULE]** For `github.a8c.com`, apply the approved route to each `gh` command: `HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh ...`. Do not assume that an Enterprise URL or undiscovered wrapper configures it.
-- **[RULE]** Before diagnosing authentication, verify that the local proxy listener is available, then run `HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user` outside the sandbox. A sandboxed `gh auth status` failure alone does not establish that the credential is invalid.
-- **[STRONG]** If the listener or approved outside-sandbox execution is unavailable, report the access-route blocker. Do not recommend reauthentication or global Git/SSH changes based only on a sandboxed failure.
