@@ -14,6 +14,7 @@ const timeoutMs = 90_000;
 const model = 'gpt-5.6-sol';
 const reasoningEffort = 'xhigh';
 const serviceTier = 'priority';
+const sourceCodexHome = process.env.CODEX_HOME ?? path.join( os.homedir(), '.codex' );
 const temporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
 ];
@@ -47,9 +48,18 @@ function runGit( args ) {
 	return result.stdout.trim();
 }
 
-async function loadCases() {
-	const skillNames = ( await fs.readdir( path.join( repositoryRoot, 'skills' ) ) )
+function targetSkillNames() {
+	return runGit( [
+		'ls-tree',
+		'--name-only',
+		`${ targetRevision }:skills`,
+	] )
+		.split( '\n' )
+		.filter( Boolean )
 		.sort();
+}
+
+async function loadCases( skillNames ) {
 	const cases = [];
 
 	for ( const skill of skillNames ) {
@@ -86,6 +96,13 @@ async function collectProvenance( skillNames ) {
 		throw new Error( 'The checkout skill tree has tracked or untracked changes.' );
 	}
 
+	const targetTree = runGit( [ 'rev-parse', `${ targetRevision }:skills` ] );
+	const checkoutTree = runGit( [ 'rev-parse', 'HEAD:skills' ] );
+
+	if ( targetTree !== checkoutTree ) {
+		throw new Error( 'The checkout skill tree does not match the target revision.' );
+	}
+
 	const installedRoot = path.join( os.homedir(), '.agents', 'skills' );
 	const skills = [];
 
@@ -118,10 +135,24 @@ async function collectProvenance( skillNames ) {
 	}
 
 	return {
-		method: 'Each user-level skill resolved to this checkout, whose complete skills tree matched the target revision.',
+		method: 'The complete checkout skills tree matched the target revision, and each user-level skill resolved to this checkout.',
 		installedRoot: '~/.agents/skills',
+		targetTree,
+		checkoutTree,
 		skills,
 	};
+}
+
+async function createIsolatedCodexHome() {
+	const isolatedCodexHome = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-codex-home-' )
+	);
+	const sourceAuthPath = path.join( sourceCodexHome, 'auth.json' );
+	const isolatedAuthPath = path.join( isolatedCodexHome, 'auth.json' );
+
+	await fs.symlink( sourceAuthPath, isolatedAuthPath );
+
+	return isolatedCodexHome;
 }
 
 function sanitize( value ) {
@@ -194,42 +225,17 @@ function loadedSkillNames( command, aggregatedOutput, exitCode ) {
 	);
 }
 
-function descendantProcessIds( parentPid, seen = new Set() ) {
-	const result = spawnSync( 'pgrep', [ '-P', String( parentPid ) ], {
-		encoding: 'utf8',
-	} );
-	const childPids = result.status === 0
-		? result.stdout.trim().split( '\n' ).map( Number ).filter( Boolean )
-		: [];
-	const descendants = [];
-
-	for ( const childPid of childPids ) {
-		if ( seen.has( childPid ) ) {
-			continue;
-		}
-
-		seen.add( childPid );
-		descendants.push( ...descendantProcessIds( childPid, seen ), childPid );
-	}
-
-	return descendants;
-}
-
-function signalProcessTree( child, signal ) {
-	const processIds = [ ...descendantProcessIds( child.pid ), child.pid ];
-
-	for ( const processId of processIds ) {
-		try {
-			process.kill( processId, signal );
-		} catch ( error ) {
-			if ( error.code !== 'ESRCH' ) {
-				throw error;
-			}
+function signalProcessGroup( processGroupId, signal ) {
+	try {
+		process.kill( -processGroupId, signal );
+	} catch ( error ) {
+		if ( error.code !== 'ESRCH' ) {
+			throw error;
 		}
 	}
 }
 
-async function runAttempt( testCase, attempt, ordinal ) {
+async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
 	const workspace = await fs.mkdtemp(
 		path.join( os.tmpdir(), 'ai-instructions-trigger-' )
 	);
@@ -241,7 +247,7 @@ async function runAttempt( testCase, attempt, ordinal ) {
 	let timedOut = false;
 	let intentionallyStopped = false;
 	let stdoutBuffer = '';
-	let killTimer;
+	let stopPromise;
 
 	const args = [
 		'exec',
@@ -289,14 +295,20 @@ async function runAttempt( testCase, attempt, ordinal ) {
 
 	const child = spawn( 'codex', args, {
 		cwd: workspace,
+		detached: true,
+		env: {
+			...process.env,
+			CODEX_HOME: isolatedCodexHome,
+		},
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
 
 	function requestStop() {
-		signalProcessTree( child, 'SIGTERM' );
-		killTimer ||= setTimeout( () => {
-			signalProcessTree( child, 'SIGKILL' );
-		}, 2_000 );
+		stopPromise ||= ( async () => {
+			signalProcessGroup( child.pid, 'SIGTERM' );
+			await new Promise( ( resolve ) => setTimeout( resolve, 2_000 ) );
+			signalProcessGroup( child.pid, 'SIGKILL' );
+		} )();
 	}
 
 	function inspectLine( line ) {
@@ -375,7 +387,7 @@ async function runAttempt( testCase, attempt, ordinal ) {
 	} );
 
 	clearTimeout( timeout );
-	clearTimeout( killTimer );
+	await stopPromise;
 	if ( stdoutBuffer ) {
 		inspectLine( stdoutBuffer );
 	}
@@ -401,13 +413,18 @@ async function runAttempt( testCase, attempt, ordinal ) {
 	};
 }
 
-async function writeOutput( campaign ) {
-	await fs.writeFile( outputPath, `${ JSON.stringify( campaign, null, 2 ) }\n` );
+let outputWrite = Promise.resolve();
+
+function writeOutput( campaign ) {
+	const snapshot = `${ JSON.stringify( campaign, null, 2 ) }\n`;
+	outputWrite = outputWrite.then( () => fs.writeFile( outputPath, snapshot ) );
+	return outputWrite;
 }
 
 verifyClassifier();
 
-const cases = await loadCases();
+const skillNames = targetSkillNames();
+const cases = await loadCases( skillNames );
 const attempts = cases.flatMap( ( testCase, caseIndex ) =>
 	Array.from( { length: attemptsPerCase }, ( unused, index ) => ( {
 		testCase,
@@ -415,8 +432,8 @@ const attempts = cases.flatMap( ( testCase, caseIndex ) =>
 		ordinal: caseIndex * attemptsPerCase + index,
 	} ) )
 );
-const skillNames = [ ...new Set( cases.map( ( testCase ) => testCase.skill ) ) ];
 const provenance = await collectProvenance( skillNames );
+const isolatedCodexHome = await createIsolatedCodexHome();
 const campaign = {
 	schemaVersion: 2,
 	repositoryRevision: targetRevision,
@@ -442,7 +459,7 @@ const campaign = {
 		concurrency,
 		timeoutSeconds: timeoutMs / 1000,
 		workspace: 'Fresh outside-repository temporary directory for every attempt.',
-		ambientCapabilities: 'User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+		ambientCapabilities: 'A clean session store exposed only authentication and the pinned user-level skill tree. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
 		positiveStop: 'Stop after the target skill loads.',
 		negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
 		classification: 'Positive cases pass when the target loads and fail when a completed turn omits it. Negative cases fail when the target loads and pass only on completion without it. Incomplete attempts are blocked.',
@@ -461,7 +478,8 @@ async function worker() {
 		const result = await runAttempt(
 			current.testCase,
 			current.attempt,
-			current.ordinal
+			current.ordinal,
+			isolatedCodexHome
 		);
 		campaign.results.push( result );
 		campaign.results.sort( ( left, right ) => left.ordinal - right.ordinal );
@@ -473,5 +491,9 @@ async function worker() {
 	}
 }
 
-await Promise.all( Array.from( { length: concurrency }, () => worker() ) );
-await writeOutput( campaign );
+try {
+	await Promise.all( Array.from( { length: concurrency }, () => worker() ) );
+	await writeOutput( campaign );
+} finally {
+	await fs.rm( isolatedCodexHome, { recursive: true, force: true } );
+}
