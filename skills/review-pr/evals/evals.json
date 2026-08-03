@@ -73,7 +73,19 @@
         "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
         "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
         "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
-        "Authorization and persisted-state evidence are assessed as separate material domains."
+        "Authorization and persisted-state evidence are assessed as separate material domains.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
+      ]
+    },
+    {
+      "id": "severity-normalization",
+      "prompt": "Review this self-contained authorization and persisted-state change, then apply the shared severity contract to the confirmed findings.",
+      "context": "evals/fixtures/coordinator-handoff-routing.md",
+      "expectedOutcome": "A deduplicated review whose severities follow the evidence-based contract rather than the discovery path.",
+      "assertions": [
+        "The reachable cross-account deletion is reported as [critical].",
+        "The supported-upgrade persisted-state regression is reported as [major].",
+        "The final severities are normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
       ]
     },
     {
