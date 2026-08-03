@@ -34,6 +34,17 @@
         "The review identifies the absent public contract or implementation, prop types, documentation, sibling patterns, tests, other consumers, and compatibility policy.",
         "The review does not rate an inferred API or compatibility risk as a finding or propose a speculative API alternative without supplied contract evidence."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this public API and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/select-control-api.md",
+      "expectedOutcome": "A read-only API review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the API findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

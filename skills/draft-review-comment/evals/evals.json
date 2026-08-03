@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "draft-confirmed-findings",
+      "prompt": "Turn these confirmed findings into concise, copy-pasteable GitHub review comments.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "prepare-review-document",
+      "prompt": "Prepare one review document from these findings without posting it.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "perform-pr-review",
+      "prompt": "Review this pull request for correctness and accessibility.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "address-review-feedback",
+      "prompt": "Implement the accepted review feedback and verify the fixes.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "mixed-finding-locations",
+      "prompt": "Draft these confirmed findings as one portable review document. Do not post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "One concise review document with honest locations and self-contained comments, without any GitHub write.",
+      "assertions": [
+        "The inline comment uses the exact supplied file path and line range.",
+        "The file-level comment names its file without inventing a line number.",
+        "The general finding does not invent a code location.",
+        "Each comment explains the consequence and gives a concrete alternative or question.",
+        "The workflow creates at most one local review document and does not post to GitHub."
+      ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Draft these confirmed findings and return them in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "Concise, copy-pasteable findings returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the requested findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not post comments, replies, or reviews to GitHub."
+      ]
+    }
+  ]
+}

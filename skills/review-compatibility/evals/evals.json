@@ -23,6 +23,17 @@
         "Missing rollback coverage is a verification gap unless an incompatible transition is established.",
         "Public API shape concerns are not duplicated from review-api-design."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this migration for compatibility and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/config-migration.md",
+      "expectedOutcome": "A read-only compatibility review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the compatibility findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

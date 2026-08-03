@@ -25,6 +25,17 @@
         "The review stops and reports the missing capability when required state cannot be verified.",
         "The review does not edit source, commit, push, or change the pull request."
       ]
+    },
+    {
+      "id": "chat-only-self-review",
+      "prompt": "Self-review this pull request and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/cli-first-self-review.md",
+      "expectedOutcome": "An independent read-only self-review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the self-review directly in chat.",
+        "The workflow and its internal simplicity pass do not create or open local review documents.",
+        "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ]
     }
   ]
 }

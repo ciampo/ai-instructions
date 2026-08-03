@@ -23,6 +23,17 @@
         "The review does not expose or request credentials.",
         "Unspecified deployment protections remain verification gaps."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this endpoint for security and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/account-deletion.md",
+      "expectedOutcome": "A read-only security review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the security findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

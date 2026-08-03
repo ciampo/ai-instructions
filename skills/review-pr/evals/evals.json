@@ -55,6 +55,17 @@
         "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
         "Authorization and persisted-state evidence are assessed as separate material domains."
       ]
+    },
+    {
+      "id": "chat-only-synthesized-review",
+      "prompt": "Review this pull request and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/direct-specialist-routing.md",
+      "expectedOutcome": "One read-only synthesized review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns one synthesized review directly in chat.",
+        "The main workflow and its internal specialist handoffs do not create or open local review documents.",
+        "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ]
     }
   ]
 }

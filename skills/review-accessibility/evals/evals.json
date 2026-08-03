@@ -26,12 +26,12 @@
     },
     {
       "id": "no-artifact-delivery",
-      "prompt": "Audit this dialog for accessibility. Do not modify files or create artifacts; return the findings in chat only.",
+      "prompt": "Audit this dialog for accessibility. Return the findings in chat only; do not create a review artifact or post anything.",
       "context": "evals/fixtures/dialog-focus.md",
       "expectedOutcome": "A source-backed accessibility assessment returned in chat without creating a local artifact.",
       "assertions": [
         "The response returns the assessment directly in chat.",
-        "The workflow does not create or open a local file because the request prohibits files and artifacts.",
+        "The workflow does not create or open a local review document.",
         "The workflow does not modify the component or any remote state.",
         "Confirmed findings remain distinct from runtime verification gaps."
       ]

@@ -46,6 +46,17 @@
         "The review distinguishes a shorter aesthetic rewrite from a material deletion opportunity.",
         "The review records no unsupported runtime, accessibility, or consumer claims."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Perform the simplicity pass and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/derived-product-filter.md",
+      "expectedOutcome": "A read-only simplicity review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the simplicity findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

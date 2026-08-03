@@ -30,7 +30,7 @@ Identify costs that can materially affect users in the scoped execution context,
 
 When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
-For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write multiple findings to one portable Markdown artifact in the OS temporary directory and return its path.
+For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write multiple findings to one portable Markdown artifact in the OS temporary directory and return its path.
 
 Start with the reviewed path, supplied scale, available measurements, and material unknowns. Order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on the observed contract breach in the affected scenario and likelihood. Each finding must connect code to a measured cost in the supplied execution scenario and an observed breach of an explicit supplied performance contract, plus a focused alternative and a repeatable verification method. Put unmeasured or contract-free hypotheses under verification gaps rather than presenting them as confirmed regressions.
 

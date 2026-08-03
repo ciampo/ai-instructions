@@ -670,18 +670,21 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 
 test( 'content contracts enforce the universal instruction budget and evaluation fixture coverage', async () => {
 	const result = await validateContent( repoDir );
-	assert.equal( result.evaluationCount, 18 );
+	assert.equal( result.evaluationCount, 19 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
 
-test( 'iterative review launcher preserves explicit mutation authority', async () => {
-	const launcher = await readFile(
+test( 'iterative review launcher permits fixes without authorizing public GitHub actions', async () => {
+	const launcher = normalizedWithTrailingNewline( await readFile(
 		path.join( repoDir, 'skills', 'iterate-pr-review', 'agents', 'openai.yaml' ),
 		'utf8'
+	) );
+	const defaultPrompt = launcher.match( /^  default_prompt: "([^"]+)"$/m )?.[ 1 ];
+	assert.equal(
+		defaultPrompt,
+		'Use $iterate-pr-review to run up to five change rounds on this pull request: request Copilot and independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not post comments, replies, or reviews, resolve threads, change pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass.'
 	);
-	assert.doesNotMatch( launcher, /apply accepted fixes|commit|push/ );
-	assert.match( launcher, /explicitly authorized/ );
 } );
 
 test( 'content contracts reject invalid review dates', () => {

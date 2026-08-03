@@ -23,6 +23,17 @@
         "The suggested verification uses the control's accessible role or name and user interaction.",
         "Accessibility conformance is kept separate from test-query advice."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this regression test and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/save-dialog.md",
+      "expectedOutcome": "A read-only test-quality review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the test-quality findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

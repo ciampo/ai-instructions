@@ -23,6 +23,17 @@
         "It recommends removing or rewriting the redundant comment only with a concrete reader benefit.",
         "It does not describe text as AI-generated."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this documentation and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/setup-guide.md",
+      "expectedOutcome": "A read-only documentation review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the documentation findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }
