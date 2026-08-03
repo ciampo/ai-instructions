@@ -6,7 +6,7 @@
 
 The July 21 audit identified competing globally loaded guidance, overly universal technical advice, unclear authorization boundaries, and an installation that had not yet caught up with the repository's intended architecture. Its recommended sequence was to activate the latest source, narrow technical claims, move specialist procedure into skills, and validate the resulting architecture in real products.
 
-That work has since landed. The current source has a small universal core, 17 on-demand skills, no distributed custom agents, a manifest-driven installer for five product surfaces, and explicit authority and discovery-evidence contracts.
+That work has since landed. The current source has a budget-limited universal core, on-demand standard skills, no distributed custom agents, a manifest-driven installer for the configured product surfaces, and explicit authority and discovery-evidence contracts.
 
 ## Current replacement assessment
 
