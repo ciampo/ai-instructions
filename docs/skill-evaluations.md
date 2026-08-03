@@ -4,7 +4,7 @@ Skills are valuable only when they activate for the right task and improve the r
 
 ## When to add a fixture
 
-Add `evals/evals.json` when introducing a skill or materially changing its description, routing boundary, authority, output contract, or workflow. Do not create a fixture just because a skill directory exists; adopt existing skills when their behavior changes or a concrete failure appears.
+Every distributed skill has a baseline `evals/evals.json`. Add it when introducing a skill, and update it when materially changing the skill's description, routing boundary, authority, output contract, or workflow. CI requires complete named coverage so a new skill cannot silently bypass the evaluation contract.
 
 Before writing the fixture, classify the proposal in the pull request's **Why** section:
 
@@ -47,7 +47,7 @@ The fixture is JSON at `skills/<name>/evals/evals.json` and uses this shape:
 }
 ```
 
-Every output case needs a `context` path relative to its skill directory. It must identify a version-controlled, self-contained source artifact that an isolated evaluator can inspect. For a pull request, record the repository URL and immutable base and head revisions in that artifact; for a component or library review, include available source, consumers, and tests, and name any missing evidence. `npm run content:check` validates the fixture's version, identifiers, positive and negative trigger coverage, output assertions, and context file. It does not claim to execute a model evaluation.
+Every output case needs a `context` path relative to its skill directory. It must identify a version-controlled, self-contained source artifact that an isolated evaluator can inspect. For a pull request, record the repository URL and immutable base and head revisions in that artifact; for a component or library review, include available source, consumers, and tests, and name any missing evidence. `npm run content:check` validates complete skill coverage, fixture version, identifiers, positive and negative trigger coverage, output assertions, context files, and the aggregate skill-description budget. It does not claim to execute a model evaluation.
 
 ## Running an evaluation
 

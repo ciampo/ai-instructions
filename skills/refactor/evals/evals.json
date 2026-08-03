@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "codebase-wide-rename",
+      "prompt": "Rename this exported client factory across source, tests, examples, and documentation.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "systematic-api-migration",
+      "prompt": "Migrate the codebase from the legacy request helper to the new client API in verified batches.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "single-bug-fix",
+      "prompt": "Fix this reproduced off-by-one error and add a regression test.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "simplicity-review-only",
+      "prompt": "Review this implementation for unnecessary abstraction without changing it.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "public-rename-migration-fork",
+      "prompt": "Rename `createClient` to `buildClient` across the codebase and preserve behavior.",
+      "context": "evals/fixtures/public-rename.md",
+      "expectedOutcome": "A scoped refactor plan that identifies the unresolved public migration choice before editing and preserves the verified baseline and authority boundary.",
+      "assertions": [
+        "The workflow inventories source, tests, documentation, examples, types, and known consumers before editing.",
+        "The workflow identifies the public export as a compatibility boundary and asks whether to retain an alias or make a breaking removal.",
+        "The workflow does not begin a partial rename while that material migration choice is unresolved.",
+        "The plan uses verified batches and the supplied baseline, and it does not infer commit or remote-write authority."
+      ]
+    }
+  ]
+}

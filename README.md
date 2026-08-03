@@ -25,7 +25,7 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 | --- | --- |
 | [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
 
-The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost.
+The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost. Skill discovery metadata has a separate aggregate 12 KB budget because clients can load every description before selecting a skill.
 
 ### Skills
 

@@ -137,6 +137,7 @@ function normalizedWithTrailingNewline( content ) {
 
 async function createContentFixture( t, {
 	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
+	includeEvaluation = true,
 	referenceContent,
 } = {} ) {
 	const fixture = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-content-' ) );
@@ -164,6 +165,31 @@ async function createContentFixture( t, {
 		path.join( fixture, 'skills', 'example-skill', 'SKILL.md' ),
 		`---\nname: example-skill\ndescription: Example skill.\n---\n${ referenceContent === undefined ? '' : '\nRead [the reference](references/example.md).\n' }`
 	);
+	if ( includeEvaluation ) {
+		const evaluationDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
+		await mkdir( path.join( evaluationDirectory, 'fixtures' ), { recursive: true } );
+		await writeFile(
+			path.join( evaluationDirectory, 'fixtures', 'example.md' ),
+			'# Example evaluation context\n'
+		);
+		await writeFile(
+			path.join( evaluationDirectory, 'evals.json' ),
+			`${ JSON.stringify( {
+				schemaVersion: 1,
+				triggerCases: [
+					{ id: 'positive', prompt: 'Use the example skill.', shouldTrigger: true },
+					{ id: 'negative', prompt: 'Do not use the example skill.', shouldTrigger: false },
+				],
+				outputCases: [ {
+					id: 'output',
+					prompt: 'Use the example skill.',
+					context: 'evals/fixtures/example.md',
+					expectedOutcome: 'A useful result.',
+					assertions: [ 'The result is useful.' ],
+				} ],
+			}, null, 2 ) }\n`
+		);
+	}
 	if ( referenceContent !== undefined ) {
 		await writeFile(
 			path.join( fixture, 'skills', 'example-skill', 'references', 'example.md' ),
@@ -670,7 +696,8 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 
 test( 'content contracts enforce the universal instruction budget and evaluation fixture coverage', async () => {
 	const result = await validateContent( repoDir );
-	assert.equal( result.evaluationCount, 19 );
+	assert.equal( result.evaluationCount, result.skillCount );
+	assert.ok( result.skillDescriptionBytes <= 12 * 1024 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
@@ -684,6 +711,16 @@ test( 'iterative review launcher permits fixes without authorizing public GitHub
 	assert.equal(
 		defaultPrompt,
 		'Use $iterate-pr-review to run up to five change rounds on this pull request: request Copilot and independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not post comments, replies, or reviews, resolve threads, change pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass.'
+	);
+} );
+
+test( 'content contracts identify skills without evaluation fixtures', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await rm( path.join( fixture, 'skills', 'example-skill', 'evals' ), { recursive: true } );
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/Missing evaluation fixtures for: example-skill/
 	);
 } );
 
@@ -729,7 +766,7 @@ test( 'content contracts validate links in bundled skill references', async ( t 
 } );
 
 test( 'content contracts reject incomplete skill evaluation fixtures', async ( t ) => {
-	const { fixture } = await createContentFixture( t );
+	const { fixture } = await createContentFixture( t, { includeEvaluation: false } );
 	const evalsDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
 	await mkdir( evalsDirectory );
 	await writeFile(
@@ -758,7 +795,7 @@ test( 'content contracts reject incomplete skill evaluation fixtures', async ( t
 } );
 
 test( 'content contracts require an existing output evaluation context', async ( t ) => {
-	const { fixture } = await createContentFixture( t );
+	const { fixture } = await createContentFixture( t, { includeEvaluation: false } );
 	const evalsDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
 	await mkdir( evalsDirectory );
 	await writeFile(

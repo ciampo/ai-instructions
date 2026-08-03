@@ -10,6 +10,7 @@ import { loadManifest } from './lib/manifest.mjs';
 
 const MAX_UNIVERSAL_BYTES = 8 * 1024;
 const MAX_UNIVERSAL_LINES = 150;
+const MAX_SKILL_DESCRIPTION_BYTES = 12 * 1024;
 const MAX_REVIEW_AGE_DAYS = 120;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SKILL_EVALUATION_VERSION = 1;
@@ -197,7 +198,9 @@ async function validateSkillEvaluation( content, source, skillDirectory ) {
 async function validateSkills( repoDir ) {
 	const skillsDirectory = path.join( repoDir, 'skills' );
 	let count = 0;
+	let descriptionBytes = 0;
 	let evaluationCount = 0;
+	const missingEvaluations = [];
 	for ( const entry of await entries( skillsDirectory ) ) {
 		if ( ! entry.isDirectory() ) {
 			throw new Error( `${ path.join( skillsDirectory, entry.name ) }: skills must be directories.` );
@@ -209,7 +212,8 @@ async function validateSkills( repoDir ) {
 			throw new Error( `${ skillDirectory }: .ai-instructions-managed is reserved for installed copies.` );
 		}
 		const content = await readFile( skillFile, 'utf8' );
-		validateNameAndDescription( content, skillFile, entry.name );
+		const metadata = validateNameAndDescription( content, skillFile, entry.name );
+		descriptionBytes += Buffer.byteLength( metadata.description );
 		for ( const relative of bundledFiles.filter( ( file ) => file.endsWith( '.md' ) ) ) {
 			const source = path.join( skillDirectory, relative );
 			await validateSkillLinks(
@@ -222,10 +226,18 @@ async function validateSkills( repoDir ) {
 			const evaluationSource = path.join( skillDirectory, 'evals', 'evals.json' );
 			await validateSkillEvaluation( await readFile( evaluationSource, 'utf8' ), evaluationSource, skillDirectory );
 			evaluationCount++;
+		} else {
+			missingEvaluations.push( entry.name );
 		}
 		count++;
 	}
-	return { skillCount: count, evaluationCount };
+	if ( missingEvaluations.length > 0 ) {
+		throw new Error( `Missing evaluation fixtures for: ${ missingEvaluations.join( ', ' ) }.` );
+	}
+	if ( descriptionBytes > MAX_SKILL_DESCRIPTION_BYTES ) {
+		throw new Error( `Skill descriptions exceed the ${ MAX_SKILL_DESCRIPTION_BYTES } byte aggregate budget: ${ descriptionBytes } bytes.` );
+	}
+	return { skillCount: count, evaluationCount, skillDescriptionBytes: descriptionBytes };
 }
 
 async function validateAgents( repoDir ) {
@@ -339,7 +351,7 @@ export async function validateContent( repoDir ) {
 async function main() {
 	const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
 	const result = await validateContent( repoDir );
-	console.log( `Content contracts passed: ${ result.skillCount } skills, ${ result.evaluationCount } evaluation fixtures, ${ result.agentCount } agents, ${ result.universal.lines } universal lines / ${ result.universal.bytes } bytes.` );
+	console.log( `Content contracts passed: ${ result.skillCount } skills, ${ result.evaluationCount } evaluation fixtures, ${ result.skillDescriptionBytes } skill-description bytes, ${ result.agentCount } agents, ${ result.universal.lines } universal lines / ${ result.universal.bytes } bytes.` );
 }
 
 if ( process.argv[ 1 ] && path.resolve( process.argv[ 1 ] ) === fileURLToPath( import.meta.url ) ) {

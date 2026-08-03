@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "draft-description",
+      "prompt": "Write a concise pull-request description from this completed diff.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "update-remote-description",
+      "prompt": "Update this pull request's description to match its current diff and preserve the issue link.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "review-pull-request",
+      "prompt": "Review this pull request and give me actionable findings.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "implement-feature",
+      "prompt": "Implement the dialog focus fix and verify it.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "behavior-first-local-draft",
+      "prompt": "Draft the pull-request description locally. Do not update GitHub.",
+      "context": "evals/fixtures/behavior-first-description.md",
+      "expectedOutcome": "A concise description that follows the repository template, preserves existing context, and gives behavior-focused verification without changing GitHub.",
+      "assertions": [
+        "The draft preserves the related issue link and uses the repository's What, Why, How, and Testing Instructions headings.",
+        "The What and Why sections lead with the user-visible focus-restoration outcome rather than implementation mechanics.",
+        "Testing Instructions describe the exact dialog interaction and expected focus result.",
+        "Routine lint and unit-test commands are omitted from the primary manual instructions or placed in secondary details.",
+        "The workflow returns a local draft and does not update the remote pull request."
+      ]
+    }
+  ]
+}

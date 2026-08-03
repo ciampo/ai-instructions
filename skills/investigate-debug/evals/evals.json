@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "diagnose-regression",
+      "prompt": "Investigate why this command started failing after the configuration change.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "fix-reproduced-bug",
+      "prompt": "Fix this reproduced cache invalidation bug and add a regression test.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "systematic-rename",
+      "prompt": "Rename this public option across the entire codebase.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "general-pr-review",
+      "prompt": "Review this pull request and draft feedback.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "diagnosis-only-boundary",
+      "prompt": "Diagnose this failure and explain the root cause. Do not fix or modify anything.",
+      "context": "evals/fixtures/config-resolution.md",
+      "expectedOutcome": "A read-only diagnosis that distinguishes the present source, effective runtime configuration, and actual failing caller before proposing a fix.",
+      "assertions": [
+        "The investigation confirms the configuration source exists instead of assuming it is active at runtime.",
+        "The diagnosis identifies the command-specific override as the effective value and the loader as the actual failing caller.",
+        "The workflow reports the evidence-backed root cause, remaining uncertainty, and a proposed fix without applying it.",
+        "The workflow does not edit source, clear caches, switch branches, commit, push, or write remotely."
+      ]
+    }
+  ]
+}
