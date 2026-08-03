@@ -6,14 +6,14 @@ Status: partial. The Codex campaign completed with confirmed routing and output 
 
 This is the durable ledger for model-backed skill evaluations. Fixture validation proves that the cases are complete and self-contained. It does not prove that a client loaded the intended skill or produced the expected result.
 
-Record each evaluation campaign against one immutable repository revision. Do not combine outputs from different revisions into one result.
+Record each evaluation campaign against immutable repository and fixture commit SHAs. Do not combine outputs from different revisions into one result.
 
 ## Result contract
 
 Each campaign must record:
 
-- repository revision and evaluation-fixture revision;
-- client name and exact version;
+- repository and evaluation-fixture commit SHAs;
+- client name, exact version, model, and inference configuration;
 - authentication and tool-access context when it affects behavior;
 - skill name and trigger or output case ID;
 - at least three trigger attempts and whether the client loaded the skill;
@@ -27,11 +27,13 @@ Static fixture validation, installation checks, or one successful prompt cannot 
 
 ## Active campaign
 
-Target revision: `561a88a0b1adcfadfed2b08f2efe195436341d1a` on `main`.
+Repository revision: `561a88a0b1adcfadfed2b08f2efe195436341d1a` on `main`.
+
+Evaluation-fixture revision: `561a88a0b1adcfadfed2b08f2efe195436341d1a`.
 
 | Prerequisite | Required behavior | Status |
 | --- | --- | --- |
-| [PR #69](https://github.com/ciampo/ai-instructions/pull/69) | No-file review delivery and review-only iterative launcher | Merged in target |
+| [PR #69](https://github.com/ciampo/ai-instructions/pull/69) | No-file review delivery with authorized local fixes, verification, commits, and pushes; separate authority for public and administrative pull-request actions | Merged in target |
 | [PR #70](https://github.com/ciampo/ai-instructions/pull/70) | Evaluation fixtures for all distributed skills | Merged in target |
 | [PR #71](https://github.com/ciampo/ai-instructions/pull/71) | Immutable, least-privilege CI baseline | Merged in target |
 
@@ -44,48 +46,64 @@ The installed Codex and Antigravity `review-accessibility` skill entrypoints bot
 | Codex CLI `0.145.0` | `gpt-5.6-sol`, `xhigh`, priority tier; macOS `26.5.2` arm64 | Authenticated profile; ephemeral sessions; three concurrent workers; public, self-contained fixtures; read-only trigger sandbox and disposable output workspaces | partial |
 | Google Antigravity CLI `1.1.6` | Configured Gemini 3.6 Flash (High); macOS `26.5.2` arm64 | Authenticated profile; plan mode; sandbox enabled; no blanket permission bypass | blocked |
 
-Codex trigger runs stopped after the first observable skill load, or after 90 seconds. This proves a direct first selection. It cannot prove that a sibling workflow would or would not load another skill later. Such positive composition cases are `blocked`, not failed. A negative case is a confirmed failure only when the prohibited skill was the first selection.
+Codex trigger runs stopped after the first observable skill load, or after 90 seconds. This proves a direct first selection. It cannot prove that a sibling workflow would or would not load another skill later. Positive cases that selected another skill are `blocked` attempts. Negative cases are `blocked` unless the prohibited skill was selected first, which is a confirmed failure.
 
-Codex output runs used one disposable workspace per case and a 240-second cap. Of 55 cases, 53 completed. The runs used 9,220,259 input tokens, including 7,953,920 cached input tokens, and 147,560 output tokens. Raw trigger and output result JSON had SHA-256 values `e70a5c245593c9dd038f46d0167e5c543f564bf98556eee146cf9dffba6a6ef6` and `65fb6860877439663ad3b9a6393b20ff4054f83904a41151c66556c664933143` respectively.
+Codex output runs used one disposable workspace per case and a 240-second cap. Of 55 cases, 53 completed. The runs used 9,220,259 input tokens, including 7,953,920 cached input tokens, and 147,560 output tokens.
+
+### Evidence and method
+
+The committed, sanitized evidence retains each prompt, observed first skill selection, model output, token use, timeout state, workspace delta, assertion grade, and concise evidence:
+
+- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `0618216bb2c95164eb0c8e31b5894fa099282d830eb79a2ec0d4283c74730a17`;
+- [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `7da2db3df18cc3c71a642cfd368a5b6e1c26243a280d9391546b7feed55ff5a3`;
+- [direct and coordinated comparison](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-review-comparison.json), SHA-256 `2d1be2aeb9b3799e134522676eeb423ed67f8ac9a24ce14069d1729fe51f5660`.
+
+An unversioned, one-off Node.js harness invoked Codex CLI with ephemeral sessions and JSON output. Trigger runs used a read-only empty workspace, three concurrent workers, a 90-second cap, and stopped at the first observable skill load. Output runs used one disposable writable workspace per fixture, three concurrent workers, and a 240-second cap. The JSON records the invocation template and status derivation. This unversioned runner is a reproducibility limitation.
+
+Verify the retained files with:
+
+```sh
+shasum -a 256 docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.json
+```
 
 ### Codex trigger results
 
-Every trigger case ran three times. `+` means the fixture expected the named skill to load. `-` means the fixture expected it not to load. Complete cases matched the expected direct selection in all three attempts. A timeout without an observed load is `blocked`.
+Every trigger case ran three times. Positive cases pass only when the intended skill was the first observed load. All 37 negative cases are blocked by the early-stop method unless the prohibited skill was selected first.
 
-Summary: 50 of 77 cases passed, 20 were partial, four were blocked, and three failed. Across 231 attempts, 184 passed, 38 were blocked, and nine failed.
+Summary: 23 of 77 cases passed, 14 were partial, 37 were blocked, and three failed. Across 231 attempts, 91 passed, 131 were blocked, and nine failed. The three failed negative cases selected the prohibited skill first in all three attempts. The other 34 negative cases remain blocked and must run to completion before they can pass.
 
-| Skill | Complete cases | Non-pass cases |
-| --- | --- | --- |
-| `address-pr-feedback` | `+address-current-pr-feedback` | `-write-a-single-review-reply` fail (`address-pr-feedback` 3) |
-| `audit-dependency-update` | `+implement-package-update`, `-debug-runtime-error`, `-publish-prepared-release` | `+audit-existing-update` partial (`audit-dependency-update` 1, `review-compatibility` 1, no load before timeout 1) |
-| `automattic-github-enterprise` | `+automattic-enterprise-auth-failure`, `+automattic-enterprise-pr-read` | `-generic-enterprise-route` fail (`automattic-github-enterprise` 3) |
-| `draft-review-comment` | `+draft-confirmed-findings`, `+prepare-review-document`, `-perform-pr-review`, `-address-review-feedback` | — |
-| `engineering-standards` | `+scoped-code-change`, `-write-pr-description`, `-resume-session` | `+scoped-code-review` partial (`engineering-standards` 1, `review-accessibility` 2) |
-| `investigate-debug` | `+diagnose-regression`, `-systematic-rename`, `-general-pr-review` | `+fix-reproduced-bug` partial (`investigate-debug` 2, `engineering-standards` 1) |
-| `iterate-pr-review` | `+repeat-copilot-and-self-review`, `+review-before-handoff`, `-one-time-external-review` | `-one-time-authored-review` partial (`self-review-pr` 1, browser skill 1, timeout 1); `-iterative-external-review` fail (`iterate-pr-review` 3) |
-| `prepare-release` | `+plan-release-without-local-writes`, `-publish-prepared-release` | — |
-| `publish-release` | `+ship-verified-package`, `-audit-dependency-release` | `+publish-prepared-release` partial (`publish-release` 2, `repository-maintenance` 1); `-prepare-release-only` partial (`prepare-release` 1, no skill 1, timeout 1) |
-| `refactor` | `+systematic-api-migration`, `-simplicity-review-only` | `+codebase-wide-rename` partial (`refactor` 2, no skill 1); `-single-bug-fix` partial (no skill 2, timeout 1) |
-| `release-publish` | `+legacy-plan-only-release-request`, `-publish-an-existing-release` | `+legacy-publish-prepared-release-without-local-changes` partial (`release-publish` 2, no skill 1) |
-| `repository-maintenance` | `-summarize-enterprise-access-guidance` | `+verify-github-enterprise-cli-access` blocked (`automattic-github-enterprise` 3) |
-| `resume-session` | `+continue-pr-work`, `-start-new-refactor`, `-repository-status-only` | `+recover-interrupted-session` partial (`resume-session` 2, `repository-maintenance` 1) |
-| `review-accessibility` | `+implicit-dialog-audit` | `-general-pull-request-review` partial (`review-pr` 2, timeout 1) |
-| `review-api-design` | `-internal-refactor` | `+public-component-api` partial (`review-api-design` 2, timeout 1) |
-| `review-compatibility` | `+persisted-format-upgrade`, `-public-prop-ergonomics` | — |
-| `review-coordinator` | — | `+explicit-panel-review` partial (`review-coordinator` 1, timeout 2); `+implicit-multi-lane-review` blocked (`review-pr` 2, timeout 1); `-ordinary-pr-review` blocked (timeout 3) |
-| `review-documentation` | `+migration-guide-review`, `-implementation-correctness` | — |
-| `review-internationalization` | `-security-boundary-review` | `+localized-message-and-rtl` partial (`review-internationalization` 2, no skill 1) |
-| `review-performance` | `+rendering-cost-audit`, `-general-style-review` | — |
-| `review-pr` | `-focused-accessibility-audit` | `+review-a-shared-pr` partial (`review-pr` 1, no skill 2); `+multi-lane-pr-review` partial (`review-pr` 1, browser skill 1, timeout 1) |
-| `review-security` | `+authorization-boundary`, `-visual-copy-review` | — |
-| `review-simplicity` | `+deletion-first-review`, `-implementation-request`, `-performance-only-review` | `+ordinary-pr-review` blocked (`review-pr` 3) |
-| `review-test-quality` | `+semantic-ui-regression`, `-aria-semantics-audit` | — |
-| `self-review-pr` | `-review-another-authors-pr` | `+review-current-pr-before-ready` partial (`self-review-pr` 1, browser skill 1, timeout 1) |
-| `write-pr-description` | `+draft-description` | `+update-remote-description` partial (`write-pr-description` 2, timeout 1); `-review-pull-request` partial (`review-pr` 2, timeout 1); `-implement-feature` partial (`investigate-debug` 2, timeout 1) |
+| Skill | Passing positive cases | Non-pass positive cases | Confirmed negative first-load failures |
+| --- | --- | --- | --- |
+| `address-pr-feedback` | `address-current-pr-feedback` | — | `write-a-single-review-reply` (`address-pr-feedback` 3) |
+| `audit-dependency-update` | `implement-package-update` | `audit-existing-update` partial (`audit-dependency-update` 1, `review-compatibility` 1, timeout 1) | — |
+| `automattic-github-enterprise` | `automattic-enterprise-auth-failure`, `automattic-enterprise-pr-read` | — | `generic-enterprise-route` (`automattic-github-enterprise` 3) |
+| `draft-review-comment` | `draft-confirmed-findings`, `prepare-review-document` | — | — |
+| `engineering-standards` | `scoped-code-change` | `scoped-code-review` partial (`engineering-standards` 1, `review-accessibility` 2) | — |
+| `investigate-debug` | `diagnose-regression` | `fix-reproduced-bug` partial (`investigate-debug` 2, `engineering-standards` 1) | — |
+| `iterate-pr-review` | `repeat-copilot-and-self-review`, `review-before-handoff` | — | `iterative-external-review` (`iterate-pr-review` 3) |
+| `prepare-release` | `plan-release-without-local-writes` | — | — |
+| `publish-release` | `ship-verified-package` | `publish-prepared-release` partial (`publish-release` 2, `repository-maintenance` 1) | — |
+| `refactor` | `systematic-api-migration` | `codebase-wide-rename` partial (`refactor` 2, no load 1) | — |
+| `release-publish` | `legacy-plan-only-release-request` | `legacy-publish-prepared-release-without-local-changes` partial (`release-publish` 2, no load 1) | — |
+| `repository-maintenance` | — | `verify-github-enterprise-cli-access` blocked (`automattic-github-enterprise` 3) | — |
+| `resume-session` | `continue-pr-work` | `recover-interrupted-session` partial (`resume-session` 2, `repository-maintenance` 1) | — |
+| `review-accessibility` | `implicit-dialog-audit` | — | — |
+| `review-api-design` | — | `public-component-api` partial (`review-api-design` 2, timeout 1) | — |
+| `review-compatibility` | `persisted-format-upgrade` | — | — |
+| `review-coordinator` | — | `explicit-panel-review` partial (`review-coordinator` 1, timeout 2); `implicit-multi-lane-review` blocked (`review-pr` 2, timeout 1) | — |
+| `review-documentation` | `migration-guide-review` | — | — |
+| `review-internationalization` | — | `localized-message-and-rtl` partial (`review-internationalization` 2, no load 1) | — |
+| `review-performance` | `rendering-cost-audit` | — | — |
+| `review-pr` | — | `review-a-shared-pr` partial (`review-pr` 1, no load 2); `multi-lane-pr-review` partial (`review-pr` 1, browser skill 1, timeout 1) | — |
+| `review-security` | `authorization-boundary` | — | — |
+| `review-simplicity` | `deletion-first-review` | `ordinary-pr-review` blocked (`review-pr` 3) | — |
+| `review-test-quality` | `semantic-ui-regression` | — | — |
+| `self-review-pr` | — | `review-current-pr-before-ready` partial (`self-review-pr` 1, browser skill 1, timeout 1) | — |
+| `write-pr-description` | `draft-description` | `update-remote-description` partial (`write-pr-description` 2, timeout 1) | — |
 
 ### Codex output results
 
-Assertion numbers map to each case's ordered `assertions` array in its version-controlled `evals.json`. All assertions in a passing case passed. Non-pass rows list every assertion result explicitly.
+Assertion numbers map to each case's ordered `assertions` array in its version-controlled `evals.json`. The committed output evidence retains the text, grade, and evidence for every assertion, plus the model output and workspace delta used to audit that grade. All assertions in a passing case passed. Non-pass rows list every assertion result explicitly.
 
 Summary: 52 of 55 output cases passed and three were partial. Across 194 assertions, 184 passed, two failed, and eight were blocked.
 
@@ -126,10 +144,10 @@ Both runs used `skills/review-pr/evals/fixtures/coordinator-handoff-routing.md` 
 
 | Path | Findings | Severity | Wall time | Tokens |
 | --- | --- | --- | --- | --- |
-| Direct `review-pr` | Missing object-level deletion authorization; missing persisted-preference migration | `critical`, `major` | 86.9 seconds | 308,725 input, 277,760 cached input, 4,129 output |
-| `review-coordinator` | Same two findings | `major`, `minor` | 110.0 seconds | 586,586 input, 548,352 cached input, 4,691 output |
+| Direct `review-pr` | Missing object-level deletion authorization; missing persisted-preference migration | `critical`, `major` | 86.853 seconds | 308,725 input, 277,760 cached input, 4,129 output |
+| `review-coordinator` | Same two findings | `major`, `minor` | 110.037 seconds | 586,586 input, 548,352 cached input, 4,691 output |
 
-The coordinated path took 23.2 seconds longer and used 277,861 more input tokens. The lower severities are an accepted normalization inconsistency, not a false positive or duplicate.
+The coordinated path took 23.184 seconds longer and used 277,861 more input tokens. The lower severities are an accepted normalization inconsistency, not a false positive or duplicate.
 
 ### Antigravity canary
 
@@ -145,6 +163,6 @@ The accepted instruction failures are:
 4. The current-head iteration output omitted the base revision and could not demonstrate the full pending-review and default-limit contract.
 5. Direct and coordinated review assigned materially different severities to the same two findings.
 
-The positive partial and blocked trigger cases are not accepted failures because first-load observation cannot establish later workflow composition. The two timed-out output cases remain verification gaps except for their explicitly recorded assertion results.
+The positive partial and blocked trigger cases are not accepted failures because first-load observation cannot establish later workflow composition. The 34 negative cases that did not first-load the prohibited skill are also blocked, not passing, because the harness did not run them to completion. The two timed-out output cases remain verification gaps except for their explicitly recorded assertion results.
 
 Do not fix these failures in this evidence pull request. Open focused follow-up issues or pull requests before changing the evaluated instruction revision. Remote issue creation was not part of this campaign's authorization, so those links remain required before this campaign can be considered complete.
