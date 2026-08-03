@@ -15,6 +15,11 @@
       "id": "generic-enterprise-route",
       "prompt": "Before I use gh with https://github.example.com, help me establish the approved Enterprise access route without inventing proxy settings.",
       "shouldTrigger": false
+    },
+    {
+      "id": "non-automattic-enterprise-auth-failure",
+      "prompt": "A sandboxed gh auth check says my git.corp.example credential is invalid. Verify the approved Enterprise route before suggesting that I log in again.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [
