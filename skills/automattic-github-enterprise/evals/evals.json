@@ -25,12 +25,12 @@
   "outputCases": [
     {
       "id": "automattic-enterprise-macos-preflight",
-      "prompt": "Using the supplied context, determine whether the credential is invalid and give the exact safe preflight. Do not change credentials or global configuration.",
+      "prompt": "Using the supplied context, run the exact safe preflight through the available authorized outside-sandbox route and determine whether the credential is invalid. Do not change credentials or global configuration.",
       "context": "evals/fixtures/macos-sandbox-auth-failure.md",
       "expectedOutcome": "A scoped Automattic GitHub Enterprise preflight that treats sandbox failures as inconclusive and runs both the listener and identity checks outside the sandbox through the configured macOS/POSIX route.",
       "assertions": [
         "The response does not treat the sandboxed listener or gh auth status failures as proof that the listener is unavailable or the credential is invalid.",
-        "Both nc -z 127.0.0.1 8080 and the read-only identity probe run outside the sandbox.",
+        "Retained tool events show that nc -z 127.0.0.1 8080 and, after it succeeds, the read-only identity probe both ran outside the sandbox; the response does not delegate them to the user.",
         "The identity probe is HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user, and later gh commands keep both command-local environment variables.",
         "If the outside-sandbox listener check fails, the response reports an access-route blocker without recommending reauthentication or global Git, SSH, proxy, or credential changes.",
         "The response scopes the POSIX command to the configured macOS environment and does not prescribe it for Windows, PowerShell, or another unconfigured environment."
