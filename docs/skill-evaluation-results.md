@@ -46,7 +46,7 @@ Current filesystem verification found that the Codex and Antigravity `review-acc
 | Codex CLI `0.145.0` | `gpt-5.6-sol`, `xhigh`, priority tier; macOS `26.5.2` arm64 | Authenticated profile; ephemeral sessions; three concurrent workers; public, self-contained fixtures; read-only trigger sandbox and disposable output workspaces | partial |
 | Google Antigravity CLI `1.1.6` | Reported Gemini 3.6 Flash (High); macOS `26.5.2` arm64 | Reported authenticated profile, plan mode, and sandbox; permission settings, safety state, and raw event stream unverified | blocked, unverified |
 
-The isolated Codex trigger rerun used one fresh outside-repository temporary directory per attempt. It disabled user configuration, rules, plugins, apps, browser and computer control, memory, hooks, remote plugins, and multi-agent tools. Positive cases stopped after the first observed skill load. Negative cases ran to turn completion or the 90-second timeout and recorded every observed skill load.
+The isolated Codex trigger rerun used one fresh outside-repository temporary directory per attempt. It disabled user configuration, rules, plugins, apps, browser and computer control, memory, hooks, remote plugins, and multi-agent tools. Positive cases stopped after the target skill loaded. Negative cases ran to turn completion or the 90-second timeout and recorded every observed skill load.
 
 Codex output runs used one disposable workspace per case and a 240-second cap. Of 55 cases, 53 completed. The runs used 9,220,259 input tokens, including 7,953,920 cached input tokens, and 147,560 output tokens.
 
@@ -54,13 +54,13 @@ Codex output runs used one disposable workspace per case and a 240-second cap. O
 
 The committed, sanitized evidence retains each prompt, observed skill-load event, model output, token use, timeout state, workspace delta, generated artifact, assertion grade, and concise evidence:
 
-- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `09d33a97291d974f0f881048fc44c63ed16ab1d9d51be097bf9a38acef443926`;
-- [trigger runner](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/run-trigger-evaluations.mjs), SHA-256 `0faa11ea05a2b22ec27376c0a0e5e267adefc89aebbc196c2a5cc544ce621552`;
-- [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `baa0d503a31ed82dc6eb228db33aaa7ffa938721a6230916a3961855043dc599`;
+- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `93a4a17376a1be809174e07c98cdab16de2b08e48fcf318985710261ac64dfb7`;
+- [trigger runner](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/run-trigger-evaluations.mjs), SHA-256 `b5f2275e8b26b24dc258875c065ceb6eaac5f7b09ea28f1007cf693969cb8f56`;
+- [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `89eb73f0a0d3cc906f32e33ef7118fb233eccdc5982aef2f60e78b744178913f`;
 - [direct and coordinated comparison](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-review-comparison.json), SHA-256 `2d1be2aeb9b3799e134522676eeb423ed67f8ac9a24ce14069d1729fe51f5660`.
 - [Antigravity canary note](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/antigravity-canary.json), SHA-256 `f521622ad936bf76d62292bf630a930c2629e692a0d883cde6af6ee3121425de`.
 
-The versioned trigger runner records its exact invocation, feature disables, status derivation, and provenance checks. It counts only successful, completed commands whose output contains the loaded skill's frontmatter. It checks tracked and untracked skill files, terminates the complete child-process tree at the timeout with a two-second forced-kill fallback, and sanitizes both logical and resolved temporary paths. All 26 user-level Codex skill directories resolved to this checkout, and each checkout skill tree matched the target revision's Git tree object. The output campaign used an unversioned, one-off Node.js harness with one disposable writable workspace per fixture, three concurrent workers, and a 240-second cap. That output runner remains a reproducibility limitation.
+The versioned trigger runner records its exact invocation, feature disables, status derivation, and provenance checks. It counts only successful, completed commands whose output contains the loaded skill's frontmatter, and it runs deterministic classifier self-checks before the campaign. It checks tracked and untracked skill files, terminates the complete child-process tree at the timeout with a two-second forced-kill fallback, and sanitizes both logical and resolved temporary paths. All 26 user-level Codex skill directories resolved to this checkout, and each checkout skill tree matched the target revision's Git tree object. The output campaign used an unversioned, one-off Node.js harness with one disposable writable workspace per fixture, three concurrent workers, and a 240-second cap. That output runner remains a reproducibility limitation.
 
 Verify the retained files with:
 
@@ -70,35 +70,30 @@ shasum -a 256 docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*
 
 ### Codex trigger results
 
-Every trigger case ran three times. `+` means the named skill should be the first observed load. `-` means the named skill must not load anywhere in the completed turn. A mixed three-attempt result is `partial`.
+Every trigger case ran three times. `+` means the named skill should load during the turn. `-` means the named skill must not load anywhere in the completed turn. A mixed three-attempt result is `partial`.
 
-Summary: 57 of 77 cases passed, 12 were partial, one was blocked, and seven failed. Across 231 attempts, 191 passed, seven were blocked, and 33 failed. All cases omitted from this table passed. The retained JSON records every attempt and observed skill-load event.
+Summary: 66 of 77 cases passed, five were partial, and six failed. Across 231 attempts, 208 passed and 23 failed. All cases omitted from this table passed. The retained JSON records every attempt and observed skill-load event.
 
 | Skill | Non-pass cases |
 | --- | --- |
-| `address-pr-feedback` | `+address-current-pr-feedback` partial (2 `pass`, 1 `fail`); `-write-a-single-review-reply` fail (3 `fail`) |
-| `audit-dependency-update` | `+audit-existing-update` partial (2 `pass`, 1 `blocked`) |
-| `automattic-github-enterprise` | `+automattic-enterprise-pr-read` partial (1 `pass`, 2 `fail`); `-generic-enterprise-route` fail (3 `fail`) |
-| `draft-review-comment` | `-address-review-feedback` fail (3 `fail`); `+draft-confirmed-findings` partial (2 `pass`, 1 `blocked`); `-perform-pr-review` fail (3 `fail`); `+prepare-review-document` partial (2 `pass`, 1 `blocked`) |
-| `engineering-standards` | `-resume-session` partial (2 `pass`, 1 `blocked`); `+scoped-code-change` partial (2 `pass`, 1 `fail`); `+scoped-code-review` partial (1 `pass`, 2 `fail`) |
+| `address-pr-feedback` | `-write-a-single-review-reply` fail (3 `fail`) |
+| `automattic-github-enterprise` | `-generic-enterprise-route` fail (3 `fail`) |
+| `draft-review-comment` | `-address-review-feedback` fail (3 `fail`); `+draft-confirmed-findings` partial (2 `pass`, 1 `fail`); `-perform-pr-review` fail (3 `fail`); `+prepare-review-document` partial (2 `pass`, 1 `fail`) |
+| `engineering-standards` | `-resume-session` partial (2 `pass`, 1 `fail`) |
 | `iterate-pr-review` | `-iterative-external-review` fail (3 `fail`) |
-| `refactor` | `+systematic-api-migration` partial (2 `pass`, 1 `fail`) |
-| `repository-maintenance` | `+verify-github-enterprise-cli-access` blocked (3 `blocked`) |
-| `review-accessibility` | `-general-pull-request-review` partial (1 `pass`, 2 `fail`) |
-| `review-api-design` | `+public-component-api` partial (2 `pass`, 1 `fail`) |
-| `review-coordinator` | `+implicit-multi-lane-review` fail (3 `fail`) |
-| `review-pr` | `+multi-lane-pr-review` partial (1 `pass`, 2 `fail`) |
-| `review-simplicity` | `+ordinary-pr-review` fail (3 `fail`) |
+| `repository-maintenance` | `+verify-github-enterprise-cli-access` fail (3 `fail`) |
+| `review-coordinator` | `+implicit-multi-lane-review` partial (2 `pass`, 1 `fail`) |
+| `review-test-quality` | `+semantic-ui-regression` partial (2 `pass`, 1 `fail`) |
 
 ### Codex output results
 
 Assertion numbers map to each case's ordered `assertions` array in its version-controlled `evals.json`. The committed output evidence retains the assertion text, grade, concise evidence, model output, loaded skills, workspace delta, and 16 generated artifacts. Claims about conditional paths, tool execution, external state, or no mutation are `blocked` when the retained fields cannot prove them.
 
-Summary: 18 of 55 output cases passed, 35 were partial, and two were blocked. Across 194 assertions, 119 passed, three failed, and 72 were blocked. All cases omitted from this table passed. The retained JSON lists every assertion result.
+Summary: 17 of 55 output cases passed, 35 were partial, and three were blocked. Across 194 assertions, 117 passed, three failed, and 74 were blocked. All cases omitted from this table passed. The retained JSON lists every assertion result.
 
 | Skill | Non-pass cases |
 | --- | --- |
-| `address-pr-feedback` | `explicit-no-write-assessment` partial; `fresh-feedback-snapshot` partial; `chat-only-replies-with-local-fixes` partial |
+| `address-pr-feedback` | `explicit-no-write-assessment` partial; `fresh-feedback-snapshot` blocked; `chat-only-replies-with-local-fixes` partial |
 | `audit-dependency-update` | `read-only-major-update-audit` partial |
 | `automattic-github-enterprise` | `automattic-enterprise-macos-preflight` partial |
 | `draft-review-comment` | `mixed-finding-locations` partial; `chat-only-delivery` partial; `no-artifact-delivery` partial; `explicit-no-write-delivery` partial; `explicit-no-modify-delivery` partial |
@@ -117,14 +112,14 @@ Summary: 18 of 55 output cases passed, 35 were partial, and two were blocked. Ac
 | `review-documentation` | `chat-only-delivery` partial |
 | `review-internationalization` | `chat-only-delivery` partial |
 | `review-performance` | `chat-only-delivery` partial |
-| `review-pr` | `chat-only-synthesized-review` partial; `read-only-synthesized-review` partial |
+| `review-pr` | `chat-only-synthesized-review` partial; `coordinator-handoff-routing` partial; `read-only-synthesized-review` partial |
 | `review-security` | `chat-only-delivery` partial |
 | `review-simplicity` | `chat-only-delivery` partial |
 | `review-test-quality` | `chat-only-delivery` partial |
 | `self-review-pr` | `chat-only-self-review` partial; `independent-snapshot-self-review` partial |
 | `write-pr-description` | `behavior-first-local-draft` partial |
 
-The three failed assertions are: the `address-pr-feedback` run timed out before returning draft replies; the Enterprise preflight response instructed the user to run its probes instead of executing them outside the sandbox; and the current-head iteration output omitted the base revision. The 72 blocked assertions are evidence gaps, not accepted instruction failures.
+The three failed assertions are: the `address-pr-feedback` run timed out before returning draft replies; the Enterprise preflight response instructed the user to run its probes instead of executing them outside the sandbox; and the current-head iteration output omitted the base revision. The 74 blocked assertions are evidence gaps, not accepted instruction failures.
 
 ### Direct and coordinated review comparison
 
@@ -145,18 +140,17 @@ The `review-accessibility/no-artifact-delivery` canary is reported blocked, but 
 
 The accepted instruction failures are:
 
-1. A single review-reply request selected `address-pr-feedback` instead of `draft-review-comment` in all three attempts.
-2. A generic non-Automattic Enterprise request selected `automattic-github-enterprise` in all three attempts.
-3. An address-feedback workflow loaded `draft-review-comment` in all three negative attempts.
-4. A general pull-request review loaded `draft-review-comment` in all three negative attempts.
-5. An iterative review request for another author's pull request selected `iterate-pr-review` in all three attempts.
-6. An implicit multi-lane review request selected `review-pr` before `review-coordinator` in all three attempts.
-7. An ordinary pull-request review selected `review-pr` before the required `review-simplicity` pass in all three attempts.
-8. The chat-only feedback run timed out before it returned the draft replies.
-9. The Enterprise preflight response told the user to run the required probes instead of executing them outside the sandbox.
-10. The current-head iteration output omitted the base revision.
-11. Direct and coordinated review assigned materially different severities to the same two findings.
+1. A single review-reply request selected `address-pr-feedback` instead of `draft-review-comment` in all three attempts. Follow-up: [#73](https://github.com/ciampo/ai-instructions/issues/73).
+2. A generic non-Automattic Enterprise request selected `automattic-github-enterprise` in all three attempts. Follow-up: [#74](https://github.com/ciampo/ai-instructions/issues/74).
+3. An address-feedback workflow loaded `draft-review-comment` in all three negative attempts. Follow-up: [#73](https://github.com/ciampo/ai-instructions/issues/73).
+4. A general pull-request review loaded `draft-review-comment` in all three negative attempts. Follow-up: [#73](https://github.com/ciampo/ai-instructions/issues/73).
+5. An iterative review request for another author's pull request selected `iterate-pr-review` in all three attempts. Follow-up: [#75](https://github.com/ciampo/ai-instructions/issues/75).
+6. The Enterprise CLI verification request did not load `repository-maintenance` in all three positive attempts. Follow-up: [#76](https://github.com/ciampo/ai-instructions/issues/76).
+7. The chat-only feedback run timed out before it returned the draft replies. Follow-up: [#77](https://github.com/ciampo/ai-instructions/issues/77).
+8. The Enterprise preflight response told the user to run the required probes instead of executing them outside the sandbox. Follow-up: [#78](https://github.com/ciampo/ai-instructions/issues/78).
+9. The current-head iteration output omitted the base revision. Follow-up: [#79](https://github.com/ciampo/ai-instructions/issues/79).
+10. Direct and coordinated review assigned materially different severities to the same two findings. Follow-up: [#80](https://github.com/ciampo/ai-instructions/issues/80).
 
 Partial and blocked trigger cases are routing gaps, not accepted failures. Blocked output assertions are evidence gaps. The two timed-out output cases and the unverified Antigravity canary remain verification gaps except for their explicitly retained evidence.
 
-Do not fix these failures in this evidence pull request. Open focused follow-up issues or pull requests before changing the evaluated instruction revision. Remote issue creation was not part of this campaign's authorization, so those links remain required before this campaign can be considered complete.
+Do not fix these failures in this evidence pull request. Use the focused follow-ups above before changing the evaluated instruction revision.

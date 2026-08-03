@@ -22,6 +22,12 @@ const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
 const outputFlag = process.argv.indexOf( '--output' );
 
+if ( process.argv.includes( '--verify-classifier' ) ) {
+	verifyClassifier();
+	process.stdout.write( 'Classifier self-checks passed.\n' );
+	process.exit( 0 );
+}
+
 if ( outputFlag === -1 || ! process.argv[ outputFlag + 1 ] ) {
 	throw new Error( 'Usage: run-trigger-evaluations.mjs --output <path>' );
 }
@@ -135,6 +141,40 @@ function sanitize( value ) {
 
 function escapeRegExp( value ) {
 	return value.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+}
+
+function classifyAttempt( testCase, observedSkills, completed ) {
+	const targetLoaded = observedSkills.includes( testCase.skill );
+
+	if ( testCase.shouldTrigger ) {
+		return targetLoaded ? 'pass' : completed ? 'fail' : 'blocked';
+	}
+
+	return targetLoaded ? 'fail' : completed ? 'pass' : 'blocked';
+}
+
+function verifyClassifier() {
+	const target = { skill: 'target', shouldTrigger: true };
+	const nearMiss = { skill: 'target', shouldTrigger: false };
+	const checks = [
+		[ target, [ 'target' ], false, 'pass' ],
+		[ target, [ 'other', 'target' ], false, 'pass' ],
+		[ target, [ 'other' ], true, 'fail' ],
+		[ target, [], true, 'fail' ],
+		[ target, [], false, 'blocked' ],
+		[ nearMiss, [ 'other' ], true, 'pass' ],
+		[ nearMiss, [ 'target' ], true, 'fail' ],
+		[ nearMiss, [], false, 'blocked' ],
+	];
+
+	for ( const [ testCase, observedSkills, completed, expected ] of checks ) {
+		const actual = classifyAttempt( testCase, observedSkills, completed );
+		if ( actual !== expected ) {
+			throw new Error(
+				`Classifier self-check failed: expected ${ expected }, received ${ actual }.`
+			);
+		}
+	}
 }
 
 function loadedSkillNames( command, aggregatedOutput, exitCode ) {
@@ -304,7 +344,10 @@ async function runAttempt( testCase, attempt, ordinal ) {
 				}
 			}
 
-			if ( testCase.shouldTrigger && observedSkills.length > 0 ) {
+			if (
+				testCase.shouldTrigger &&
+				observedSkills.includes( testCase.skill )
+			) {
 				intentionallyStopped = true;
 				requestStop();
 			}
@@ -339,18 +382,7 @@ async function runAttempt( testCase, attempt, ordinal ) {
 
 	await fs.rm( workspace, { recursive: true, force: true } );
 
-	let status;
-	if ( testCase.shouldTrigger ) {
-		status = observedSkills.length === 0
-			? 'blocked'
-			: observedSkills[ 0 ] === testCase.skill
-				? 'pass'
-				: 'fail';
-	} else if ( observedSkills.includes( testCase.skill ) ) {
-		status = 'fail';
-	} else {
-		status = completed ? 'pass' : 'blocked';
-	}
+	const status = classifyAttempt( testCase, observedSkills, completed );
 
 	return {
 		ordinal,
@@ -372,6 +404,8 @@ async function runAttempt( testCase, attempt, ordinal ) {
 async function writeOutput( campaign ) {
 	await fs.writeFile( outputPath, `${ JSON.stringify( campaign, null, 2 ) }\n` );
 }
+
+verifyClassifier();
 
 const cases = await loadCases();
 const attempts = cases.flatMap( ( testCase, caseIndex ) =>
@@ -409,8 +443,9 @@ const campaign = {
 		timeoutSeconds: timeoutMs / 1000,
 		workspace: 'Fresh outside-repository temporary directory for every attempt.',
 		ambientCapabilities: 'User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
-		positiveStop: 'Stop after the first observed skill load.',
+		positiveStop: 'Stop after the target skill loads.',
 		negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
+		classification: 'Positive cases pass when the target loads and fail when a completed turn omits it. Negative cases fail when the target loads and pass only on completion without it. Incomplete attempts are blocked.',
 	},
 	provenance,
 	results: [],

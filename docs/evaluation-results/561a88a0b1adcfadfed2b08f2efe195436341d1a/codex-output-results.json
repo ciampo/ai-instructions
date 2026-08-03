@@ -164,8 +164,8 @@
         {
           "index": 1,
           "assertion": "The workflow collects source and feedback from the same pinned PR snapshot before categorizing feedback.",
-          "status": "pass",
-          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+          "status": "blocked",
+          "evidence": "The retained finalText and artifacts show the resulting patch, but the result does not include tool-event evidence that proves the source and feedback came from one pinned snapshot before categorization."
         },
         {
           "index": 2,
@@ -2420,8 +2420,8 @@
         {
           "index": 3,
           "assertion": "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
-          "status": "pass",
-          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
+          "status": "blocked",
+          "evidence": "The loaded skill names show that the relevant skills loaded, but the result does not include tool-event evidence that proves the simplicity handoff completed or that lane counting excluded it."
         },
         {
           "index": 4,
