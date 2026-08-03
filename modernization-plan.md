@@ -14,7 +14,7 @@ The initial delivered architecture had a budget-constrained universal core, 17 s
 
 | Area | Current contract |
 | --- | --- |
-| Persistent context | Budget-limited `AGENTS.md` generated from `instructions/core.md` |
+| Persistent context | Budget-limited root `AGENTS.md` as the canonical shared source for native instruction adapters |
 | On-demand capability | Self-contained `skills/<name>/SKILL.md` directories validated in CI |
 | Specialist reviews | Direct specialist skills plus an optional subagent-capable coordinator; no bundled custom agents |
 | Orchestration | Every PR review applies the simplicity baseline; `review-pr` owns the direct-specialist path, while `review-coordinator` owns additional specialist routing, rechecking, refresh, deduplication, and final delivery when selected |
