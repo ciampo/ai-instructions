@@ -26,7 +26,7 @@ Review whether the available evidence establishes the changed behavior from the 
 
 When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
-For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. A test-quality finding must name a concrete changed behavior and explain why the existing test could pass while that behavior regresses. Missing runtime, browser, or integration evidence belongs under verification gaps when the source does not establish a defect.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A test-quality finding must name a concrete changed behavior and explain why the existing test could pass while that behavior regresses. Missing runtime, browser, or integration evidence belongs under verification gaps when the source does not establish a defect.
 
 ## Completion criteria
 

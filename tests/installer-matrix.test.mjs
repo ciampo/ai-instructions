@@ -670,9 +670,18 @@ test( 'ownership-check errors restore captured paths', async ( t ) => {
 
 test( 'content contracts enforce the universal instruction budget and evaluation fixture coverage', async () => {
 	const result = await validateContent( repoDir );
-	assert.equal( result.evaluationCount, 18 );
+	assert.equal( result.evaluationCount, 19 );
 	assert.ok( result.universal.lines <= 150 );
 	assert.ok( result.universal.bytes <= 8 * 1024 );
+} );
+
+test( 'iterative review launcher preserves explicit mutation authority', async () => {
+	const launcher = await readFile(
+		path.join( repoDir, 'skills', 'iterate-pr-review', 'agents', 'openai.yaml' ),
+		'utf8'
+	);
+	assert.doesNotMatch( launcher, /apply accepted fixes|commit|push/ );
+	assert.match( launcher, /explicitly authorized/ );
 } );
 
 test( 'content contracts reject invalid review dates', () => {

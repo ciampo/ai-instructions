@@ -26,7 +26,7 @@ Review whether a supported pre-change state can safely reach, use, and leave the
 
 When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
-For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. Confirmed findings use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when a supported boundary and incompatible behavior are evidenced. Missing historical data, policy, or upgrade coverage is a verification gap, not a severity finding.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. Confirmed findings use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when a supported boundary and incompatible behavior are evidenced. Missing historical data, policy, or upgrade coverage is a verification gap, not a severity finding.
 
 ## Completion criteria
 

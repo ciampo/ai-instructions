@@ -11,7 +11,7 @@ This is a supporting skill — typically chained into by `review-pr`, `self-revi
 
 ## Output Delivery
 
-Multi-finding review output goes into a **single Markdown document** by default. When the user explicitly requests chat delivery, return only the requested concise, copy-pasteable comment or comments in chat unless they also explicitly request file delivery.
+Multi-finding review output goes into a **single Markdown document** by default. Treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return only the requested concise, copy-pasteable comment or comments in chat and do not create or open a local file unless the user also explicitly requests file delivery.
 
 1. For default document delivery, write findings to a file in the **OS temporary directory** (e.g., `$TMPDIR` on macOS, `/tmp` on Linux). Use a descriptive name such as `<pr-number>-review.md` (or `review-<timestamp>.md` when no PR number is available). Calling skills may override the filename (e.g., `-self-review.md`, `-replies.md`). On update (e.g., multi-round reviews), **overwrite the file** with the full revised content — do not append.
 2. When a file was written, open it in the current editor if the host exposes that capability. Otherwise, provide the path so it can be opened manually. In chat, print only a one-line confirmation with the file path.

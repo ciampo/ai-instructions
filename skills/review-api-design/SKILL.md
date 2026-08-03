@@ -30,7 +30,7 @@ Review the public contract from the consumer's perspective and report only mater
 
 When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
-For multiple findings, write one portable Markdown artifact in the OS temporary directory and return its path. Use chat snippets only when explicitly requested.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write multiple findings to one portable Markdown artifact in the OS temporary directory and return its path.
 
 Start with a short evidence and surface assessment, including material missing evidence. Then order findings by `[critical]`, `[major]`, `[minor]`, or `[nit]` based on concrete consumer impact and likelihood. Each finding must include the affected public member, evidence from consumers or established contracts, the compatibility or usability consequence, and a concise alternative. Use exact lines only for inline findings; do not invent a location for a package-level concern.
 

@@ -24,6 +24,6 @@ Reading the current remote PR state is allowed. Addressing feedback authorizes a
    - When practical, include brief steps the reviewer can use to reproduce or verify the result.
    - For won't-fix items, explain the high-level trade-off respectfully.
    - Use the `draft-review-comment` skill for structure and quality. Identify the original feedback honestly: use its exact file path and line range for inline comments, its file path for file-level comments, and a PR thread link or short label for general feedback. Never invent a code location. Keep each reply self-contained and copy-pasteable.
-   - Override the default filename: write all replies to `<pr-number>-replies.md` in the OS temporary directory. Open it when the host supports editor control; otherwise return the path.
+   - Treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the replies in chat and do not create or open a local file. Otherwise, override the default filename: write all replies to `<pr-number>-replies.md` in the OS temporary directory. Open it when the host supports editor control; otherwise return the path.
    - Never post replies to GitHub unless the user explicitly asks.
 8. **Prepare metadata changes**: If the scope or approach shifted based on feedback, draft the necessary PR-description update. Apply it only when the user authorized GitHub writes.

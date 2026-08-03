@@ -34,7 +34,7 @@ Coordinate independent specialist investigations without replacing the core `rev
 
 ## Output contract
 
-The coordinator owns one final review artifact or requested chat response using the bundled delivery format. State the repository, pinned base and head revisions, and target audience once in that response. Do not include a panel transcript, vote count, model attribution, or separate specialist reports. Attribute a domain only when it helps explain the evidence.
+The coordinator owns one final review artifact or requested chat response using the bundled delivery format. Treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests; in that mode, do not create or open a local file. State the repository, pinned base and head revisions, and target audience once in that response. Do not include a panel transcript, vote count, model attribution, or separate specialist reports. Attribute a domain only when it helps explain the evidence.
 
 A retained finding must include an exact location when available, concrete impact, source-backed evidence, and a focused alternative or question. Specialist disagreement, absent measurements, unknown consumers, missing policy, and unobserved runtime behavior remain verification gaps unless the coordinator independently establishes the claim.
 

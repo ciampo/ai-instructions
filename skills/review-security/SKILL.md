@@ -26,7 +26,7 @@ Review concrete trust boundaries and sensitive-data flows without presenting gen
 
 When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
-For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. A security finding must identify the reachable boundary, concrete missing or ineffective control, impact, and evidence. Possible attack paths without that evidence are verification gaps, not `[critical]` or `[major]` findings. Route dependency-release and vulnerability research to `audit-dependency-update` rather than duplicating it.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A security finding must identify the reachable boundary, concrete missing or ineffective control, impact, and evidence. Possible attack paths without that evidence are verification gaps, not `[critical]` or `[major]` findings. Route dependency-release and vulnerability research to `audit-dependency-update` rather than duplicating it.
 
 ## Completion criteria
 

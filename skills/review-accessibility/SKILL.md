@@ -11,7 +11,7 @@ Review the scoped user experience deeply enough to find material accessibility r
 
 - Keep the review read-only. Reading source, consumers, tests, rendered behavior, and public standards is allowed.
 - Do not modify repository source, snapshots, configuration, or generated files. Do not commit, push, post a review, resolve threads, or update pull-request metadata.
-- A local Markdown review artifact is an allowed output of the requested review. Use chat snippets only when the user explicitly requests them.
+- A local Markdown review artifact is an allowed output of the requested review unless the user sets a no-file boundary.
 - If the request asks for both review and implementation, finish and report the review first, then use an implementation workflow under that separate authority.
 
 ## Review method
@@ -29,7 +29,7 @@ Review the scoped user experience deeply enough to find material accessibility r
 
 When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
-By default, write one portable Markdown artifact in the OS temporary directory and return its path. When the user explicitly requests chat delivery, return only the requested finding or findings in chat.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return only the requested finding or findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory and return its path.
 
 Structure a full review as:
 

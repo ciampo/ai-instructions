@@ -26,7 +26,7 @@ Review whether written guidance helps its intended reader complete a real task w
 
 When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
-For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. A documentation finding must identify an incorrect, missing, unsafe, stale, or demonstrably obstructive statement and its reader impact. A subjective preference about concise writing without a reader consequence is not a finding.
+For direct use, treat `chat only`, `no artifact`, `do not write files`, and `do not modify files` as explicit chat-delivery requests. In that mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A documentation finding must identify an incorrect, missing, unsafe, stale, or demonstrably obstructive statement and its reader impact. A subjective preference about concise writing without a reader consequence is not a finding.
 
 ## Completion criteria
 
