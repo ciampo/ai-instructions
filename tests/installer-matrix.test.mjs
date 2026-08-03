@@ -1426,6 +1426,22 @@ test( 'Codex check counts managed instructions blocked by an override as broken'
 	assert.equal( await pathExists( managedPath ), true );
 } );
 
+test( 'standalone Copilot repository export does not modify detected product configurations', async ( t ) => {
+	const platform = manifest.platforms.find( ( entry ) => entry.id === 'copilot' );
+	const home = await createDetectedHome( platform );
+	const project = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-copilot-standalone-' ) );
+	t.after( () => rm( home, { recursive: true, force: true } ) );
+	t.after( () => rm( project, { recursive: true, force: true } ) );
+
+	runInstaller( home, [ '--copilot-concat', project ] );
+
+	assert.match(
+		await readFile( path.join( project, 'AGENTS.md' ), 'utf8' ),
+		/^<!-- ai-instructions:managed -->\n# Core Instructions/m
+	);
+	assert.deepEqual( await filesInDirectory( home ), [] );
+} );
+
 test( 'explicit Copilot repository export manages only AGENTS.md', async ( t ) => {
 	const platform = manifest.platforms.find( ( entry ) => entry.id === 'copilot' );
 	const home = await createDetectedHome( platform );
