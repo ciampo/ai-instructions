@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "audit-existing-update",
+      "prompt": "Audit this pull request's parser dependency update for compatibility and security.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "implement-package-update",
+      "prompt": "Update our test runner to the latest compatible release and verify the migration.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "debug-runtime-error",
+      "prompt": "Investigate why the parser throws when this input is empty.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "publish-prepared-release",
+      "prompt": "Publish the already prepared package release.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "read-only-major-update-audit",
+      "prompt": "Audit this existing dependency update. Do not modify any files.",
+      "context": "evals/fixtures/parser-major-update.md",
+      "expectedOutcome": "A read-only audit that identifies the incompatible parser usage, distinguishes the target from the latest version, and reports unavailable security evidence as a gap.",
+      "assertions": [
+        "The audit compares the current resolved, target, and latest versions.",
+        "The audit identifies the documented return-type change and the affected repository usage.",
+        "The unavailable registry audit is reported as a verification gap rather than a clean security result.",
+        "The workflow does not modify manifests, lockfiles, source, tests, snapshots, commits, or remote state."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "scoped-code-change",
+      "prompt": "Implement this JavaScript authentication boundary using the repository's engineering standards.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "scoped-code-review",
+      "prompt": "Review this React component against our accessibility and design-system standards.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "write-pr-description",
+      "prompt": "Write a concise pull-request description for these completed changes.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "resume-session",
+      "prompt": "Continue where the previous coding session stopped.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "load-only-relevant-standards",
+      "prompt": "Review the proposed server-side JavaScript change using only the relevant engineering standards.",
+      "context": "evals/fixtures/scoped-references.md",
+      "expectedOutcome": "A scoped review that applies coding and security guidance without loading unrelated UI, localization, or performance guidance.",
+      "assertions": [
+        "The workflow applies the coding-principles and security references because the change handles an authorization boundary.",
+        "The workflow does not apply accessibility, design-system, internationalization, or performance guidance without a matching risk.",
+        "The repository's existing request-context convention takes precedence over a personal implementation preference.",
+        "The review remains read-only and does not infer commit or remote-write authority."
+      ]
+    }
+  ]
+}
