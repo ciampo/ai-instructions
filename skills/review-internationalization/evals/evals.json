@@ -23,6 +23,17 @@
         "It does not assume RTL failure without rendered evidence.",
         "It recommends repository-consistent locale-aware message construction."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this localized message and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/file-count.md",
+      "expectedOutcome": "A read-only internationalization review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the internationalization findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

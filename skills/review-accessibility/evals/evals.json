@@ -23,6 +23,18 @@
         "Confirmed findings cite applicable primary accessibility sources.",
         "Unobserved runtime behavior is reported as a verification gap rather than a confirmed violation."
       ]
+    },
+    {
+      "id": "no-artifact-delivery",
+      "prompt": "Audit this dialog for accessibility. Return the findings in chat only; do not create a review artifact or post anything.",
+      "context": "evals/fixtures/dialog-focus.md",
+      "expectedOutcome": "A source-backed accessibility assessment returned in chat without creating a local artifact.",
+      "assertions": [
+        "The response returns the assessment directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify the component or any remote state.",
+        "Confirmed findings remain distinct from runtime verification gaps."
+      ]
     }
   ]
 }

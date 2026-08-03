@@ -11,6 +11,8 @@ A workflow for systematically addressing review comments on a PR. Invoked when I
 
 Reading the current remote PR state is allowed. Addressing feedback authorizes accepted local fixes, but not merging or rebasing remote changes into the local branch, committing, pushing, editing PR metadata, resolving threads, or posting replies unless the user separately requests those actions.
 
+A `chat only` or `no artifact` request changes only reply delivery; it does not revoke local-fix authority. An explicit `do not write files` or `do not modify files` instruction revokes local-fix authority and limits the workflow to read-only assessment with replies in chat.
+
 ## Steps
 
 1. **Identify the repository**: Derive repository identity from the canonical PR URL instead of assuming the local `origin` is upstream.
@@ -24,6 +26,6 @@ Reading the current remote PR state is allowed. Addressing feedback authorizes a
    - When practical, include brief steps the reviewer can use to reproduce or verify the result.
    - For won't-fix items, explain the high-level trade-off respectfully.
    - Use the `draft-review-comment` skill for structure and quality. Identify the original feedback honestly: use its exact file path and line range for inline comments, its file path for file-level comments, and a PR thread link or short label for general feedback. Never invent a code location. Keep each reply self-contained and copy-pasteable.
-   - Override the default filename: write all replies to `<pr-number>-replies.md` in the OS temporary directory. Open it when the host supports editor control; otherwise return the path.
+   - Follow the `draft-review-comment` delivery rules. Return replies in chat without creating or opening a local file for `chat only`, `no artifact`, `do not write files`, or `do not modify files`; otherwise override the default filename and write all replies to `<pr-number>-replies.md` in the OS temporary directory. Open it when the host supports editor control; otherwise return the path.
    - Never post replies to GitHub unless the user explicitly asks.
 8. **Prepare metadata changes**: If the scope or approach shifted based on feedback, draft the necessary PR-description update. Apply it only when the user authorized GitHub writes.

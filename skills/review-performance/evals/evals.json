@@ -45,6 +45,17 @@
         "The review identifies that the supplied profile and scale lack an explicit performance budget or comparable impact contract.",
         "The review produces no severity-rated finding or optimization recommendation and requests the missing explicit performance budget or comparable impact contract needed to evaluate the measured cost."
       ]
+    },
+    {
+      "id": "chat-only-delivery",
+      "prompt": "Review this measured rendering path and return the findings in chat only. Do not create a review artifact or post anything.",
+      "context": "evals/fixtures/measured-rendering-budget-breach.md",
+      "expectedOutcome": "A read-only performance review returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the performance findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not modify source or post to GitHub."
+      ]
     }
   ]
 }

@@ -25,6 +25,28 @@
         "The workflow stops and reports the missing capability instead of categorizing feedback or changing code from an incomplete snapshot.",
         "The workflow has a supported path when the CLI cannot provide required review state and does not post replies or resolve threads."
       ]
+    },
+    {
+      "id": "chat-only-replies-with-local-fixes",
+      "prompt": "Address the valid feedback locally and return the draft replies in chat only. Do not create a reply artifact or post anything.",
+      "context": "evals/fixtures/cli-first-feedback.md",
+      "expectedOutcome": "Accepted local fixes with reply drafts returned in chat, without a local reply artifact or GitHub communication.",
+      "assertions": [
+        "The workflow applies and verifies accepted local fixes because chat-only delivery does not revoke local-fix authority.",
+        "The workflow returns the draft replies in chat without creating or opening a local reply document.",
+        "The workflow does not post replies, resolve threads, or edit pull-request metadata."
+      ]
+    },
+    {
+      "id": "explicit-no-write-assessment",
+      "prompt": "Assess the valid feedback and draft replies in chat, but do not modify or write any files and do not post anything.",
+      "context": "evals/fixtures/cli-first-feedback.md",
+      "expectedOutcome": "A read-only feedback assessment with reply drafts in chat and no local or remote mutation.",
+      "assertions": [
+        "The workflow assesses the feedback but does not apply local fixes because file writes are explicitly prohibited.",
+        "The workflow does not create or open a local reply document.",
+        "The workflow does not commit, push, post replies, resolve threads, or edit pull-request metadata."
+      ]
     }
   ]
 }

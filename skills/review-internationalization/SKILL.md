@@ -26,7 +26,7 @@ Review whether the changed experience can be translated and rendered correctly a
 
 When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
-For direct use, write one portable Markdown artifact in the OS temporary directory unless chat delivery is explicitly requested. A finding must identify the affected localized behavior and repository or source evidence. An unobserved rendering problem, unsupported locale, or uncertain translator meaning is a verification gap, not a severity finding.
+For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A finding must identify the affected localized behavior and repository or source evidence. An unobserved rendering problem, unsupported locale, or uncertain translator meaning is a verification gap, not a severity finding.
 
 ## Completion criteria
 
