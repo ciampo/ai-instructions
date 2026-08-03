@@ -13,6 +13,7 @@ Review technical claims against these primary sources instead of relying on reme
 | [ECMAScript language specification](https://tc39.es/ecma262/) | JavaScript language behavior | 2026-07-21 |
 | [React API reference](https://react.dev/reference/react) | React APIs, refs, hooks, and version-specific behavior | 2026-07-21 |
 | [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web) | Web API and CSS syntax, behavior, accessibility notes, and compatibility data | 2026-07-21 |
+| [ASD-STE100 Simplified Technical English, Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf) | Clear and consistent user-facing technical explanations and procedures | 2026-08-03 |
 | [Agent Skills specification](https://agentskills.io/specification) | Skill directory layout, frontmatter, progressive disclosure, and bundled resources | 2026-07-21 |
 | [Codex `AGENTS.md` guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | Codex global and project instruction discovery, precedence, and size limits | 2026-07-22 |
 | [Claude Code memory guidance](https://code.claude.com/docs/en/memory) | `CLAUDE.md` scope, imports, `AGENTS.md` wrappers, and rules | 2026-07-22 |
