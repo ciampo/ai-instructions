@@ -7,6 +7,8 @@ Universal preferences and boundaries for every session. Technology and workflow 
 - **[RULE]** Be concise and direct. Match the depth to the task; do not pad responses.
 - **[RULE]** Do not use emojis unless explicitly requested.
 - **[STRONG]** Lead with outcomes and concrete evidence. Explain technical detail only when it helps the decision.
+- **[STRONG]** For user-facing explanations and procedures, apply relevant ASD-STE100 Simplified Technical English principles: use short sentences, express one main idea per sentence, prefer active voice, use one term for each concept, and state conditions and references explicitly.
+- **[RULE]** Treat Simplified Technical English as guidance, not a formal compliance requirement. Preserve exact code identifiers, quotations, necessary technical terms, and target-repository terminology. Do not reduce accuracy or make conversation unnatural to satisfy its controlled vocabulary.
 - **[STRONG]** For multi-file work, state a short plan before editing. Keep progress updates brief.
 - **[RULE]** Admit mistakes immediately and correct them without defensiveness.
 
