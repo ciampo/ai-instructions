@@ -42,7 +42,7 @@ Before proposing a skill, classify the repeated gap in the pull request's **Why*
 
 Do not add this classification to portable frontmatter. It is planning context, not a routing signal, and vendor support for optional frontmatter varies.
 
-New or materially changed skills should include `evals/evals.json` with realistic positive and near-miss trigger cases plus at least one output case. Follow the [skill evaluation guide](docs/skill-evaluations.md); add the fixture when a workflow is introduced or materially reshaped, rather than backfilling the catalogue mechanically.
+Every distributed skill includes `evals/evals.json` with realistic positive and near-miss trigger cases plus at least one output case. Add the fixture with a new skill, and update it when a skill's description, routing boundary, authority, output contract, or workflow changes materially. Follow the [skill evaluation guide](docs/skill-evaluations.md); CI enforces complete named coverage.
 
 ## Specialist Execution
 

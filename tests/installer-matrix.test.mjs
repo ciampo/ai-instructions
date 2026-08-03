@@ -135,6 +135,32 @@ function normalizedWithTrailingNewline( content ) {
 	return content.endsWith( '\n' ) ? content : `${ content }\n`;
 }
 
+async function writeEvaluationFixture( skillDirectory ) {
+	const evaluationDirectory = path.join( skillDirectory, 'evals' );
+	await mkdir( path.join( evaluationDirectory, 'fixtures' ), { recursive: true } );
+	await writeFile(
+		path.join( evaluationDirectory, 'fixtures', 'example.md' ),
+		'# Example evaluation context\n'
+	);
+	await writeFile(
+		path.join( evaluationDirectory, 'evals.json' ),
+		`${ JSON.stringify( {
+			schemaVersion: 1,
+			triggerCases: [
+				{ id: 'positive', prompt: 'Use the example skill.', shouldTrigger: true },
+				{ id: 'negative', prompt: 'Do not use the example skill.', shouldTrigger: false },
+			],
+			outputCases: [ {
+				id: 'output',
+				prompt: 'Use the example skill.',
+				context: 'evals/fixtures/example.md',
+				expectedOutcome: 'A useful result.',
+				assertions: [ 'The result is useful.' ],
+			} ],
+		}, null, 2 ) }\n`
+	);
+}
+
 async function createContentFixture( t, {
 	agentContent = '---\nname: example-agent\ndescription: Example agent.\n---\n',
 	includeEvaluation = true,
@@ -166,29 +192,7 @@ async function createContentFixture( t, {
 		`---\nname: example-skill\ndescription: Example skill.\n---\n${ referenceContent === undefined ? '' : '\nRead [the reference](references/example.md).\n' }`
 	);
 	if ( includeEvaluation ) {
-		const evaluationDirectory = path.join( fixture, 'skills', 'example-skill', 'evals' );
-		await mkdir( path.join( evaluationDirectory, 'fixtures' ), { recursive: true } );
-		await writeFile(
-			path.join( evaluationDirectory, 'fixtures', 'example.md' ),
-			'# Example evaluation context\n'
-		);
-		await writeFile(
-			path.join( evaluationDirectory, 'evals.json' ),
-			`${ JSON.stringify( {
-				schemaVersion: 1,
-				triggerCases: [
-					{ id: 'positive', prompt: 'Use the example skill.', shouldTrigger: true },
-					{ id: 'negative', prompt: 'Do not use the example skill.', shouldTrigger: false },
-				],
-				outputCases: [ {
-					id: 'output',
-					prompt: 'Use the example skill.',
-					context: 'evals/fixtures/example.md',
-					expectedOutcome: 'A useful result.',
-					assertions: [ 'The result is useful.' ],
-				} ],
-			}, null, 2 ) }\n`
-		);
+		await writeEvaluationFixture( path.join( fixture, 'skills', 'example-skill' ) );
 	}
 	if ( referenceContent !== undefined ) {
 		await writeFile(
@@ -721,6 +725,25 @@ test( 'content contracts identify skills without evaluation fixtures', async ( t
 	await assert.rejects(
 		validateContent( fixture ),
 		/Missing evaluation fixtures for: example-skill/
+	);
+} );
+
+test( 'content contracts enforce the aggregate skill-description budget', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	for ( let index = 0; index < 12; index++ ) {
+		const name = `budget-skill-${ index }`;
+		const skillDirectory = path.join( fixture, 'skills', name );
+		await mkdir( skillDirectory );
+		await writeFile(
+			path.join( skillDirectory, 'SKILL.md' ),
+			`---\nname: ${ name }\ndescription: ${ 'x'.repeat( 1024 ) }\n---\n`
+		);
+		await writeEvaluationFixture( skillDirectory );
+	}
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/Skill descriptions exceed the 12288 byte aggregate budget: 12302 bytes/
 	);
 } );
 
