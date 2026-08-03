@@ -4,6 +4,15 @@
 
 ### Changed
 
+- Add STE-inspired communication guidance and reliable GitHub Enterprise preflight routing. ([#65](https://github.com/ciampo/ai-instructions/pull/65), [#66](https://github.com/ciampo/ai-instructions/pull/66))
+- Add mandatory simplicity review, evidence-gated specialist findings, and an optional coordinated specialist-review workflow. ([#59](https://github.com/ciampo/ai-instructions/pull/59), [#60](https://github.com/ciampo/ai-instructions/pull/60), [#64](https://github.com/ciampo/ai-instructions/pull/64))
+- Add bounded PR-review iteration while preserving explicit edit, commit, and push authority. ([#61](https://github.com/ciampo/ai-instructions/pull/61))
+- Record current Codex IDE and Antigravity product evidence, and add migration-safe Antigravity installation support. ([#55](https://github.com/ciampo/ai-instructions/pull/55), [#57](https://github.com/ciampo/ai-instructions/pull/57), [#62](https://github.com/ciampo/ai-instructions/pull/62))
+- Clarify documentation ownership, task-title lifecycle, and approved GitHub Enterprise access routing. ([#50](https://github.com/ciampo/ai-instructions/pull/50), [#52](https://github.com/ciampo/ai-instructions/pull/52), [#53](https://github.com/ciampo/ai-instructions/pull/53))
+- Preserve no-write release-preparation boundaries and add evaluation evidence for repository-maintenance routing. ([#51](https://github.com/ciampo/ai-instructions/pull/51), [#54](https://github.com/ciampo/ai-instructions/pull/54))
+- Add versioned skill-evaluation fixtures and audit the skills-first platform-support contract. ([#45](https://github.com/ciampo/ai-instructions/pull/45), [#46](https://github.com/ciampo/ai-instructions/pull/46))
+- Make `AGENTS.md` the canonical shared project instruction artifact and prefer connector or CLI evidence for pull-request reviews. ([#44](https://github.com/ciampo/ai-instructions/pull/44), [#47](https://github.com/ciampo/ai-instructions/pull/47))
+- Override the vulnerable transitive `js-yaml` release and update Markdown tooling. ([#58](https://github.com/ciampo/ai-instructions/pull/58), [#63](https://github.com/ciampo/ai-instructions/pull/63))
 - Record live product-discovery results, scope Gemini CLI preview support to non-individual authentication, and track Google Antigravity CLI as a separate surface. ([#41](https://github.com/ciampo/ai-instructions/pull/41))
 - Replace duplicated accessibility, API-design, and performance agents with direct review skills, preserve managed-agent cleanup, and publish the final skill-first architecture. ([#39](https://github.com/ciampo/ai-instructions/pull/39))
 - Keep platform support in preview until in-product discovery evidence is recorded, and define compatibility-removal and native-distribution policies. ([#25](https://github.com/ciampo/ai-instructions/pull/25))
