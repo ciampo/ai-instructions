@@ -284,6 +284,21 @@ test( 'manifest declares complete, current platform contracts', () => {
 	}
 } );
 
+test( 'CI workflow uses least privilege and immutable action references', async () => {
+	const source = await readFile( path.join( repoDir, '.github', 'workflows', 'lint.yml' ), 'utf8' );
+	const sources = [ source, normalizedWithTrailingNewline( source ).replace( /\n/g, '\r\n' ) ];
+	for ( const candidate of sources ) {
+		const workflow = normalizedWithTrailingNewline( candidate );
+		assert.match( workflow, /^permissions:\n  contents: read\n(?=\n|\S)/m );
+		assert.doesNotMatch( workflow, /uses:\s+[^\s@]+@v\d+/ );
+		const actionReferences = [ ...workflow.matchAll( /uses:\s+[^\s@]+@([^\s#]+)/g ) ];
+		assert.ok( actionReferences.length > 0 );
+		for ( const reference of actionReferences ) {
+			assert.match( reference[ 1 ], /^[0-9a-f]{40}$/ );
+		}
+	}
+} );
+
 test( 'legacy upgrade fixture is frozen at the pre-modernization revision', () => {
 	assert.equal( legacyFixture.sourceRevision, '66fcb79ade8c32bfd9a2f8848438ccb9a716f4e1' );
 	assert.equal( legacyFixture.instructions.length, 14 );
