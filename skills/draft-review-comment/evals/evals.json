@@ -12,6 +12,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "write-a-single-review-reply",
+      "prompt": "Draft a reply to this one GitHub review comment without changing code.",
+      "shouldTrigger": true
+    },
+    {
       "id": "perform-pr-review",
       "prompt": "Review this pull request for correctness and accessibility.",
       "shouldTrigger": false

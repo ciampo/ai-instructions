@@ -1,6 +1,6 @@
 ---
 name: address-pr-feedback
-description: Inspect current pull-request feedback, evaluate each suggestion, implement accepted local fixes, verify them, and draft replies without posting. Use when asked to address PR review comments; do not infer branch integration, commit, push, PR-update, or reply-posting authority.
+description: Inspect current pull-request feedback, evaluate each suggestion, implement accepted local fixes, verify them, and draft replies without posting. Use when asked to address, act on, or implement PR review feedback. Do not use when the user only wants wording for a comment or reply, or asks for a general PR review. Do not infer branch integration, commit, push, PR-update, or reply-posting authority.
 ---
 
 # Address PR Feedback

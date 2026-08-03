@@ -1,6 +1,6 @@
 ---
 name: draft-review-comment
-description: Draft concise, self-contained GitHub review findings in a portable local Markdown document without posting them. Use directly or from PR review workflows; support inline, file-level, and general findings, with chat delivery only when explicitly requested.
+description: Draft concise, self-contained GitHub review comments or replies from supplied feedback or confirmed findings without posting them. Use when asked only to write, rewrite, or refine comment or reply text, or when a PR workflow delegates final wording. Do not use to perform a PR review or implement or address feedback. Support inline, file-level, and general findings, with chat delivery only when explicitly requested.
 ---
 
 # Draft Review Comment
