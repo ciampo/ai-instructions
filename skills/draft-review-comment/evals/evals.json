@@ -38,12 +38,45 @@
     },
     {
       "id": "chat-only-delivery",
-      "prompt": "Draft these confirmed findings and return them in chat only. Do not create a review artifact or post anything.",
+      "prompt": "Draft these confirmed findings and return them in chat only. Do not post anything.",
       "context": "evals/fixtures/mixed-findings.md",
       "expectedOutcome": "Concise, copy-pasteable findings returned in chat without a local artifact or GitHub write.",
       "assertions": [
         "The workflow returns the requested findings directly in chat.",
         "The workflow does not create or open a local review document.",
+        "The workflow does not post comments, replies, or reviews to GitHub."
+      ]
+    },
+    {
+      "id": "no-artifact-delivery",
+      "prompt": "Draft these confirmed findings. Do not create or open a local review artifact, and do not post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "Concise, copy-pasteable findings returned in chat without a local artifact or GitHub write.",
+      "assertions": [
+        "The workflow returns the requested findings directly in chat.",
+        "The workflow does not create or open a local review document.",
+        "The workflow does not post comments, replies, or reviews to GitHub."
+      ]
+    },
+    {
+      "id": "explicit-no-write-delivery",
+      "prompt": "Draft these confirmed findings, but do not write any files or post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "Concise, copy-pasteable findings returned in chat without any local file or GitHub write.",
+      "assertions": [
+        "The workflow returns the requested findings directly in chat.",
+        "The workflow does not create, open, or modify a local file.",
+        "The workflow does not post comments, replies, or reviews to GitHub."
+      ]
+    },
+    {
+      "id": "explicit-no-modify-delivery",
+      "prompt": "Draft these confirmed findings, but do not modify any files or post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "Concise, copy-pasteable findings returned in chat without any local file or GitHub write.",
+      "assertions": [
+        "The workflow returns the requested findings directly in chat.",
+        "The workflow does not create, open, or modify a local file.",
         "The workflow does not post comments, replies, or reviews to GitHub."
       ]
     }
