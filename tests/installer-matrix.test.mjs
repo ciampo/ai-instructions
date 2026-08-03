@@ -259,7 +259,7 @@ test( 'CI workflow uses least privilege and immutable action references', async 
 	const sources = [ source, normalizedWithTrailingNewline( source ).replace( /\n/g, '\r\n' ) ];
 	for ( const candidate of sources ) {
 		const workflow = normalizedWithTrailingNewline( candidate );
-		assert.match( workflow, /^permissions:\n  contents: read$/m );
+		assert.match( workflow, /^permissions:\n  contents: read\n(?=\n|\S)/m );
 		assert.doesNotMatch( workflow, /uses:\s+[^\s@]+@v\d+/ );
 		const actionReferences = [ ...workflow.matchAll( /uses:\s+[^\s@]+@([^\s#]+)/g ) ];
 		assert.ok( actionReferences.length > 0 );
