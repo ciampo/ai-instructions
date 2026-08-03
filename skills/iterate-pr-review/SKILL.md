@@ -39,4 +39,4 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 
 ## Recap
 
-Report a concise recap with one row per round: head revision, Copilot state, self-review result, accepted changes, verification, and why the loop ended. Distinguish completion, iteration-limit stop, and blocked verification clearly.
+Report a concise recap with one row per round: immutable base revision, exact reviewed head revision, Copilot state, self-review result, accepted changes, verification, and why the loop ended. Do not omit or abbreviate either revision. Distinguish completion, iteration-limit stop, and blocked verification clearly.
