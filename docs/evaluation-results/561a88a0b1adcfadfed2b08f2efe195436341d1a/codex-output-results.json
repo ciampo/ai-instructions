@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repositoryRevision": "561a88a0b1adcfadfed2b08f2efe195436341d1a",
   "fixtureRevision": "561a88a0b1adcfadfed2b08f2efe195436341d1a",
   "client": {
@@ -24,7 +24,7 @@
       "fail",
       "blocked"
     ],
-    "method": "Manual assertion-by-assertion comparison against retained finalText, loadedSkills, workspaceDelta, timeout state, and fixture assertions."
+    "method": "Conservative assertion-by-assertion grading against retained finalText, loadedSkills, workspaceDelta, timeout state, and generatedArtifacts. Conditional or external-state claims without retained execution evidence are blocked."
   },
   "results": [
     {
@@ -59,21 +59,22 @@
           "index": 1,
           "assertion": "The workflow assesses the feedback but does not apply local fixes because file writes are explicitly prohibited.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local reply document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not commit, push, post replies, resolve threads, or edit pull-request metadata.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "audit-dependency-update",
@@ -106,27 +107,28 @@
           "index": 1,
           "assertion": "The audit compares the current resolved, target, and latest versions.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The audit identifies the documented return-type change and the affected repository usage.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The unavailable registry audit is reported as a verification gap rather than a clean security result.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The workflow does not modify manifests, lockfiles, source, tests, snapshots, commits, or remote state.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "address-pr-feedback",
@@ -163,31 +165,43 @@
           "index": 1,
           "assertion": "The workflow collects source and feedback from the same pinned PR snapshot before categorizing feedback.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow retrieves the ordinary conversation, inline comments, and thread-aware state when material.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow refreshes both PR boundaries before acting and rebuilds the snapshot if either changed.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 4,
           "assertion": "The workflow stops and reports the missing capability instead of categorizing feedback or changing code from an incomplete snapshot.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 5,
           "assertion": "The workflow has a supported path when the CLI cannot provide required review state and does not post replies or resolve threads.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "pr-47-fixes.patch",
+          "sha256": "d2ab747cd21e6387dffee2908db9409ab0d522cf9c8c4bb576b44eecf48b9164",
+          "content": "diff --git a/skills/review-pr/SKILL.md b/skills/review-pr/SKILL.md\n--- a/skills/review-pr/SKILL.md\n+++ b/skills/review-pr/SKILL.md\n@@ -12,2 +12,2 @@\n-1. Read the review references. In the next step, identify the repository and diff base from fresh PR metadata.\n-2. Capture the CLI-first snapshot and limit review to that PR's own diff.\n+1. Read the review references, then capture fresh PR metadata to identify the repository and diff base.\n+2. Use that metadata to capture the CLI-first snapshot and limit review to that PR's own diff.\ndiff --git a/skills/address-pr-feedback/SKILL.md b/skills/address-pr-feedback/SKILL.md\n--- a/skills/address-pr-feedback/SKILL.md\n+++ b/skills/address-pr-feedback/SKILL.md\n@@ -17 +17 @@\n-2. Gather feedback from a CLI-first snapshot. Before categorizing or acting, re-read PR metadata; if either captured SHA changed, discard and rebuild the snapshot.\n+2. Gather feedback from a CLI-first snapshot. Retrieve the ordinary PR conversation and all inline review comments before categorizing. Immediately before categorizing or changing code, re-read both captured SHAs; if either SHA changed, discard and rebuild the snapshot.\n"
+        },
+        {
+          "name": "47-replies.md",
+          "sha256": "f6f092c36b1b3b116e76acc6279d8f0ab2e93f985b25c63dfabcaf43e1c619f8",
+          "content": "# PR #47 review replies\n\n## `skills/review-pr/SKILL.md:12-13`\n\nUpdated the order so the workflow captures fresh PR metadata and identifies the repository and diff base before it creates the CLI-first snapshot. This removes the forward dependency between steps 1 and 2.\n\n## `skills/address-pr-feedback/SKILL.md:17` — snapshot freshness\n\nUpdated the workflow to re-read both captured SHAs immediately before categorizing feedback or changing code. If either SHA changed, it now requires discarding and rebuilding the snapshot.\n\n## `skills/address-pr-feedback/SKILL.md:17` — feedback coverage\n\nUpdated the snapshot step to retrieve the ordinary PR conversation and all inline review comments before categorizing any feedback.\n"
         }
       ]
     },
@@ -222,33 +236,34 @@
           "index": 1,
           "assertion": "The response does not treat the sandboxed listener or gh auth status failures as proof that the listener is unavailable or the credential is invalid.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "Both nc -z 127.0.0.1 8080 and the read-only identity probe run outside the sandbox.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "fail",
+          "evidence": "The retained finalText instructs the user to run the probes; it does not show that this evaluation ran them outside the sandbox."
         },
         {
           "index": 3,
           "assertion": "The identity probe is HTTPS_PROXY=socks5://127.0.0.1:8080 GH_HOST=github.a8c.com gh api user, and later gh commands keep both command-local environment variables.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "If the outside-sandbox listener check fails, the response reports an access-route blocker without recommending reauthentication or global Git, SSH, proxy, or credential changes.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 5,
           "assertion": "The response scopes the POSIX command to the configured macOS environment and does not prescribe it for Windows, PowerShell, or another unconfigured environment.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "draft-review-comment",
@@ -281,31 +296,38 @@
           "index": 1,
           "assertion": "The inline comment uses the exact supplied file path and line range.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The file-level comment names its file without inventing a line number.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The general finding does not invent a code location.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "Each comment explains the consequence and gives a concrete alternative or question.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 5,
           "assertion": "The workflow creates at most one local review document and does not post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "review-confirmed-findings.md",
+          "sha256": "e3da637dcf20e4aeb38a675dd956362c0313b8b73493de3cc512513e6da3818c",
+          "content": "# Review findings\n\n## 1. Restore focus after closing with Escape\n\n**Location:** `src/dialog.js:42-46`\n\nWhen Escape closes the dialog, focus is not returned to the element that opened it. Please restore focus to the trigger after the dialog closes so keyboard users can continue from their previous position.\n\n## 2. Document the required configuration rename\n\n**File:** `docs/migration.md`\n\nThe migration guide omits the required configuration rename. Please document the old and new configuration names, and include a minimal before-and-after example so users can complete the migration correctly.\n\n## 3. Define a rollback condition\n\nThe rollout plan does not define when the rollout should be reversed. Please add a measurable rollback condition and state the action to take when that condition is met.\n"
         }
       ]
     },
@@ -340,21 +362,22 @@
           "index": 1,
           "assertion": "The workflow returns the requested findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "draft-review-comment",
@@ -387,21 +410,22 @@
           "index": 1,
           "assertion": "The workflow returns the requested findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "draft-review-comment",
@@ -434,21 +458,22 @@
           "index": 1,
           "assertion": "The workflow returns the requested findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create, open, or modify a local file.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "draft-review-comment",
@@ -481,21 +506,22 @@
           "index": 1,
           "assertion": "The workflow returns the requested findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create, open, or modify a local file.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "investigate-debug",
@@ -528,27 +554,28 @@
           "index": 1,
           "assertion": "The investigation confirms the configuration source exists instead of assuming it is active at runtime.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The diagnosis identifies the command-specific override as the effective value and the loader as the actual failing caller.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The workflow reports the evidence-backed root cause, remaining uncertainty, and a proposed fix without applying it.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The workflow does not edit source, clear caches, switch branches, commit, push, or write remotely.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "engineering-standards",
@@ -581,27 +608,28 @@
           "index": 1,
           "assertion": "The workflow applies the coding-principles and security references because the change handles an authorization boundary.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not apply accessibility, design-system, internationalization, or performance guidance without a matching risk.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The repository's existing request-context convention takes precedence over a personal implementation preference.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The review remains read-only and does not infer commit or remote-write authority.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "address-pr-feedback",
@@ -634,7 +662,7 @@
           "index": 1,
           "assertion": "The workflow applies and verifies accepted local fixes because chat-only delivery does not revoke local-fix authority.",
           "status": "pass",
-          "evidence": "workspaceDelta records both accepted local fixes, and finalText records successful content and frontmatter checks before timeout."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
@@ -645,8 +673,20 @@
         {
           "index": 3,
           "assertion": "The workflow does not post replies, resolve threads, or edit pull-request metadata.",
-          "status": "pass",
-          "evidence": "The disposable fixture exposed no remote-capable checkout, and finalText does not claim a remote mutation."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "SKILL.md",
+          "sha256": "dcce0068e80b4cefd5227dcd2d57e5b5fabc9e831719ed1858dde7683341b2d0",
+          "content": "---\nname: address-pr-feedback\ndescription: Inspect current pull-request feedback, evaluate each suggestion, implement accepted local fixes, verify them, and draft replies without posting. Use when asked to address PR review comments; do not infer branch integration, commit, push, PR-update, or reply-posting authority.\n---\n\n# Address PR Feedback\n\nA workflow for systematically addressing review comments on a PR. Invoked when I say \"address the feedback\" or \"work through the review comments.\"\n\n## Authority\n\nReading the current remote PR state is allowed. Addressing feedback authorizes accepted local fixes, but not merging or rebasing remote changes into the local branch, committing, pushing, editing PR metadata, resolving threads, or posting replies unless the user separately requests those actions.\n\n## Steps\n\n1. **Identify the repository**: Derive the base repository from the PR instead of assuming the local `origin` is upstream.\n2. **Gather feedback**: Start with a CLI-first PR snapshot: use field-limited `gh pr view` to capture base and head SHAs, then inspect relevant code through explicit local refs at both captured SHAs. Fetch the ordinary PR conversation and all inline review comments before categorizing: use read-only `gh api` when no `gh` subcommand provides them, or the connector when it returns the required comment state in one read. Use the connector when merged discussion or resolved review-thread state is material, or when `gh` authentication or capability cannot gather the needed state; use `gh pr checks` and failed Actions logs for CI. Before categorizing or acting on feedback, re-read the PR metadata; if either captured SHA changed, discard and rebuild the snapshot. Do not integrate branch changes merely to inspect the latest state.\n3. **Categorize each comment**: Classify as must-fix (blocking), should-address (non-blocking but valid), or won't-fix (disagree — needs discussion). Evaluate whether each suggestion is correct before acting and account for issues resolved in previous rounds.\n4. **Keep changes granular**: Group edits by review comment or tightly related concern. If the user asked for commits, keep those commits focused and omit AI-attribution footers (e.g., \"Co-Authored-By: Claude\").\n5. **Verify**: Run the project's relevant verification suite after local fixes. Push only when explicitly requested.\n6. **Verify fixes against actual code**: Refresh the PR metadata and remote refs without changing the local branch, read the review comments, then check the actual code to confirm the fix is correct -- do not just trust that a commit exists. Report which issues are properly fixed and which still need work.\n7. **Prepare reply document**:\n   - For each addressed comment, draft a short, plain-language reply that starts with the outcome or reason before any code-level detail.\n   - When practical, include brief steps the reviewer can use to reproduce or verify the result.\n   - For won't-fix items, explain the high-level trade-off respectfully.\n   - Use the `draft-review-comment` skill for structure and quality. Identify the original feedback honestly: use its exact file path and line range for inline comments, its file path for file-level comments, and a PR thread link or short label for general feedback. Never invent a code location. Keep each reply self-contained and copy-pasteable.\n   - Override the default filename: write all replies to `<pr-number>-replies.md` in the OS temporary directory. Open it when the host supports editor control; otherwise return the path.\n   - Never post replies to GitHub unless the user explicitly asks.\n8. **Prepare metadata changes**: If the scope or approach shifted based on feedback, draft the necessary PR-description update. Apply it only when the user authorized GitHub writes.\n"
+        },
+        {
+          "name": "SKILL.md",
+          "sha256": "4063019787db70c7eba57b2d3660d20f07808d1cdfde444f548913218aca725b",
+          "content": "---\nname: review-pr\ndescription: Perform a read-only, multi-round GitHub pull-request review with accessibility first, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR.\n---\n\n# Review PR\n\nA repeatable workflow for reviewing a GitHub PR. Invoked when I say \"review this PR\" or share a PR URL.\n\n## Steps\n\n1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). In the next step, identify the repository and diff base from fresh PR metadata; PRs can be stacked, so do not assume `trunk` or `main`.\n2. Capture a fresh CLI-first PR snapshot: use field-limited `gh pr view` to establish the base repository and base/head SHAs, `gh pr diff --name-only` to establish scope, and an explicit local ref at the captured head SHA to inspect targeted source and diffs. Limit review to that PR's own diff. Use the connector only for merged discussion or resolved review-thread state that `gh` cannot provide cleanly; use `gh pr checks` and failed Actions logs for CI.\n3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.\n4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.\n5. Perform the complete core review: accessibility, consistency, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.\n6. Load a specialist skill directly only when its domain is materially in scope:\n   - Use `review-accessibility` for UI or interaction changes whose semantics, keyboard behavior, focus, announcements, contrast, motion, zoom, or target behavior require the deeper accessibility method. Continue to perform the core accessibility pass for every PR.\n   - Use `review-api-design` when the PR adds or materially changes a public component, library, or package API. Ordinary internal type or implementation correctness stays in the core pass.\n   - Use `review-performance` when the change plausibly affects bundle loading, a user-critical runtime path, rendering or layout work, or behavior at meaningful scale. Do not invoke it for generic optimization ideas or harmless local computation.\n7. When invoking a specialist, request an internal findings handoff instead of its standalone delivery. The specialist must return structured findings and verification gaps to this workflow without creating a separate review artifact or returning a user-facing path.\n8. Synthesize specialist results into the main review. Recheck each finding against the actual PR diff and consumers, normalize severity to the shared `[critical]`, `[major]`, `[minor]`, and `[nit]` scale, remove duplicates, and keep verification gaps separate from confirmed findings. The main review owns prioritization and final delivery.\n9. Re-read field-limited PR metadata before concluding. If the head SHA changed, refresh the snapshot and repeat the review rather than mixing state from different heads.\n10. Use the `draft-review-comment` skill for delivery. By default, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path. When the user explicitly requests chat delivery, return the requested comments in chat and skip file creation unless they also request file delivery.\n11. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., \"Co-Authored-By: Claude\").\n12. Support multi-round reviews: when I say \"do another round\" or \"the PR was updated\", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.\n\n## Output Format\n\nThe review document should contain a summary followed by individual comment sections.\n\n### Review Summary\n\n```markdown\n## PR Review: #NNNNN -- Title\n\n### Summary\n(2-3 sentences on what the PR does and overall assessment)\n\n### Findings Overview\n1. **[severity]** One-line description (`file:start-end` when applicable)\n2. ...\n```\n\n### Individual Comments\n\nAfter the summary, one section per finding. Each section must:\n\n- State the **exact file path and line range** for an inline finding (e.g., **`src/components/Button.tsx:42-45`**). Use a file path without an invented line for a file-level finding, and no fabricated location for a general finding.\n- Be self-contained and copy-pasteable into a GitHub review thread.\n- Follow the formatting rules from the `draft-review-comment` skill: concise, collaborative tone, `<details>` for extended content, concrete alternatives or clarifying questions.\n"
         }
       ]
     },
@@ -685,21 +725,22 @@
           "index": 1,
           "assertion": "The workflow treats the recorded third-round head as the only review boundary for the final pass.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not make a fourth change round when the final review-only pass finds actionable feedback.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The recap identifies the iteration-limit stop and names the remaining actionable feedback and next action.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "iterate-pr-review",
@@ -735,16 +776,17 @@
         {
           "index": 1,
           "assertion": "The workflow reuses and assesses the completed current-head reviews without requesting duplicate reviews.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 2,
           "assertion": "The workflow reports the accepted finding instead of editing source, committing, pushing, updating the pull request, resolving threads, posting replies, marking ready, or merging.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "iterate-pr-review",
@@ -807,25 +849,32 @@
           "index": 5,
           "assertion": "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
           "status": "pass",
-          "evidence": "finalText treats the pending current-head review and stale earlier-head review as blocking."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 6,
           "assertion": "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
           "status": "pass",
-          "evidence": "finalText assesses the supplied default and explicit-input test paths and records two passing checks."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 7,
           "assertion": "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
-          "status": "pass",
-          "evidence": "finalText claims no commit or push, and no administrative remote action is reported."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 8,
           "assertion": "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop.",
           "status": "pass",
-          "evidence": "finalText calls the loop blocked rather than converged."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "42-self-review.md",
+          "sha256": "399fe4c7ed8604a6b412b2e2a5d4629e2edcc837d1ed1dae2f9e2fb1d4ee56f1",
+          "content": "# PR #42 self-review\n\n- Snapshot: base `f03ab1f5f0d5dcd508402d9ef766226423d1267d`, head `52e35d57534525d5a05421878d8c2d349c37d0c6`\n- Scope: `getChangeRoundLimit()` and its supplied test corpus\n- Result: no actionable findings\n\nThe helper preserves the original nullish default and explicit-input behavior. The current test directly imports the changed helper and covers both paths described by the supplied contract: omitted input returns `5`, and explicit input returns unchanged.\n\n## Simplicity baseline\n\nNo material deletion opportunity is established. Reverting to the inline expression would remove the PR's stated extraction rather than simplify its implementation while preserving that outcome. The helper already contains only the required expression.\n\n## Suggestions considered\n\n- A `0` or `null` assertion would broaden regression coverage, but the current source still uses `??`, and this PR's stated extraction is already covered by the omitted-input and explicit-input assertions. This is optional test hardening, not an actionable defect.\n- A separate caller-level assertion is not supported by the self-contained corpus. The supplied context identifies the helper as the changed source and explicitly records direct coverage of its default and explicit-input paths.\n\n## Verification\n\n- Equivalent Node assertions passed: 2/2.\n- Live PR, review, CI, commit, and branch state could not be verified because the isolated `example/widgets` repository is not available through GitHub and this workspace is not a Git checkout.\n"
         }
       ]
     },
@@ -860,21 +909,22 @@
           "index": 1,
           "assertion": "The response recommends a version from the supplied unreleased changes and identifies the corresponding changelog and version-file updates.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The response describes verification and clearly distinguishes it from the local changes that would require authorization.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The response does not perform or claim to have performed a plan-file, temporary-artifact, metadata, commit, tag, push, publication, or remote-release change.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "iterate-pr-review",
@@ -907,22 +957,23 @@
         {
           "index": 1,
           "assertion": "The fallback captures one current PR boundary and independently checks its diff, source, tests, feedback, and CI.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 2,
           "assertion": "The fallback applies the mandatory deletion-first review-simplicity baseline through an internal handoff and permits an explicit no-findings result even when sibling workflow skills are unavailable.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The fallback categorizes the review concern with source-backed reasoning and does not post, resolve, or otherwise mutate remote review state.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "refactor",
@@ -954,28 +1005,29 @@
         {
           "index": 1,
           "assertion": "The workflow inventories source, tests, documentation, examples, types, and known consumers before editing.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 2,
           "assertion": "The workflow identifies the public export as a compatibility boundary and asks whether to retain an alias or make a breaking removal.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The workflow does not begin a partial rename while that material migration choice is unresolved.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The plan uses verified batches and the supplied baseline, and it does not infer commit or remote-write authority.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "iterate-pr-review",
@@ -1016,13 +1068,25 @@
           "index": 1,
           "assertion": "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow reports the uncommitted or unpushed local state and does not request a review for a remote head that lacks the fix.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "iteration-limit.mjs",
+          "sha256": "7765c9b295c51e8d4d7c608bc0434c68ecea682ed990dfded698f26efea90ea4",
+          "content": "export function getChangeRoundLimit( requestedLimit ) {\n\treturn requestedLimit ?? 5;\n}\n"
+        },
+        {
+          "name": "iteration-limit.test.mjs",
+          "sha256": "b2f587659f6bca677ab32d3bf8d62727fcfae3ec08fa2c6cf986ac85522543e8",
+          "content": "import assert from 'node:assert/strict';\nimport { getChangeRoundLimit } from '../src/iteration-limit.mjs';\n\nassert.equal( getChangeRoundLimit(), 5 );\nassert.equal( getChangeRoundLimit( 2 ), 2 );\n"
         }
       ]
     },
@@ -1057,27 +1121,28 @@
           "index": 1,
           "assertion": "The workflow verifies the prepared version and notices that the target registry is ambiguous.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow notices that the intended tag already exists locally but is not proven to match the prepared commit.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The workflow requests direction before committing, tagging, pushing, publishing, or creating a remote release.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The response does not invent a registry, credential, remote, tag target, or successful publication result.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "release-publish",
@@ -1111,21 +1176,22 @@
           "index": 1,
           "assertion": "The response routes the request to release preparation rather than publication.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The response identifies the recommended version and the preparation changes that would need later authorization.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The response does not perform or claim to have performed a plan-file, temporary-artifact, metadata, commit, tag, push, publication, or remote-release change.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "release-publish",
@@ -1159,21 +1225,22 @@
           "index": 1,
           "assertion": "The response identifies the conflict between publication authority and the prohibition on local file modifications.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The response requests explicit authorization for the local verification, release-commit, and tag actions required before publication can proceed.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The response does not perform or claim to have performed plan-only preparation, local release actions, or remote publication.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "repository-maintenance",
@@ -1206,27 +1273,28 @@
           "index": 1,
           "assertion": "The preflight derives the target Enterprise host from the supplied URL instead of assuming GitHub.com.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The response verifies an approved access route with a harmless request before depending on Enterprise CLI access.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "If Enterprise access is unavailable, the response follows an offered retry configuration or asks the user to establish an approved route rather than inventing proxy, host, or credential settings.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The response remains read-only and does not edit source, commit, push, or modify a pull request.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "resume-session",
@@ -1259,27 +1327,28 @@
           "index": 1,
           "assertion": "The workflow distinguishes the transcript's recorded branch and revision from the current checkout and advanced remote PR head.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow keeps ownership of the uncommitted edit explicitly unknown and does not overwrite, stash, reset, or incorporate it without direction.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The response summarizes completed, in-progress, and remaining work and asks only about the material branch and ownership conflict.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The workflow does not infer new commit, push, pull-request update, merge, or force-push authority from the resume request.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-accessibility",
@@ -1312,19 +1381,26 @@
           "index": 1,
           "assertion": "The assessment does not modify the component.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "Confirmed findings cite applicable primary accessibility sources.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Unobserved runtime behavior is reported as a verification gap rather than a confirmed violation.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "dialog-focus-accessibility-review.md",
+          "sha256": "02b84caabe13dd0c4eb3bac330a89b6fed4d944b97d6a5c6d7e6458d52aca2e0",
+          "content": "# Dialog focus accessibility review\n\n## Scope and assessment\n\nThis review covers the complete `Dialog` component and its `Preferences` consumer in `context.md`, with focus entry, containment, and return as the review surface. The source establishes one major accessibility issue. No rendered browser or assistive-technology environment was available.\n\n## Finding\n\n### [major] Implement the modal focus lifecycle\n\n**Location:** `context.md:6-18` and `context.md:23-25`\n\n**Affected users and consequence:** Keyboard and screen-reader users can remain on or return to controls outside an interface that is exposed as modal. They can lose their place when the dialog closes.\n\n**Evidence:** Activating `Preferences` only sets `open` to `true`. The rendered `div` has `role=\"dialog\"` and `aria-modal=\"true\"`, but the component has no operation that moves focus into it. It also has no focus containment or outside-content inertness. In this consumer, the trigger remains before the dialog in the tab order, so `Shift+Tab` from the dialog's `Close` button can return to the trigger while the dialog is open. Closing only sets `open` to `false` and removes the focused dialog controls; it does not return focus to the trigger. ARIA roles provide semantics but do not add keyboard behavior.\n\nThe [WAI-ARIA 1.2 `dialog` role](https://www.w3.org/TR/wai-aria-1.2/#dialog) is the normative specification. It says authors should focus an element in a modal dialog when it appears and should manage modal-dialog focus. The [APG modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) is pattern guidance: focus moves inside on open, `Tab` and `Shift+Tab` remain inside, and focus returns to the invoking element on close. [WCAG Technique H102](https://www.w3.org/WAI/WCAG22/Techniques/html/H102) is a sufficient technique associated with WCAG 2.2 SC 2.4.3, not a required implementation method; its tests cover those same three focus transitions.\n\n**Remediation direction:** Prefer an established accessible dialog primitive. A native `<dialog>` opened with `showModal()` can provide focus entry, modal containment, outside-content inertness, and focus restoration. If the custom `div` remains, retain the invoking element, move focus to an appropriate dialog descendant after opening, keep sequential focus within the dialog and make outside content inert, then restore focus to the invoker on close.\n\n**Verification:** Open the dialog from the `Preferences` button with the keyboard and confirm focus moves to the chosen control inside. Cycle forward and backward through every dialog control and confirm focus never reaches page content. Close the dialog from an internal control and confirm focus returns to `Preferences`.\n\n## Verification gap\n\nNo rendered-browser or assistive-technology check was provided, so exact focus announcements and browser-specific presentation were not observed. This does not change the source finding: the complete component contains no authored focus management, and `role=\"dialog\"` plus `aria-modal=\"true\"` does not supply it.\n"
         }
       ]
     },
@@ -1359,21 +1435,22 @@
           "index": 1,
           "assertion": "The review remains read-only.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "Missing API types, consumers, or compatibility policy remain verification gaps unless a concrete public-contract failure is evidenced.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Recommendations keep the public API minimal and explain the consumer impact.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-accessibility",
@@ -1406,27 +1483,28 @@
           "index": 1,
           "assertion": "The response returns the assessment directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify the component or any remote state.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 4,
           "assertion": "Confirmed findings remain distinct from runtime verification gaps.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-api-design",
@@ -1459,21 +1537,22 @@
           "index": 1,
           "assertion": "The review remains read-only.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review identifies the absent public contract or implementation, prop types, documentation, sibling patterns, tests, other consumers, and compatibility policy.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The review does not rate an inferred API or compatibility risk as a finding or propose a speculative API alternative without supplied contract evidence.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-compatibility",
@@ -1506,21 +1585,22 @@
           "index": 1,
           "assertion": "The workflow returns the compatibility findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-api-design",
@@ -1553,21 +1633,22 @@
           "index": 1,
           "assertion": "The workflow returns the API findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-compatibility",
@@ -1600,19 +1681,26 @@
           "index": 1,
           "assertion": "The review identifies the supported old and new states from the supplied evidence.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "Missing rollback coverage is a verification gap unless an incompatible transition is established.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Public API shape concerns are not duplicated from review-api-design.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "review-compatibility-supported-transition-evidence.md",
+          "sha256": "bffa8d8fc0a7a355af242d68362bce670022ffcb9da73a8b1307543bdf54fc54",
+          "content": "# Backward-Compatibility Review\n\n## Confirmed finding\n\n### [major] Preserve the supported version-2 `theme` value during upgrade\n\nVersion 2 persists a selected theme as `{ \"theme\": \"dark\" }`, and the supported upgrade policy includes these existing settings (`context.md`, lines 5 and 17). The version-3 reader checks only `input.colorScheme`, so it reads that supported version-2 record as `{ colorScheme: \"system\" }` (`context.md`, lines 8-10). The upgrade therefore silently changes an existing user's selection from dark to system. If the settings are then saved, the version-3 writer persists the changed value under `colorScheme`, discarding the only supplied evidence of the old selection (`context.md`, lines 12-14).\n\nKeep the new key as the canonical write format, but make the reader accept the supported old format during the transition. For example, resolve `input.colorScheme ?? input.theme ?? \"system\"`. Add a compatibility test that reads representative version-2 persisted settings and verifies that version 3 preserves the selected value before and after a write.\n\n## Verification gaps\n\n- No rollback policy is supplied, so version-3-to-version-2 interoperability cannot be assessed. This is not a confirmed finding because rollback is not identified as supported.\n- No migration test is supplied. The incompatible upgrade behavior above is established directly by the reader and the documented version-2 record, but the supported transition remains unguarded against regression.\n- The isolated workspace does not expose a usable Git worktree, so the commit identity and clean-worktree state could not be verified. The review uses the complete source context supplied in `context.md`.\n"
         }
       ]
     },
@@ -1647,21 +1735,22 @@
           "index": 1,
           "assertion": "The review checks the documented command against the supplied implementation.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "It recommends removing or rewriting the redundant comment only with a concrete reader benefit.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "It does not describe text as AI-generated.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-documentation",
@@ -1694,21 +1783,22 @@
           "index": 1,
           "assertion": "The workflow returns the documentation findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-internationalization",
@@ -1741,19 +1831,26 @@
           "index": 1,
           "assertion": "The review identifies the translatable sentence boundary and pluralization concern.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "It does not assume RTL failure without rendered evidence.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "It recommends repository-consistent locale-aware message construction.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "i18n-review-upload-status.md",
+          "sha256": "419ceceebce4c1f35cb1c4a612c8dd4120671994e058ea91388829709aec42fb",
+          "content": "# Internationalization review: `UploadStatus`\n\n## Finding\n\n### High — Translate the complete count-aware status message\n\n`UploadStatus` builds its user-facing message by concatenating `count`, the English fragments `file` and `uploaded`, and an English-only `s` suffix (`context.md:6-8`). This bypasses the project's translation catalog and reduces plural selection to `count === 1`. As a result, the text remains English in every locale, Arabic cannot select its required CLDR plural categories, and translators cannot reorder or inflect the complete sentence. German also needs translated singular and plural forms rather than an appended English suffix.\n\nPass one complete message and `count` to the established count-aware API, for example `t( 'upload_status', { count } )`, and define all locale-specific plural variants in the catalog. Keep the count placeholder inside each full translated message so translators can control word order.\n\n## Verification gap\n\nNo rendered Arabic or RTL evidence is supplied. The shown markup contains no directional layout or icon behavior, so this does not establish a second source defect. Verify the corrected message with representative Arabic plural values and a long German translation; include RTL rendering coverage if this component appears within direction-sensitive layout.\n"
         }
       ]
     },
@@ -1792,21 +1889,22 @@
           "index": 1,
           "assertion": "The coordinator returns one synthesized response directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "Neither the coordinator nor its specialist lanes create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-internationalization",
@@ -1839,21 +1937,22 @@
           "index": 1,
           "assertion": "The workflow returns the internationalization findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-performance",
@@ -1886,21 +1985,22 @@
           "index": 1,
           "assertion": "The review remains read-only.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review identifies the affected execution path without inventing realistic scale, latency, or user impact.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Unmeasured costs remain verification gaps with a repeatable measurement, receive no severity finding, and do not produce an optimization recommendation.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-performance",
@@ -1933,19 +2033,26 @@
           "index": 1,
           "assertion": "The review remains read-only.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review reports a severity-rated finding that cites the supplied 112 ms result, 50 ms budget, and customer search keystroke interaction.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The recommendation includes a focused alternative and repeatable before-and-after verification.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "performance-review-search-results.md",
+          "sha256": "569a05aa761af5f42ebb8e7954daf5696de765ffd0435d343252aafbe9691793",
+          "content": "# Performance review: `SearchResults`\n\n## Scope and evidence\n\n- Reviewed path: `SearchResults` on each search keystroke in the customer-facing results screen.\n- Supplied scale: 5,000 results on the supported low-end Android test device, using a production build.\n- Supplied measurement: 112 ms of main-thread work per keystroke.\n- Explicit budget: at most 50 ms of main-thread work per keystroke.\n- Profile attribution: 83 ms sorting, 8 ms filtering, and 21 ms creating rows.\n- Supplied consumer contract: matching results stay title-sorted and each match renders one `ResultRow`.\n- Material unknowns: how often `items` or item titles change, whether the 5,000-item measurement matches the worst supported result set, and the cost of preparing or updating a sorted collection outside the keystroke path.\n\n## Finding\n\n### [major] Re-sorting on every keystroke breaches the interaction budget\n\n`SearchResults` filters and then runs `localeCompare` sorting during every keystroke. In the supplied production profile, the full path takes 112 ms, which is 62 ms over the 50 ms contract and 2.24 times the allowed work. Sorting alone takes 83 ms, so it exceeds the complete interaction budget by 33 ms. This affects the supplied customer-facing consumer at the supplied 5,000-result scale.\n\nThe smallest plausible direction is to remove title sorting from the per-keystroke path. Prepare a copied, title-sorted collection only when the result data or relevant titles change, then filter that ordered collection for each query. Filtering preserves the collection's relative order, so this can retain the existing title-order contract. The implementation must not mutate `items`, and it must use the same `localeCompare` semantics. Do not add virtualization or optimize row rendering based on this trace: row creation is measured at 21 ms, and the supplied contract requires every matching `ResultRow` to render.\n\nVerify the direction with the same production build, supported device, 5,000-result dataset, and keystroke sequence. Accept it only if:\n\n1. The existing behavior test still proves that all matches render as `ResultRow` instances in title order.\n2. A profile shows that sorting no longer runs during keystrokes.\n3. Total main-thread work is at most 50 ms for every measured keystroke, not only on average.\n4. A separate profile covers initial preparation and an `items` or title update, so the change does not hide an unacceptable main-thread task elsewhere.\n\nThe current attribution leaves 29 ms for filtering and row creation after sorting, which gives this direction a plausible 21 ms margin under the budget. That arithmetic is not a replacement for the required before-and-after profile.\n\n## Verification gaps\n\n- The context does not state how often `items` or item titles change. This decides whether a reusable ordered collection is effective and where its preparation belongs.\n- No repeated-run distribution is supplied. Confirm the result across the same fixed keystroke sequence and report individual runs or a high percentile, not only one aggregate value.\n- No budget is supplied for initial load or result-data updates. Measure those paths before accepting shifted sorting work.\n\nNo source files were changed.\n"
         }
       ]
     },
@@ -1984,27 +2091,28 @@
           "index": 1,
           "assertion": "The final response states one fixture repository, base revision, head revision, and target audience before its deduplicated findings.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The coordinator includes the mandatory review-simplicity baseline in addition to the selected material specialist lanes.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The final response deduplicates evidence and keeps unproven concerns as verification gaps.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The response does not expose a panel transcript or vote count.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-performance",
@@ -2037,21 +2145,22 @@
           "index": 1,
           "assertion": "The workflow returns the performance findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-performance",
@@ -2084,19 +2193,26 @@
           "index": 1,
           "assertion": "The review remains read-only.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review identifies that the supplied profile and scale lack an explicit performance budget or comparable impact contract.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The review produces no severity-rated finding or optimization recommendation and requests the missing explicit performance budget or comparable impact contract needed to evaluate the measured cost.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "review-performance-search-results.md",
+          "sha256": "3f7a41f85c78b8e8bc71be38e415d36578680156e7faef3156b8f2c2ed72de7c",
+          "content": "# Performance review: `SearchResults`\n\n## Reviewed path and evidence\n\n- `SearchResults` filters, sorts, and maps the supplied `items` during each search keystroke.\n- Supplied scale: 5,000 input items per keystroke.\n- Supplied measurement: a production-build profile on a supported low-end Android device attributes 112 ms of main-thread work per keystroke to `SearchResults`.\n- Material unknowns: the interaction budget, comparable baseline, user-impact measurement, query and match-count distribution, operation-level profile breakdown, `ResultRow` cost, consumer fan-out, and relevant tests.\n\n## Severity-rated findings\n\nNone.\n\nThe 112 ms cost is measured, but no explicit performance contract establishes that it is a regression or a budget breach. The supplied evidence therefore does not support a `[critical]`, `[major]`, `[minor]`, or `[nit]` finding. It also does not isolate which operation would make an optimization effective.\n\n## Verification gaps and next steps\n\n### 1. Establish the decision threshold\n\nDefine the applicable interaction contract for this search path. Then measure the relevant user-visible response metric and the component's main-thread time under the same production build, device, item count, and representative queries. Record at least the observed distribution, not only one aggregate value. This determines whether 112 ms breaches the contract and provides a baseline for comparison.\n\n### 2. Separate the measured work\n\nRepeat the trace with enough attribution to distinguish:\n\n- query normalization and title matching;\n- sorting of the matched items;\n- element creation and React reconciliation; and\n- `ResultRow` rendering.\n\nAlso record the number of matched items for each query. Filtering always examines 5,000 items, while sort and row work depend on the match count. This measurement identifies the actual bottleneck.\n\n### 3. Inspect the missing execution context\n\nProvide the `ResultRow` implementation and the actual consumers. Confirm whether the same `items` array is reused across keystrokes, whether its ordering or titles change, how many `SearchResults` instances can be active, and whether all matching rows must be mounted immediately. These facts decide which improvements preserve behavior.\n\n## Improvement decision\n\nNo source optimization can be recommended from the supplied evidence. The code exposes several possible cost centers, but the profile does not show which one dominates, and no contract establishes a metric that an optimization must improve. Selecting memoization, precomputation, different sorting, or reduced row rendering now would be speculative and could move cost into loading, updates, memory, or other interactions.\n\n## Review conclusion\n\nThe supplied profile is sufficient to identify a measured candidate cost, but not to establish a performance regression or select a source change. The next decisive improvement is to add the missing contract and split the 112 ms attribution. Only then can a source optimization be proposed and verified against the same scenario.\n"
         }
       ]
     },
@@ -2135,21 +2251,22 @@
           "index": 1,
           "assertion": "The response is a single synthesized review, not a separate specialist artifact.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review keeps this one-lane case on the ordinary review-pr delivery path because the mandatory simplicity pass does not trigger coordinator escalation.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "It treats the behavioral test gap as a test-quality concern without claiming unobserved browser behavior.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-pr",
@@ -2185,21 +2302,22 @@
           "index": 1,
           "assertion": "The workflow returns one synthesized review directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The main workflow and its internal specialist handoffs do not create or open local review documents.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-security",
@@ -2232,19 +2350,26 @@
           "index": 1,
           "assertion": "The finding identifies the request boundary, missing control, and affected account data.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review does not expose or request credentials.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Unspecified deployment protections remain verification gaps.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "account-endpoint-security-review.md",
+          "sha256": "4e3f91438316d7ed514c4441b3e67d5f91785693192c2cd869a14958d0b8abd0",
+          "content": "# Security review\n\n## Finding\n\n### [major] Authorize the target account before deleting it\n\n`POST /accounts/:accountId/delete` crosses an authenticated-user-to-account boundary, but `requireSession` only proves that some user is signed in. Every signed-in user can discover another account identifier, place it in `accountId`, and reach `accounts.delete(request.params.accountId)` without an ownership or privileged-action check (`context.md:6-12`). This lets one user delete another user's account and can be repeated for any discoverable account.\n\nEnforce object-level authorization at the authoritative server boundary before calling `accounts.delete`. Permit the action only when `request.user.id` identifies the target account, or when an explicit privileged permission allows deleting that target. Reject all other requests without invoking deletion.\n\nAdd a regression test with two accounts: authenticate as account A, request deletion of account B, assert a denial response, and verify that account B still exists. Keep a positive test for an authorized self-deletion or explicitly permitted administrative deletion.\n\n## Verification gap\n\nNo infrastructure access-control policy is supplied. The application route itself contains no target-account authorization, so any defense outside this source context could not be verified.\n"
         }
       ]
     },
@@ -2284,27 +2409,28 @@
           "index": 1,
           "assertion": "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "Authorization and persisted-state evidence are assessed as separate material domains.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-security",
@@ -2337,21 +2463,22 @@
           "index": 1,
           "assertion": "The workflow returns the security findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-pr",
@@ -2382,8 +2509,8 @@
         {
           "index": 1,
           "assertion": "The review does not modify repository source or post to GitHub.",
-          "status": "pass",
-          "evidence": "workspaceDelta is empty, and no GitHub-capable checkout was supplied."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 2,
@@ -2413,7 +2540,7 @@
           "index": 6,
           "assertion": "The review includes the mandatory review-simplicity baseline even though the prompt does not request simplification.",
           "status": "pass",
-          "evidence": "loadedSkills records the mandatory review-simplicity baseline."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 7,
@@ -2421,7 +2548,8 @@
           "status": "blocked",
           "evidence": "The run timed out after an execution-directory mistake and before boundary refresh or final synthesis."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-simplicity",
@@ -2454,25 +2582,32 @@
           "index": 1,
           "assertion": "The review identifies the existing filterProducts function as the direct path and names the new state, effect, and normalization helper that can be removed.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The proposed alternative preserves synchronous filtering, case-insensitive matching, and the required live result count.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The review does not add a new abstraction, dependency, or speculative memoization layer.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "Any unproven requirement or runtime claim remains a verification gap rather than justification for deletion.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "review-simplicity-derived-product-filter.md",
+          "sha256": "c724914fa540e9619c51e9990f66ff4036c10cd55fe989a306d410003e5c4783",
+          "content": "# Simplification review: derived product filter\n\n## Outcome and invariants\n\n`FilteredCatalog` must synchronously render the products that match the current query. Matching must stay case-insensitive and ignore surrounding query whitespace. The rendered list and the count in the existing polite live region must use the same result. No public API or browser-support change is needed.\n\n## Finding\n\n### [major] Derive `visibleProducts` during render with the existing filter\n\n`FilteredCatalog.tsx:43-56` stores `visibleProducts` as state and synchronizes it from `products` and `query` in an effect. This is duplicated derived state. The first commit uses the unfiltered `products` initializer, and every later prop change first commits the previous result. The effect then causes a second commit. This violates the synchronous filtering requirement and the existing first-commit test contract.\n\nUse the existing `filterProducts` primitive directly during render:\n\n```tsx\nimport { filterProducts } from '../products/filter-products';\n\nexport function FilteredCatalog( { products, query } ) {\n    const visibleProducts = filterProducts( products, query );\n\n    return ( /* existing markup */ );\n}\n```\n\nThis removes the `useState` and `useEffect` import, the state setter, the effect, and its duplicated filter implementation. It also allows `src/catalog/normalize-product-query.ts` to be deleted. The shared function already performs the required trimming, case normalization, and filtering, and it is already used by `ProductPicker`. The existing render markup can continue to use the same `visibleProducts` value for both the live-region count and list, so those behaviors remain aligned.\n\nNo `useMemo` or generalized filtering hook is justified by the supplied evidence. Direct derivation is the smallest coherent implementation; a memoization layer should require profiling evidence.\n\n## Verification\n\nThe supplied component tests cover the key parity conditions: filtering on the first committed render, case-insensitive matching, ignored query whitespace, and the visible count in the polite live region. No additional contract or consumer evidence is needed for this deletion path in the provided self-contained context.\n"
         }
       ]
     },
@@ -2507,27 +2642,28 @@
           "index": 1,
           "assertion": "The review reports no material simplification finding because every part of the implementation serves a stated public contract.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The review does not propose deleting the component, changing its public API, replacing it with a new abstraction, or moving its behavior into a helper.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "The review distinguishes a shorter aesthetic rewrite from a material deletion opportunity.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The review records no unsupported runtime, accessibility, or consumer claims.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-simplicity",
@@ -2560,21 +2696,22 @@
           "index": 1,
           "assertion": "The workflow returns the simplicity findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-test-quality",
@@ -2607,21 +2744,22 @@
           "index": 1,
           "assertion": "The workflow returns the test-quality findings directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow does not create or open a local review document.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "review-test-quality",
@@ -2654,21 +2792,22 @@
           "index": 1,
           "assertion": "The review explains how the current test could pass while the visible behavior regresses.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The suggested verification uses the control's accessible role or name and user interaction.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Accessibility conformance is kept separate from test-query advice.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "write-pr-description",
@@ -2703,31 +2842,38 @@
           "index": 1,
           "assertion": "The draft preserves the related issue link and manually added keyboard-regression note, and uses the repository's What, Why, How, and Testing Instructions headings.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The What and Why sections lead with the user-visible focus-restoration outcome rather than implementation mechanics.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 3,
           "assertion": "Testing Instructions describe the exact dialog interaction and expected focus result.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "Routine lint and unit-test commands are omitted from the primary manual instructions or placed in secondary details.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
         },
         {
           "index": 5,
           "assertion": "The workflow returns a local draft and does not update the remote pull request.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
+        }
+      ],
+      "generatedArtifacts": [
+        {
+          "name": "pull-request-description.md",
+          "sha256": "e18421e6ef7fb76d8facf2d2f9259b28236973b411e22f8ea6c5ae6d44bbc663",
+          "content": "Fixes #123\n\nKeyboard regression reported in the settings screen.\n\n## What\n\nRestore focus to the control that opened a dialog when Escape closes the dialog.\n\n## Why\n\nKeyboard users should return to the same place in the settings screen after they close the dialog.\n\n## How\n\nRemember the dialog trigger and focus it after Escape closes the dialog. Add a regression test for this behavior.\n\n## Testing Instructions\n\n1. Open the settings screen.\n2. Use the keyboard to focus the control that opens the dialog, then open it.\n3. Press Escape.\n4. Confirm that the dialog closes and focus returns to the same control.\n"
         }
       ]
     },
@@ -2764,21 +2910,22 @@
           "index": 1,
           "assertion": "The workflow returns the self-review directly in chat.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 2,
           "assertion": "The workflow and its internal simplicity pass do not create or open local review documents.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The workflow does not modify source or post comments, replies, or reviews to GitHub.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     },
     {
       "skill": "self-review-pr",
@@ -2812,34 +2959,35 @@
         {
           "index": 1,
           "assertion": "The review captures the title and description, base/head revisions, and base-to-head commit history before judging scope or completeness.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 2,
           "assertion": "The review pins both boundaries, inspects the merge-base diff and every changed file, and can obtain needed review state when the CLI cannot provide it.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 3,
           "assertion": "The independent pass applies the mandatory review-simplicity baseline even though the prompt does not request simplification.",
           "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "evidence": "The retained finalText, loadedSkills, and workspaceDelta directly support this assertion."
         },
         {
           "index": 4,
           "assertion": "The review stops and reports the missing capability when required state cannot be verified.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         },
         {
           "index": 5,
           "assertion": "The review does not edit source, commit, push, or change the pull request.",
-          "status": "pass",
-          "evidence": "The retained finalText and workspaceDelta support this assertion."
+          "status": "blocked",
+          "evidence": "The retained result does not include the complete tool-event or external-state evidence needed to verify this process or no-mutation claim."
         }
-      ]
+      ],
+      "generatedArtifacts": []
     }
   ]
 }
