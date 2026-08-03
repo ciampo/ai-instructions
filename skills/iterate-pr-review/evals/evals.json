@@ -25,6 +25,11 @@
       "id": "iterative-external-review",
       "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
       "shouldTrigger": false
+    },
+    {
+      "id": "repeat-review-without-fix-ownership",
+      "prompt": "Run repeated reviews on this open source pull request until it is clear. I am only reviewing it and do not own its branch or fixes.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

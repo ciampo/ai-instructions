@@ -1,6 +1,6 @@
 ---
 name: iterate-pr-review
-description: Iterate an authored GitHub pull request through Copilot review, independent adversarial self-review, and accepted fixes until both sources have no actionable feedback. Use when asked to iterate or repeat reviews on a PR, or to run a Copilot-and-self-review loop before handoff. Do not use for a one-time review or to review someone else's PR.
+description: Iterate a GitHub pull request authored by the user, or one whose fix-and-push loop the user explicitly owns, through Copilot review, independent adversarial self-review, and accepted fixes until both sources have no actionable feedback. Use only when that authorship or ownership is explicit. Iterative wording alone is insufficient. Use review-pr for another person's pull request, even when asked to repeat reviews, and self-review-pr for a one-time authored review.
 ---
 
 # Iterate PR Review
@@ -9,6 +9,7 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 
 ## Authority and boundary
 
+- Confirm that the pull request is authored by the user or that the user explicitly owns its fix-and-push loop. If neither is established, use `review-pr` and keep the review read-only.
 - Treat only actions explicitly named in the invoking request as authorized. Requesting review does not authorize source edits, commits, pushes, pull-request metadata changes, thread resolution, replies, marking ready, or merging.
 - Establish a maximum number of completed change rounds before starting. Default to five unless the request specifies another limit, and reserve a final review-only pass for the head created by the last allowed change.
 - Load `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. If either is unavailable, use this bounded fallback: capture the same fresh snapshot, independently re-read the full diff, changed source, tests, PR feedback, and CI in a fresh pass, then categorize each concern with source-backed reasoning. The fallback must load `review-simplicity` for its mandatory deletion-first handoff when available. Otherwise, directly check whether the same outcome can be preserved while removing new state, branches, wrappers, dependencies, duplication, or speculative abstractions, and explicitly report no findings when none are material. Do not post, resolve, or otherwise mutate remote review state in the fallback.
