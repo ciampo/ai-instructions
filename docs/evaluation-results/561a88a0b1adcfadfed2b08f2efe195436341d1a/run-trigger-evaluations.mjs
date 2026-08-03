@@ -2,7 +2,7 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { promises as fs } from 'node:fs';
+import { promises as fs, realpathSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,9 @@ const timeoutMs = 90_000;
 const model = 'gpt-5.6-sol';
 const reasoningEffort = 'xhigh';
 const serviceTier = 'priority';
+const temporaryRoots = [
+	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
+];
 
 const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
@@ -67,14 +70,14 @@ async function loadCases() {
 }
 
 async function collectProvenance( skillNames ) {
-	const diff = spawnSync(
+	const skillStatus = spawnSync(
 		'git',
-		[ 'diff', '--quiet', targetRevision, '--', 'skills' ],
-		{ cwd: repositoryRoot }
+		[ 'status', '--porcelain=v1', '--untracked-files=all', '--', 'skills' ],
+		{ cwd: repositoryRoot, encoding: 'utf8' }
 	);
 
-	if ( diff.status !== 0 ) {
-		throw new Error( 'The checkout skill tree differs from the target revision.' );
+	if ( skillStatus.status !== 0 || skillStatus.stdout.trim() ) {
+		throw new Error( 'The checkout skill tree has tracked or untracked changes.' );
 	}
 
 	const installedRoot = path.join( os.homedir(), '.agents', 'skills' );
@@ -116,31 +119,72 @@ async function collectProvenance( skillNames ) {
 }
 
 function sanitize( value ) {
-	return value
+	let sanitized = value
 		.replaceAll( repositoryRoot, '[repository]' )
-		.replaceAll( os.homedir(), '[home]' )
-		.replaceAll( '/private/tmp/', '[temporary]/' )
-		.replaceAll( '/tmp/', '[temporary]/' );
+		.replaceAll( os.homedir(), '[home]' );
+
+	for ( const temporaryRoot of temporaryRoots ) {
+		sanitized = sanitized.replaceAll(
+			`${ temporaryRoot }${ path.sep }`,
+			'[temporary]/'
+		);
+	}
+
+	return sanitized;
 }
 
-function loadedSkillNames( command ) {
+function escapeRegExp( value ) {
+	return value.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+}
+
+function loadedSkillNames( command, aggregatedOutput, exitCode ) {
+	if ( exitCode !== 0 ) {
+		return [];
+	}
+
 	const matches = [
 		...command.matchAll( /(?:^|\s|['"])(?:[^\s'"]*\/)?skills\/([^/\s'"]+)\/SKILL\.md/g ),
 	];
 
-	return matches.map( ( match ) => match[ 1 ] );
+	return [ ...new Set( matches.map( ( match ) => match[ 1 ] ) ) ].filter(
+		( skill ) =>
+			new RegExp(
+				`(?:^|\\n)---\\r?\\nname:\\s*${ escapeRegExp( skill ) }\\r?\\n`
+			).test( aggregatedOutput )
+	);
 }
 
-function stopProcessGroup( child, signal ) {
-	if ( child.exitCode !== null || child.signalCode !== null ) {
-		return;
+function descendantProcessIds( parentPid, seen = new Set() ) {
+	const result = spawnSync( 'pgrep', [ '-P', String( parentPid ) ], {
+		encoding: 'utf8',
+	} );
+	const childPids = result.status === 0
+		? result.stdout.trim().split( '\n' ).map( Number ).filter( Boolean )
+		: [];
+	const descendants = [];
+
+	for ( const childPid of childPids ) {
+		if ( seen.has( childPid ) ) {
+			continue;
+		}
+
+		seen.add( childPid );
+		descendants.push( ...descendantProcessIds( childPid, seen ), childPid );
 	}
 
-	try {
-		child.kill( signal );
-	} catch ( error ) {
-		if ( error.code !== 'ESRCH' ) {
-			throw error;
+	return descendants;
+}
+
+function signalProcessTree( child, signal ) {
+	const processIds = [ ...descendantProcessIds( child.pid ), child.pid ];
+
+	for ( const processId of processIds ) {
+		try {
+			process.kill( processId, signal );
+		} catch ( error ) {
+			if ( error.code !== 'ESRCH' ) {
+				throw error;
+			}
 		}
 	}
 }
@@ -208,6 +252,13 @@ async function runAttempt( testCase, attempt, ordinal ) {
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
 
+	function requestStop() {
+		signalProcessTree( child, 'SIGTERM' );
+		killTimer ||= setTimeout( () => {
+			signalProcessTree( child, 'SIGKILL' );
+		}, 2_000 );
+	}
+
 	function inspectLine( line ) {
 		if ( ! line.trim().startsWith( '{' ) ) {
 			return;
@@ -232,22 +283,30 @@ async function runAttempt( testCase, attempt, ordinal ) {
 		}
 
 		if (
-			( event.type === 'item.started' || event.type === 'item.completed' ) &&
+			event.type === 'item.completed' &&
 			event.item?.type === 'command_execution'
 		) {
-			for ( const skill of loadedSkillNames( event.item.command ) ) {
+			for ( const skill of loadedSkillNames(
+				event.item.command,
+				event.item.aggregated_output,
+				event.item.exit_code
+			) ) {
 				if ( ! observedSkills.includes( skill ) ) {
 					observedSkills.push( skill );
 					skillLoadEvents.push( {
 						skill,
 						command: sanitize( event.item.command ),
+						exitCode: event.item.exit_code,
+						outputSha256: createHash( 'sha256' )
+							.update( event.item.aggregated_output )
+							.digest( 'hex' ),
 					} );
 				}
 			}
 
 			if ( testCase.shouldTrigger && observedSkills.length > 0 ) {
 				intentionallyStopped = true;
-				stopProcessGroup( child, 'SIGTERM' );
+				requestStop();
 			}
 		}
 	}
@@ -264,7 +323,7 @@ async function runAttempt( testCase, attempt, ordinal ) {
 
 	const timeout = setTimeout( () => {
 		timedOut = true;
-		stopProcessGroup( child, 'SIGTERM' );
+		requestStop();
 	}, timeoutMs );
 
 	const close = await new Promise( ( resolve, reject ) => {
@@ -282,7 +341,11 @@ async function runAttempt( testCase, attempt, ordinal ) {
 
 	let status;
 	if ( testCase.shouldTrigger ) {
-		status = observedSkills[ 0 ] === testCase.skill ? 'pass' : 'blocked';
+		status = observedSkills.length === 0
+			? 'blocked'
+			: observedSkills[ 0 ] === testCase.skill
+				? 'pass'
+				: 'fail';
 	} else if ( observedSkills.includes( testCase.skill ) ) {
 		status = 'fail';
 	} else {

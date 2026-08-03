@@ -26,7 +26,8 @@
     "evidenceLimitation": "The campaign did not retain the raw Antigravity event stream or a filesystem delta. Treat the observation and no-mutation report as unverified historical notes, not auditable evidence."
   },
   "safety": {
-    "blanketPermissionBypassUsed": false,
-    "userPermissionSettingsChanged": false
+    "evidenceStatus": "unverified",
+    "reportedBlanketPermissionBypassUsed": false,
+    "reportedUserPermissionSettingsChanged": false
   }
 }

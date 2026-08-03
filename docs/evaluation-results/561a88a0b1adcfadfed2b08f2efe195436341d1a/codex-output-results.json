@@ -661,8 +661,8 @@
         {
           "index": 1,
           "assertion": "The workflow applies and verifies accepted local fixes because chat-only delivery does not revoke local-fix authority.",
-          "status": "pass",
-          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+          "status": "blocked",
+          "evidence": "The run timed out while verification was still in progress, and the retained result does not include the complete tool-event evidence needed to prove that verification finished."
         },
         {
           "index": 2,
@@ -1067,8 +1067,8 @@
         {
           "index": 1,
           "assertion": "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
-          "status": "pass",
-          "evidence": "The retained finalText, workspaceDelta, and generatedArtifacts directly support this assertion."
+          "status": "blocked",
+          "evidence": "The retained finalText and generated artifacts describe the fix and checks, but the result does not include tool-event evidence that proves the workspace change was limited to the accepted fix or that the checks ran."
         },
         {
           "index": 2,
