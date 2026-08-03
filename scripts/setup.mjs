@@ -134,7 +134,7 @@ Commands:
 Options:
   --agent <name>       Target ${ platformIds.join( ', ' ) }; repeatable; '*' selects all
   --only <category>    Limit to instructions, skills, or agents; repeatable
-  --copilot-concat [DIR]  Export a shared AGENTS.md explicitly
+  --copilot-concat [DIR]  Export only a shared AGENTS.md unless --agent is set
   --copy               Copy portable files instead of symlinking them
   -y, --yes            Select every detected product without prompting
   --dry-run            Preview changes without writing
@@ -169,15 +169,15 @@ async function detectPlatforms( manifest, home ) {
 }
 
 async function choosePlatforms( manifest, home, options ) {
-	if ( options.selected.size > 0 ) {
+	if ( options.selected.size > 0 || options.copilotConcat ) {
 		return;
 	}
 	const detected = await detectPlatforms( manifest, home );
-	if ( options.yes || options.copilotConcat ) {
+	if ( options.yes ) {
 		for ( const id of detected ) {
 			options.selected.add( id );
 		}
-		if ( detected.length === 0 && ! options.copilotConcat ) {
+		if ( detected.length === 0 ) {
 			fail( "No known agent directories found in $HOME. Use --agent <name> or --agent '*'." );
 		}
 		return;

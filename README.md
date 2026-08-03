@@ -90,7 +90,7 @@ On native Windows, run the Node entrypoint directly and use copy mode:
 node scripts/setup.mjs --agent '*' --copy --yes
 ```
 
-The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, auto-detection runs silently (no prompt) and installs into all detected product surfaces alongside exporting a shared project `AGENTS.md`.
+The script auto-detects supported product surfaces by scanning `$HOME` for known configuration directories, then offers an interactive prompt. Use `--yes` to skip the prompt (selects all detected product surfaces), or `--agent <name>` to target a specific surface. When `--copilot-concat` is used without `--agent`, the script skips product detection and exports only the shared project `AGENTS.md`. Combine it with an explicit `--agent` when both operations are intended.
 
 ### Supported product surfaces
 
@@ -128,7 +128,7 @@ Google Antigravity CLI is the preview Google surface. Gemini CLI is unsupported 
 | --- | --- |
 | `--agent <name>` | Target a specific agent (`cursor`, `claude`, `codex`, `copilot`, `antigravity`). Repeatable. `--agent '*'` for all. `gemini` remains a deprecated alias for `antigravity` during the migration window. |
 | `--only <category>` | Limit operations to specific categories (`instructions`, `skills`, `agents`). Repeatable. `agents` is retained only to safely clean up retired repository-managed agents; the legacy `personas` value remains its alias. |
-| `--copilot-concat [DIR]` | Export `AGENTS.md` in the target directory. Refuses to overwrite a user-maintained file. Can run standalone. |
+| `--copilot-concat [DIR]` | Export `AGENTS.md` in the target directory. Without `--agent`, does not modify global product configurations. Refuses to overwrite a user-maintained file. |
 | `--copy` | Copy files instead of symlinking (useful on Windows/WSL or in CI). Use `update --copy` to refresh stale copies. |
 | `-y`, `--yes` | Skip all prompts -- auto-select all detected agents |
 | `--dry-run` | Show what would be done without making changes |
@@ -145,7 +145,8 @@ Google Antigravity CLI is the preview Google surface. Gemini CLI is unsupported 
 ./setup.sh update --agent '*'                      # Re-install + clean stale links
 ./setup.sh check --agent cursor                    # Verify managed Cursor configuration
 ./setup.sh install --copy --yes                    # Copy mode for CI
-./setup.sh --copilot-concat ~/Code/my-project      # Standalone: export AGENTS.md
+./setup.sh --copilot-concat ~/Code/my-project      # Export only: write project AGENTS.md
+./setup.sh --agent codex --copilot-concat .        # Install Codex files and export AGENTS.md
 ```
 
 The installer is non-destructive and idempotent. It stages complete artifacts before publishing them, never clobbers an unexpected destination, and skips files it cannot prove it owns. Copied and generated artifacts carry strict ownership markers, so `update --copy` only replaces files previously installed by this repository.
