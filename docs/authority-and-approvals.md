@@ -24,7 +24,7 @@ a narrower limit:
 | Request | Included actions | Still excluded |
 | --- | --- | --- |
 | Implement a change and open a draft pull request | Create the task branch, edit, verify, make coherent commits, push that branch, and create or update the authored draft pull request | Public comments or reviews, thread resolution, ready-for-review transitions, merge, release, and unrelated metadata |
-| Work on an authored pull request or address its feedback | Apply accepted fixes, verify them, make coherent commits, push the same task branch, and refresh the resulting head | Branch integration or history rewrites unless requested, posted replies, thread resolution, ready-for-review transitions, merge, and release |
+| Implement or update a change on an authored pull request, or address its feedback | Apply accepted fixes, verify them, make coherent commits, push the same task branch, and refresh the resulting head | Read-only inspection remains read-only; branch integration or history rewrites unless requested, posted replies, thread resolution, ready-for-review transitions, merge, and release |
 | Iterate an authored pull request | Consume current-head remote review evidence, run the independent review, apply accepted fixes, verify, commit, push, and repeat within the configured round limit | Reviewer requests, posting the agent's own public review or replies, resolving threads, marking ready, merging, releasing, and unrelated pull-request changes |
 | Rebase an authored pull request, then iterate it | The iteration bundle plus one verified rebase and an exact `--force-with-lease` update of that pull request's branch | Plain `--force`, another branch, a history rewrite without the requested rebase, and every excluded iteration action |
 
@@ -50,8 +50,9 @@ The narrow personal instruction should identify all of these boundaries:
 - Destination: the OpenAI Codex service through existing authentication only.
 - Reruns: the same bounded review loop after in-scope revisions or focused case
   selection changes.
-- Pull-request write: only update the existing authored draft pull request's
-  evaluation section with exact-head results.
+- Pull-request write: only update the Evaluation section of the existing authored
+  draft pull request recorded by the active bounded review loop, after its task
+  branch and exact head are verified.
 - Exclusions: secrets, credentials, private links or comments, untracked files,
   unrelated repository data, another destination, public comments or reviews,
   thread resolution, ready-for-review transitions, merge, and release.
@@ -64,8 +65,9 @@ content, selected public evaluation prompts and fixtures, and sanitized executio
 metadata to the OpenAI Codex service through existing authentication. This consent
 covers exact-head reruns within the same bounded review loop. It excludes secrets,
 credentials, private links or comments, untracked files, unrelated repository
-data, and every other destination. You may update only the existing authored draft
-pull request's evaluation section with exact-head results. Do not post comments or
+data, and every other destination. You may update only the Evaluation section of
+the existing authored draft pull request recorded by the active bounded review
+loop, after verifying its task branch and exact head. Do not post comments or
 reviews, resolve threads, mark the pull request ready, merge, or release.
 ```
 
@@ -93,7 +95,7 @@ prove that the boundary works.
 | Reviewer requests | Keep in the dedicated review workflow; do not add them to a portable authority bundle | The dedicated workflow that owns the reviewer integration |
 | Exact-lease history update after an explicitly requested rebase | Include only after patch-replay and remote-head verification | `repository-maintenance` and `iterate-pr-review` |
 | Public tracked skill-evaluation data sent to the OpenAI Codex service, including in-scope exact-head reruns | Record as narrow standing personal consent | Private user-level instructions or client settings |
-| Update an existing authored draft pull request's evaluation section with exact-head results | Include only in the matching standing evaluation consent | Personal consent, consumed by `write-pr-description` |
+| Update the recorded authored draft pull request's Evaluation section with exact-head results | Include only when matching standing consent names that write and the active pull request, task branch, and head match | Personal consent, consumed by `write-pr-description` |
 | Read-only GitHub, CI, and Enterprise preflight commands | Task authority is already read-only; use a runtime allow rule only for a stable command shape | Private command rules or managed policy |
 | Public comments, replies, or agent-authored reviews; thread resolution; ready-for-review; merge; release; unrelated metadata; plain force push | Do not pre-authorize through these workflow bundles | Require a new explicit task request |
 

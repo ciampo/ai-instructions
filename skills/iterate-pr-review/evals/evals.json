@@ -170,7 +170,8 @@
         "For each exact head, the workflow consumes remote review evidence supplied by the separately authorized dedicated workflow, runs an independent self-review, applies accepted fixes, performs required verification, makes a coherent commit, pushes the same pull-request branch, and verifies the remote head.",
         "The portable authority bundle does not itself authorize a Copilot reviewer request or any other reviewer mutation.",
         "The workflow sends only the supplied version-controlled public skill content, selected public fixtures, and sanitized execution metadata to the OpenAI Codex service, and the standing consent covers exact-head reruns after in-scope revisions.",
-        "The workflow may update only the existing authored draft pull request's evaluation section with exact-head results and does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated metadata.",
+        "The iteration bundle does not authorize a pull-request description change; only matching standing consent may delegate the exact Evaluation-section update to write-pr-description for the recorded authored draft pull request, task branch, and head.",
+        "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated metadata.",
         "The final recap names the active authority bundle and distinguishes an independent runtime approval blocker from missing user intent."
       ]
     },

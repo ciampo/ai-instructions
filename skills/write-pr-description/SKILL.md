@@ -13,11 +13,14 @@ By default, return the description as Markdown in chat or write it to a user-req
 
 An active standing evaluation authorization may permit one narrower write: update
 the evaluation section of the existing authored draft pull request with results
-for the exact reviewed head. Apply it only when the authorization's repository,
-public tracked payload, OpenAI Codex destination, and rerun boundary match. Do not
-use that consent for another description change, another pull request, private or
-untracked evaluation data, comments, reviews, thread resolution, ready-for-review
-transitions, merges, or releases.
+for the exact reviewed head. Apply it only when the authorization explicitly
+grants that Evaluation-section write and its repository, pull request, task
+branch, evaluated head, public tracked payload, OpenAI Codex destination, and
+rerun boundary all match the active bounded review loop. Verify that the target
+is an existing draft authored by the user and that its current head is the
+evaluated head before writing. Do not use that consent for another description
+change, another pull request, private or untracked evaluation data, comments,
+reviews, thread resolution, ready-for-review transitions, merges, or releases.
 
 ## Steps
 

@@ -1,17 +1,20 @@
 # Exact-head evaluation description update context
 
 - Repository: <https://github.com/ciampo/ai-instructions>
-- Pull request: the existing authored draft for the recorded task branch
+- Pull request: <https://github.com/ciampo/ai-instructions/pull/97>
 - Author: the user
 - State: draft
+- Base revision: `a28f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
+- Task branch: `codex/issues-93-94-bounded-authority`
 - Evaluated head: `b833b7eb0c92f2b2fa9769280f17330e602f2e72`
 - Evaluation destination: OpenAI Codex service through existing authentication
 - Payload: version-controlled public skill content, selected public fixtures, and sanitized execution metadata
 - Result: both focused positive cases passed three of three attempts; both focused negative cases passed three of three attempts
 
-The active personal authorization matches this repository, payload, destination,
-bounded exact-head rerun, and authored draft pull request. It permits only an
-update to the existing Evaluation section.
+The active personal authorization explicitly grants the Evaluation-section
+write and matches this repository, pull request, task branch, evaluated head,
+payload, destination, and bounded exact-head rerun. It permits only an update to
+the existing Evaluation section.
 
 ## Current description
 
