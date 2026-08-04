@@ -42,9 +42,9 @@
       "id": "current-head-convergence",
       "prompt": "Iterate this authored PR through Copilot review and adversarial self-review. Apply valid feedback, commit and push approved fixes, then recap the iterations.",
       "context": "evals/fixtures/current-head-convergence.md",
-      "expectedOutcome": "A bounded, SHA-aware loop that independently collects both review sources, applies only verified feedback, and does not claim convergence while Copilot is pending or stale.",
+      "expectedOutcome": "A bounded, SHA-aware loop that independently collects both review sources, applies only verified feedback, identifies the immutable base and exact reviewed head in every recap row, and does not claim convergence while Copilot is pending or stale.",
       "assertions": [
-        "The workflow records a fresh base and head revision and ties each review round to a single head revision.",
+        "Every recap row reports the full immutable base revision and full exact reviewed head revision, and ties both review sources to that head.",
         "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
         "When no limit is specified, the workflow permits up to five completed change rounds and reserves a final review-only pass.",
         "The workflow waits for the pending Copilot review for the recorded head without requesting a duplicate review or reusing the earlier-head review.",
