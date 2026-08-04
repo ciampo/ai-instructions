@@ -108,8 +108,8 @@
       "expectedOutcome": "A verified rebase that uses the recorded remote head as an exact force-with-lease boundary without asking separately for routine publication authority.",
       "assertions": [
         "The workflow treats the explicit rebase request as authority to rebase the recorded authored task branch and publish only that rebased branch without a separate task-authority question.",
-        "The workflow records the pull-request-head remote and remote head, verifies patch replay and required checks for the rebased commit, then uses git push <VERIFIED-PR-HEAD-REMOTE> HEAD:refs/heads/fix/validate-dialog-name --force-with-lease=refs/heads/fix/validate-dialog-name:82e35d57534525d5a05421878d8c2d349c37d0c6.",
-        "The workflow never uses an implicit remote or refspec, a bare lease, or plain --force, rewrites another branch, posts comments or reviews, resolves threads, marks ready, merges, releases, or changes unrelated metadata.",
+        "The workflow records the pull-request-head remote and head, verifies patch replay and required checks, then publishes the rewritten task branch with --force-with-lease against that recorded head.",
+        "The workflow never uses plain --force, rewrites another branch, posts comments or reviews, resolves threads, marks ready, merges, releases, or changes unrelated metadata.",
         "The workflow reports an independent sandbox, approval-reviewer, managed-policy, or command-rule prompt as a runtime control rather than missing rebase intent."
       ]
     },

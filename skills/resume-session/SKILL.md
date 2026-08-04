@@ -19,9 +19,6 @@ Carry forward only the authority supported by the recovered request and current 
    - What was completed.
    - What was in progress or remaining.
    - Any open questions or blockers from the previous session.
-3. **Check the current state**: Verify the actual state of the codebase and branches:
-   - `git status` and `git log` to see what was committed.
-   - Check for any uncommitted changes or stashed work.
-   - Check if PRs were opened and their current status.
+3. **Check the current state**: Verify the working tree, recent history, unfinished local work, and current pull-request state.
 4. **Choose the next action**: Based on the recovered request and current state, state the next steps and continue with safe, reversible work that is clearly within the existing scope.
 5. **Ask only on a material fork**: Pause for confirmation when the recovered state is ambiguous, stale in a way that changes the outcome, or leaves a choice that would materially alter scope, authority, or implementation. Otherwise continue and report progress.

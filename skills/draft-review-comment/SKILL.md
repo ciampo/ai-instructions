@@ -28,5 +28,5 @@ Multi-finding review output goes into a **single Markdown document** by default.
    - Inline findings must specify the **exact file path and line range** they apply to (e.g., **`src/components/Button.tsx:42-45`**). File-level findings need the file path but no invented line. General or architectural findings may omit a code location when no honest location exists.
    - Each feedback item should propose a concrete alternative or ask a clarifying question.
 3. Compose all findings into the review document described in **Output Delivery**, unless those delivery rules require chat. Use one section per comment thread or review point, and make each self-contained and copy-pasteable.
-4. **Do NOT post to GitHub.** Never use `gh pr comment`, `gh pr review`, or any GitHub write operation.
+4. **Do not post to GitHub.**
 5. If I edit or refine the draft, preserve its delivery mode: update and re-open the existing review document for file delivery, or return only the revised comment or comments for chat delivery.

@@ -21,9 +21,9 @@ Treat investigation, explanation, and diagnosis as read-only. Use non-mutating c
    - Are environment variables set correctly?
 3. **Reproduce**: Confirm you can reproduce the issue. If it is intermittent, note the conditions under which it occurs.
 4. **Isolate**: Narrow down the cause:
-   - Check `git log` for recent changes that could have introduced the issue.
+   - Inspect recent changes that could have introduced the issue.
    - Trace or inspect suspect sections without editing them. When implementation was requested, a temporary local bypass may help isolate the failing part.
-   - Use commit history for regressions with unclear origins. Run `git bisect` only in a disposable checkout unless changing the current checkout was authorized.
+   - Use history bisection for regressions with unclear origins, but only in a disposable checkout unless changing the current checkout was authorized.
    - Compare against the main-branch ref without switching the user's checkout (regression vs. pre-existing).
 5. **Form a hypothesis**: Based on isolation, propose a specific cause. State it explicitly: "I believe the issue is X because Y."
 6. **Verify the hypothesis**: For diagnosis-only work, use an existing check or an external disposable reproduction that does not modify the repository. When implementation was requested, write a minimal failing test or check before writing the fix. Do not jump to fixing based on a guess.
