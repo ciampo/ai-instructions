@@ -5,8 +5,6 @@ import { createHash } from 'node:crypto';
 import {
 	promises as fs,
 	realpathSync,
-	rmSync,
-	unlinkSync,
 } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,6 +18,7 @@ const model = 'gpt-5.6-sol';
 const reasoningEffort = 'xhigh';
 const serviceTier = 'priority';
 const stderrPreviewLimit = 8_192;
+const permissionProfileName = 'evaluation';
 const sourceCodexHome = process.env.CODEX_HOME ?? path.join( os.homedir(), '.codex' );
 const sourceAuthPath = path.join( sourceCodexHome, 'auth.json' );
 const isolatedPath = [ '/usr/bin', '/bin', '/usr/sbin', '/sbin' ].join(
@@ -43,7 +42,12 @@ const modelShellEnvironmentKeys = childEnvironmentKeys.filter(
 const temporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
 ].sort( ( left, right ) => right.length - left.length );
+const activeChildren = new Set();
+const activeAttempts = new Set();
+const ephemeralRoots = new Set();
 const sensitiveRoots = new Set();
+let shuttingDown = false;
+let shutdownPromise;
 
 const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
@@ -73,12 +77,47 @@ for ( const [ signal, exitCode ] of [
 	[ 'SIGTERM', 143 ],
 ] ) {
 	process.on( signal, () => {
-		for ( const root of sensitiveRoots ) {
-			rmSync( root, { recursive: true, force: true } );
-		}
-		rmSync( outputTemporaryPath, { force: true } );
-		process.exit( exitCode );
+		shutdownPromise ||= shutdown( exitCode );
 	} );
+}
+
+async function shutdown( exitCode ) {
+	shuttingDown = true;
+	for ( const child of activeChildren ) {
+		signalProcessGroup( child.pid, 'SIGTERM' );
+	}
+
+	await Promise.race( [
+		Promise.allSettled( [ ...activeAttempts ] ),
+		new Promise( ( resolve ) => setTimeout( resolve, 2_000 ) ),
+	] );
+
+	for ( const child of activeChildren ) {
+		signalProcessGroup( child.pid, 'SIGKILL' );
+	}
+	await Promise.allSettled( [ ...activeAttempts ] );
+
+	for ( const root of ephemeralRoots ) {
+		spawnSync( 'chmod', [ '-R', 'u+w', root ] );
+	}
+	const cleanup = await Promise.allSettled(
+		[ ...sensitiveRoots, ...ephemeralRoots ].map( ( root ) =>
+			fs.rm( root, {
+				recursive: true,
+				force: true,
+				maxRetries: 3,
+				retryDelay: 100,
+			} )
+		)
+	);
+	await fs.rm( outputTemporaryPath, { force: true } );
+
+	for ( const result of cleanup ) {
+		if ( result.status === 'rejected' ) {
+			process.stderr.write( `Cleanup failed: ${ result.reason }\n` );
+		}
+	}
+	process.exit( exitCode );
 }
 
 function resolveExecutable( name ) {
@@ -217,56 +256,64 @@ async function createIsolatedEnvironment( skillNames ) {
 	const root = await fs.mkdtemp(
 		path.join( os.tmpdir(), 'ai-instructions-evaluation-' )
 	);
-	const stageRoot = path.join( root, 'stage' );
-	await fs.mkdir( stageRoot );
+	ephemeralRoots.add( root );
 
-	const archive = spawnSync(
-		'git',
-		[ 'archive', '--format=tar', targetRevision, 'skills' ],
-		{
-			cwd: repositoryRoot,
-			maxBuffer: 64 * 1024 * 1024,
+	try {
+		const stageRoot = path.join( root, 'stage' );
+		await fs.mkdir( stageRoot );
+
+		const archive = spawnSync(
+			'git',
+			[ 'archive', '--format=tar', targetRevision, 'skills' ],
+			{
+				cwd: repositoryRoot,
+				maxBuffer: 64 * 1024 * 1024,
+			}
+		);
+
+		if ( archive.error || archive.status !== 0 ) {
+			throw new Error(
+				archive.error?.message ||
+					archive.stderr?.toString() ||
+					'git archive failed.'
+			);
 		}
-	);
 
-	if ( archive.error || archive.status !== 0 ) {
-		throw new Error(
-			archive.error?.message ||
-				archive.stderr?.toString() ||
-				'git archive failed.'
-		);
+		const extraction = spawnSync( 'tar', [ '-xf', '-', '-C', stageRoot ], {
+			input: archive.stdout,
+		} );
+
+		if ( extraction.error || extraction.status !== 0 ) {
+			throw new Error(
+				extraction.error?.message ||
+					extraction.stderr?.toString() ||
+					'tar extraction failed.'
+			);
+		}
+
+		const installedRoot = path.join( stageRoot, 'skills' );
+		const stagedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
+
+		if ( JSON.stringify( stagedSkillNames ) !== JSON.stringify( skillNames ) ) {
+			throw new Error( 'The staged target skill inventory is not exact.' );
+		}
+
+		const readOnly = spawnSync( 'chmod', [ '-R', 'a-w', installedRoot ] );
+
+		if ( readOnly.error || readOnly.status !== 0 ) {
+			throw new Error(
+				readOnly.error?.message ||
+					readOnly.stderr?.toString() ||
+					'chmod failed.'
+			);
+		}
+
+		return { installedRoot, root };
+	} catch ( error ) {
+		await fs.rm( root, { recursive: true, force: true } );
+		ephemeralRoots.delete( root );
+		throw error;
 	}
-
-	const extraction = spawnSync( 'tar', [ '-xf', '-', '-C', stageRoot ], {
-		input: archive.stdout,
-	} );
-
-	if ( extraction.error || extraction.status !== 0 ) {
-		throw new Error(
-			extraction.error?.message ||
-				extraction.stderr?.toString() ||
-				'tar extraction failed.'
-		);
-	}
-
-	const installedRoot = path.join( stageRoot, 'skills' );
-	const stagedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
-
-	if ( JSON.stringify( stagedSkillNames ) !== JSON.stringify( skillNames ) ) {
-		throw new Error( 'The staged target skill inventory is not exact.' );
-	}
-
-	const readOnly = spawnSync( 'chmod', [ '-R', 'a-w', installedRoot ] );
-
-	if ( readOnly.error || readOnly.status !== 0 ) {
-		throw new Error(
-			readOnly.error?.message ||
-				readOnly.stderr?.toString() ||
-				'chmod failed.'
-		);
-	}
-
-	return { installedRoot, root };
 }
 
 async function createIsolatedCodexHome( root ) {
@@ -301,12 +348,14 @@ async function createAttemptEnvironment( isolatedEnvironment, skillNames ) {
 	const root = await fs.mkdtemp(
 		path.join( os.tmpdir(), 'ai-instructions-evaluation-attempt-' )
 	);
-	const sensitiveRoot = await fs.mkdtemp(
-		path.join( os.tmpdir(), 'ai-instructions-client-state-' )
-	);
-	sensitiveRoots.add( sensitiveRoot );
+	ephemeralRoots.add( root );
+	let sensitiveRoot;
 
 	try {
+		sensitiveRoot = await fs.mkdtemp(
+			path.join( os.tmpdir(), 'ai-instructions-client-state-' )
+		);
+		sensitiveRoots.add( sensitiveRoot );
 		const userHome = path.join( root, 'home' );
 		const installedRoot = path.join( userHome, '.agents', 'skills' );
 		const workspace = path.join( root, 'workspace' );
@@ -343,8 +392,11 @@ async function createAttemptEnvironment( isolatedEnvironment, skillNames ) {
 	} catch ( error ) {
 		await Promise.all( [
 			fs.rm( root, { recursive: true, force: true } ),
-			fs.rm( sensitiveRoot, { recursive: true, force: true } ),
+			sensitiveRoot
+				? fs.rm( sensitiveRoot, { recursive: true, force: true } )
+				: Promise.resolve(),
 		] );
+		ephemeralRoots.delete( root );
 		sensitiveRoots.delete( sensitiveRoot );
 		throw error;
 	}
@@ -380,8 +432,82 @@ function createModelShellEnvironment( childEnvironment ) {
 
 function formatTomlInlineTable( values ) {
 	return `{ ${ Object.entries( values )
-		.map( ( [ key, value ] ) => `${ key } = ${ JSON.stringify( value ) }` )
+		.map(
+			( [ key, value ] ) =>
+				`${ JSON.stringify( key ) } = ${ JSON.stringify( value ) }`
+		)
 		.join( ', ' ) } }`;
+}
+
+function permissionProfile( readableRoots ) {
+	const filesystem = new Map( [ [ '/', 'read' ], [ os.homedir(), 'deny' ] ] );
+
+	for ( const temporaryRoot of temporaryRoots ) {
+		filesystem.set( temporaryRoot, 'deny' );
+	}
+	for ( const readableRoot of readableRoots ) {
+		filesystem.set( readableRoot, 'read' );
+		filesystem.set( realpathSync( readableRoot ), 'read' );
+	}
+
+	return `{ filesystem = ${ formatTomlInlineTable(
+		Object.fromEntries( filesystem )
+	) } }`;
+}
+
+async function verifySandboxReadBoundary() {
+	const allowedRoot = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-readable-boundary-' )
+	);
+	const deniedRoot = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-denied-boundary-' )
+	);
+	ephemeralRoots.add( allowedRoot );
+	ephemeralRoots.add( deniedRoot );
+
+	try {
+		const allowedProbe = path.join( allowedRoot, 'probe' );
+		const deniedProbe = path.join( deniedRoot, 'probe' );
+		await Promise.all( [
+			fs.writeFile( allowedProbe, 'public' ),
+			fs.writeFile( deniedProbe, 'private' ),
+		] );
+		const profile = permissionProfile( [ allowedRoot ] );
+		const result = spawnSync(
+			codexExecutable,
+			[
+				'sandbox',
+				'-P',
+				permissionProfileName,
+				'-c',
+				`permissions.${ permissionProfileName }=${ profile }`,
+				'-C',
+				allowedRoot,
+				'--',
+				'/bin/sh',
+				'-c',
+				'test -r "$1" && ! test -r "$2" && ! test -r "$3"',
+				'boundary-check',
+				allowedProbe,
+				deniedProbe,
+				sourceAuthPath,
+			],
+			{ encoding: 'utf8' }
+		);
+
+		if ( result.status !== 0 ) {
+			throw new Error(
+				result.stderr || 'Model-shell credential read boundary failed.'
+			);
+		}
+	} finally {
+		await Promise.all( [
+			fs.rm( allowedRoot, { recursive: true, force: true } ),
+			fs.rm( deniedRoot, { recursive: true, force: true } ),
+		] );
+		ephemeralRoots.delete( allowedRoot );
+		ephemeralRoots.delete( deniedRoot );
+	}
 }
 
 function sanitize( value ) {
@@ -394,6 +520,7 @@ function sanitize( value ) {
 			`${ temporaryRoot }${ path.sep }`,
 			'[temporary]/'
 		);
+		sanitized = sanitized.replaceAll( temporaryRoot, '[temporary]' );
 	}
 
 	return sanitized;
@@ -451,6 +578,15 @@ function verifyClassifier() {
 			throw new Error(
 				`Skill detector self-check failed: expected ${ expected }, received ${ actual }.`
 			);
+		}
+	}
+
+	for ( const temporaryRoot of temporaryRoots ) {
+		if (
+			sanitize( temporaryRoot ) !== '[temporary]' ||
+			sanitize( path.join( temporaryRoot, 'child' ) ) !== '[temporary]/child'
+		) {
+			throw new Error( 'Temporary-root sanitizer self-check failed.' );
 		}
 	}
 }
@@ -542,6 +678,10 @@ function signalProcessGroup( processGroupId, signal ) {
 }
 
 async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) {
+	if ( shuttingDown ) {
+		throw new Error( 'Evaluation runner interrupted.' );
+	}
+
 	const { codexHome, shellConfiguration, userHome, workspace } =
 		attemptEnvironment;
 	const clientEnvironment = createChildEnvironment(
@@ -551,7 +691,10 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		shellConfiguration
 	);
 	const modelShellEnvironment = createModelShellEnvironment( clientEnvironment );
-	const authenticationPath = path.join( codexHome, 'auth.json' );
+	const profile = permissionProfile( [
+		attemptEnvironment.root,
+		attemptEnvironment.isolatedRoot,
+	] );
 	const startedAt = Date.now();
 	const observedSkills = [];
 	const skillLoadEvents = [];
@@ -562,8 +705,6 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	let completed = false;
 	let timedOut = false;
 	let intentionallyStopped = false;
-	let authenticationRemoved = false;
-	let authenticationBoundaryFailed = false;
 	let stdoutBytes = 0;
 	let stderrBytes = 0;
 	let stderrCharacters = 0;
@@ -575,9 +716,8 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		'exec',
 		'--ephemeral',
 		'--skip-git-repo-check',
-		'--sandbox',
-		'read-only',
 		'--json',
+		'--strict-config',
 		'--ignore-user-config',
 		'--ignore-rules',
 		'--disable',
@@ -616,6 +756,10 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		`shell_environment_policy.set=${ formatTomlInlineTable(
 			modelShellEnvironment
 		) }`,
+		'-c',
+		`default_permissions="${ permissionProfileName }"`,
+		'-c',
+		`permissions.${ permissionProfileName }=${ profile }`,
 		'-C',
 		workspace,
 		testCase.prompt,
@@ -627,6 +771,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		env: clientEnvironment,
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
+	activeChildren.add( child );
 
 	function requestStop() {
 		stopPromise ||= ( async () => {
@@ -634,25 +779,6 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			await new Promise( ( resolve ) => setTimeout( resolve, 2_000 ) );
 			signalProcessGroup( child.pid, 'SIGKILL' );
 		} )();
-	}
-
-	function removeAuthenticationCopy() {
-		if ( authenticationRemoved ) {
-			return;
-		}
-
-		try {
-			unlinkSync( authenticationPath );
-			authenticationRemoved = true;
-		} catch ( error ) {
-			if ( error.code === 'ENOENT' ) {
-				authenticationRemoved = true;
-				return;
-			}
-
-			authenticationBoundaryFailed = true;
-			requestStop();
-		}
 	}
 
 	function inspectLine( line ) {
@@ -666,9 +792,6 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		} catch {
 			return;
 		}
-
-		const authenticationRemovedBeforeEvent = authenticationRemoved;
-		removeAuthenticationCopy();
 
 		if ( event.type === 'turn.completed' ) {
 			completed = true;
@@ -685,12 +808,6 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			event.type === 'item.completed' &&
 			event.item?.type === 'command_execution'
 		) {
-			if ( ! authenticationRemovedBeforeEvent ) {
-				authenticationBoundaryFailed = true;
-				requestStop();
-				return;
-			}
-
 			const eventLoadedSkills = loadedSkillNames(
 				event.item.command,
 				event.item.aggregated_output,
@@ -699,11 +816,16 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			const outputSha256 = createHash( 'sha256' )
 				.update( event.item.aggregated_output )
 				.digest( 'hex' );
+			const retainedOutput = sanitize( event.item.aggregated_output );
 
 			commandEvents.push( {
 				command: sanitize( event.item.command ),
 				exitCode: event.item.exit_code,
+				output: retainedOutput,
 				outputSha256,
+				retainedOutputSha256: createHash( 'sha256' )
+					.update( retainedOutput )
+					.digest( 'hex' ),
 				loadedSkills: eventLoadedSkills,
 			} );
 
@@ -757,10 +879,17 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		requestStop();
 	}, timeoutMs );
 
-	const close = await new Promise( ( resolve, reject ) => {
-		child.on( 'error', reject );
-		child.on( 'close', ( exitCode, signal ) => resolve( { exitCode, signal } ) );
-	} );
+	let close;
+	try {
+		close = await new Promise( ( resolve, reject ) => {
+			child.on( 'error', reject );
+			child.on( 'close', ( exitCode, signal ) =>
+				resolve( { exitCode, signal } )
+			);
+		} );
+	} finally {
+		activeChildren.delete( child );
+	}
 
 	clearTimeout( timeout );
 	await stopPromise;
@@ -768,9 +897,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		inspectLine( stdoutBuffer );
 	}
 
-	const status = authenticationBoundaryFailed
-		? 'blocked'
-		: classifyAttempt( testCase, observedSkills, completed );
+	const status = classifyAttempt( testCase, observedSkills, completed );
 
 	return {
 		ordinal,
@@ -788,8 +915,8 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		commandEvents,
 		skillLoadEvents,
 		authentication: {
-			removedBeforeCommands:
-				authenticationRemoved && ! authenticationBoundaryFailed,
+			clientStateDeniedToModel: true,
+			hostHomeDeniedToModel: true,
 		},
 		stdout: {
 			bytes: stdoutBytes,
@@ -821,7 +948,10 @@ async function runAttempt(
 			testCase,
 			attempt,
 			ordinal,
-			attemptEnvironment
+			{
+				...attemptEnvironment,
+				isolatedRoot: isolatedEnvironment.root,
+			}
 		);
 	} finally {
 		await Promise.all( [
@@ -834,6 +964,7 @@ async function runAttempt(
 				force: true,
 			} ),
 		] );
+		ephemeralRoots.delete( attemptEnvironment.root );
 		sensitiveRoots.delete( attemptEnvironment.sensitiveRoot );
 	}
 }
@@ -851,6 +982,7 @@ function writeOutput( campaign ) {
 
 verifyClassifier();
 await verifyEnvironmentContract();
+await verifySandboxReadBoundary();
 
 const skillNames = targetSkillNames();
 const cases = await loadCases( skillNames );
@@ -869,11 +1001,12 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 5,
+		schemaVersion: 6,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
 			path: path.relative( repositoryRoot, scriptPath ),
+			invocation: process.argv.map( sanitize ),
 			sha256: createHash( 'sha256' )
 				.update( await fs.readFile( scriptPath ) )
 				.digest( 'hex' ),
@@ -895,13 +1028,14 @@ try {
 			concurrency,
 			timeoutSeconds: timeoutMs / 1000,
 			workspace: 'Fresh outside-repository temporary directory for every attempt.',
-			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A private authentication copy initialized the client, then was removed before any retained command event; model shell policy omitted CODEX_HOME. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A split filesystem permission profile denied model-shell reads of the host home, shared temporary roots, and private client state while allowing the isolated attempt and staged target roots. Model shell policy omitted CODEX_HOME. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
 			environmentVariables: childEnvironmentKeys,
 			modelShellEnvironmentVariables: modelShellEnvironmentKeys,
 			path: isolatedPath,
 			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin; the preflight executes /bin/zsh -lc and requires the recorded value.',
-			authentication: 'Private client state used a separate temporary root with interruption cleanup. The auth copy was removed on the first client event, before command execution, and CODEX_HOME was excluded from model shell environments.',
-			commandEvidence: 'Every completed command retained its sanitized command, exit code, loaded-skill classification, and full-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
+			authentication: 'Private client state used a separate temporary root with interruption cleanup. A tested split filesystem permission profile denied the model shell access to private client state, the source host home, and shared temporary roots. CODEX_HOME was excluded from model shell environments.',
+			commandEvidence: 'Every completed command retained its sanitized command, output, exit code, loaded-skill classification, original full-output SHA-256, and retained-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
+			interruption: 'SIGHUP, SIGINT, and SIGTERM stop active detached process groups, await active attempts, remove private and non-private temporary roots, and preserve the last atomically written evidence snapshot.',
 			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
 			positiveStop: 'Stop after the target skill loads.',
 			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
@@ -914,16 +1048,23 @@ try {
 	let completedAttempts = 0;
 
 	async function worker() {
-		while ( nextAttempt < attempts.length ) {
+		while ( ! shuttingDown && nextAttempt < attempts.length ) {
 			const current = attempts[ nextAttempt ];
 			nextAttempt += 1;
-			const result = await runAttempt(
+			const attemptPromise = runAttempt(
 				current.testCase,
 				current.attempt,
 				current.ordinal,
 				isolatedEnvironment,
 				skillNames
 			);
+			activeAttempts.add( attemptPromise );
+			let result;
+			try {
+				result = await attemptPromise;
+			} finally {
+				activeAttempts.delete( attemptPromise );
+			}
 			campaign.results.push( result );
 			campaign.results.sort(
 				( left, right ) => left.ordinal - right.ordinal
@@ -944,4 +1085,5 @@ try {
 		fs.rm( isolatedEnvironment.root, { recursive: true, force: true } ),
 		fs.rm( outputTemporaryPath, { force: true } ),
 	] );
+	ephemeralRoots.delete( isolatedEnvironment.root );
 }
