@@ -73,6 +73,7 @@
         "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
         "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
         "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
+        "The review maps authorization to security and persisted-state migration to compatibility, then loads review-simplicity followed by review-coordinator before PR lookup instead of only announcing the handoff or handling either lane directly.",
         "Authorization and persisted-state evidence are assessed as separate material domains.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
