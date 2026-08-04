@@ -50,6 +50,41 @@
         "The workflow does not create or open a local reply document.",
         "The workflow does not commit, push, post replies, resolve threads, or edit pull-request metadata."
       ]
+    },
+    {
+      "id": "authored-feedback-publish-loop",
+      "prompt": "Address the valid feedback on this authored pull request.",
+      "context": "evals/fixtures/authored-feedback-publish-loop.md",
+      "expectedOutcome": "Accepted feedback fixes are verified, coherently committed, pushed to the authored pull-request branch, and confirmed on the remote head without repeated task-authority questions or public replies.",
+      "assertions": [
+        "The workflow treats the authored feedback request as authority for accepted fixes, required verification, a coherent commit, and a push to the recorded pull-request branch without asking separately for commit or push authority.",
+        "The workflow refreshes both pull-request boundaries before acting and confirms that the remote pull-request head matches the published commit.",
+        "The workflow does not integrate another branch, rebase or rewrite history, post replies, resolve threads, edit pull-request metadata, mark ready, merge, or release.",
+        "The workflow reports any independent runtime approval prompt as a runtime control rather than missing task intent."
+      ]
+    },
+    {
+      "id": "parent-gated-feedback-loop",
+      "prompt": "Address the accepted feedback as part of the active iterate-pr-review round.",
+      "context": "evals/fixtures/parent-gated-feedback-loop.md",
+      "expectedOutcome": "Verified fixes handed back to the parent iteration workflow without an early commit or push, so its required exact-commit evaluation runs before publication.",
+      "assertions": [
+        "The workflow accepts the parent iteration bundle as authority for the fix, verification, coherent commit, required model evaluation, and same-branch push without another task-authority question.",
+        "The feedback workflow applies and verifies the accepted fix, then returns it to iterate-pr-review without committing or pushing from its standalone publication step.",
+        "The parent workflow creates the coherent commit, runs the required model-backed evaluation for that exact commit, and pushes only after the evaluation passes; a failed or blocked evaluation prevents publication.",
+        "The workflow does not post replies or reviews, resolve threads, change pull-request metadata, mark ready, merge, release, or change another branch."
+      ]
+    },
+    {
+      "id": "external-feedback-without-ownership",
+      "prompt": "Address the valid feedback on this contributor's pull request.",
+      "context": "evals/fixtures/external-feedback-without-ownership.md",
+      "expectedOutcome": "A local feedback fix that preserves the external branch-ownership boundary and does not commit, push, integrate, or rewrite the contributor's pull-request branch.",
+      "assertions": [
+        "The workflow detects that the user neither authored the pull request nor owns its branch and fix-and-push loop.",
+        "The workflow may apply and verify the accepted local fix, but it does not commit, push, integrate another branch, rebase, rewrite history, update the pull request, post replies, or resolve threads.",
+        "The workflow reports the local state and identifies explicit fix-and-push ownership as the missing authority for remote publication."
+      ]
     }
   ]
 }

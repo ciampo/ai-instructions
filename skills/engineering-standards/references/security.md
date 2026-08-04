@@ -36,7 +36,7 @@ import DOMPurify from 'dompurify';
 
 ## Dependencies
 
-- **[STRONG]** Run the project's dependency audit (`npm audit`, `pnpm audit`) after adding or updating packages. Address critical and high-severity vulnerabilities before merging.
+- **[STRONG]** Run the repository's dependency audit after adding or updating packages. Address critical and high-severity vulnerabilities before merging.
 - **[PREFER]** Prefer well-maintained packages with active security response. Check last publish date, open issues, and known CVEs before adding a new dependency.
 
 ## Server-Side Considerations

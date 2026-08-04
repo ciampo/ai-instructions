@@ -1,4 +1,4 @@
 interface:
   display_name: "Iterate PR Review"
   short_description: "Iterate PR feedback until reviews converge"
-  default_prompt: "Use $iterate-pr-review to run up to five change rounds on this pull request: request Copilot and independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not post comments, replies, or reviews, resolve threads, change pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass."
+  default_prompt: "Use $iterate-pr-review to request exact-head Copilot reviews, fix findings, verify, commit, push, and repeat until clean."

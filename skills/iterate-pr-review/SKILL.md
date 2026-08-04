@@ -10,33 +10,39 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 ## Authority and boundary
 
 - Confirm that the pull request is authored by the user or that the user explicitly owns its fix-and-push loop. If neither is established, use `review-pr` and keep the review read-only.
-- Treat only actions explicitly named in the invoking request as authorized. An authorized review request permits only adding that reviewer for the recorded head; it does not authorize source edits, commits, pushes, other pull-request metadata changes, thread resolution, replies, marking ready, or merging.
+- Treat an explicit request to run this workflow as authority for the complete bounded loop: one current-head Copilot request per round, independent review, accepted fixes, required checks and evaluations, coherent commits, and pushes to the same branch. Respect narrower limits.
+- When the request also includes a rebase, publish only the verified rewritten task branch with `--force-with-lease` against its recorded remote head. Do not infer history-rewrite authority from iteration alone.
+- Record the repository, pull request, branch, evaluation destination and payload, and round limit once. Ask one consolidated question for missing authority, retain the answer while that scope is unchanged, and ask again only when it changes.
+- Use matching personal standing consent for model-backed evaluations. Otherwise, include the repository, public tracked payload, destination, and rerun scope in the consolidated question. Never send secrets, private material, untracked files, or unrelated repository data.
+- Matching standing consent may also authorize `write-pr-description` to update only the Evaluation section of the recorded authored draft pull request for the exact current head.
+- Keep other reviewers, public comments or reviews, thread resolution, unrelated metadata, ready-for-review transitions, merges, and releases outside the bundle. Runtime approval controls remain independent of task intent.
 - Establish a maximum number of completed change rounds before starting. Default to five unless the request specifies another limit, and reserve a final review-only pass for the head created by the last allowed change.
-- Load `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. If either is unavailable, use this bounded fallback: capture the same fresh snapshot, independently re-read the full diff, changed source, tests, PR feedback, and CI in a fresh pass, then categorize each concern with source-backed reasoning. The fallback must load `review-simplicity` for its mandatory deletion-first handoff when available. Otherwise, directly check whether the same outcome can be preserved while removing new state, branches, wrappers, dependencies, duplication, or speculative abstractions, and explicitly report no findings when none are material. Do not post, resolve, or otherwise mutate remote review state in the fallback.
+- Load `self-review-pr` and `address-pr-feedback`. If either is unavailable, perform the same fresh, source-backed review, include a deletion-first pass through `review-simplicity` when available, and do not mutate remote review state.
 - Treat a missing, failed, or pending Copilot review as incomplete evidence, never as a clean result.
 
 ## Request Copilot review
 
-- After confirming that the current head has neither a completed review nor a pending request, prefer the GitHub connector's reviewer-request action with the exact reviewer login `copilot-pull-request-reviewer[bot]`. If that corrected connector route is unavailable or still fails, use `gh pr edit <PR-NUMBER> --repo <OWNER/REPO> --add-reviewer @copilot`.
-- If GitHub returns a collaborator-related `422` after receiving `copilot-pull-request-reviewer` without the `[bot]` suffix, correct the identifier and retry once. Do not infer that API review requests are unsupported from that error.
-- Use the authenticated GitHub UI only when the connector and CLI routes are unavailable or still fail with the documented identifiers. If a request result is ambiguous, refresh reviewer or timeline state before retrying so one head does not receive duplicate requests.
+1. Refresh the pull request and request a review only when the recorded current head has neither completed nor pending Copilot evidence.
+2. Prefer the GitHub connector with `copilot-pull-request-reviewer[bot]`. If that fails, use `gh pr edit` with `@copilot`, then the authenticated GitHub UI as a final fallback.
+3. Record the requested head and result. Refresh ambiguous state before retrying to avoid duplicate requests.
 
 ## Iterate
 
-1. Capture a fresh PR snapshot: canonical URL, title, base and head revisions, changed files, existing review state, and CI status. Record the head revision for this round. Rebuild the snapshot whenever it changes.
-2. Reuse a completed Copilot review tied to that recorded head. If a current-head request or review is pending, wait for it instead of requesting another. Only when the current head has neither should you follow the request procedure above when authorized. Record when it was requested and do not reuse a review for an earlier head.
-3. Independently run the adversarial self-review for the same head. Do not give it Copilot's conclusions before its first pass. Wait for the Copilot review and local review to complete before deciding whether to change code.
-4. Consolidate both results. Account for every current comment or finding as accepted, already fixed, stale, or declined with source-backed reasoning. Deduplicate overlapping reports; a suggestion is actionable only when it identifies a real problem or a required change.
-5. Implement accepted fixes only when authorized. Verify the changed behavior with the relevant project checks. If commit and push are not both separately authorized, report the verified local changes and stop; they cannot begin a new remote-review round. After an authorized commit and push, refresh the PR and verify that its remote head matches the new commit before starting the next round.
-6. Finish only when the Copilot review for the current head is complete with no actionable feedback and the independent self-review for that same head has no actionable findings. Re-read the PR revisions and review state immediately before declaring completion.
+1. When a rebase is explicitly requested, refresh the base and pull-request head, rebase the task branch, verify the replay, and run required checks and evaluations. Publish the verified branch with `--force-with-lease`, then confirm that local, remote, and pull-request heads match.
+2. Capture a fresh PR snapshot: canonical URL, title, base and head revisions, changed files, existing review state, and CI status. Record the head revision for this round. Rebuild the snapshot whenever it changes.
+3. Reuse a completed Copilot review tied to the recorded head. If its review or request is pending, wait without creating a duplicate. If the head has neither, follow the request procedure above under the retained task bundle, then wait for current-head evidence. If no supported request route can provide it, stop with that verification gap. Do not reuse a review for an earlier head.
+4. Independently run the adversarial self-review for the same head. Do not give it Copilot's conclusions before its first pass. Wait for the Copilot review and local review to complete before deciding whether to change code.
+5. Consolidate both results. Account for every current comment or finding as accepted, already fixed, stale, or declined with source-backed reasoning. Deduplicate overlapping reports; a suggestion is actionable only when it identifies a real problem or a required change.
+6. Implement accepted fixes, verify them, commit coherently, and run required model evaluations against that exact commit. Push only after those checks pass, then verify the remote head before the next round. Honor local-only limits and report blocked verification without publishing.
+7. Finish only when the Copilot review for the current head is complete with no actionable feedback, the independent self-review for that same head has no actionable findings, and every required exact-head evaluation is complete. Re-read the PR revisions and review state immediately before declaring completion.
 
 ## Wait and recover
 
 - Wait only for a known pending review or check, using the platform's normal monitoring mechanism. Refresh the PR state after it completes.
-- If Copilot is unavailable, cannot be requested, or never completes, stop with that verification gap. Do not substitute an unrequested human review or silently omit the Copilot condition.
+- If current-head Copilot evidence is unavailable or never completes, stop with that verification gap. Do not substitute an unrequested human review or silently omit the Copilot condition.
 - If the head changes outside this loop, discard stale results and restart the affected round from a fresh snapshot.
 - After the last allowed change round, complete the reserved review-only pass for its resulting head. If either review finds actionable feedback, stop and deliver it with the next recommended action rather than making another change round.
 
 ## Recap
 
-Report a concise recap with one row per round: immutable base revision, exact reviewed head revision, Copilot state, self-review result, accepted changes, verification, and why the loop ended. Do not omit or abbreviate either revision. Distinguish completion, iteration-limit stop, and blocked verification clearly.
+Report the active authority bundle and one concise row per round: full base and head revisions, both review results, accepted changes, verification, and why the loop ended. Distinguish completion, the iteration limit, failed verification, and runtime approval blockers.

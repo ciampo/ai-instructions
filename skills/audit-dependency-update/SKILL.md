@@ -17,7 +17,7 @@ When reviewing or auditing an existing update, inspect and report without modify
 2. **Changelog review**: Read release notes between the old and new versions. Check GitHub releases, CHANGELOG.md, and migration guides. Focus on: breaking changes, deprecations, new features, and bug fixes.
 3. **Codebase audit**: Search the codebase for usage of any APIs that changed, were deprecated, or were removed. Check app code, tests, config files, and CSS.
 4. **Ecosystem compatibility**: If the dependency is part of a larger ecosystem (e.g., React, TypeScript, a CSS framework, a testing framework), verify that sibling packages are compatible with the new version.
-5. **Security check**: Run the project's audit command (`npm audit`, `pnpm audit`, etc.) to check for known vulnerabilities.
+5. **Security check**: Run the repository's dependency audit and assess known vulnerabilities.
 6. **Build and test**: Run the relevant verification suite. Review visual-regression or snapshot deltas when they exist; update them only as part of an explicitly requested implementation.
 7. **Summarize findings**: Present what changed, compatibility and security conclusions, verification, whether local files were modified, and any follow-up work. A valid audit may recommend no change.
 

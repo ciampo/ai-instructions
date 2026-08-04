@@ -6,7 +6,7 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-The [modernization plan](modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
+The [modernization plan](modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [authority and approvals guide](docs/authority-and-approvals.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
 
 ## Structure
 

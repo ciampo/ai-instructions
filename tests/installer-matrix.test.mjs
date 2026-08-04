@@ -721,7 +721,7 @@ test( 'content contracts enforce the universal instruction budget and evaluation
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
 
-test( 'iterative review launcher permits fixes without authorizing public GitHub actions', async () => {
+test( 'iterative review launcher requests exact-head Copilot reviews', async () => {
 	const launcher = normalizedWithTrailingNewline( await readFile(
 		path.join( repoDir, 'skills', 'iterate-pr-review', 'agents', 'openai.yaml' ),
 		'utf8'
@@ -729,7 +729,7 @@ test( 'iterative review launcher permits fixes without authorizing public GitHub
 	const defaultPrompt = launcher.match( /^  default_prompt: "([^"]+)"$/m )?.[ 1 ];
 	assert.equal(
 		defaultPrompt,
-		'Use $iterate-pr-review to run up to five change rounds on this pull request: request Copilot and independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not post comments, replies, or reviews, resolve threads, change pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass.'
+		'Use $iterate-pr-review to request exact-head Copilot reviews, fix findings, verify, commit, push, and repeat until clean.'
 	);
 } );
 

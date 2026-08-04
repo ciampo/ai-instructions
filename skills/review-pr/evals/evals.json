@@ -51,7 +51,7 @@
       "assertions": [
         "The review does not modify repository source or post to GitHub.",
         "The review pins and rechecks both PR boundaries, then inspects every changed file from the merge-base diff.",
-        "The review retrieves needed remote state through narrow CLI reads by default, with a connector fallback for resolved state, merged discussion, or a CLI capability gap.",
+        "The review retrieves only the remote state it needs and uses a thread-aware interface when resolved state or merged discussion matters.",
         "The review refreshes the remote review state it used before delivery and accounts for new or resolved feedback.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "The review includes the mandatory review-simplicity baseline even though the prompt does not request simplification.",

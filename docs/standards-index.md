@@ -16,6 +16,8 @@ Review technical claims against these primary sources instead of relying on reme
 | [ASD-STE100 Simplified Technical English, Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf) | Clear and consistent user-facing technical explanations and procedures | 2026-08-03 |
 | [Agent Skills specification](https://agentskills.io/specification) | Skill directory layout, frontmatter, progressive disclosure, and bundled resources | 2026-07-21 |
 | [Codex `AGENTS.md` guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | Codex global and project instruction discovery, precedence, and size limits | 2026-07-22 |
+| [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) | Personal `developer_instructions`, sandbox, approval, and configuration boundaries | 2026-08-04 |
+| [Codex command rules](https://learn.chatgpt.com/docs/agent-configuration/rules) | Narrow command allow, prompt, and forbid rules plus prefix matching | 2026-08-04 |
 | [Claude Code memory guidance](https://code.claude.com/docs/en/memory) | `CLAUDE.md` scope, imports, `AGENTS.md` wrappers, and rules | 2026-07-22 |
 | [GitHub Copilot CLI custom instructions](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions) | Copilot instruction discovery, agent-instruction filenames, imports, and precedence limits | 2026-07-22 |
 | [Antigravity CLI migration](https://antigravity.google/docs/cli/gcli-migration) | Shared `GEMINI.md` context and current global skill paths | 2026-07-23 |
