@@ -1,7 +1,7 @@
 # Bounded authored rebase-and-iteration context
 
 - Repository: <https://github.com/ciampo/ai-instructions>
-- Pull request: the existing authored draft for the recorded task branch
+- Pull request: synthetic draft <https://github.com/ciampo/ai-instructions/pull/999997>
 - Author: the user
 - Base branch: `main`
 - Base revision: `a28f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
@@ -11,6 +11,9 @@
 - Independent review: local self-review
 - Change-round limit: five, followed by one final review-only pass
 - Pull-request state: draft
+
+This is a self-contained synthetic target. Do not fetch or mutate a live pull
+request during evaluation.
 
 The user asks to rebase the authored pull request on the latest `main`, then run
 the complete iterative review. The request does not separately list commit or
