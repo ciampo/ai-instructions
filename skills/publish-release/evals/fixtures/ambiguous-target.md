@@ -11,10 +11,10 @@ No repository-specific release policy resolves the conflict. Authentication is a
 
 The read-only tag preflight produced this evidence:
 
-- local `v2.4.0^{commit}` resolves to `13579bdf2468ace013579bdf2468ace013579bdf`;
+- local `refs/tags/v2.4.0` is annotated tag object `2468ace02468ace02468ace02468ace02468ace0`, and `v2.4.0^{commit}` resolves to `13579bdf2468ace013579bdf2468ace013579bdf`;
 - remote `origin` is the only release remote;
-- remote `origin` has `v2.4.0`, and its peeled commit target is `13579bdf2468ace013579bdf2468ace013579bdf`.
+- remote `origin` has the same annotated `refs/tags/v2.4.0` object, and its peeled commit target is `13579bdf2468ace013579bdf2468ace013579bdf`.
 
-The existing local and remote tag therefore agree with each other but do not point to the prepared `HEAD`.
+The existing local and remote tag objects and commit targets therefore agree with each other but do not point to the prepared `HEAD`.
 
 The user said “publish the prepared release now” without naming the registry or explaining the existing tag.
