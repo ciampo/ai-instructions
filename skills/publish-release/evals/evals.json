@@ -56,7 +56,7 @@
         "The workflow reports prepared version 2.4.0 at commit 8f7d3e2c1b0a99887766554433221100ffeeddcc and the confirmed public npm registry.",
         "The workflow reports that origin is authoritative and its annotated v2.4.0 tag object 2468ace02468ace02468ace02468ace02468ace0 peels to the prepared commit.",
         "The workflow preserves and reuses the authoritative remote tag object instead of creating, recreating, rewriting, or pushing the tag.",
-        "Because origin already contains the release commit and tag, the workflow plans only the remaining registry publication, verification, and remote-release actions without inventing an ambiguity."
+        "Because origin already contains the release commit and tag, the workflow plans no commit or tag push and reruns the release gates before the remaining registry publication, verification, and remote-release actions, without inventing an ambiguity."
       ]
     }
   ]
