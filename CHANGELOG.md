@@ -4,9 +4,20 @@
 
 ### Changed
 
-- Bundle routine draft-pull-request, feedback, exact-lease rebase, iterative-review publication, and exact-head Copilot request authority; preserve parent evaluation gates; and document narrow personal consent for public skill evaluations. ([#97](https://github.com/ciampo/ai-instructions/pull/97))
+- Simplify shared pull-request and Git workflows around outcomes, ownership, verification, and safety boundaries; bundle routine authored-pull-request authority; and document narrow personal consent for public skill evaluations. ([#97](https://github.com/ciampo/ai-instructions/pull/97))
+- Route panel and multi-lane pull-request reviews through `review-pr` while preserving explicit coordinator and late-discovery paths, and normalize evidence-based severities across direct and coordinated reviews. ([#89](https://github.com/ciampo/ai-instructions/pull/89), [#96](https://github.com/ciampo/ai-instructions/pull/96))
+- Keep task titles anchored to verified issue and pull-request context while allowing concise, phase-aware corrections. ([#95](https://github.com/ciampo/ai-instructions/pull/95))
+- Verify prepared commits and exact local and remote tag targets before release publication, preserving authoritative annotated tags. ([#90](https://github.com/ciampo/ai-instructions/pull/90))
+- Include full immutable base and head revisions in every iterative-review recap. ([#88](https://github.com/ciampo/ai-instructions/pull/88))
+- Restrict Automattic Enterprise routing to `github.a8c.com`, route generic Enterprise preflights to repository guidance, and run authorized read-only listener and identity probes directly. ([#83](https://github.com/ciampo/ai-instructions/pull/83), [#85](https://github.com/ciampo/ai-instructions/pull/85), [#87](https://github.com/ciampo/ai-instructions/pull/87))
 - Keep chat-only pull-request feedback work within bounded tasks by using immutable supplied snapshots, prioritizing accepted fixes and required verification, and delivering reply drafts before optional broad checks. ([#86](https://github.com/ciampo/ai-instructions/pull/86))
 - Restrict iterative pull-request review to user-authored pull requests or explicitly owned fix-and-push loops, and document reliable non-UI Copilot review requests. ([#84](https://github.com/ciampo/ai-instructions/pull/84))
+- Separate review-reply drafting, feedback implementation, and general pull-request review at skill-discovery time. ([#82](https://github.com/ciampo/ai-instructions/pull/82))
+- Give CI read-only repository permissions and pin third-party actions to reviewed immutable revisions. ([#71](https://github.com/ciampo/ai-instructions/pull/71))
+- Require evaluation-fixture coverage for every distributed skill and cap aggregate discovery metadata. ([#70](https://github.com/ciampo/ai-instructions/pull/70))
+- Separate chat-only or no-artifact review delivery from explicit no-write instructions while preserving the requested local review-and-fix authority. ([#69](https://github.com/ciampo/ai-instructions/pull/69))
+- Keep standalone `--copilot-concat` exports isolated to the requested project `AGENTS.md` unless product installation is explicitly selected. ([#68](https://github.com/ciampo/ai-instructions/pull/68))
+- Replace stale inventory counts in active architecture summaries with stable contracts and restore material post-modernization changelog history. ([#67](https://github.com/ciampo/ai-instructions/pull/67))
 - Add STE-inspired communication guidance and reliable GitHub Enterprise preflight routing. ([#65](https://github.com/ciampo/ai-instructions/pull/65), [#66](https://github.com/ciampo/ai-instructions/pull/66))
 - Add mandatory simplicity review, evidence-gated specialist findings, and an optional coordinated specialist-review workflow. ([#59](https://github.com/ciampo/ai-instructions/pull/59), [#60](https://github.com/ciampo/ai-instructions/pull/60), [#64](https://github.com/ciampo/ai-instructions/pull/64))
 - Add bounded PR-review iteration while preserving explicit edit, commit, and push authority. ([#61](https://github.com/ciampo/ai-instructions/pull/61))
