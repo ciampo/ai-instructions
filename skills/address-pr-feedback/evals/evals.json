@@ -53,7 +53,7 @@
     },
     {
       "id": "authored-feedback-publish-loop",
-      "prompt": "Address the valid feedback on this authored pull request and complete the normal fix-and-push workflow. Do not post replies or resolve threads.",
+      "prompt": "Address the valid feedback on this authored pull request.",
       "context": "evals/fixtures/authored-feedback-publish-loop.md",
       "expectedOutcome": "Accepted feedback fixes are verified, coherently committed, pushed to the authored pull-request branch, and confirmed on the remote head without repeated task-authority questions or public replies.",
       "assertions": [

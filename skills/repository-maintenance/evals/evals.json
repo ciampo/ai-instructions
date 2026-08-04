@@ -80,7 +80,7 @@
     },
     {
       "id": "open-draft-pr-authority",
-      "prompt": "Implement the requested change and open a draft pull request. Follow the supplied authority boundary without asking separately about the normal commit and push steps.",
+      "prompt": "Implement the requested change and open a draft pull request.",
       "context": "evals/fixtures/open-draft-pr-authority.md",
       "expectedOutcome": "A verified draft-pull-request delivery that treats branch creation, coherent commits, push, and draft creation as normal parts of the requested outcome while preserving excluded GitHub actions.",
       "assertions": [

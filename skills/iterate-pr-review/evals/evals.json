@@ -161,7 +161,7 @@
     },
     {
       "id": "bounded-authored-rebase-iteration",
-      "prompt": "Rebase this authored pull request on the latest main branch, then run the complete iterate-pr-review loop. Use the supplied personal evaluation authority and do not ask separately for each routine workflow action.",
+      "prompt": "Rebase this authored pull request on the latest main branch, then run the complete iterate-pr-review loop.",
       "context": "evals/fixtures/bounded-authored-rebase-iteration.md",
       "expectedOutcome": "One bounded authored-PR authority bundle that safely rebases, consumes exact-head review evidence, publishes accepted fixes, runs authorized public evaluations, and records exact-head results without repeated task-authority questions.",
       "assertions": [
