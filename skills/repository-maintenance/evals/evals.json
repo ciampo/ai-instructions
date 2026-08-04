@@ -37,7 +37,7 @@
       "expectedOutcome": "The title uses a concise subject that accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened.",
       "assertions": [
         "The title starts with `👀 [R#80600]`.",
-        "The subject accurately reflects that `ThemeProvider` omits color properties when neither provided nor inherited; exact wording and punctuation can differ from the source title.",
+        "The subject accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ from the source title.",
         "The subject is concise and uses the pull-request metadata instead of a generic label such as `Review Gutenberg PR`.",
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
@@ -74,7 +74,7 @@
       "assertions": [
         "The title uses an intuitive verification-phase emoji.",
         "The title preserves the primary pull-request reference `[R#80600]`.",
-        "The concise subject still accurately reflects the `ThemeProvider` color-property change; exact wording and punctuation can differ.",
+        "The concise subject still accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ.",
         "The response contains only the title."
       ]
     }
