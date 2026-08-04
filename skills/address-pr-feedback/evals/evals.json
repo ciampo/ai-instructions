@@ -33,8 +33,8 @@
       "expectedOutcome": "Accepted local fixes, focused verification, and reply drafts completed within the evaluation bound and returned in chat, without a local reply artifact or GitHub communication.",
       "assertions": [
         "The workflow applies and verifies accepted local fixes because chat-only delivery does not revoke local-fix authority.",
-        "The workflow completes the smallest checks that directly exercise the fixes before optional broad verification, and does not reconstruct missing repository configuration in the self-contained fixture.",
-        "The final response names the focused checks and their results so retained tool events can prove verification completed within the evaluation bound.",
+        "The workflow completes the smallest checks that directly exercise the fixes, completes or reports every required check, defers only optional broad verification, and does not reconstruct missing repository configuration in the self-contained fixture.",
+        "After applying fixes, the final response uses the calling workflow's chat-delivery override to name the focused checks and their results before the replies, so retained tool events can prove verification completed within the evaluation bound.",
         "The workflow returns the draft replies in chat without creating or opening a local reply document.",
         "The workflow does not post replies, resolve threads, or edit pull-request metadata."
       ]
@@ -46,6 +46,7 @@
       "expectedOutcome": "A read-only feedback assessment with reply drafts in chat and no local or remote mutation.",
       "assertions": [
         "The workflow assesses the feedback but does not apply local fixes because file writes are explicitly prohibited.",
+        "The workflow follows the supporting comment skill for read-only chat delivery and returns only the requested assessment and replies without a fix-verification preamble.",
         "The workflow does not create or open a local reply document.",
         "The workflow does not commit, push, post replies, resolve threads, or edit pull-request metadata."
       ]
