@@ -1,6 +1,6 @@
 ---
 name: iterate-pr-review
-description: Iterate a GitHub pull request authored by the user, or one whose fix-and-push loop the user explicitly owns, through Copilot review, independent adversarial self-review, and accepted fixes until both sources have no actionable feedback. Use only when that authorship or ownership is explicit. Iterative wording alone is insufficient. Use review-pr for another person's pull request, even when asked to repeat reviews, and self-review-pr for a one-time authored review.
+description: Iterate a GitHub pull request authored by the user, or one whose fix-and-push loop the user explicitly owns, through Copilot review, independent adversarial self-review, and accepted fixes until both sources have no actionable feedback. Use only when that authorship or ownership is explicit. Iterative wording alone is insufficient. Use review-pr for another person's pull request when the user does not explicitly own its fix-and-push loop, even when asked to repeat reviews, and self-review-pr for a one-time authored review.
 ---
 
 # Iterate PR Review

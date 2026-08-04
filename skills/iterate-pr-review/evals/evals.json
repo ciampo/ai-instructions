@@ -3,7 +3,7 @@
   "triggerCases": [
     {
       "id": "repeat-copilot-and-self-review",
-      "prompt": "Iterate on this PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "prompt": "Iterate on my PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
       "shouldTrigger": true
     },
     {
