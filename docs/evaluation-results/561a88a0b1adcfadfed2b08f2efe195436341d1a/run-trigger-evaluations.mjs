@@ -39,13 +39,6 @@ const childEnvironmentKeys = [
 const modelShellEnvironmentKeys = childEnvironmentKeys.filter(
 	( key ) => key !== 'CODEX_HOME'
 );
-const loginShellRuntimeEnvironmentKeys = [
-	'LOGNAME',
-	'OLDPWD',
-	'PWD',
-	'SHLVL',
-	'_',
-];
 const restrictedTemporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
 ].sort( ( left, right ) => right.length - left.length );
@@ -597,7 +590,8 @@ async function verifySandboxReadBoundary() {
 function sanitize( value ) {
 	let sanitized = value
 		.replaceAll( repositoryRoot, '[repository]' )
-		.replaceAll( os.homedir(), '[home]' );
+		.replaceAll( os.homedir(), '[home]' )
+		.replace( /\bCODEX_THREAD_ID=[^\s]+/g, 'CODEX_THREAD_ID=[thread]' );
 
 	for ( const clientHomeRoot of [ ...clientHomeRoots ].sort(
 		( left, right ) => right.length - left.length
@@ -679,6 +673,12 @@ function verifyClassifier() {
 		[ command, frontmatter, 0, [ 'target' ] ],
 		[ '/bin/zsh -lc "cat SKILL.md"', frontmatter, 0, [ 'target' ] ],
 		[ '/bin/zsh -lc "cat ./SKILL.md"', frontmatter, 0, [ 'target' ] ],
+		[
+			'/bin/zsh -lc \\"cat /tmp/skills/target/SKILL.md\\"',
+			frontmatter,
+			0,
+			[ 'target' ],
+		],
 		[ command, frontmatter, 1, [] ],
 		[ command, 'name: target\n', 0, [] ],
 		[ '/bin/zsh -lc "pwd"', frontmatter, 0, [] ],
@@ -709,91 +709,45 @@ function verifyClassifier() {
 			throw new Error( 'Host-identity sanitizer self-check failed.' );
 		}
 	}
+	if (
+		sanitize( 'CODEX_THREAD_ID=019fcafb-b99e-7372-a399-89ca150c557e' ) !==
+		'CODEX_THREAD_ID=[thread]'
+	) {
+		throw new Error( 'Runtime-identifier sanitizer self-check failed.' );
+	}
 }
 
-async function verifyEnvironmentContract() {
-	const root = await fs.mkdtemp(
-		path.join( os.tmpdir(), 'ai-instructions-environment-check-' )
+function verifyEnvironmentContract() {
+	const environment = createChildEnvironment(
+		'[home]',
+		'[client-home]',
+		'[temporary]',
+		'[zsh]'
 	);
+	const actualKeys = Object.keys( environment ).sort();
+	const modelShellEnvironment = createModelShellEnvironment( environment );
+	const actualModelShellKeys = Object.keys( modelShellEnvironment ).sort();
 
-	try {
-		const userHome = path.join( root, 'home' );
-		const shellConfiguration = await createShellConfiguration( root );
-		await fs.mkdir( userHome );
-		const environment = createChildEnvironment(
-			userHome,
-			path.join( root, 'codex-home' ),
-			path.join( root, 'tmp' ),
-			shellConfiguration
-		);
-		const actualKeys = Object.keys( environment ).sort();
-		const modelShellEnvironment = createModelShellEnvironment( environment );
-		const actualModelShellKeys = Object.keys( modelShellEnvironment ).sort();
-
-		if (
-			JSON.stringify( actualKeys ) !==
-			JSON.stringify( childEnvironmentKeys )
-		) {
-			throw new Error( 'Environment self-check failed: unexpected variables.' );
-		}
-
-		if (
-			JSON.stringify( actualModelShellKeys ) !==
-			JSON.stringify( modelShellEnvironmentKeys ) ||
-			'CODEX_HOME' in modelShellEnvironment
-		) {
-			throw new Error(
-				'Environment self-check failed: model shell can locate client state.'
-			);
-		}
-
-		if (
-			environment.HOME === os.homedir() ||
-			environment.CODEX_HOME === sourceCodexHome
-		) {
-			throw new Error( 'Environment self-check failed: host state is exposed.' );
-		}
-
-		const loginShell = spawnSync(
-			'/bin/zsh',
-			[ '-lc', '/usr/bin/env -0' ],
-			{ encoding: 'utf8', env: modelShellEnvironment }
-		);
-		const loginShellEnvironment = Object.fromEntries(
-			loginShell.stdout
-				.split( '\0' )
-				.filter( Boolean )
-				.map( ( entry ) => {
-					const separator = entry.indexOf( '=' );
-					return [ entry.slice( 0, separator ), entry.slice( separator + 1 ) ];
-				} )
-		);
-		const actualLoginShellKeys = Object.keys( loginShellEnvironment ).sort();
-		const expectedLoginShellKeys = [
-			...new Set( [
-				...modelShellEnvironmentKeys,
-				...loginShellRuntimeEnvironmentKeys,
-			] ),
-		].sort();
-
-		if (
-			loginShell.status !== 0 ||
-			JSON.stringify( actualLoginShellKeys ) !==
-				JSON.stringify( expectedLoginShellKeys ) ||
-			'CODEX_HOME' in loginShellEnvironment ||
-			Object.entries( modelShellEnvironment ).some(
-				( [ key, value ] ) => loginShellEnvironment[ key ] !== value
-			)
-		) {
-			throw new Error(
-				'Environment self-check failed: login shell changed the environment contract.'
-			);
-		}
-
-		return { loginShellEnvironmentVariables: actualLoginShellKeys };
-	} finally {
-		await fs.rm( root, { recursive: true, force: true } );
+	if (
+		JSON.stringify( actualKeys ) !== JSON.stringify( childEnvironmentKeys )
+	) {
+		throw new Error( 'Environment self-check failed: unexpected variables.' );
 	}
+
+	if (
+		JSON.stringify( actualModelShellKeys ) !==
+			JSON.stringify( modelShellEnvironmentKeys ) ||
+		'CODEX_HOME' in modelShellEnvironment
+	) {
+		throw new Error(
+			'Environment self-check failed: configured model shell can locate client state.'
+		);
+	}
+
+	return {
+		clientEnvironmentVariables: actualKeys,
+		configuredModelShellEnvironmentVariables: actualModelShellKeys,
+	};
 }
 
 function loadedSkillNames( command, aggregatedOutput, exitCode ) {
@@ -801,8 +755,11 @@ function loadedSkillNames( command, aggregatedOutput, exitCode ) {
 		return [];
 	}
 
+	const normalizedCommand = command.replace( /\\+(?=['"])/g, '' );
 	const readsSkillFile =
-		/(?:^|\s|['"])(?:[^\s'"]*\/)?SKILL\.md(?=$|\s|['"])/.test( command );
+		/(?:^|\s|['"])(?:[^\s'"]*\/)?SKILL\.md(?=$|\s|['"])/.test(
+			normalizedCommand
+		);
 
 	if ( ! readsSkillFile ) {
 		return [];
@@ -827,7 +784,15 @@ function signalProcessGroup( processGroupId, signal ) {
 	}
 }
 
-async function verifyExecReadBoundary( isolatedEnvironment ) {
+function normalizeBoundaryCommand( value ) {
+	return value
+		.replace( /['"\\]/g, '' )
+		.replace( /\s+/g, ' ' )
+		.trim()
+		.replace( /^\/bin\/zsh -(?:c|lc) /, '' );
+}
+
+async function verifyExecBoundary( isolatedEnvironment ) {
 	const attemptEnvironment = await createAttemptEnvironment(
 		isolatedEnvironment,
 		[]
@@ -869,17 +834,21 @@ async function verifyExecReadBoundary( isolatedEnvironment ) {
 				sourceCodexHome,
 			]
 		);
-		const probePaths = [
+		const probeArguments = [
 			clientCanary,
 			sensitiveCanary,
 			sourceAuthPath,
 			allowedCanary,
+			attemptEnvironment.userHome,
+			attemptEnvironment.workspace,
+			isolatedPath,
+			attemptEnvironment.shellConfiguration,
 		];
 		const probeCommand = [
 			'/bin/sh -c',
-			`'test ! -r "$1" && test ! -r "$2" && test ! -r "$3" && test -r "$4" && printf "%s\\n" BOUNDARY_OK'`,
+			`'test ! -r "$1" && test ! -r "$2" && test ! -r "$3" && test -r "$4" && test -z "\${CODEX_HOME+x}" && test "$HOME" = "$5" && test "$TMPDIR" = "$6" && test "$PATH" = "$7" && test "$ZDOTDIR" = "$8" && printf "%s\\n" BOUNDARY_OK'`,
 			'boundary-check',
-			...probePaths.map( ( value ) => JSON.stringify( value ) ),
+			...probeArguments.map( ( value ) => JSON.stringify( value ) ),
 		].join( ' ' );
 		const prompt =
 			'Run exactly one shell command: the command between the markers below. ' +
@@ -957,6 +926,10 @@ async function verifyExecReadBoundary( isolatedEnvironment ) {
 		}
 
 		const proof = commandEvents[ 0 ];
+		const normalizedProofCommand = normalizeBoundaryCommand(
+			proof?.command ?? ''
+		);
+		const normalizedProbeCommand = normalizeBoundaryCommand( probeCommand );
 		if (
 			timedOut ||
 			close.exitCode !== 0 ||
@@ -964,16 +937,18 @@ async function verifyExecReadBoundary( isolatedEnvironment ) {
 			commandEvents.length !== 1 ||
 			proof.exit_code !== 0 ||
 			proof.aggregated_output.trim() !== 'BOUNDARY_OK' ||
-			probePaths.some( ( value ) => ! proof.command.includes( value ) )
+			normalizedProofCommand !== normalizedProbeCommand
 		) {
 			throw new Error(
-				`Exact Codex exec filesystem-boundary check failed (${ close.exitCode }, ${ close.signal }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
+				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
 			);
 		}
 
 		return {
-			method: 'A dedicated Codex exec turn used the campaign configuration to run one no-content readability command. A client-state canary, its parent canary, and the source authentication file were unreadable; the isolated workspace canary was readable.',
+			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained no-content command. Client-root, parent-root, and source-authentication canaries were unreadable; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
 			status: 'pass',
+			command: sanitize( proof.command ),
+			output: sanitize( proof.aggregated_output ),
 			commandSha256: createHash( 'sha256' )
 				.update( proof.command )
 				.digest( 'hex' ),
@@ -1265,7 +1240,7 @@ function writeOutput( campaign ) {
 }
 
 verifyClassifier();
-const environmentContract = await verifyEnvironmentContract();
+const environmentContract = verifyEnvironmentContract();
 await verifySandboxReadBoundary();
 
 const skillNames = targetSkillNames();
@@ -1280,13 +1255,13 @@ const attempts = cases.flatMap( ( testCase, caseIndex ) =>
 const isolatedEnvironment = await createIsolatedEnvironment( skillNames );
 
 try {
-	const execReadBoundary = await verifyExecReadBoundary( isolatedEnvironment );
+	const execBoundary = await verifyExecBoundary( isolatedEnvironment );
 	const provenance = await collectProvenance(
 		skillNames,
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 6,
+		schemaVersion: 7,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
@@ -1313,15 +1288,15 @@ try {
 			concurrency,
 			timeoutSeconds: timeoutMs / 1000,
 			workspace: 'Fresh outside-repository temporary directory for every attempt.',
-			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A split filesystem permission profile denied model-shell reads of the host home, the runner logical and resolved temporary roots, and credential-bearing client state while allowing the isolated attempt and staged target roots. Codex exposes its per-command argument scratch directory so the command can execute; the exact-exec preflight verified that client-root and parent canaries remained unreadable. Model shell policy omitted CODEX_HOME. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
-			environmentVariables: childEnvironmentKeys,
-			modelShellEnvironmentVariables: modelShellEnvironmentKeys,
-			loginShellEnvironmentVariables:
-				environmentContract.loginShellEnvironmentVariables,
-			filesystemBoundary: execReadBoundary,
+			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A split filesystem permission profile denied model-shell reads of the host home, the runner logical and resolved temporary roots, and credential-bearing client state while allowing the isolated attempt and staged target roots. Codex exposes its per-command argument scratch directory so the command can execute. The exact-exec preflight verified credential and key effective-environment invariants while allowing Codex-added runtime variables. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			clientEnvironmentVariables:
+				environmentContract.clientEnvironmentVariables,
+			configuredModelShellEnvironmentVariables:
+				environmentContract.configuredModelShellEnvironmentVariables,
+			runtimeBoundary: execBoundary,
 			path: isolatedPath,
-			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin; the preflight executes /bin/zsh -lc and requires the recorded value.',
-			authentication: 'Credential-bearing client state used a separate temporary root with interruption cleanup. Static and exact Codex exec checks proved that client-root, parent-root, and source-auth canaries were unreadable. Codex per-command argument scratch remained readable by design, and CODEX_HOME was excluded from model shell environments.',
+			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin. The exact Codex exec preflight requires the effective command PATH and other key isolated environment values.',
+			authentication: 'Credential-bearing client state used a separate temporary root with interruption cleanup. Static and exact Codex exec checks proved that client-root, parent-root, and source-auth canaries were unreadable. Codex per-command argument scratch remained readable by design, and the exact preflight proved CODEX_HOME was absent from the effective model command.',
 			commandEvidence: 'Every completed command retained its sanitized command, output, exit code, loaded-skill classification, original full-output SHA-256, and retained-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
 			interruption: 'SIGHUP, SIGINT, and SIGTERM stop active detached process groups, await active attempts, remove private and non-private temporary roots, and preserve the last atomically written evidence snapshot.',
 			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
@@ -1334,38 +1309,56 @@ try {
 	};
 	let nextAttempt = 0;
 	let completedAttempts = 0;
+	let workerFailure;
 
 	async function worker() {
-		while ( ! shuttingDown && nextAttempt < attempts.length ) {
-			const current = attempts[ nextAttempt ];
-			nextAttempt += 1;
-			const attemptPromise = runAttempt(
-				current.testCase,
-				current.attempt,
-				current.ordinal,
-				isolatedEnvironment,
-				skillNames
-			);
-			activeAttempts.add( attemptPromise );
-			let result;
-			try {
-				result = await attemptPromise;
-			} finally {
-				activeAttempts.delete( attemptPromise );
+		try {
+			while (
+				! shuttingDown &&
+				! workerFailure &&
+				nextAttempt < attempts.length
+			) {
+				const current = attempts[ nextAttempt ];
+				nextAttempt += 1;
+				const attemptPromise = runAttempt(
+					current.testCase,
+					current.attempt,
+					current.ordinal,
+					isolatedEnvironment,
+					skillNames
+				);
+				activeAttempts.add( attemptPromise );
+				let result;
+				try {
+					result = await attemptPromise;
+				} finally {
+					activeAttempts.delete( attemptPromise );
+				}
+				campaign.results.push( result );
+				campaign.results.sort(
+					( left, right ) => left.ordinal - right.ordinal
+				);
+				completedAttempts += 1;
+				process.stderr.write(
+					`${ completedAttempts }/${ attempts.length } ${ result.skill }/${ result.caseId }#${ result.attempt }: ${ result.status }\n`
+				);
+				await writeOutput( campaign );
 			}
-			campaign.results.push( result );
-			campaign.results.sort(
-				( left, right ) => left.ordinal - right.ordinal
-			);
-			completedAttempts += 1;
-			process.stderr.write(
-				`${ completedAttempts }/${ attempts.length } ${ result.skill }/${ result.caseId }#${ result.attempt }: ${ result.status }\n`
-			);
-			await writeOutput( campaign );
+		} catch ( error ) {
+			workerFailure ??= error;
+			throw error;
 		}
 	}
 
-	await Promise.all( Array.from( { length: concurrency }, () => worker() ) );
+	const workerResults = await Promise.allSettled(
+		Array.from( { length: concurrency }, () => worker() )
+	);
+	const rejectedWorker = workerResults.find(
+		( result ) => result.status === 'rejected'
+	);
+	if ( rejectedWorker ) {
+		throw rejectedWorker.reason;
+	}
 	await writeOutput( campaign );
 } finally {
 	spawnSync( 'chmod', [ '-R', 'u+w', isolatedEnvironment.root ] );
