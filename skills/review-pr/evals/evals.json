@@ -22,6 +22,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "ambiguous-external-pr-iteration",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
+      "shouldTrigger": true
+    },
+    {
       "id": "owned-external-pr-iteration",
       "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
       "shouldTrigger": false
