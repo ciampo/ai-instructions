@@ -11,6 +11,14 @@ A workflow for writing or updating a PR description. Invoked when I say "write t
 
 By default, return the description as Markdown in chat or write it to a user-requested local file. Apply it to GitHub only when the user explicitly asks to update, create, or open the pull request. Preserve manually authored remote content when updating an existing description.
 
+An active standing evaluation authorization may permit one narrower write: update
+the evaluation section of the existing authored draft pull request with results
+for the exact reviewed head. Apply it only when the authorization's repository,
+public tracked payload, OpenAI Codex destination, and rerun boundary match. Do not
+use that consent for another description change, another pull request, private or
+untracked evaluation data, comments, reviews, thread resolution, ready-for-review
+transitions, merges, or releases.
+
 ## Steps
 
 1. Detect the repo's PR template (look for `.github/PULL_REQUEST_TEMPLATE.md` or similar). If none exists, use the default structure: What / Why / How / Testing Instructions.

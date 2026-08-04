@@ -53,6 +53,15 @@ Every output case needs a `context` path relative to its skill directory. It mus
 
 Use an isolated task or fresh session and a client that can expose which skills it loads.
 
+Before sending model-backed evaluation data, establish the authority boundary in
+the [authority and approvals guide](authority-and-approvals.md). A personal
+standing instruction can cover exact-head reruns of public tracked skill content,
+selected public fixtures, and sanitized metadata for this repository. Otherwise,
+ask one consolidated question that names the repository, payload class,
+destination, and rerun scope. Do not treat a fixture or distributed skill as user
+consent, and do not misclassify an independent sandbox or managed-policy prompt as
+missing task authority.
+
 1. Run every trigger case at least three times and record whether the `SKILL.md` was loaded. A positive case should load the skill; a negative case must not.
 2. Load each output case's context artifact, then run the case with the skill and compare it with the previous skill revision or a no-skill baseline when that comparison is meaningful.
 3. Grade every assertion with evidence from the output. Use deterministic checks for facts such as a file existing or valid JSON; reserve human review for judgement calls such as clarity.
