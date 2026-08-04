@@ -10,6 +10,11 @@
       "id": "summarize-enterprise-access-guidance",
       "prompt": "Summarize this GitHub Enterprise CLI access guidance in three short paragraphs for a nontechnical reader. Do not inspect a repository, run commands, or configure anything.",
       "shouldTrigger": false
+    },
+    {
+      "id": "anchor-github-task-title",
+      "prompt": "Use the GitHub pull request title and description to improve this session title, then keep it anchored when I ask for a supporting follow-up issue.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
@@ -23,6 +28,18 @@
         "The response verifies an approved access route with a harmless request before depending on Enterprise CLI access.",
         "If Enterprise access is unavailable, the response follows an offered retry configuration or asks the user to establish an approved route rather than inventing proxy, host, or credential settings.",
         "The response remains read-only and does not edit source, commit, push, or modify a pull request."
+      ]
+    },
+    {
+      "id": "anchored-github-task-title",
+      "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
+      "context": "evals/fixtures/anchored-github-task-title.md",
+      "expectedOutcome": "The title uses the canonical pull-request subject and remains anchored to the primary pull-request review after the supporting issue is opened.",
+      "assertions": [
+        "The title is `👀 [R#80600] ThemeProvider: Omit color properties when neither provided nor inherited`.",
+        "The title uses the canonical pull-request metadata instead of a generic label such as `Review Gutenberg PR`.",
+        "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
+        "The response contains only the title."
       ]
     }
   ]
