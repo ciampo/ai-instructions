@@ -30,6 +30,11 @@
       "id": "owned-external-pr-iteration",
       "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
       "shouldTrigger": false
+    },
+    {
+      "id": "authored-pr-iteration",
+      "prompt": "Iterate on my PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

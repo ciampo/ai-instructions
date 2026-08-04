@@ -117,6 +117,16 @@
       ]
     },
     {
+      "id": "external-write-request-without-ownership",
+      "prompt": "Use iterate-pr-review to fix the remaining issues on this contributor's PR, commit them, and push the branch.",
+      "context": "evals/fixtures/external-write-request-without-ownership.md",
+      "expectedOutcome": "An immediate read-only handoff to review-pr because requested write actions do not establish ownership of another author's fix-and-push loop.",
+      "assertions": [
+        "The workflow detects the known external author and the absence of explicit fix-and-push ownership, does not treat requested edits, commits, or pushes as ownership evidence, and routes the task to review-pr.",
+        "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
+      ]
+    },
+    {
       "id": "owned-external-review-only-authority",
       "prompt": "Iterate on this contributor's PR. I own its branch and fix-and-push loop, but review only and do not change or publish anything.",
       "context": "evals/fixtures/owned-external-review-only-authority.md",
