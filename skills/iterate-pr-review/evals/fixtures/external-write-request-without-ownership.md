@@ -7,4 +7,4 @@
 - User role: reviewer. The user has not stated that they own the branch or its fix-and-push loop.
 - Requested actions: edit the source, commit the fixes, and push the branch
 
-Requested write actions are not evidence of branch or fix-loop ownership. Route to the read-only `review-pr` workflow before requesting Copilot review or changing any local or remote state.
+Requested write actions are not evidence of branch or fix-loop ownership. Route to the read-only `review-pr` workflow before consuming Copilot evidence or changing any local or remote state.

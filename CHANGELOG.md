@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Bundle routine draft-pull-request, feedback, and iterative-review publication authority, and document narrow personal consent for public skill evaluations. ([#97](https://github.com/ciampo/ai-instructions/pull/97))
+- Bundle routine draft-pull-request, feedback, and iterative-review publication authority, keep reviewer-request mechanics outside the portable skill, and document narrow personal consent for public skill evaluations. ([#97](https://github.com/ciampo/ai-instructions/pull/97))
 - Keep chat-only pull-request feedback work within bounded tasks by using immutable supplied snapshots, prioritizing accepted fixes and required verification, and delivering reply drafts before optional broad checks. ([#86](https://github.com/ciampo/ai-instructions/pull/86))
 - Restrict iterative pull-request review to user-authored pull requests or explicitly owned fix-and-push loops, and document reliable non-UI Copilot review requests. ([#84](https://github.com/ciampo/ai-instructions/pull/84))
 - Add STE-inspired communication guidance and reliable GitHub Enterprise preflight routing. ([#65](https://github.com/ciampo/ai-instructions/pull/65), [#66](https://github.com/ciampo/ai-instructions/pull/66))

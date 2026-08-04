@@ -6,7 +6,8 @@
 - Copilot review for the current head: requested and pending
 - Previous Copilot review: completed on `4ec9c488f5bca9338fa6c418420fd7a41c80c8a8`
 - Independent self-review: not yet started
-- Authority: request the Copilot review, make accepted local fixes, commit, push, and update the draft PR. Do not mark it ready, merge it, resolve threads, or post replies.
+- Review source: the pending current-head Copilot review was requested by a separately authorized dedicated workflow
+- Authority: make accepted local fixes, commit, push, and update the draft PR. Do not request reviewers, mark it ready, merge it, resolve threads, or post replies.
 
 The prior Copilot review found a test that no longer exercises the changed behavior. Inspect the self-contained source and test corpus below before deciding whether it remains actionable. The current review must cover the recorded head revision, not the earlier revision.
 
