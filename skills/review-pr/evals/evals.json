@@ -73,7 +73,30 @@
         "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
         "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
         "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
-        "Authorization and persisted-state evidence are assessed as separate material domains."
+        "Authorization and persisted-state evidence are assessed as separate material domains.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
+      ]
+    },
+    {
+      "id": "direct-authorization-severity-normalization",
+      "prompt": "Review this self-contained authorization change and apply the shared severity contract to the confirmed finding.",
+      "context": "evals/fixtures/direct-authorization-severity.md",
+      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
+      "assertions": [
+        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
+        "The reachable cross-account deletion is reported as [critical].",
+        "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
+      ]
+    },
+    {
+      "id": "direct-persisted-state-severity-normalization",
+      "prompt": "Review this self-contained supported-upgrade change and apply the shared severity contract to the confirmed finding.",
+      "context": "evals/fixtures/direct-persisted-state-severity.md",
+      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
+      "assertions": [
+        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
+        "The supported-upgrade persisted-state regression is reported as [major].",
+        "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
       ]
     },
     {
