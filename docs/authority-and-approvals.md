@@ -25,7 +25,7 @@ a narrower limit:
 | --- | --- | --- |
 | Implement a change and open a draft pull request | Create the task branch, edit, verify, make coherent commits, push that branch, and create or update the authored draft pull request | Public comments or reviews, thread resolution, ready-for-review transitions, merge, release, and unrelated metadata |
 | Work on an authored pull request or address its feedback | Apply accepted fixes, verify them, make coherent commits, push the same task branch, and refresh the resulting head | Branch integration or history rewrites unless requested, posted replies, thread resolution, ready-for-review transitions, merge, and release |
-| Iterate an authored pull request | Request one fresh Copilot review per exact head, run the independent review, apply accepted fixes, verify, commit, push, and repeat within the configured round limit | Posting the agent's own public review or replies, resolving threads, marking ready, merging, releasing, and unrelated pull-request changes |
+| Iterate an authored pull request | Consume current-head remote review evidence, run the independent review, apply accepted fixes, verify, commit, push, and repeat within the configured round limit | Reviewer requests, posting the agent's own public review or replies, resolving threads, marking ready, merging, releasing, and unrelated pull-request changes |
 | Rebase an authored pull request, then iterate it | The iteration bundle plus one verified rebase and an exact `--force-with-lease` update of that pull request's branch | Plain `--force`, another branch, a history rewrite without the requested rebase, and every excluded iteration action |
 
 For another author's pull request, remote fix actions require explicit ownership
@@ -89,7 +89,8 @@ prove that the boundary works.
 | --- | --- | --- |
 | Branch, edit, verify, commit, push, and open an authored draft pull request | Include in an explicit implementation-and-open-PR task | `repository-maintenance` |
 | Accepted fixes, verification, commits, and pushes while addressing feedback on an authored or explicitly owned branch | Include in the feedback task; respect local-only or no-push limits | `address-pr-feedback` |
-| Exact-head Copilot requests, accepted fixes, verification, commits, and pushes within the review-round limit | Include in the authored iteration bundle | `iterate-pr-review` |
+| Accepted fixes, verification, commits, and pushes within the review-round limit | Include in the authored iteration bundle | `iterate-pr-review` |
+| Reviewer requests | Keep in the dedicated review workflow; do not add them to a portable authority bundle | The dedicated workflow that owns the reviewer integration |
 | Exact-lease history update after an explicitly requested rebase | Include only after patch-replay and remote-head verification | `repository-maintenance` and `iterate-pr-review` |
 | Public tracked skill-evaluation data sent to the OpenAI Codex service, including in-scope exact-head reruns | Record as narrow standing personal consent | Private user-level instructions or client settings |
 | Update an existing authored draft pull request's evaluation section with exact-head results | Include only in the matching standing evaluation consent | Personal consent, consumed by `write-pr-description` |

@@ -7,13 +7,15 @@
 - Base revision: `a28f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
 - Task branch: `codex/issues-93-94-bounded-authority`
 - Recorded remote head: `b833b7eb0c92f2b2fa9769280f17330e602f2e72`
-- Review destinations: GitHub Copilot and independent local self-review
+- Remote review source: exact-head evidence supplied by a separately authorized dedicated workflow
+- Independent review: local self-review
 - Change-round limit: five, followed by one final review-only pass
 - Pull-request state: draft
 
 The user asks to rebase the authored pull request on the latest `main`, then run
-the complete iterative review. The request does not separately list commit, push,
-or each later Copilot review request.
+the complete iterative review. The request does not separately list commit or
+push. Reviewer requests belong to a dedicated workflow outside this portable
+authority fixture.
 
 ## Personal standing evaluation authority
 
