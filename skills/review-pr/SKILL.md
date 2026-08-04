@@ -1,11 +1,15 @@
 ---
 name: review-pr
-description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR.
+description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case.
 ---
 
 # Review PR
 
 A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
+
+## Ownership boundary
+
+- Before starting the read-only review, check whether the pull request is authored by the user or the user explicitly owns another author's fix-and-push loop. If either ownership condition and an iterative Copilot and self-review request are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
 
 ## Steps
 

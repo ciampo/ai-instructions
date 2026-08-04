@@ -46,7 +46,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [review-simplicity](skills/review-simplicity/SKILL.md) | every PR review; simplification, code removal, code bloat, duplication, or overengineering | Mandatory, read-only, deletion-first implementation review |
 | [review-coordinator](skills/review-coordinator/SKILL.md) | panel, subagent, coordinated, or multi-specialist PR review | One rechecked response from material specialist handoffs |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with the simplicity baseline and a no-subagent fallback |
-| [iterate-pr-review](skills/iterate-pr-review/SKILL.md) | repeated Copilot and self-review loop | Bounded authored-PR review iterations with an evidence-based recap |
+| [iterate-pr-review](skills/iterate-pr-review/SKILL.md) | repeated Copilot and self-review loop on an authored or explicitly owned PR | Bounded review iterations with an evidence-based recap |
 | [write-pr-description](skills/write-pr-description/SKILL.md) | "write/update PR description" | PR description writer following the repository template |
 | [draft-review-comment](skills/draft-review-comment/SKILL.md) | "craft a comment" | GitHub review comment drafter that never posts directly |
 | [audit-dependency-update](skills/audit-dependency-update/SKILL.md) | updating a dependency | Changelog, impact, compatibility, and security audit |

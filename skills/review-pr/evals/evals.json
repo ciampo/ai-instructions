@@ -15,6 +15,26 @@
       "id": "multi-lane-pr-review",
       "prompt": "Review this pull request with independent authorization and persisted-state migration changes, then give one evidence-backed response.",
       "shouldTrigger": true
+    },
+    {
+      "id": "repeated-external-pr-review",
+      "prompt": "Run repeated reviews on this open source pull request until it is clear. I am only reviewing it and do not own its branch or fixes.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "ambiguous-external-pr-iteration",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "owned-external-pr-iteration",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "authored-pr-iteration",
+      "prompt": "Iterate on my PR: request Copilot review, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [
@@ -65,6 +85,26 @@
         "The workflow returns one synthesized review directly in chat.",
         "The main workflow and its internal specialist handoffs do not create or open local review documents.",
         "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ]
+    },
+    {
+      "id": "owned-external-runtime-handoff",
+      "prompt": "Use review-pr to iterate on this contributor's PR through Copilot and self-review. I own its branch and fix-and-push loop, but do not edit, commit, or push.",
+      "context": "evals/fixtures/owned-external-runtime-handoff.md",
+      "expectedOutcome": "An immediate handoff to iterate-pr-review that preserves the user's review-only authority.",
+      "assertions": [
+        "The workflow detects explicit fix-and-push ownership plus the iterative Copilot and self-review request, then hands off to iterate-pr-review before starting the ordinary review-pr steps.",
+        "The handoff preserves the explicit no-edit, no-commit, and no-push boundary and does not update pull-request metadata, resolve threads, post replies, mark ready, or merge."
+      ]
+    },
+    {
+      "id": "authored-runtime-handoff",
+      "prompt": "Use review-pr to iterate on my PR through Copilot and self-review, but do not edit, commit, or push.",
+      "context": "evals/fixtures/authored-runtime-handoff.md",
+      "expectedOutcome": "An immediate handoff to iterate-pr-review for the user's authored pull request that preserves the user's review-only authority.",
+      "assertions": [
+        "The workflow detects user authorship plus the iterative Copilot and self-review request, then hands off to iterate-pr-review before starting the ordinary review-pr steps.",
+        "The handoff preserves the explicit no-edit, no-commit, and no-push boundary and does not update pull-request metadata, resolve threads, post replies, mark ready, or merge."
       ]
     }
   ]
