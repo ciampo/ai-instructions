@@ -27,9 +27,9 @@ Static fixture validation, installation checks, or one successful prompt cannot 
 
 ## Active campaign
 
-Repository revision: `561a88a0b1adcfadfed2b08f2efe195436341d1a` on `main`.
+Repository revision: `f68829838cc13236adc0531bbd60f033ba6044f6` on `main`.
 
-Evaluation-fixture revision: `561a88a0b1adcfadfed2b08f2efe195436341d1a`.
+Evaluation-fixture revision: `f68829838cc13236adc0531bbd60f033ba6044f6`.
 
 | Prerequisite | Required behavior | Status |
 | --- | --- | --- |
@@ -43,8 +43,8 @@ Current filesystem verification found that the Codex and Antigravity `review-acc
 
 | Client | Model and environment | Execution context | Overall |
 | --- | --- | --- | --- |
-| Codex CLI `0.145.0` trigger campaign | `gpt-5.6-sol`, `xhigh`, priority tier; Darwin `25.5.0` arm64 | Fresh home, private client state, and workspace per attempt; split filesystem permissions deny the model shell access to host home, the runner's private temporary roots, and credential-bearing client state; explicit client environment and configured model-shell inputs; effective command invariants checked through real `codex exec`; exact read-only target-revision skill stage; three concurrent workers; public fixtures | partial |
-| Codex CLI `0.145.0` output campaign and review comparison | Same reported model and host | Unversioned one-off output harness; comparison runner and exact per-run inputs absent; installed-skill provenance absent | unverified |
+| Codex CLI `0.145.0` trigger campaign | `gpt-5.6-sol`, `xhigh`, priority tier; Darwin `25.6.0` arm64 | Fresh home, private client state, and workspace per attempt; split filesystem permissions deny the model shell access to host home, the runner's private temporary roots, and credential-bearing client state; explicit client environment and configured model-shell inputs; effective command invariants checked through real `codex exec`; exact read-only target-revision skill stage; three concurrent workers; public fixtures | partial |
+| Codex CLI `0.145.0` output campaign and review comparison | `gpt-5.6-sol`, `xhigh`, priority tier; macOS `26.5.2` arm64 | Unversioned one-off output harness; comparison runner and exact per-run inputs absent; installed-skill provenance absent | unverified |
 | Google Antigravity CLI `1.1.6` | Reported Gemini 3.6 Flash (High); macOS `26.5.2` arm64 | Reported authenticated profile, plan mode, and sandbox; permission settings, safety state, and raw event stream unverified | blocked, unverified |
 
 The isolated Codex trigger rerun materialized the target revision's skills with `git archive` before workers started and made that stage read-only. Every attempt received a fresh outside-repository workspace and home, exact links to the staged 26-skill inventory, and private client state in a separate temporary root. The client process used the private authentication copy. A tested split filesystem permission profile denied the model shell access to the credential-bearing client root, its parent root, the source authentication file, the source host home, and the runner's logical and resolved private temporary roots. The profile allowed the model shell to read the isolated attempt root and target stage. A dedicated real `codex exec` preflight retained the exact executed wrapper and the fixed hashed no-content probe script. It accepted only exact known wrapper forms. The script verified unreadable client-root, parent-root, and source-authentication canaries; a readable workspace canary; absent `CODEX_HOME`; and the configured isolated `HOME`, `TMPDIR`, `PATH`, and `ZDOTDIR` values. Codex adds its own runtime variables, which are allowed and are not described as configured model-shell inputs. Codex also exposes its per-command argument scratch directory to the model shell so the command can execute; that scratch directory is not the credential-bearing client root. The client process inherited neither the host environment nor the host home directory. Its configured environment contained only `CODEX_HOME`, `HOME`, `LANG`, `LC_ALL`, `NO_COLOR`, `PATH`, `SHELL`, `TERM`, `TMPDIR`, and `ZDOTDIR`. The configured model-shell inputs omitted `CODEX_HOME`. Isolated zsh profiles reset `PATH`. The runner disabled user configuration, rules, plugins, apps, browser and computer control, memory, hooks, remote plugins, and multi-agent tools. Positive cases stopped after the target skill loaded. Negative cases ran to turn completion or the 90-second timeout and recorded every completed command and observed skill load. Every completed command retains its sanitized command, output, exit code, loaded-skill derivation, original output SHA-256, and retained-output SHA-256. The runner also retained full stdout and stderr stream digests, a sanitized stderr preview, and atomic incremental evidence snapshots for every attempt. Worker failures stop new assignments, and cleanup waits for all workers to settle before deleting the shared staged tree. Signal handlers stop active detached process groups, await attempt cleanup, and preserve the last complete snapshot. The sanitizer replaces client roots, private temporary roots, the host username, the host name, and Codex thread identifiers in environment and diagnostic forms. The host-wide `/tmp` and `/private/tmp` roots remain read-only because denying them prevents the nested Codex sandbox from starting. Other host system files outside the explicit denies can also remain readable. These are host-dependence limitations.
@@ -55,38 +55,35 @@ The historical Codex output runs used one disposable workspace per case and a 24
 
 The committed trigger evidence retains each prompt, completed command event, observed skill-load event, model message, authentication boundary, timeout state, and stdout and stderr digests. The historical artifacts retain output text, grading fields, token use, workspace deltas, and generated artifacts, subject to the unverified limitations below:
 
-- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `df4b5e9587596587001e2fe16e5a9c2f03d765e373962a7cb2dc89e625dad5a0`;
-- [trigger runner](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/run-trigger-evaluations.mjs), SHA-256 `f111490dd1688b1e07fe48a67552e70957ece5d69cf2f351a0b7587e1a7c6cc3`;
+- [trigger results](evaluation-results/f68829838cc13236adc0531bbd60f033ba6044f6/codex-trigger-results.json), SHA-256 `9953a0ffbbb26e221ecccfe0ff7539933283313d8543705a31a5b7ec5ce54675`;
+- [trigger runner](evaluation-results/f68829838cc13236adc0531bbd60f033ba6044f6/run-trigger-evaluations.mjs), SHA-256 `b47c0120d3a15b37bb74c3b6d3befe36925343c5241667aea37d8155ab085baf`;
 - [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `99086237fd7f0943df1b3a8273a85bf532748e75b932527097ec8c7ceaf800ad`;
 - [direct and coordinated comparison](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-review-comparison.json), SHA-256 `2d1be2aeb9b3799e134522676eeb423ed67f8ac9a24ce14069d1729fe51f5660`.
 - [Antigravity canary note](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/antigravity-canary.json), SHA-256 `f521622ad936bf76d62292bf630a930c2629e692a0d883cde6af6ee3121425de`.
 
-The versioned trigger runner records its sanitized exact argument vector, feature disables, status derivation, authentication boundary, configured environment inputs, effective command invariants, command evidence, stream handling, and provenance checks. It counts completed command events whose shell-token boundaries identify a `SKILL.md` read and whose output contains loaded-skill frontmatter. A later subcommand failure does not erase frontmatter that the model already received. The detector recognizes relative reads such as `cat SKILL.md`, `cat ./SKILL.md`, escaped quoted paths, and reads followed by shell operators. It rejects filename suffix near misses. It runs deterministic classifier, skill-detector, sanitizer, configured-environment, static sandbox, and real `codex exec` runtime-boundary checks before the campaign. Only the exact runtime check requires a model run. The runner inventories the target revision; rejects tracked, untracked, and ignored checkout changes under `skills`; stages the target-revision tree before workers start; requires every per-attempt installed inventory to equal the 26 target skills; and gives each attempt fresh user and client state. It terminates the dedicated child-process group at the timeout with a two-second forced-kill fallback, handles runner interruption with process-group and temporary-root cleanup, waits for all workers to settle before shared cleanup, writes incremental evidence through same-directory atomic renames, and sanitizes logical and resolved private roots in longest-first order.
+The versioned trigger runner records its sanitized exact argument vector, feature disables, status derivation, authentication boundary, configured environment inputs, effective command invariants, command evidence, stream handling, and provenance checks. It counts completed command events whose shell-token boundaries identify a `SKILL.md` read and whose output contains loaded-skill frontmatter. A later subcommand failure does not erase frontmatter that the model already received. The detector recognizes relative reads such as `cat SKILL.md`, `cat ./SKILL.md`, escaped quoted paths, reads followed by shell operators, and standard numbered output from `nl -ba` or `cat -n`. It rejects filename suffix near misses. It runs deterministic classifier, skill-detector, sanitizer, configured-environment, static sandbox, and real `codex exec` runtime-boundary checks before the campaign. Only the exact runtime check requires a model run. The runner inventories the target revision; rejects tracked, untracked, and ignored checkout changes under `skills`; stages the target-revision tree before workers start; requires every per-attempt installed inventory to equal the 26 target skills; and gives each attempt fresh user and client state. It terminates the dedicated child-process group at the timeout with a two-second forced-kill fallback, handles runner interruption with process-group and temporary-root cleanup, waits for all workers to settle before shared cleanup, writes incremental evidence through same-directory atomic renames, and sanitizes the source client root plus logical and resolved private roots in longest-first order.
 
 The output campaign used an unversioned, one-off Node.js harness, and the direct-versus-coordinated comparison retained neither a runner nor its exact prompts and setup. Neither artifact records installed-skill tree provenance. Their grades and comparison are preserved as unverified observations, not verified results.
 
 Verify the retained files with:
 
 ```sh
-shasum -a 256 docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.json docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.mjs
+shasum -a 256 docs/evaluation-results/f68829838cc13236adc0531bbd60f033ba6044f6/*.json docs/evaluation-results/f68829838cc13236adc0531bbd60f033ba6044f6/*.mjs docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.json
 ```
 
 ### Codex trigger results
 
 Every trigger case ran three times. `+` means the named skill should load during the turn. `-` means the named skill must not load anywhere in the completed turn. A mixed three-attempt result is `partial`.
 
-Summary: 68 of 77 cases passed, five were partial, and four failed. Across 231 attempts, 211 passed, 19 failed, and one was blocked. The blocked negative-control attempt timed out after 90 seconds before turn completion; its other two repetitions passed. All cases omitted from this table passed. The retained JSON records every attempt, 1,100 completed command events and outputs, observed skill-load events, authentication boundaries, timeout states, and stdout and stderr digests.
+Summary: 92 of 97 cases passed, four were partial, and one failed. Across 291 attempts, 281 passed, nine failed, and one was blocked. The blocked negative-control attempt timed out after 90 seconds before turn completion; its other two repetitions passed. All cases omitted from this table passed. The retained JSON records every attempt, 1,585 completed command events and outputs, observed skill-load events, authentication boundaries, timeout states, and stdout and stderr digests.
 
 | Skill | Non-pass cases |
 | --- | --- |
-| `address-pr-feedback` | `-write-a-single-review-reply` partial (1 `pass`, 2 `fail`) |
-| `automattic-github-enterprise` | `-generic-enterprise-route` partial (1 `pass`, 2 `fail`) |
-| `draft-review-comment` | `-address-review-feedback` fail (3 `fail`); `-perform-pr-review` fail (3 `fail`) |
-| `iterate-pr-review` | `-iterative-external-review` fail (3 `fail`) |
-| `repository-maintenance` | `+verify-github-enterprise-cli-access` fail (3 `fail`) |
-| `review-accessibility` | `-general-pull-request-review` partial (1 `pass`, 2 `fail`) |
-| `review-coordinator` | `+implicit-multi-lane-review` partial (2 `pass`, 1 `fail`) |
-| `write-pr-description` | `-review-pull-request` partial (2 `pass`, 1 `blocked`) |
+| `draft-review-comment` | `-address-review-feedback` fail (3 `fail`) |
+| `iterate-pr-review` | `-iterative-external-review` partial (1 `pass`, 2 `fail`) |
+| `review-internationalization` | `-general-multi-lane-pr-review` partial (1 `pass`, 2 `fail`) |
+| `review-simplicity` | `-implementation-request` partial (1 `pass`, 2 `fail`) |
+| `self-review-pr` | `-review-another-authors-pr` partial (2 `pass`, 1 `blocked`) |
 
 ### Codex output observations (unverified)
 
@@ -142,14 +139,13 @@ The `review-accessibility/no-artifact-delivery` canary is reported blocked, but 
 
 ### Accepted failures and follow-ups
 
-The accepted instruction failures from the verified trigger campaign are:
+The accepted instruction failure from the verified trigger campaign is:
 
-1. Addressing pull-request feedback selected `draft-review-comment` in all three negative attempts. Follow-up: [#73](https://github.com/ciampo/ai-instructions/issues/73).
-2. A general pull-request review selected `draft-review-comment` in all three negative attempts. Follow-up: [#73](https://github.com/ciampo/ai-instructions/issues/73).
-3. An iterative review request for another author's pull request selected `iterate-pr-review` in all three attempts. Follow-up: [#75](https://github.com/ciampo/ai-instructions/issues/75).
-4. The Enterprise CLI verification request did not load `repository-maintenance` in all three positive attempts. Follow-up: [#76](https://github.com/ciampo/ai-instructions/issues/76).
+1. Addressing pull-request feedback selected `draft-review-comment` in all three negative attempts. Follow-up: [#98](https://github.com/ciampo/ai-instructions/issues/98).
 
-Partial trigger cases are routing gaps, not accepted failures. Follow-ups [#73](https://github.com/ciampo/ai-instructions/issues/73), [#74](https://github.com/ciampo/ai-instructions/issues/74), [#91](https://github.com/ciampo/ai-instructions/issues/91), and [#92](https://github.com/ciampo/ai-instructions/issues/92) cover selected partial routing gaps. The blocked trigger attempt and blocked output assertions are evidence gaps. The two timed-out output cases and the unverified Antigravity canary remain verification gaps except for their explicitly retained evidence.
+Partial trigger cases are routing gaps, not accepted failures. Follow-ups [#99](https://github.com/ciampo/ai-instructions/issues/99), [#100](https://github.com/ciampo/ai-instructions/issues/100), and [#101](https://github.com/ciampo/ai-instructions/issues/101) cover the selected partial routing gaps. The blocked trigger attempt and blocked output assertions are evidence gaps. The two timed-out output cases and the unverified Antigravity canary remain verification gaps except for their explicitly retained evidence.
+
+The rerun confirmed that the former gaps tracked by [#74](https://github.com/ciampo/ai-instructions/issues/74), [#76](https://github.com/ciampo/ai-instructions/issues/76), [#91](https://github.com/ciampo/ai-instructions/issues/91), and [#92](https://github.com/ciampo/ai-instructions/issues/92) now pass all three focused attempts. The general pull-request case from [#73](https://github.com/ciampo/ai-instructions/issues/73) also passes all three attempts. The remaining feedback failure and the partial regression of [#75](https://github.com/ciampo/ai-instructions/issues/75) are tracked by #98 and #99.
 
 The unverified output and comparison observations have provisional follow-ups [#77](https://github.com/ciampo/ai-instructions/issues/77), [#78](https://github.com/ciampo/ai-instructions/issues/78), [#79](https://github.com/ciampo/ai-instructions/issues/79), [#80](https://github.com/ciampo/ai-instructions/issues/80), and [#81](https://github.com/ciampo/ai-instructions/issues/81). Confirm them with a versioned, pinned runner before treating them as accepted instruction failures.
 

@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const targetRevision = '561a88a0b1adcfadfed2b08f2efe195436341d1a';
+const targetRevision = 'f68829838cc13236adc0531bbd60f033ba6044f6';
 const attemptsPerCase = 3;
 const concurrency = 3;
 const timeoutMs = 90_000;
@@ -588,7 +588,19 @@ async function verifySandboxReadBoundary() {
 }
 
 function sanitize( value ) {
-	let sanitized = value
+	let sanitized = value.replaceAll(
+		sourceAuthPath,
+		'[source-client-home]/auth.json'
+	);
+	if ( sourceCodexHome !== path.parse( sourceCodexHome ).root ) {
+		sanitized = sanitized
+			.replaceAll(
+				`${ sourceCodexHome }${ path.sep }`,
+				'[source-client-home]/'
+			)
+			.replaceAll( sourceCodexHome, '[source-client-home]' );
+	}
+	sanitized = sanitized
 		.replaceAll( repositoryRoot, '[repository]' )
 		.replaceAll( os.homedir(), '[home]' )
 		.replace( /\bCODEX_THREAD_ID=[^\s]+/g, 'CODEX_THREAD_ID=[thread]' )
@@ -672,6 +684,11 @@ function verifyClassifier() {
 	}
 
 	const frontmatter = '---\nname: target\ndescription: Test\n---\n';
+	const numberedFrontmatter =
+		'     1\t---\n' +
+		'     2\tname: target\n' +
+		'     3\tdescription: Test\n' +
+		'     4\t---\n';
 	const command = '/bin/zsh -lc "sed -n 1,40p /tmp/skills/target/SKILL.md"';
 	const detectorChecks = [
 		[ command, frontmatter, 0, [ 'target' ] ],
@@ -680,6 +697,12 @@ function verifyClassifier() {
 		[ 'cat /tmp/skills/target/SKILL.md; true', frontmatter, 0, [ 'target' ] ],
 		[ 'cat /tmp/skills/target/SKILL.md&& true', frontmatter, 0, [ 'target' ] ],
 		[ '(cat /tmp/skills/target/SKILL.md)', frontmatter, 0, [ 'target' ] ],
+		[
+			'/bin/zsh -lc "nl -ba /tmp/skills/target/SKILL.md"',
+			numberedFrontmatter,
+			0,
+			[ 'target' ],
+		],
 		[
 			'/bin/zsh -lc \\"cat /tmp/skills/target/SKILL.md\\"',
 			frontmatter,
@@ -717,6 +740,9 @@ function verifyClassifier() {
 		if ( sanitize( value ) !== replacement ) {
 			throw new Error( 'Host-identity sanitizer self-check failed.' );
 		}
+	}
+	if ( sanitize( sourceAuthPath ) !== '[source-client-home]/auth.json' ) {
+		throw new Error( 'Source-client-root sanitizer self-check failed.' );
 	}
 	if (
 		sanitize( 'CODEX_THREAD_ID=019fcafb-b99e-7372-a399-89ca150c557e' ) !==
@@ -810,7 +836,7 @@ function loadedSkillNames( command, aggregatedOutput ) {
 	return [
 		...new Set(
 			[ ...aggregatedOutput.matchAll(
-				/(?:^|\n)---\r?\nname:\s*([a-z0-9-]+)\r?\n/g
+				/(?:^|\n)(?:[ \t]*\d+[ \t]+)?---\r?\n(?:[ \t]*\d+[ \t]+)?name:[ \t]*([a-z0-9-]+)\r?\n/g
 			) ].map( ( match ) => match[ 1 ] )
 		),
 	];
@@ -1318,7 +1344,7 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 8,
+		schemaVersion: 9,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
