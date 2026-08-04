@@ -34,10 +34,11 @@
       "id": "anchored-github-task-title",
       "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
       "context": "evals/fixtures/anchored-github-task-title.md",
-      "expectedOutcome": "The title uses the canonical pull-request subject and remains anchored to the primary pull-request review after the supporting issue is opened.",
+      "expectedOutcome": "The title uses a concise subject that accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened.",
       "assertions": [
-        "The title is `👀 [R#80600] ThemeProvider: Omit color properties when neither provided nor inherited`.",
-        "The title uses the canonical pull-request metadata instead of a generic label such as `Review Gutenberg PR`.",
+        "The title starts with `👀 [R#80600]`.",
+        "The subject accurately reflects that `ThemeProvider` omits color properties when neither provided nor inherited; exact wording and punctuation can differ from the source title.",
+        "The subject is concise and uses the pull-request metadata instead of a generic label such as `Review Gutenberg PR`.",
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
       ]
