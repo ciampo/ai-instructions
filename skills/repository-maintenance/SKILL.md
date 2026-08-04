@@ -1,6 +1,6 @@
 ---
 name: repository-maintenance
-description: Apply repository-aware CLI, package-manager, Git, GitHub, task-title, commit, changelog, and technical-writing conventions. Use when modifying a repository, managing commits, working with GitHub issues or pull requests, or preparing pull-request metadata.
+description: Apply repository-aware CLI, package-manager, Git, GitHub, task-title, commit, changelog, and technical-writing conventions. Use when modifying a repository, managing commits, working with GitHub issues or pull requests, preparing pull-request metadata, or verifying an approved GitHub Enterprise CLI access route before a repository command. For access-only github.a8c.com or Automattic Enterprise requests, use automattic-github-enterprise instead; use both skills for broader repository work on that host.
 ---
 
 # Repository Maintenance

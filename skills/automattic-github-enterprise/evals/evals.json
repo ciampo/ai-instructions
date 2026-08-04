@@ -12,6 +12,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "automattic-enterprise-repository-update",
+      "prompt": "Commit the current repository changes and push them to github.a8c.com after verifying the approved Automattic Enterprise route.",
+      "shouldTrigger": true
+    },
+    {
       "id": "generic-enterprise-route",
       "prompt": "Before I use gh with https://github.example.com, help me establish the approved Enterprise access route without inventing proxy settings.",
       "shouldTrigger": false

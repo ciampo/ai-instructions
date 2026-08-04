@@ -12,6 +12,16 @@
       "shouldTrigger": false
     },
     {
+      "id": "automattic-enterprise-preflight",
+      "prompt": "Verify the configured Automattic GitHub Enterprise route for github.a8c.com before I run gh.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "automattic-enterprise-repository-update",
+      "prompt": "Commit the current repository changes and push them to github.a8c.com after verifying the approved Automattic Enterprise route.",
+      "shouldTrigger": true
+    },
+    {
       "id": "anchor-github-task-title",
       "prompt": "Use the GitHub pull request title and description to improve this session title, then keep it anchored when I ask for a supporting follow-up issue.",
       "shouldTrigger": true
