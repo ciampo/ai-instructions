@@ -29,7 +29,7 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 
 ## Iterate
 
-1. When a rebase is explicitly requested, refresh the intended base and remote pull-request head, rebase the task branch, verify patch replay, and publish only with an exact lease for the recorded remote head. Confirm that the local, remote, and pull-request heads match before reviewing. Otherwise, do not rewrite history.
+1. When a rebase is explicitly requested, refresh the intended base and remote pull-request head, rebase the task branch, and verify patch replay. Run required project checks and model-backed evaluations for the exact rebased commit before publishing it. If verification or evaluation fails, do not push. Otherwise, publish only with an exact lease for the recorded remote head, then confirm that the local, remote, and pull-request heads match before reviewing. Do not use this step to rewrite history when the request did not include a rebase.
 2. Capture a fresh PR snapshot: canonical URL, title, base and head revisions, changed files, existing review state, and CI status. Record the head revision for this round. Rebuild the snapshot whenever it changes.
 3. Reuse a completed Copilot review tied to that recorded head. If a current-head request or review is pending, wait for it instead of requesting another. Only when the current head has neither should you follow the request procedure above when separately authorized. Record when it was requested and do not reuse a review for an earlier head.
 4. Independently run the adversarial self-review for the same head. Do not give it Copilot's conclusions before its first pass. Wait for the Copilot review and local review to complete before deciding whether to change code.
