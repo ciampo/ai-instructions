@@ -90,7 +90,7 @@
       "expectedOutcome": "One read-only panel review that enters through review-pr and completes the mandatory simplicity load before handing the pinned review to the coordinator.",
       "assertions": [
         "The explicit panel request enters through review-pr rather than loading review-coordinator directly.",
-        "The review loads review-simplicity in a completed separate action before accessing PR context, then loads review-coordinator before any direct specialist.",
+        "The review reads review-pr, then review-simplicity, then review-coordinator before the first action that accesses PR context and before loading any direct specialist.",
         "The coordinator receives the completed core-review result and simplicity handoff, then owns remaining specialist routing and one final response.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]

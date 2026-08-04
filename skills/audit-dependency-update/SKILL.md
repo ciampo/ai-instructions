@@ -1,6 +1,6 @@
 ---
 name: audit-dependency-update
-description: Audit an existing dependency change read-only, or implement a requested dependency addition, removal, or update, by checking releases, compatibility, security, and verification. Use for every dependency change; do not infer source-edit, snapshot-update, commit, or remote-write authority from an audit request.
+description: Audit an existing dependency change read-only, or implement a requested dependency addition, removal, or update, by checking releases, compatibility, security, and verification. Use for every dependency change. For a general PR review, enter through review-pr; it invokes this audit when a dependency changes. Do not infer source-edit, snapshot-update, commit, or remote-write authority from an audit request.
 ---
 
 # Audit Dependency Update

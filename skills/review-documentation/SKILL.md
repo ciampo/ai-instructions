@@ -1,6 +1,6 @@
 ---
 name: review-documentation
-description: Perform a read-only review of documentation, examples, public API docs, migration guidance, and code comments for accuracy, audience fit, maintainability, and concise human-readable writing. Use for documentation review, README, docs, examples, JSDoc, code comments, migration guide, developer experience, or verbose generated prose review. Never edit source, commit, or write remotely.
+description: Perform a read-only review of documentation, examples, public API docs, migration guidance, and code comments for accuracy, audience fit, maintainability, and concise human-readable writing. Use for documentation review, README, docs, examples, JSDoc, code comments, migration guide, developer experience, or verbose generated prose review. Do not use as a standalone general PR review; review-pr may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Documentation
