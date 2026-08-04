@@ -164,13 +164,12 @@ function targetSkillNames() {
 		.sort();
 }
 
-async function loadCases( skillNames ) {
+async function loadCases( skillNames, installedRoot ) {
 	const cases = [];
 
 	for ( const skill of skillNames ) {
 		const fixturePath = path.join(
-			repositoryRoot,
-			'skills',
+			installedRoot,
 			skill,
 			'evals',
 			'evals.json'
@@ -253,7 +252,7 @@ async function collectProvenance( skillNames, installedRoot ) {
 	}
 
 	return {
-		method: 'The complete checkout skills tree, including ignored-file absence, matched the target revision when fixtures were loaded. Git archive materialized a read-only target-revision skill tree before workers started. Every attempt linked exactly that staged inventory into a fresh isolated home.',
+		method: 'Git archive materialized a read-only target-revision skill tree before fixtures were loaded. Fixtures were read from that stage. The complete checkout skills tree, including ignored-file absence, matched the target revision during provenance validation. Every attempt linked exactly the staged inventory into a fresh isolated home.',
 		installedRoot: '[per-attempt-home]/.agents/skills',
 		installedSkillNames,
 		targetTree,
@@ -712,6 +711,8 @@ function verifyClassifier() {
 		[ command, frontmatter, 1, [ 'target' ] ],
 		[ command, 'name: target\n', 0, [] ],
 		[ '/bin/zsh -lc "pwd"', frontmatter, 0, [] ],
+		[ '/bin/zsh -lc "echo SKILL.md"', frontmatter, 0, [] ],
+		[ 'printf "cat SKILL.md"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat SKILL.md.bak"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat NOTSKILL.md"', frontmatter, 0, [] ],
 	];
@@ -824,9 +825,20 @@ function verifyEnvironmentContract() {
 
 function loadedSkillNames( command, aggregatedOutput ) {
 	const normalizedCommand = command.replace( /\\+(?=['"])/g, '' );
-	const readsSkillFile =
-		/(?:^|[\s'";&|()<>{}])(?:[^\s'";&|()<>{}]*\/)?SKILL\.md(?=$|[\s'";&|()<>{}])/.test(
-			normalizedCommand
+	const shellInvocation = normalizedCommand.match(
+		/^(?:\/[^\s'"]+\/)?(?:zsh|bash|sh)\s+-(?:lc|c)\s+(['"])([\s\S]*)\1$/
+	);
+	const shellScript = shellInvocation?.[ 2 ] ?? normalizedCommand;
+	const skillPathPattern =
+		/(?:^|[\s'"])(?:[^\s'";&|()<>{}]*\/)?SKILL\.md(?=$|[\s'";&|()<>{}])/;
+	const readsSkillFile = shellScript
+		.split( /&&|\|\||[;|\n()]/ )
+		.map( ( segment ) => segment.trim() )
+		.some(
+			( segment ) =>
+				/^(?:command\s+)?(?:\/(?:usr\/)?bin\/)?(?:cat|sed|nl)(?=\s|$)/.test(
+					segment
+				) && skillPathPattern.test( segment )
 		);
 
 	if ( ! readsSkillFile ) {
@@ -1327,17 +1339,20 @@ const environmentContract = verifyEnvironmentContract();
 await verifySandboxReadBoundary();
 
 const skillNames = targetSkillNames();
-const cases = await loadCases( skillNames );
-const attempts = cases.flatMap( ( testCase, caseIndex ) =>
-	Array.from( { length: attemptsPerCase }, ( unused, index ) => ( {
-		testCase,
-		attempt: index + 1,
-		ordinal: caseIndex * attemptsPerCase + index,
-	} ) )
-);
 const isolatedEnvironment = await createIsolatedEnvironment( skillNames );
 
 try {
+	const cases = await loadCases(
+		skillNames,
+		isolatedEnvironment.installedRoot
+	);
+	const attempts = cases.flatMap( ( testCase, caseIndex ) =>
+		Array.from( { length: attemptsPerCase }, ( unused, index ) => ( {
+			testCase,
+			attempt: index + 1,
+			ordinal: caseIndex * attemptsPerCase + index,
+		} ) )
+	);
 	const execBoundary = await verifyExecBoundary( isolatedEnvironment );
 	const provenance = await collectProvenance(
 		skillNames,
