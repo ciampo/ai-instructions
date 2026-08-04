@@ -14,13 +14,13 @@ Universal preferences and boundaries for every session. Technology and workflow 
 
 ## Task Titles
 
-- **[STRONG]** When the runtime provides a task or thread title tool, set a concise title once the subject and active phase are clear. Correct it when verified task context shows that it is generic or inaccurate. Otherwise, rename it only when the primary work type changes or the task enters a materially different phase -- not for individual commands, minor steps, or temporary status.
+- **[STRONG]** When the runtime provides a task or thread title tool, set an accurate title once the subject and active phase are clear. Prefer concise wording when it preserves the task's meaning. Correct the title when verified task context shows that it is generic or inaccurate. Otherwise, rename it only when the primary work type changes or the task enters a materially different phase -- not for individual commands, minor steps, or temporary status.
 - **[RULE]** Begin every managed title with one intuitive phase emoji. This is the exception to the no-emoji communication rule above.
-- **[RULE]** Keep the title anchored to the user's primary task. Correcting a generic or inaccurate title from verified context does not change that anchor. A supporting action or follow-up artifact does not replace the primary reference or subject. Keep the accurate title, or combine subjects only when the user makes multiple tasks co-equal and the result stays concise.
-- For numbered work, use `<phase emoji> [<work type>#<number>] <task subject>`: `I` for an issue, `A` for a pull request being authored, or `R` for a pull request being reviewed. Treat the source title and description as evidence for the subject, not required wording. Keep the subject concise while preserving the task's specific outcome. Keep the primary reference and subject stable when only the phase changes.
+- **[RULE]** Keep the title anchored to the user's primary task. Correcting a generic or inaccurate title from verified context does not change that anchor. A supporting action or follow-up artifact does not replace the primary reference or subject. Keep the accurate title, or combine subjects when the user makes multiple tasks co-equal. Prefer concise wording only when it preserves each task's meaning.
+- For numbered work, use `<phase emoji> [<work type>#<number>] <task subject>`: `I` for an issue, `A` for a pull request being authored, or `R` for a pull request being reviewed. Treat the source title and description as evidence for the subject, not required wording. Prefer concise wording when it preserves the task's specific outcome. Keep the primary reference and subject stable when only the phase changes.
 - Examples: `🔍 [I#123] Dialog loses focus after save`, `🛠️ [A#456] Add initial focus to Dialog`, and `👀 [R#789] Improve Dialog focus handling`.
 - Suggested phase emoji: `🔍` triage or investigation; `🛠️` implementation or general authoring; `🔧` focused fixes; `📄` specifications or documentation; `👀` pull-request review; `💬` feedback; `🚦` CI; `🧪` verification; `🎨` design.
-- Without a primary issue or pull request, omit the bracketed reference and use a concise subject, such as `🎨 Dialog focus strategy`. For several items, name the dominant item or use a short batch subject instead of listing every number.
+- Without a primary issue or pull request, omit the bracketed reference and use a subject such as `🎨 Dialog focus strategy`. For several items, name the dominant item or use a batch subject instead of listing every number.
 
 ## Judgment and Verification
 

@@ -34,11 +34,11 @@
       "id": "anchored-github-task-title",
       "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
       "context": "evals/fixtures/anchored-github-task-title.md",
-      "expectedOutcome": "The title uses a concise subject that accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened.",
+      "expectedOutcome": "The title accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened. Brevity is preferred but not required.",
       "assertions": [
         "The title starts with `👀 [R#80600]`.",
         "The subject accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ from the source title.",
-        "The subject is concise and uses the pull-request metadata instead of a generic label such as `Review Gutenberg PR`.",
+        "The subject uses the pull-request metadata to describe the specific outcome instead of a generic label such as `Review Gutenberg PR`.",
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
       ]
@@ -70,11 +70,11 @@
       "id": "github-task-title-phase-change",
       "prompt": "Using the supplied context, choose the task title after the primary task enters verification. Return only the title.",
       "context": "evals/fixtures/github-task-title-phase-change.md",
-      "expectedOutcome": "The title reflects the materially different verification phase while keeping the same primary pull-request reference and concise task subject.",
+      "expectedOutcome": "The title reflects the materially different verification phase while keeping the same primary pull-request reference and task subject. Brevity is preferred but not required.",
       "assertions": [
         "The title uses an intuitive verification-phase emoji.",
         "The title preserves the primary pull-request reference `[R#80600]`.",
-        "The concise subject still accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ.",
+        "The subject still accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ.",
         "The response contains only the title."
       ]
     }
