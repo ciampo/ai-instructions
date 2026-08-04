@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case. Multi-lane reviews enter here; load review-simplicity, then review-coordinator before PR lookup.
+description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case. Panel, coordinated, and multi-lane PR reviews enter only through this skill: read it first, then read review-simplicity before review-coordinator or any specialist.
 ---
 
 # Review PR
@@ -14,7 +14,7 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 ## Entry routing
 
 - Before looking up PR context, identify the specialist lanes named in the request. Select the coordinator for an explicit panel or coordinated review, or when two or more independent additional lanes are material. `review-security` covers authorization or security. `review-compatibility` covers persisted-state migration or compatibility, so their combination meets the two-lane threshold.
-- Load `review-simplicity` for every PR. When the coordinator is selected, load `review-coordinator` immediately after `review-simplicity`, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading requires reading the skill; stating an intention to use it is not a handoff.
+- Load `review-simplicity` for every PR in a separate action before any action names or accesses PR context; do not batch this load with context lookup. When the coordinator is selected, load `review-coordinator` immediately after `review-simplicity`, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading requires reading the skill; stating an intention to use it is not a handoff.
 - Loading the methods at entry does not pass incomplete review results. Complete the core and simplicity passes below, then give the coordinator their results and the pinned snapshot. If the request does not reveal the coordinator threshold, source inspection can still select it in step 7. Keep an ordinary single-lane review in this workflow.
 
 ## Steps

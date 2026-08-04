@@ -17,6 +17,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "explicit-panel-pr-review",
+      "prompt": "Run a coordinated panel review of this PR with security, migration compatibility, and UI-test specialists, then give me one response.",
+      "shouldTrigger": true
+    },
+    {
       "id": "repeated-external-pr-review",
       "prompt": "Run repeated reviews on this open source pull request until it is clear. I am only reviewing it and do not own its branch or fixes.",
       "shouldTrigger": true

@@ -1,6 +1,6 @@
 ---
 name: review-coordinator
-description: Coordinate a read-only panel review of a complex pull request with a mandatory deletion-first simplicity pass plus independent, materially relevant specialist investigations, then synthesize one rechecked response. Use when a user explicitly asks for a panel, subagent, coordinated, or multi-specialist review, or when a complex PR has two or more independent additional specialist lanes. Keep review-pr as the default for ordinary PRs. Never edit source, commit, or write remotely.
+description: Continue the internal second-stage synthesis for a loaded review-pr workflow. Receive its pinned snapshot, completed core result, and mandatory review-simplicity handoff; select materially relevant specialist investigations; and return one rechecked response. For panel or multi-lane reviews, load only after both review-pr and review-simplicity. Direct load is allowed only when the user explicitly names review-coordinator. Never edit source, commit, or write remotely.
 ---
 
 # Review Coordinator
@@ -29,7 +29,7 @@ Coordinate independent specialist investigations without replacing the core `rev
    - `review-documentation` when user or developer documentation, examples, migration guidance, or meaningful comments change.
 3. **Assign bounded, independent handoffs**: Ask each specialist to inspect only its lane and return the repository, base revision, head revision, target audience, and scope checked unchanged; confirmed candidate findings with exact evidence and impact; verification gaps; and an explicit no-findings result. Do not give specialists another lane's conclusions before their first pass.
 4. **Hold an evidence review, not a vote**: Group duplicate or conflicting candidates. For a disputed, cross-domain, or `[critical]`/`[major]` candidate, request a narrowly scoped recheck from the relevant specialist or inspect the source directly. Agreement alone never confirms a finding.
-5. **Synthesize one response**: Recheck every retained candidate against the pinned diff, consumers, repository policy, and existing feedback. Remove duplicates, apply the severity normalization contract in the bundled core-review reference, and keep unproven concerns as verification gaps.
+5. **Synthesize one response**: Recheck every retained candidate against the pinned diff, consumers, repository policy, and existing feedback. Read the bundled core-review reference before final normalization if it was not already loaded. Remove duplicates, apply its severity contract instead of preserving a specialist label, and keep unproven concerns as verification gaps. Under that contract, losing persisted user state during a supported upgrade is `[major]` even when the state is recoverable.
 6. **Refresh before delivery**: Recheck the captured PR revisions and review state. If either revision changed, refresh the snapshot and repeat affected work instead of mixing states.
 
 ## Output contract
