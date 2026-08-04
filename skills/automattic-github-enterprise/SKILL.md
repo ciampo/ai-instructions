@@ -1,6 +1,6 @@
 ---
 name: automattic-github-enterprise
-description: Use when a task targets Automattic GitHub Enterprise at github.a8c.com with gh, especially for authentication, AutoProxy, Keychain, sandbox, or network failures. Apply the approved configured macOS/POSIX route without changing credentials or global Git, SSH, or proxy settings.
+description: Use only when a task explicitly targets github.a8c.com or Automattic GitHub Enterprise with gh, especially for authentication, AutoProxy, Keychain, sandbox, or network failures. Do not use for any other GitHub Enterprise host. Apply the approved configured macOS/POSIX route without changing credentials or global Git, SSH, or proxy settings.
 ---
 
 # Automattic GitHub Enterprise
