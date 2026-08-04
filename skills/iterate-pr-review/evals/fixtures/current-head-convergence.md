@@ -6,7 +6,7 @@
 - Copilot review for the current head: requested and pending
 - Previous Copilot review: completed on `4ec9c488f5bca9338fa6c418420fd7a41c80c8a8`
 - Independent self-review: not yet started
-- Review source: the pending current-head Copilot review was delegated to the host reviewer-request workflow under the retained iteration bundle
+- Review source: the pending current-head Copilot review was requested by this workflow under the retained iteration bundle
 - Authority: make accepted local fixes, commit, push, and update the draft PR. Do not request another reviewer, mark it ready, merge it, resolve threads, or post replies.
 
 The prior Copilot review found a test that no longer exercises the changed behavior. Inspect the self-contained source and test corpus below before deciding whether it remains actionable. The current review must cover the recorded head revision, not the earlier revision.

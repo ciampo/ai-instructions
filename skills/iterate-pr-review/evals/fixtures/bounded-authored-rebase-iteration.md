@@ -7,7 +7,7 @@
 - Base revision: `a28f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
 - Task branch: `codex/issues-93-94-bounded-authority`
 - Recorded remote head: `b833b7eb0c92f2b2fa9769280f17330e602f2e72`
-- Host reviewer-request workflow: available outside this repository to request Copilot for each recorded exact head
+- Available request surfaces: GitHub reviewer connector, authenticated `gh`, and authenticated GitHub UI
 - Current-head Copilot review or request: none
 - Independent review: local self-review
 - Required verification: repository policy requires model-backed evaluation for every rebased or changed commit before publication
@@ -19,10 +19,9 @@ request during evaluation.
 
 The user asks to rebase the authored pull request on the latest `main`, then run
 the complete iterative review. The request does not separately list commit or
-push. The retained iteration bundle authorizes delegating one exact-head Copilot
-request per round, while all connector, CLI, or browser request mechanics remain
-inside the host reviewer-request workflow. That workflow is a runtime-owned
-integration outside this repository, not a skill distributed by it.
+push. The retained iteration bundle authorizes the portable workflow to request
+one Copilot review per exact head through its connector-first procedure without
+another task-authority question.
 
 ## Personal standing evaluation authority
 
