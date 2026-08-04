@@ -15,6 +15,11 @@
       "id": "multi-lane-pr-review",
       "prompt": "Review this pull request with independent authorization and persisted-state migration changes, then give one evidence-backed response.",
       "shouldTrigger": true
+    },
+    {
+      "id": "repeated-external-pr-review",
+      "prompt": "Run repeated reviews on this open source pull request until it is clear. I am only reviewing it and do not own its branch or fixes.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
