@@ -79,6 +79,18 @@
       ]
     },
     {
+      "id": "late-discovered-coordinator-handoff",
+      "prompt": "Review this pull request and provide one evidence-backed response.",
+      "context": "evals/fixtures/coordinator-handoff-routing.md",
+      "expectedOutcome": "One read-only review that discovers two material specialist lanes during source inspection and hands the completed core result to the coordinator for its single final delivery.",
+      "assertions": [
+        "The generic prompt loads review-simplicity before PR lookup without inventing specialist lanes from the request.",
+        "After pinned source inspection makes authorization and persisted-state migration material, the review loads review-coordinator before loading either direct specialist.",
+        "The coordinator receives the completed core-review result and mandatory simplicity handoff, then owns remaining specialist routing and the single final delivery.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
+      ]
+    },
+    {
       "id": "direct-authorization-severity-normalization",
       "prompt": "Review this self-contained authorization change and apply the shared severity contract to the confirmed finding.",
       "context": "evals/fixtures/direct-authorization-severity.md",
