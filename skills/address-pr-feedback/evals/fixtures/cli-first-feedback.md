@@ -23,3 +23,8 @@
 ```
 
 First capture the PR metadata and source at both recorded boundaries. Re-read the metadata immediately before changing code; if either boundary changed, discard the initial comments and source snapshot and collect a new one. Draft replies locally only.
+
+## Verification contract
+
+- Required: run focused source assertions that prove metadata is captured before use, all recorded feedback is collected, and changed boundaries rebuild the snapshot.
+- Optional: run broader Markdown lint only when the repository configuration is already present. Do not reconstruct missing configuration for this self-contained fixture.
