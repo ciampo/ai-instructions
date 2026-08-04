@@ -42,6 +42,18 @@
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
       ]
+    },
+    {
+      "id": "github-task-title-metadata-unavailable",
+      "prompt": "Using the supplied context, choose the task title when canonical GitHub metadata is unavailable. Return only the title.",
+      "context": "evals/fixtures/github-task-title-metadata-unavailable.md",
+      "expectedOutcome": "The title uses the verified context supplied by the user without inventing unavailable GitHub metadata.",
+      "assertions": [
+        "The title starts with `🔍 [I#321]`.",
+        "The subject accurately reflects the user-supplied expired-session redirect loop; exact wording and punctuation can differ from the supplied title.",
+        "The title does not invent issue details that are absent from the supplied context.",
+        "The response contains only the title."
+      ]
     }
   ]
 }
