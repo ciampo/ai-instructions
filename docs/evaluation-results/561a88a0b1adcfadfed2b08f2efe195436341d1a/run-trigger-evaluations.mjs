@@ -591,7 +591,11 @@ function sanitize( value ) {
 	let sanitized = value
 		.replaceAll( repositoryRoot, '[repository]' )
 		.replaceAll( os.homedir(), '[home]' )
-		.replace( /\bCODEX_THREAD_ID=[^\s]+/g, 'CODEX_THREAD_ID=[thread]' );
+		.replace( /\bCODEX_THREAD_ID=[^\s]+/g, 'CODEX_THREAD_ID=[thread]' )
+		.replace(
+			/(\b(?:no thread with id|thread id|thread_id)["']?\s*[:=]\s*["']?)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(["']?)/gi,
+			'$1[thread]$2'
+		);
 
 	for ( const clientHomeRoot of [ ...clientHomeRoots ].sort(
 		( left, right ) => right.length - left.length
@@ -673,19 +677,24 @@ function verifyClassifier() {
 		[ command, frontmatter, 0, [ 'target' ] ],
 		[ '/bin/zsh -lc "cat SKILL.md"', frontmatter, 0, [ 'target' ] ],
 		[ '/bin/zsh -lc "cat ./SKILL.md"', frontmatter, 0, [ 'target' ] ],
+		[ 'cat /tmp/skills/target/SKILL.md; true', frontmatter, 0, [ 'target' ] ],
+		[ 'cat /tmp/skills/target/SKILL.md&& true', frontmatter, 0, [ 'target' ] ],
+		[ '(cat /tmp/skills/target/SKILL.md)', frontmatter, 0, [ 'target' ] ],
 		[
 			'/bin/zsh -lc \\"cat /tmp/skills/target/SKILL.md\\"',
 			frontmatter,
 			0,
 			[ 'target' ],
 		],
-		[ command, frontmatter, 1, [] ],
+		[ command, frontmatter, 1, [ 'target' ] ],
 		[ command, 'name: target\n', 0, [] ],
 		[ '/bin/zsh -lc "pwd"', frontmatter, 0, [] ],
+		[ '/bin/zsh -lc "cat SKILL.md.bak"', frontmatter, 0, [] ],
+		[ '/bin/zsh -lc "cat NOTSKILL.md"', frontmatter, 0, [] ],
 	];
 
-	for ( const [ detectorCommand, output, exitCode, expected ] of detectorChecks ) {
-		const actual = loadedSkillNames( detectorCommand, output, exitCode );
+	for ( const [ detectorCommand, output, , expected ] of detectorChecks ) {
+		const actual = loadedSkillNames( detectorCommand, output );
 		if ( JSON.stringify( actual ) !== JSON.stringify( expected ) ) {
 			throw new Error(
 				`Skill detector self-check failed: expected ${ expected }, received ${ actual }.`
@@ -711,9 +720,46 @@ function verifyClassifier() {
 	}
 	if (
 		sanitize( 'CODEX_THREAD_ID=019fcafb-b99e-7372-a399-89ca150c557e' ) !==
-		'CODEX_THREAD_ID=[thread]'
+			'CODEX_THREAD_ID=[thread]' ||
+		sanitize(
+			'no thread with id: 019fcafb-b99e-7372-a399-89ca150c557e'
+		) !== 'no thread with id: [thread]' ||
+		sanitize(
+			'"thread_id":"019fcafb-b99e-7372-a399-89ca150c557e"'
+		) !== '"thread_id":"[thread]"'
 	) {
 		throw new Error( 'Runtime-identifier sanitizer self-check failed.' );
+	}
+
+	const boundaryCommand = '/bin/sh ./boundary-probe.sh';
+	for ( const accepted of [
+		boundaryCommand,
+		`/bin/zsh -lc ${ JSON.stringify( boundaryCommand ) }`,
+		`/bin/zsh -c ${ JSON.stringify( boundaryCommand ) }`,
+		`/bin/zsh -lc ${ shellSingleQuote( boundaryCommand ) }`,
+	] ) {
+		if ( ! matchesBoundaryCommand( accepted, boundaryCommand ) ) {
+			throw new Error( 'Boundary-command matcher rejected an exact wrapper.' );
+		}
+	}
+	for ( const rejected of [
+		'/bin/sh ./boundary-probe.sh; true',
+		'/bin/zsh -lc "test ! -r \'$1\'"',
+		'/bin/zsh -lc "test ! -r \\"$1\\""',
+	] ) {
+		if ( matchesBoundaryCommand( rejected, boundaryCommand ) ) {
+			throw new Error( 'Boundary-command matcher accepted a different command.' );
+		}
+	}
+	if (
+		matchesBoundaryCommand(
+			'/bin/zsh -lc "test ! -r \'$1\'"',
+			'test ! -r "$1"'
+		)
+	) {
+		throw new Error(
+			'Boundary-command matcher erased a meaningful quote difference.'
+		);
 	}
 }
 
@@ -750,14 +796,10 @@ function verifyEnvironmentContract() {
 	};
 }
 
-function loadedSkillNames( command, aggregatedOutput, exitCode ) {
-	if ( exitCode !== 0 ) {
-		return [];
-	}
-
+function loadedSkillNames( command, aggregatedOutput ) {
 	const normalizedCommand = command.replace( /\\+(?=['"])/g, '' );
 	const readsSkillFile =
-		/(?:^|\s|['"])(?:[^\s'"]*\/)?SKILL\.md(?=$|\s|['"])/.test(
+		/(?:^|[\s'";&|()<>{}])(?:[^\s'";&|()<>{}]*\/)?SKILL\.md(?=$|[\s'";&|()<>{}])/.test(
 			normalizedCommand
 		);
 
@@ -784,12 +826,18 @@ function signalProcessGroup( processGroupId, signal ) {
 	}
 }
 
-function normalizeBoundaryCommand( value ) {
-	return value
-		.replace( /['"\\]/g, '' )
-		.replace( /\s+/g, ' ' )
-		.trim()
-		.replace( /^\/bin\/zsh -(?:c|lc) /, '' );
+function shellSingleQuote( value ) {
+	return `'${ value.replaceAll( "'", `'\\''` ) }'`;
+}
+
+function matchesBoundaryCommand( actual, expected ) {
+	return new Set( [
+		expected,
+		`/bin/zsh -lc ${ JSON.stringify( expected ) }`,
+		`/bin/zsh -c ${ JSON.stringify( expected ) }`,
+		`/bin/zsh -lc ${ shellSingleQuote( expected ) }`,
+		`/bin/zsh -c ${ shellSingleQuote( expected ) }`,
+	] ).has( actual.trim() );
 }
 
 async function verifyExecBoundary( isolatedEnvironment ) {
@@ -811,10 +859,32 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 			attemptEnvironment.workspace,
 			'boundary-canary'
 		);
+		const probeScriptPath = path.join(
+			attemptEnvironment.workspace,
+			'boundary-probe.sh'
+		);
+		const probeScript = [
+			'#!/bin/sh',
+			'set -eu',
+			`test ! -r ${ shellSingleQuote( clientCanary ) }`,
+			`test ! -r ${ shellSingleQuote( sensitiveCanary ) }`,
+			`test ! -r ${ shellSingleQuote( sourceAuthPath ) }`,
+			`test -r ${ shellSingleQuote( allowedCanary ) }`,
+			'test -z "${CODEX_HOME+x}"',
+			`test "$HOME" = ${ shellSingleQuote( attemptEnvironment.userHome ) }`,
+			`test "$TMPDIR" = ${ shellSingleQuote( attemptEnvironment.workspace ) }`,
+			`test "$PATH" = ${ shellSingleQuote( isolatedPath ) }`,
+			`test "$ZDOTDIR" = ${ shellSingleQuote(
+				attemptEnvironment.shellConfiguration
+			) }`,
+			'printf "%s\\n" BOUNDARY_OK',
+			'',
+		].join( '\n' );
 		await Promise.all( [
 			fs.writeFile( clientCanary, 'private' ),
 			fs.writeFile( sensitiveCanary, 'private' ),
 			fs.writeFile( allowedCanary, 'public' ),
+			fs.writeFile( probeScriptPath, probeScript, { mode: 0o444 } ),
 		] );
 
 		const clientEnvironment = createChildEnvironment(
@@ -834,22 +904,7 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 				sourceCodexHome,
 			]
 		);
-		const probeArguments = [
-			clientCanary,
-			sensitiveCanary,
-			sourceAuthPath,
-			allowedCanary,
-			attemptEnvironment.userHome,
-			attemptEnvironment.workspace,
-			isolatedPath,
-			attemptEnvironment.shellConfiguration,
-		];
-		const probeCommand = [
-			'/bin/sh -c',
-			`'test ! -r "$1" && test ! -r "$2" && test ! -r "$3" && test -r "$4" && test -z "\${CODEX_HOME+x}" && test "$HOME" = "$5" && test "$TMPDIR" = "$6" && test "$PATH" = "$7" && test "$ZDOTDIR" = "$8" && printf "%s\\n" BOUNDARY_OK'`,
-			'boundary-check',
-			...probeArguments.map( ( value ) => JSON.stringify( value ) ),
-		].join( ' ' );
+		const probeCommand = '/bin/sh ./boundary-probe.sh';
 		const prompt =
 			'Run exactly one shell command: the command between the markers below. ' +
 			'It only checks file readability and must not print file contents. ' +
@@ -926,10 +981,6 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 		}
 
 		const proof = commandEvents[ 0 ];
-		const normalizedProofCommand = normalizeBoundaryCommand(
-			proof?.command ?? ''
-		);
-		const normalizedProbeCommand = normalizeBoundaryCommand( probeCommand );
 		if (
 			timedOut ||
 			close.exitCode !== 0 ||
@@ -937,7 +988,7 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 			commandEvents.length !== 1 ||
 			proof.exit_code !== 0 ||
 			proof.aggregated_output.trim() !== 'BOUNDARY_OK' ||
-			normalizedProofCommand !== normalizedProbeCommand
+			! matchesBoundaryCommand( proof.command, probeCommand )
 		) {
 			throw new Error(
 				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
@@ -945,10 +996,17 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 		}
 
 		return {
-			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained no-content command. Client-root, parent-root, and source-authentication canaries were unreadable; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
+			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained command that invokes a fixed hashed no-content probe script. Client-root, parent-root, and source-authentication canaries were unreadable; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
 			status: 'pass',
 			command: sanitize( proof.command ),
 			output: sanitize( proof.aggregated_output ),
+			probeScript: sanitize( probeScript ),
+			probeScriptSha256: createHash( 'sha256' )
+				.update( probeScript )
+				.digest( 'hex' ),
+			retainedProbeScriptSha256: createHash( 'sha256' )
+				.update( sanitize( probeScript ) )
+				.digest( 'hex' ),
 			commandSha256: createHash( 'sha256' )
 				.update( proof.command )
 				.digest( 'hex' ),
@@ -1067,8 +1125,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		) {
 			const eventLoadedSkills = loadedSkillNames(
 				event.item.command,
-				event.item.aggregated_output,
-				event.item.exit_code
+				event.item.aggregated_output
 			);
 			const outputSha256 = createHash( 'sha256' )
 				.update( event.item.aggregated_output )
@@ -1261,7 +1318,7 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 7,
+		schemaVersion: 8,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
