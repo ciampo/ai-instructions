@@ -81,6 +81,16 @@
         "The main workflow and its internal specialist handoffs do not create or open local review documents.",
         "The workflow does not modify source or post comments, replies, or reviews to GitHub."
       ]
+    },
+    {
+      "id": "owned-external-runtime-handoff",
+      "prompt": "Use review-pr to iterate on this contributor's PR through Copilot and self-review. I own its branch and fix-and-push loop, but do not edit, commit, or push.",
+      "context": "evals/fixtures/owned-external-runtime-handoff.md",
+      "expectedOutcome": "An immediate handoff to iterate-pr-review that preserves the user's review-only authority.",
+      "assertions": [
+        "The workflow detects explicit fix-and-push ownership plus the iterative Copilot and self-review request, then hands off to iterate-pr-review before starting the ordinary review-pr steps.",
+        "The handoff preserves the explicit no-edit, no-commit, and no-push boundary and does not update pull-request metadata, resolve threads, post replies, mark ready, or merge."
+      ]
     }
   ]
 }

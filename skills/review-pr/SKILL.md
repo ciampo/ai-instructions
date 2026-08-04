@@ -7,6 +7,10 @@ description: Perform a read-only, multi-round GitHub pull-request review with ac
 
 A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
 
+## Ownership boundary
+
+- Before starting the read-only review, check whether the user explicitly owns another author's fix-and-push loop and requests iterative Copilot and self-review. If both are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
+
 ## Steps
 
 1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). Identify the repository and diff base from fresh PR metadata; PRs can be stacked, so do not assume `trunk` or `main`.

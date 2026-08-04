@@ -130,10 +130,10 @@
       "id": "owned-external-local-authority",
       "prompt": "Iterate on this contributor's PR. I own its branch and fix-and-push loop. Apply accepted fixes locally, but do not commit or push.",
       "context": "evals/fixtures/owned-external-local-authority.md",
-      "expectedOutcome": "An iterative review that passes the ownership guard, applies verified local fixes, and preserves separate commit and push authority.",
+      "expectedOutcome": "An iterative review that passes the ownership guard, applies and executes the verified fixture fix, and preserves separate commit and push authority.",
       "assertions": [
         "The workflow accepts explicit fix-and-push ownership for another author's pull request and runs the bounded Copilot and independent self-review loop.",
-        "The workflow adds only the missing getChangeRoundLimit( 2 ) assertion, runs the relevant test, and reports its result.",
+        "The workflow adds only the missing getChangeRoundLimit( 2 ) assertion to test/iteration-limit.test.mjs, runs node --test test/iteration-limit.test.mjs in the executable fixture corpus, and reports the passing result.",
         "The workflow reports the unpublished local state without committing, pushing, requesting a review for the local-only head, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
     }
