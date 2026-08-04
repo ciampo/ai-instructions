@@ -12,6 +12,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "repeat-review-with-explicit-fix-ownership",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
+      "shouldTrigger": true
+    },
+    {
       "id": "one-time-external-review",
       "prompt": "Review this contributor's PR and give me copy-pasteable comments without changing anything.",
       "shouldTrigger": false
@@ -83,12 +88,22 @@
     },
     {
       "id": "local-only-fix-authority",
-      "prompt": "Address accepted PR feedback locally and run the relevant checks, but do not commit or push.",
+      "prompt": "Address accepted feedback on my PR locally and run the relevant checks, but do not commit or push.",
       "context": "evals/fixtures/local-only-fix-authority.md",
       "expectedOutcome": "Verified local fixes that stop before a new remote-review round because the updated head is not published.",
       "assertions": [
         "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
         "The workflow reports the uncommitted or unpushed local state and does not request a review for a remote head that lacks the fix."
+      ]
+    },
+    {
+      "id": "non-owned-runtime-fallback",
+      "prompt": "Use iterate-pr-review on this contributor's PR. I am only reviewing it and do not own its branch or fixes.",
+      "context": "evals/fixtures/non-owned-runtime-fallback.md",
+      "expectedOutcome": "A read-only handoff to review-pr before any iterative review or source mutation.",
+      "assertions": [
+        "The workflow detects that the user neither authored the pull request nor owns its fix-and-push loop and routes the task to review-pr.",
+        "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
       ]
     }
   ]
