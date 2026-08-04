@@ -30,6 +30,7 @@ const childEnvironmentKeys = [
 	'SHELL',
 	'TERM',
 	'TMPDIR',
+	'ZDOTDIR',
 ];
 const temporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
@@ -37,12 +38,11 @@ const temporaryRoots = [
 
 const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
-const codexExecutable = resolveExecutable( 'codex' );
 const outputFlag = process.argv.indexOf( '--output' );
 
 if ( process.argv.includes( '--verify-classifier' ) ) {
 	verifyClassifier();
-	verifyEnvironmentContract();
+	await verifyEnvironmentContract();
 	process.stdout.write( 'Classifier and environment self-checks passed.\n' );
 	process.exit( 0 );
 }
@@ -52,6 +52,7 @@ if ( outputFlag === -1 || ! process.argv[ outputFlag + 1 ] ) {
 }
 
 const outputPath = path.resolve( process.argv[ outputFlag + 1 ] );
+const codexExecutable = resolveExecutable( 'codex' );
 
 function resolveExecutable( name ) {
 	const result = spawnSync( 'which', [ name ], { encoding: 'utf8' } );
@@ -150,11 +151,10 @@ async function collectProvenance( skillNames, installedRoot ) {
 
 	for ( const skill of skillNames ) {
 		const installedPath = path.join( installedRoot, skill );
-		const expectedPath = path.join( repositoryRoot, 'skills', skill );
-		const installedTarget = await fs.realpath( installedPath );
+		const installedStats = await fs.lstat( installedPath );
 
-		if ( installedTarget !== expectedPath ) {
-			throw new Error( `${ skill } does not resolve to the evaluated checkout.` );
+		if ( ! installedStats.isDirectory() || installedStats.isSymbolicLink() ) {
+			throw new Error( `${ skill } is not a staged target directory.` );
 		}
 
 		const targetTree = runGit( [
@@ -171,14 +171,14 @@ async function collectProvenance( skillNames, installedRoot ) {
 			name: skill,
 			targetTree,
 			checkoutTree,
-			installedTarget: `skills/${ skill }`,
+			installedTarget: `${ targetRevision }:skills/${ skill }`,
 			match: true,
 		} );
 	}
 
 	return {
-		method: 'The complete checkout skills tree, including ignored-file absence, matched the target revision. The isolated installed inventory contained exactly the target skills, and every entry resolved to this checkout.',
-		installedRoot: '[isolated-home]/.agents/skills',
+		method: 'The complete checkout skills tree, including ignored-file absence, matched the target revision when fixtures were loaded. Git archive materialized a read-only target-revision skill tree before workers started. Every attempt linked exactly that staged inventory into a fresh isolated home.',
+		installedRoot: '[per-attempt-home]/.agents/skills',
 		installedSkillNames,
 		targetTree,
 		checkoutTree,
@@ -190,19 +190,56 @@ async function createIsolatedEnvironment( skillNames ) {
 	const root = await fs.mkdtemp(
 		path.join( os.tmpdir(), 'ai-instructions-evaluation-' )
 	);
-	const userHome = path.join( root, 'home' );
-	const installedRoot = path.join( userHome, '.agents', 'skills' );
+	const stageRoot = path.join( root, 'stage' );
+	await fs.mkdir( stageRoot );
 
-	await fs.mkdir( installedRoot, { recursive: true } );
-	for ( const skill of skillNames ) {
-		await fs.symlink(
-			path.join( repositoryRoot, 'skills', skill ),
-			path.join( installedRoot, skill ),
-			'dir'
+	const archive = spawnSync(
+		'git',
+		[ 'archive', '--format=tar', targetRevision, 'skills' ],
+		{
+			cwd: repositoryRoot,
+			maxBuffer: 64 * 1024 * 1024,
+		}
+	);
+
+	if ( archive.error || archive.status !== 0 ) {
+		throw new Error(
+			archive.error?.message ||
+				archive.stderr?.toString() ||
+				'git archive failed.'
 		);
 	}
 
-	return { installedRoot, root, userHome };
+	const extraction = spawnSync( 'tar', [ '-xf', '-', '-C', stageRoot ], {
+		input: archive.stdout,
+	} );
+
+	if ( extraction.error || extraction.status !== 0 ) {
+		throw new Error(
+			extraction.error?.message ||
+				extraction.stderr?.toString() ||
+				'tar extraction failed.'
+		);
+	}
+
+	const installedRoot = path.join( stageRoot, 'skills' );
+	const stagedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
+
+	if ( JSON.stringify( stagedSkillNames ) !== JSON.stringify( skillNames ) ) {
+		throw new Error( 'The staged target skill inventory is not exact.' );
+	}
+
+	const readOnly = spawnSync( 'chmod', [ '-R', 'a-w', installedRoot ] );
+
+	if ( readOnly.error || readOnly.status !== 0 ) {
+		throw new Error(
+			readOnly.error?.message ||
+				readOnly.stderr?.toString() ||
+				'chmod failed.'
+		);
+	}
+
+	return { installedRoot, root };
 }
 
 async function createIsolatedCodexHome( root ) {
@@ -217,7 +254,58 @@ async function createIsolatedCodexHome( root ) {
 	return isolatedCodexHome;
 }
 
-function createChildEnvironment( userHome, codexHome, temporaryDirectory ) {
+async function createShellConfiguration( root ) {
+	const shellConfiguration = path.join( root, 'zsh' );
+	const resetPath = `export PATH='${ isolatedPath }'\n`;
+
+	await fs.mkdir( shellConfiguration );
+	await Promise.all(
+		[ '.zshenv', '.zprofile', '.zlogin' ].map( ( fileName ) =>
+			fs.writeFile( path.join( shellConfiguration, fileName ), resetPath, {
+				mode: 0o444,
+			} )
+		)
+	);
+
+	return shellConfiguration;
+}
+
+async function createAttemptEnvironment( isolatedEnvironment, skillNames ) {
+	const root = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-evaluation-attempt-' )
+	);
+	const userHome = path.join( root, 'home' );
+	const installedRoot = path.join( userHome, '.agents', 'skills' );
+	const workspace = path.join( root, 'workspace' );
+
+	await fs.mkdir( installedRoot, { recursive: true } );
+	await fs.mkdir( workspace );
+	for ( const skill of skillNames ) {
+		await fs.symlink(
+			path.join( isolatedEnvironment.installedRoot, skill ),
+			path.join( installedRoot, skill ),
+			'dir'
+		);
+	}
+
+	const installedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
+
+	if ( JSON.stringify( installedSkillNames ) !== JSON.stringify( skillNames ) ) {
+		throw new Error( 'A per-attempt installed skill inventory is not exact.' );
+	}
+
+	const codexHome = await createIsolatedCodexHome( root );
+	const shellConfiguration = await createShellConfiguration( root );
+
+	return { codexHome, root, shellConfiguration, userHome, workspace };
+}
+
+function createChildEnvironment(
+	userHome,
+	codexHome,
+	temporaryDirectory,
+	shellConfiguration
+) {
 	return {
 		CODEX_HOME: codexHome,
 		HOME: userHome,
@@ -228,6 +316,7 @@ function createChildEnvironment( userHome, codexHome, temporaryDirectory ) {
 		SHELL: '/bin/zsh',
 		TERM: 'dumb',
 		TMPDIR: temporaryDirectory,
+		ZDOTDIR: shellConfiguration,
 	};
 }
 
@@ -284,23 +373,50 @@ function verifyClassifier() {
 	}
 }
 
-function verifyEnvironmentContract() {
-	const environment = createChildEnvironment(
-		'/isolated/home',
-		'/isolated/codex-home',
-		'/isolated/tmp'
+async function verifyEnvironmentContract() {
+	const root = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-environment-check-' )
 	);
-	const actualKeys = Object.keys( environment ).sort();
 
-	if ( JSON.stringify( actualKeys ) !== JSON.stringify( childEnvironmentKeys ) ) {
-		throw new Error( 'Environment self-check failed: unexpected variables.' );
-	}
+	try {
+		const userHome = path.join( root, 'home' );
+		const shellConfiguration = await createShellConfiguration( root );
+		await fs.mkdir( userHome );
+		const environment = createChildEnvironment(
+			userHome,
+			path.join( root, 'codex-home' ),
+			path.join( root, 'tmp' ),
+			shellConfiguration
+		);
+		const actualKeys = Object.keys( environment ).sort();
 
-	if (
-		environment.HOME === os.homedir() ||
-		environment.CODEX_HOME === sourceCodexHome
-	) {
-		throw new Error( 'Environment self-check failed: host state is exposed.' );
+		if (
+			JSON.stringify( actualKeys ) !==
+			JSON.stringify( childEnvironmentKeys )
+		) {
+			throw new Error( 'Environment self-check failed: unexpected variables.' );
+		}
+
+		if (
+			environment.HOME === os.homedir() ||
+			environment.CODEX_HOME === sourceCodexHome
+		) {
+			throw new Error( 'Environment self-check failed: host state is exposed.' );
+		}
+
+		const loginShell = spawnSync(
+			'/bin/zsh',
+			[ '-lc', 'printf %s "$PATH"' ],
+			{ encoding: 'utf8', env: environment }
+		);
+
+		if ( loginShell.status !== 0 || loginShell.stdout !== isolatedPath ) {
+			throw new Error(
+				'Environment self-check failed: login shell changed PATH.'
+			);
+		}
+	} finally {
+		await fs.rm( root, { recursive: true, force: true } );
 	}
 }
 
@@ -331,13 +447,9 @@ function signalProcessGroup( processGroupId, signal ) {
 	}
 }
 
-async function runAttempt( testCase, attempt, ordinal, isolatedEnvironment ) {
-	const workspace = await fs.mkdtemp(
-		path.join( isolatedEnvironment.root, 'workspace-' )
-	);
-	const isolatedCodexHome = await createIsolatedCodexHome(
-		isolatedEnvironment.root
-	);
+async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) {
+	const { codexHome, shellConfiguration, userHome, workspace } =
+		attemptEnvironment;
 	const startedAt = Date.now();
 	const observedSkills = [];
 	const skillLoadEvents = [];
@@ -400,9 +512,10 @@ async function runAttempt( testCase, attempt, ordinal, isolatedEnvironment ) {
 		cwd: workspace,
 		detached: true,
 		env: createChildEnvironment(
-			isolatedEnvironment.userHome,
-			isolatedCodexHome,
-			workspace
+			userHome,
+			codexHome,
+			workspace,
+			shellConfiguration
 		),
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
@@ -507,9 +620,6 @@ async function runAttempt( testCase, attempt, ordinal, isolatedEnvironment ) {
 		inspectLine( stdoutBuffer );
 	}
 
-	await fs.rm( workspace, { recursive: true, force: true } );
-	await fs.rm( isolatedCodexHome, { recursive: true, force: true } );
-
 	const status = classifyAttempt( testCase, observedSkills, completed );
 
 	return {
@@ -535,6 +645,33 @@ async function runAttempt( testCase, attempt, ordinal, isolatedEnvironment ) {
 	};
 }
 
+async function runAttempt(
+	testCase,
+	attempt,
+	ordinal,
+	isolatedEnvironment,
+	skillNames
+) {
+	const attemptEnvironment = await createAttemptEnvironment(
+		isolatedEnvironment,
+		skillNames
+	);
+
+	try {
+		return await executeAttempt(
+			testCase,
+			attempt,
+			ordinal,
+			attemptEnvironment
+		);
+	} finally {
+		await fs.rm( attemptEnvironment.root, {
+			recursive: true,
+			force: true,
+		} );
+	}
+}
+
 let outputWrite = Promise.resolve();
 
 function writeOutput( campaign ) {
@@ -544,7 +681,7 @@ function writeOutput( campaign ) {
 }
 
 verifyClassifier();
-verifyEnvironmentContract();
+await verifyEnvironmentContract();
 
 const skillNames = targetSkillNames();
 const cases = await loadCases( skillNames );
@@ -563,7 +700,7 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 3,
+		schemaVersion: 4,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
@@ -589,9 +726,10 @@ try {
 			concurrency,
 			timeoutSeconds: timeoutMs / 1000,
 			workspace: 'Fresh outside-repository temporary directory for every attempt.',
-			ambientCapabilities: 'No host environment or home directory inherited. One isolated HOME exposed exactly the pinned skill inventory. Each attempt used a fresh session store with a private authentication copy. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store with a private authentication copy. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
 			environmentVariables: childEnvironmentKeys,
-			executablePath: isolatedPath,
+			path: isolatedPath,
+			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin; the preflight executes /bin/zsh -lc and requires the recorded value.',
 			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
 			positiveStop: 'Stop after the target skill loads.',
 			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
@@ -611,7 +749,8 @@ try {
 				current.testCase,
 				current.attempt,
 				current.ordinal,
-				isolatedEnvironment
+				isolatedEnvironment,
+				skillNames
 			);
 			campaign.results.push( result );
 			campaign.results.sort(
@@ -628,5 +767,6 @@ try {
 	await Promise.all( Array.from( { length: concurrency }, () => worker() ) );
 	await writeOutput( campaign );
 } finally {
+	spawnSync( 'chmod', [ '-R', 'u+w', isolatedEnvironment.root ] );
 	await fs.rm( isolatedEnvironment.root, { recursive: true, force: true } );
 }
