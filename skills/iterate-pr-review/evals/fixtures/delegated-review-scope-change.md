@@ -7,7 +7,7 @@
 - Recorded reviewer: Copilot
 - Active change round: two of five
 - Current-head Copilot request: pending
-- Dedicated reviewer workflow: available
+- Host reviewer-request workflow: available outside this repository
 
 The retained bundle covers the recorded pull request and every verified exact
 head created on its task branch within the round limit. A proposed delegated

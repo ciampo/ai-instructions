@@ -729,7 +729,7 @@ test( 'iterative review launcher delegates Copilot requests without owning mecha
 	const defaultPrompt = launcher.match( /^  default_prompt: "([^"]+)"$/m )?.[ 1 ];
 	assert.equal(
 		defaultPrompt,
-		'Use $iterate-pr-review to run up to five change rounds on this pull request: delegate each exact-head Copilot request to the dedicated reviewer workflow, consume its evidence, run independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not request other reviewers, post comments, replies, or reviews, resolve threads, change unrelated pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass.'
+		'Use $iterate-pr-review to run up to five change rounds on this pull request: delegate each exact-head Copilot request to the host reviewer-request workflow, consume its evidence, run independent reviews, apply accepted fixes, verify them, commit, push, and refresh the PR. Do not request other reviewers, post comments, replies, or reviews, resolve threads, change unrelated pull-request metadata, mark the PR ready, merge, or release unless I separately authorize those actions. Report feedback remaining after the final review-only pass.'
 	);
 } );
 
