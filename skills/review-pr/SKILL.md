@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR.
+description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case.
 ---
 
 # Review PR

@@ -105,6 +105,16 @@
         "The workflow detects that the user neither authored the pull request nor owns its fix-and-push loop and routes the task to review-pr.",
         "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
       ]
+    },
+    {
+      "id": "owned-external-local-authority",
+      "prompt": "Iterate on this contributor's PR. I own its branch and fix-and-push loop. Apply accepted fixes locally, but do not commit or push.",
+      "context": "evals/fixtures/owned-external-local-authority.md",
+      "expectedOutcome": "An iterative review that passes the ownership guard, applies verified local fixes, and preserves separate commit and push authority.",
+      "assertions": [
+        "The workflow accepts explicit fix-and-push ownership for another author's pull request and runs the bounded Copilot and independent self-review loop.",
+        "The workflow applies and verifies accepted local fixes, then reports the unpublished state without committing, pushing, requesting a review for the local-only head, or changing pull-request state."
+      ]
     }
   ]
 }
