@@ -15,10 +15,16 @@ Run a bounded review-and-fix loop while keeping remote feedback, the local revie
 - Load `self-review-pr` for the independent review and `address-pr-feedback` to collect, assess, and implement accepted remote feedback. If either is unavailable, use this bounded fallback: capture the same fresh snapshot, independently re-read the full diff, changed source, tests, PR feedback, and CI in a fresh pass, then categorize each concern with source-backed reasoning. The fallback must load `review-simplicity` for its mandatory deletion-first handoff when available. Otherwise, directly check whether the same outcome can be preserved while removing new state, branches, wrappers, dependencies, duplication, or speculative abstractions, and explicitly report no findings when none are material. Do not post, resolve, or otherwise mutate remote review state in the fallback.
 - Treat a missing, failed, or pending Copilot review as incomplete evidence, never as a clean result.
 
+## Request Copilot review
+
+- When an authorized current-head request is needed, prefer the GitHub connector's reviewer-request action with the exact reviewer login `copilot-pull-request-reviewer[bot]`. Otherwise use `gh pr edit <PR-NUMBER> --repo <OWNER/REPO> --add-reviewer @copilot`.
+- If GitHub returns a collaborator-related `422` after receiving `copilot-pull-request-reviewer` without the `[bot]` suffix, correct the identifier and retry once. Do not infer that API review requests are unsupported from that error.
+- Use the authenticated GitHub UI only when the connector and CLI routes are unavailable or still fail with the documented identifiers. If a request result is ambiguous, refresh reviewer or timeline state before retrying so one head does not receive duplicate requests.
+
 ## Iterate
 
 1. Capture a fresh PR snapshot: canonical URL, title, base and head revisions, changed files, existing review state, and CI status. Record the head revision for this round. Rebuild the snapshot whenever it changes.
-2. Reuse a completed Copilot review tied to that recorded head. Otherwise request one through the supported GitHub surface when authorized. Record when it was requested and do not reuse a review for an earlier head.
+2. Reuse a completed Copilot review tied to that recorded head. Otherwise follow the request procedure above when authorized. Record when it was requested and do not reuse a review for an earlier head.
 3. Independently run the adversarial self-review for the same head. Do not give it Copilot's conclusions before its first pass. Wait for the Copilot review and local review to complete before deciding whether to change code.
 4. Consolidate both results. Account for every current comment or finding as accepted, already fixed, stale, or declined with source-backed reasoning. Deduplicate overlapping reports; a suggestion is actionable only when it identifies a real problem or a required change.
 5. Implement accepted fixes only when authorized. Verify the changed behavior with the relevant project checks. If commit and push are not both separately authorized, report the verified local changes and stop; they cannot begin a new remote-review round. After an authorized commit and push, refresh the PR and verify that its remote head matches the new commit before starting the next round.

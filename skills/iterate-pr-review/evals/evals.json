@@ -146,6 +146,17 @@
         "The workflow adds only the missing getChangeRoundLimit( 2 ) assertion to test/iteration-limit.test.mjs, runs node --test test/iteration-limit.test.mjs in the executable fixture corpus, and reports the passing result.",
         "The workflow reports the unpublished local state without committing, pushing, requesting a review for the local-only head, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
+    },
+    {
+      "id": "copilot-request-surface",
+      "prompt": "Request the authorized Copilot re-review for the current head without using browser control unless the supported non-UI routes are unavailable.",
+      "context": "evals/fixtures/copilot-request-surface.md",
+      "expectedOutcome": "One current-head Copilot review request through the connector or GitHub CLI with the documented reviewer identifier and no unrelated pull-request mutation.",
+      "assertions": [
+        "The workflow recognizes that the collaborator-related 422 came from the incomplete copilot-pull-request-reviewer login and retries through the connector with copilot-pull-request-reviewer[bot], or uses gh pr edit 54 --repo example/widgets --add-reviewer @copilot, instead of declaring API requests unsupported.",
+        "The workflow does not use browser control while a supported connector or CLI route is available, and refreshes reviewer or timeline state before retrying an ambiguous request.",
+        "The workflow requests at most one review for the recorded current head and does not edit source, commit, push, update other pull-request metadata, resolve threads, post replies, mark ready, or merge."
+      ]
     }
   ]
 }

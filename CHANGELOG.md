@@ -5,7 +5,7 @@
 ### Changed
 
 - Keep chat-only pull-request feedback work within bounded tasks by using immutable supplied snapshots, prioritizing accepted fixes and required verification, and delivering reply drafts before optional broad checks. ([#86](https://github.com/ciampo/ai-instructions/pull/86))
-- Restrict iterative pull-request review to user-authored pull requests or explicitly owned fix-and-push loops. ([#84](https://github.com/ciampo/ai-instructions/pull/84))
+- Restrict iterative pull-request review to user-authored pull requests or explicitly owned fix-and-push loops, and document reliable non-UI Copilot review requests. ([#84](https://github.com/ciampo/ai-instructions/pull/84))
 - Add STE-inspired communication guidance and reliable GitHub Enterprise preflight routing. ([#65](https://github.com/ciampo/ai-instructions/pull/65), [#66](https://github.com/ciampo/ai-instructions/pull/66))
 - Add mandatory simplicity review, evidence-gated specialist findings, and an optional coordinated specialist-review workflow. ([#59](https://github.com/ciampo/ai-instructions/pull/59), [#60](https://github.com/ciampo/ai-instructions/pull/60), [#64](https://github.com/ciampo/ai-instructions/pull/64))
 - Add bounded PR-review iteration while preserving explicit edit, commit, and push authority. ([#61](https://github.com/ciampo/ai-instructions/pull/61))
