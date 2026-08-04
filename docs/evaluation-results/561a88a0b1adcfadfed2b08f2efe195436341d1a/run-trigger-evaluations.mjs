@@ -14,18 +14,36 @@ const timeoutMs = 90_000;
 const model = 'gpt-5.6-sol';
 const reasoningEffort = 'xhigh';
 const serviceTier = 'priority';
+const stderrPreviewLimit = 8_192;
 const sourceCodexHome = process.env.CODEX_HOME ?? path.join( os.homedir(), '.codex' );
+const sourceAuthPath = path.join( sourceCodexHome, 'auth.json' );
+const isolatedPath = [ '/usr/bin', '/bin', '/usr/sbin', '/sbin' ].join(
+	path.delimiter
+);
+const childEnvironmentKeys = [
+	'CODEX_HOME',
+	'HOME',
+	'LANG',
+	'LC_ALL',
+	'NO_COLOR',
+	'PATH',
+	'SHELL',
+	'TERM',
+	'TMPDIR',
+];
 const temporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
 ];
 
 const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
+const codexExecutable = resolveExecutable( 'codex' );
 const outputFlag = process.argv.indexOf( '--output' );
 
 if ( process.argv.includes( '--verify-classifier' ) ) {
 	verifyClassifier();
-	process.stdout.write( 'Classifier self-checks passed.\n' );
+	verifyEnvironmentContract();
+	process.stdout.write( 'Classifier and environment self-checks passed.\n' );
 	process.exit( 0 );
 }
 
@@ -34,6 +52,16 @@ if ( outputFlag === -1 || ! process.argv[ outputFlag + 1 ] ) {
 }
 
 const outputPath = path.resolve( process.argv[ outputFlag + 1 ] );
+
+function resolveExecutable( name ) {
+	const result = spawnSync( 'which', [ name ], { encoding: 'utf8' } );
+
+	if ( result.status !== 0 || ! result.stdout.trim() ) {
+		throw new Error( `Evaluation runner: ${ name } is not available.` );
+	}
+
+	return realpathSync( result.stdout.trim() );
+}
 
 function runGit( args ) {
 	const result = spawnSync( 'git', args, {
@@ -85,15 +113,24 @@ async function loadCases( skillNames ) {
 	return cases;
 }
 
-async function collectProvenance( skillNames ) {
+async function collectProvenance( skillNames, installedRoot ) {
 	const skillStatus = spawnSync(
 		'git',
-		[ 'status', '--porcelain=v1', '--untracked-files=all', '--', 'skills' ],
+		[
+			'status',
+			'--porcelain=v1',
+			'--untracked-files=all',
+			'--ignored=matching',
+			'--',
+			'skills',
+		],
 		{ cwd: repositoryRoot, encoding: 'utf8' }
 	);
 
 	if ( skillStatus.status !== 0 || skillStatus.stdout.trim() ) {
-		throw new Error( 'The checkout skill tree has tracked or untracked changes.' );
+		throw new Error(
+			'The checkout skill tree has tracked, untracked, or ignored changes.'
+		);
 	}
 
 	const targetTree = runGit( [ 'rev-parse', `${ targetRevision }:skills` ] );
@@ -103,7 +140,12 @@ async function collectProvenance( skillNames ) {
 		throw new Error( 'The checkout skill tree does not match the target revision.' );
 	}
 
-	const installedRoot = path.join( os.homedir(), '.agents', 'skills' );
+	const installedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
+
+	if ( JSON.stringify( installedSkillNames ) !== JSON.stringify( skillNames ) ) {
+		throw new Error( 'The isolated installed skill inventory is not exact.' );
+	}
+
 	const skills = [];
 
 	for ( const skill of skillNames ) {
@@ -135,24 +177,58 @@ async function collectProvenance( skillNames ) {
 	}
 
 	return {
-		method: 'The complete checkout skills tree matched the target revision, and each user-level skill resolved to this checkout.',
-		installedRoot: '~/.agents/skills',
+		method: 'The complete checkout skills tree, including ignored-file absence, matched the target revision. The isolated installed inventory contained exactly the target skills, and every entry resolved to this checkout.',
+		installedRoot: '[isolated-home]/.agents/skills',
+		installedSkillNames,
 		targetTree,
 		checkoutTree,
 		skills,
 	};
 }
 
-async function createIsolatedCodexHome() {
-	const isolatedCodexHome = await fs.mkdtemp(
-		path.join( os.tmpdir(), 'ai-instructions-codex-home-' )
+async function createIsolatedEnvironment( skillNames ) {
+	const root = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-evaluation-' )
 	);
-	const sourceAuthPath = path.join( sourceCodexHome, 'auth.json' );
+	const userHome = path.join( root, 'home' );
+	const installedRoot = path.join( userHome, '.agents', 'skills' );
+
+	await fs.mkdir( installedRoot, { recursive: true } );
+	for ( const skill of skillNames ) {
+		await fs.symlink(
+			path.join( repositoryRoot, 'skills', skill ),
+			path.join( installedRoot, skill ),
+			'dir'
+		);
+	}
+
+	return { installedRoot, root, userHome };
+}
+
+async function createIsolatedCodexHome( root ) {
+	const isolatedCodexHome = await fs.mkdtemp(
+		path.join( root, 'codex-home-' )
+	);
 	const isolatedAuthPath = path.join( isolatedCodexHome, 'auth.json' );
 
-	await fs.symlink( sourceAuthPath, isolatedAuthPath );
+	await fs.copyFile( sourceAuthPath, isolatedAuthPath );
+	await fs.chmod( isolatedAuthPath, 0o600 );
 
 	return isolatedCodexHome;
+}
+
+function createChildEnvironment( userHome, codexHome, temporaryDirectory ) {
+	return {
+		CODEX_HOME: codexHome,
+		HOME: userHome,
+		LANG: 'C.UTF-8',
+		LC_ALL: 'C.UTF-8',
+		NO_COLOR: '1',
+		PATH: isolatedPath,
+		SHELL: '/bin/zsh',
+		TERM: 'dumb',
+		TMPDIR: temporaryDirectory,
+	};
 }
 
 function sanitize( value ) {
@@ -208,6 +284,26 @@ function verifyClassifier() {
 	}
 }
 
+function verifyEnvironmentContract() {
+	const environment = createChildEnvironment(
+		'/isolated/home',
+		'/isolated/codex-home',
+		'/isolated/tmp'
+	);
+	const actualKeys = Object.keys( environment ).sort();
+
+	if ( JSON.stringify( actualKeys ) !== JSON.stringify( childEnvironmentKeys ) ) {
+		throw new Error( 'Environment self-check failed: unexpected variables.' );
+	}
+
+	if (
+		environment.HOME === os.homedir() ||
+		environment.CODEX_HOME === sourceCodexHome
+	) {
+		throw new Error( 'Environment self-check failed: host state is exposed.' );
+	}
+}
+
 function loadedSkillNames( command, aggregatedOutput, exitCode ) {
 	if ( exitCode !== 0 ) {
 		return [];
@@ -235,17 +331,24 @@ function signalProcessGroup( processGroupId, signal ) {
 	}
 }
 
-async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
+async function runAttempt( testCase, attempt, ordinal, isolatedEnvironment ) {
 	const workspace = await fs.mkdtemp(
-		path.join( os.tmpdir(), 'ai-instructions-trigger-' )
+		path.join( isolatedEnvironment.root, 'workspace-' )
+	);
+	const isolatedCodexHome = await createIsolatedCodexHome(
+		isolatedEnvironment.root
 	);
 	const startedAt = Date.now();
 	const observedSkills = [];
 	const skillLoadEvents = [];
 	const messages = [];
+	const stderrHash = createHash( 'sha256' );
 	let completed = false;
 	let timedOut = false;
 	let intentionallyStopped = false;
+	let stderrBytes = 0;
+	let stderrCharacters = 0;
+	let stderrPreview = '';
 	let stdoutBuffer = '';
 	let stopPromise;
 
@@ -293,13 +396,14 @@ async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
 		testCase.prompt,
 	];
 
-	const child = spawn( 'codex', args, {
+	const child = spawn( codexExecutable, args, {
 		cwd: workspace,
 		detached: true,
-		env: {
-			...process.env,
-			CODEX_HOME: isolatedCodexHome,
-		},
+		env: createChildEnvironment(
+			isolatedEnvironment.userHome,
+			isolatedCodexHome,
+			workspace
+		),
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
 
@@ -375,6 +479,17 @@ async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
 			inspectLine( line );
 		}
 	} );
+	child.stderr.setEncoding( 'utf8' );
+	child.stderr.on( 'data', ( chunk ) => {
+		stderrHash.update( chunk );
+		stderrBytes += Buffer.byteLength( chunk );
+		stderrCharacters += chunk.length;
+		const remainingCharacters = stderrPreviewLimit - stderrPreview.length;
+
+		if ( remainingCharacters > 0 ) {
+			stderrPreview += chunk.slice( 0, remainingCharacters );
+		}
+	} );
 
 	const timeout = setTimeout( () => {
 		timedOut = true;
@@ -393,6 +508,7 @@ async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
 	}
 
 	await fs.rm( workspace, { recursive: true, force: true } );
+	await fs.rm( isolatedCodexHome, { recursive: true, force: true } );
 
 	const status = classifyAttempt( testCase, observedSkills, completed );
 
@@ -410,6 +526,12 @@ async function runAttempt( testCase, attempt, ordinal, isolatedCodexHome ) {
 		durationMs: Date.now() - startedAt,
 		messages,
 		skillLoadEvents,
+		stderr: {
+			bytes: stderrBytes,
+			sha256: stderrHash.digest( 'hex' ),
+			preview: sanitize( stderrPreview ),
+			truncated: stderrCharacters > stderrPreview.length,
+		},
 	};
 }
 
@@ -422,6 +544,7 @@ function writeOutput( campaign ) {
 }
 
 verifyClassifier();
+verifyEnvironmentContract();
 
 const skillNames = targetSkillNames();
 const cases = await loadCases( skillNames );
@@ -432,68 +555,78 @@ const attempts = cases.flatMap( ( testCase, caseIndex ) =>
 		ordinal: caseIndex * attemptsPerCase + index,
 	} ) )
 );
-const provenance = await collectProvenance( skillNames );
-const isolatedCodexHome = await createIsolatedCodexHome();
-const campaign = {
-	schemaVersion: 2,
-	repositoryRevision: targetRevision,
-	fixtureRevision: targetRevision,
-	runner: {
-		path: path.relative( repositoryRoot, scriptPath ),
-		sha256: createHash( 'sha256' )
-			.update( await fs.readFile( scriptPath ) )
-			.digest( 'hex' ),
-	},
-	client: {
-		name: 'Codex CLI',
-		version: spawnSync( 'codex', [ '--version' ], { encoding: 'utf8' } )
-			.stdout.trim()
-			.replace( /^codex-cli /, '' ),
-		model,
-		reasoningEffort,
-		serviceTier,
-		environment: `${ os.type() } ${ os.release() } ${ os.arch() }`,
-	},
-	execution: {
-		attemptsPerCase,
-		concurrency,
-		timeoutSeconds: timeoutMs / 1000,
-		workspace: 'Fresh outside-repository temporary directory for every attempt.',
-		ambientCapabilities: 'A clean session store exposed only authentication and the pinned user-level skill tree. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
-		positiveStop: 'Stop after the target skill loads.',
-		negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
-		classification: 'Positive cases pass when the target loads and fail when a completed turn omits it. Negative cases fail when the target loads and pass only on completion without it. Incomplete attempts are blocked.',
-	},
-	provenance,
-	results: [],
-};
-
-let nextAttempt = 0;
-let completedAttempts = 0;
-
-async function worker() {
-	while ( nextAttempt < attempts.length ) {
-		const current = attempts[ nextAttempt ];
-		nextAttempt += 1;
-		const result = await runAttempt(
-			current.testCase,
-			current.attempt,
-			current.ordinal,
-			isolatedCodexHome
-		);
-		campaign.results.push( result );
-		campaign.results.sort( ( left, right ) => left.ordinal - right.ordinal );
-		completedAttempts += 1;
-		process.stderr.write(
-			`${ completedAttempts }/${ attempts.length } ${ result.skill }/${ result.caseId }#${ result.attempt }: ${ result.status }\n`
-		);
-		await writeOutput( campaign );
-	}
-}
+const isolatedEnvironment = await createIsolatedEnvironment( skillNames );
 
 try {
+	const provenance = await collectProvenance(
+		skillNames,
+		isolatedEnvironment.installedRoot
+	);
+	const campaign = {
+		schemaVersion: 3,
+		repositoryRevision: targetRevision,
+		fixtureRevision: targetRevision,
+		runner: {
+			path: path.relative( repositoryRoot, scriptPath ),
+			sha256: createHash( 'sha256' )
+				.update( await fs.readFile( scriptPath ) )
+				.digest( 'hex' ),
+		},
+		client: {
+			name: 'Codex CLI',
+			version: spawnSync( codexExecutable, [ '--version' ], {
+				encoding: 'utf8',
+			} )
+				.stdout.trim()
+				.replace( /^codex-cli /, '' ),
+			model,
+			reasoningEffort,
+			serviceTier,
+			environment: `${ os.type() } ${ os.release() } ${ os.arch() }`,
+		},
+		execution: {
+			attemptsPerCase,
+			concurrency,
+			timeoutSeconds: timeoutMs / 1000,
+			workspace: 'Fresh outside-repository temporary directory for every attempt.',
+			ambientCapabilities: 'No host environment or home directory inherited. One isolated HOME exposed exactly the pinned skill inventory. Each attempt used a fresh session store with a private authentication copy. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			environmentVariables: childEnvironmentKeys,
+			executablePath: isolatedPath,
+			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
+			positiveStop: 'Stop after the target skill loads.',
+			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
+			classification: 'Positive cases pass when the target loads and fail when a completed turn omits it. Negative cases fail when the target loads and pass only on completion without it. Incomplete attempts are blocked.',
+		},
+		provenance,
+		results: [],
+	};
+	let nextAttempt = 0;
+	let completedAttempts = 0;
+
+	async function worker() {
+		while ( nextAttempt < attempts.length ) {
+			const current = attempts[ nextAttempt ];
+			nextAttempt += 1;
+			const result = await runAttempt(
+				current.testCase,
+				current.attempt,
+				current.ordinal,
+				isolatedEnvironment
+			);
+			campaign.results.push( result );
+			campaign.results.sort(
+				( left, right ) => left.ordinal - right.ordinal
+			);
+			completedAttempts += 1;
+			process.stderr.write(
+				`${ completedAttempts }/${ attempts.length } ${ result.skill }/${ result.caseId }#${ result.attempt }: ${ result.status }\n`
+			);
+			await writeOutput( campaign );
+		}
+	}
+
 	await Promise.all( Array.from( { length: concurrency }, () => worker() ) );
 	await writeOutput( campaign );
 } finally {
-	await fs.rm( isolatedCodexHome, { recursive: true, force: true } );
+	await fs.rm( isolatedEnvironment.root, { recursive: true, force: true } );
 }

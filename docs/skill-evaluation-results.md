@@ -43,10 +43,10 @@ Current filesystem verification found that the Codex and Antigravity `review-acc
 
 | Client | Model and environment | Execution context | Overall |
 | --- | --- | --- | --- |
-| Codex CLI `0.145.0` | `gpt-5.6-sol`, `xhigh`, priority tier; macOS `26.5.2` arm64 | Authenticated profile; ephemeral sessions; three concurrent workers; public, self-contained fixtures; read-only trigger sandbox and disposable output workspaces | partial |
+| Codex CLI `0.145.0` | `gpt-5.6-sol`, `xhigh`, priority tier; macOS `26.5.2` arm64 | Private authentication copies; isolated home and session store; explicit environment allowlist; exact pinned skill inventory; three concurrent workers; public, self-contained fixtures; read-only trigger sandbox and disposable output workspaces | partial |
 | Google Antigravity CLI `1.1.6` | Reported Gemini 3.6 Flash (High); macOS `26.5.2` arm64 | Reported authenticated profile, plan mode, and sandbox; permission settings, safety state, and raw event stream unverified | blocked, unverified |
 
-The isolated Codex trigger rerun used a clean session store and one fresh outside-repository temporary directory per attempt. The session store exposed only authentication and the pinned user-level skill tree. The runner disabled user configuration, rules, plugins, apps, browser and computer control, memory, hooks, remote plugins, and multi-agent tools. Positive cases stopped after the target skill loaded. Negative cases ran to turn completion or the 90-second timeout and recorded every observed skill load.
+The isolated Codex trigger rerun used one fresh outside-repository temporary directory and one clean session store per attempt. Each session store received a private authentication copy. The subprocess inherited neither the host environment nor the host home directory. Its isolated home exposed exactly the 26 pinned user-level skills, and its environment contained only `CODEX_HOME`, `HOME`, `LANG`, `LC_ALL`, `NO_COLOR`, `PATH`, `SHELL`, `TERM`, and `TMPDIR`. The runner disabled user configuration, rules, plugins, apps, browser and computer control, memory, hooks, remote plugins, and multi-agent tools. Positive cases stopped after the target skill loaded. Negative cases ran to turn completion or the 90-second timeout and recorded every observed skill load. The runner drained stderr completely and retained a sanitized preview plus the full-stream SHA-256 for every attempt.
 
 Codex output runs used one disposable workspace per case and a 240-second cap. Of 55 cases, 53 completed. The runs used 9,220,259 input tokens, including 7,953,920 cached input tokens, and 147,560 output tokens.
 
@@ -54,13 +54,13 @@ Codex output runs used one disposable workspace per case and a 240-second cap. O
 
 The committed, sanitized evidence retains each prompt, observed skill-load event, model output, token use, timeout state, workspace delta, generated artifact, assertion grade, and concise evidence:
 
-- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `69da608df8129fc669a83705f8f6491f893580d64d88ab24e2823f56c7b84a13`;
-- [trigger runner](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/run-trigger-evaluations.mjs), SHA-256 `1005c3fbef9179d101887a11360c19c8d616e05cde8da3caea8ec57ec3cde9a7`;
+- [trigger results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-trigger-results.json), SHA-256 `e99b85f15de344b3099a3432f4f9408fd10bf0e66ceaab75532aed4d68863117`;
+- [trigger runner](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/run-trigger-evaluations.mjs), SHA-256 `181cd2761050c56e488e06912056c7864017bbe5ab56f4e35d87bc6a12e89c7d`;
 - [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `99086237fd7f0943df1b3a8273a85bf532748e75b932527097ec8c7ceaf800ad`;
 - [direct and coordinated comparison](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-review-comparison.json), SHA-256 `2d1be2aeb9b3799e134522676eeb423ed67f8ac9a24ce14069d1729fe51f5660`.
 - [Antigravity canary note](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/antigravity-canary.json), SHA-256 `f521622ad936bf76d62292bf630a930c2629e692a0d883cde6af6ee3121425de`.
 
-The versioned trigger runner records its exact invocation, feature disables, status derivation, and provenance checks. It counts only successful, completed commands whose output contains the loaded skill's frontmatter, and it runs deterministic classifier self-checks before the campaign. It inventories the target revision, checks the complete tracked and untracked checkout skill tree, terminates the dedicated child-process group at the timeout with a two-second forced-kill fallback, serializes incremental evidence writes, and sanitizes both logical and resolved temporary paths. All 26 user-level Codex skill directories resolved to this checkout, whose complete skills tree matched the target revision's Git tree object. The output campaign used an unversioned, one-off Node.js harness with one disposable writable workspace per fixture, three concurrent workers, and a 240-second cap. That output runner remains a reproducibility limitation.
+The versioned trigger runner records its exact invocation, feature disables, status derivation, environment contract, stderr handling, and provenance checks. It counts only successful, completed commands whose output contains the loaded skill's frontmatter, and it runs deterministic classifier and environment self-checks before the campaign. It inventories the target revision; rejects tracked, untracked, and ignored checkout changes under `skills`; requires the isolated installed inventory to equal the 26 target skills; and verifies that every installed entry resolves to the target-matching checkout. It terminates the dedicated child-process group at the timeout with a two-second forced-kill fallback, serializes incremental evidence writes, and sanitizes both logical and resolved temporary paths. The output campaign used an unversioned, one-off Node.js harness with one disposable writable workspace per fixture, three concurrent workers, and a 240-second cap. That output runner remains a reproducibility limitation.
 
 Verify the retained files with:
 
@@ -72,18 +72,16 @@ shasum -a 256 docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*
 
 Every trigger case ran three times. `+` means the named skill should load during the turn. `-` means the named skill must not load anywhere in the completed turn. A mixed three-attempt result is `partial`.
 
-Summary: 65 of 77 cases passed, nine were partial, and three failed. Across 231 attempts, 208 passed and 23 failed. All cases omitted from this table passed. The retained JSON records every attempt and observed skill-load event.
+Summary: 67 of 77 cases passed, seven were partial, and three failed. Across 231 attempts, 212 passed and 19 failed. No attempt timed out or was blocked. All cases omitted from this table passed. The retained JSON records every attempt, observed skill-load event, and stderr digest.
 
 | Skill | Non-pass cases |
 | --- | --- |
 | `address-pr-feedback` | `-write-a-single-review-reply` fail (3 `fail`) |
-| `automattic-github-enterprise` | `-generic-enterprise-route` partial (1 `pass`, 2 `fail`) |
-| `draft-review-comment` | `-address-review-feedback` partial (2 `pass`, 1 `fail`); `+draft-confirmed-findings` partial (2 `pass`, 1 `fail`); `-perform-pr-review` partial (1 `pass`, 2 `fail`); `+prepare-review-document` partial (1 `pass`, 2 `fail`) |
+| `automattic-github-enterprise` | `-generic-enterprise-route` partial (2 `pass`, 1 `fail`) |
+| `draft-review-comment` | `-address-review-feedback` partial (1 `pass`, 2 `fail`); `+draft-confirmed-findings` partial (2 `pass`, 1 `fail`); `-perform-pr-review` partial (2 `pass`, 1 `fail`); `+prepare-review-document` partial (1 `pass`, 2 `fail`) |
 | `iterate-pr-review` | `-iterative-external-review` fail (3 `fail`) |
 | `repository-maintenance` | `+verify-github-enterprise-cli-access` fail (3 `fail`) |
 | `review-accessibility` | `-general-pull-request-review` partial (1 `pass`, 2 `fail`) |
-| `review-coordinator` | `+implicit-multi-lane-review` partial (2 `pass`, 1 `fail`) |
-| `review-pr` | `+multi-lane-pr-review` partial (1 `pass`, 2 `fail`) |
 | `review-test-quality` | `+semantic-ui-regression` partial (2 `pass`, 1 `fail`) |
 
 ### Codex output results
@@ -151,6 +149,6 @@ The accepted instruction failures are:
 7. The current-head iteration output omitted the base revision. Follow-up: [#79](https://github.com/ciampo/ai-instructions/issues/79).
 8. Direct and coordinated review assigned materially different severities to the same two findings. Follow-up: [#80](https://github.com/ciampo/ai-instructions/issues/80).
 
-Partial trigger cases are routing gaps, not accepted failures. Follow-ups [#73](https://github.com/ciampo/ai-instructions/issues/73) and [#74](https://github.com/ciampo/ai-instructions/issues/74) also cover observed partial routing gaps. Blocked output assertions are evidence gaps. The two timed-out output cases and the unverified Antigravity canary remain verification gaps except for their explicitly retained evidence.
+Partial trigger cases are routing gaps, not accepted failures. Follow-ups [#73](https://github.com/ciampo/ai-instructions/issues/73) and [#74](https://github.com/ciampo/ai-instructions/issues/74) cover selected partial routing gaps. Blocked output assertions are evidence gaps. The two timed-out output cases and the unverified Antigravity canary remain verification gaps except for their explicitly retained evidence.
 
 Do not fix these failures in this evidence pull request. Use the focused follow-ups above before changing the evaluated instruction revision.
