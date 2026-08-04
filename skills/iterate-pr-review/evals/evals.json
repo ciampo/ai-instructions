@@ -3,17 +3,17 @@
   "triggerCases": [
     {
       "id": "repeat-copilot-and-self-review",
-      "prompt": "Iterate on my PR using the current-head Copilot review from the dedicated workflow, perform an adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "prompt": "Iterate on my PR through Copilot review and adversarial self-review, address actionable feedback, and repeat until both are clear.",
       "shouldTrigger": true
     },
     {
       "id": "review-before-handoff",
-      "prompt": "Before handing off my PR, use the supplied current-head Copilot evidence and run independent self-review loops until the current revision has no actionable feedback.",
+      "prompt": "Before handing off my PR, run the Copilot and independent self-review loops until the current revision has no actionable feedback.",
       "shouldTrigger": true
     },
     {
       "id": "repeat-review-with-explicit-fix-ownership",
-      "prompt": "Iterate on this contributor's PR using supplied current-head Copilot evidence and self-review. I own its branch and fix-and-push loop.",
+      "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
       "shouldTrigger": true
     },
     {
@@ -148,15 +148,39 @@
       ]
     },
     {
+      "id": "delegated-current-head-review",
+      "prompt": "Continue the complete iterate-pr-review loop for this authored pull request.",
+      "context": "evals/fixtures/delegated-current-head-review.md",
+      "expectedOutcome": "One exact-head Copilot request delegated to the dedicated workflow under the retained iteration authority, followed by consumption of its evidence without another task-authority question or unrelated GitHub mutation.",
+      "assertions": [
+        "The workflow treats the active authored-PR iteration bundle as authority to delegate exactly one Copilot request for the recorded current head without asking a separate task-authority question.",
+        "The portable skill does not implement connector, CLI, or browser request mechanics; it delegates to the named dedicated workflow, records the pending or completed result, and waits for exact-head evidence before review consolidation.",
+        "The delegated action is limited to adding the Copilot reviewer for the recorded repository, pull request, and head; it does not add another reviewer or change other pull-request metadata.",
+        "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated state."
+      ]
+    },
+    {
+      "id": "delegated-review-scope-change",
+      "prompt": "Continue the current iteration using the retained authority bundle.",
+      "context": "evals/fixtures/delegated-review-scope-change.md",
+      "expectedOutcome": "A denied out-of-scope reviewer mutation that preserves the recorded PR and exact-head boundary instead of extending retained authority to another PR, head, reviewer, or metadata change.",
+      "assertions": [
+        "The workflow recognizes that the retained bundle is limited to the recorded repository, pull request, task branch, exact head, Copilot reviewer, and round limit.",
+        "The workflow does not delegate or perform the proposed request for another pull request, another head, or another reviewer, and it does not add the proposed label.",
+        "The workflow requires a fresh authority decision for the changed target instead of treating the active iteration, authorship, or dedicated workflow capability as sufficient.",
+        "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change either pull request."
+      ]
+    },
+    {
       "id": "bounded-authored-rebase-iteration",
       "prompt": "Rebase this authored pull request on the latest main branch, then run the complete iterate-pr-review loop.",
       "context": "evals/fixtures/bounded-authored-rebase-iteration.md",
-      "expectedOutcome": "One bounded authored-PR authority bundle that safely rebases, consumes exact-head review evidence, publishes accepted fixes, runs authorized public evaluations, and records exact-head results without repeated task-authority questions.",
+      "expectedOutcome": "One bounded authored-PR authority bundle that safely rebases, delegates exact-head Copilot requests to the dedicated workflow, consumes the resulting evidence, publishes accepted fixes, runs authorized public evaluations, and records exact-head results without repeated task-authority questions.",
       "assertions": [
         "The workflow records the repository, pull request, task branch, OpenAI Codex evaluation destination, public tracked payload class, and five-round limit once, then does not ask separate task-authority questions for unchanged rounds.",
         "The explicit rebase uses patch-replay and remote-head verification, then passes required project checks and model-backed evaluation for the exact rebased commit before one exact --force-with-lease update of the recorded task branch; a failed check or evaluation prevents the push, and the workflow never uses plain --force or rewrites another branch.",
-        "For each exact head, the workflow consumes remote review evidence supplied by the separately authorized dedicated workflow, runs an independent self-review, applies accepted fixes, performs required verification, makes a coherent commit, pushes the same pull-request branch, and verifies the remote head.",
-        "The portable authority bundle does not itself authorize a Copilot reviewer request or any other reviewer mutation.",
+        "For each exact head, the workflow delegates at most one Copilot request to the dedicated reviewer workflow under the retained bundle, consumes the resulting exact-head evidence, runs an independent self-review, applies accepted fixes, performs required verification, makes a coherent commit, pushes the same pull-request branch, and verifies the remote head.",
+        "The portable skill does not implement reviewer-request mechanics, and the delegated workflow may add only the Copilot reviewer for the recorded pull request and exact head; every other reviewer or metadata mutation remains unauthorized.",
         "The workflow sends only the supplied version-controlled public skill content, selected public fixtures, and sanitized execution metadata to the OpenAI Codex service, and the standing consent covers exact-head reruns after in-scope revisions.",
         "The iteration bundle does not authorize a pull-request description change; only matching standing consent may delegate the exact Evaluation-section update to write-pr-description for the recorded authored draft pull request, task branch, and head.",
         "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated metadata.",
