@@ -65,6 +65,18 @@
         "The response does not invent a new pull-request subject from the number alone.",
         "The response contains only the title."
       ]
+    },
+    {
+      "id": "github-task-title-phase-change",
+      "prompt": "Using the supplied context, choose the task title after the primary task enters verification. Return only the title.",
+      "context": "evals/fixtures/github-task-title-phase-change.md",
+      "expectedOutcome": "The title reflects the materially different verification phase while keeping the same primary pull-request reference and concise task subject.",
+      "assertions": [
+        "The title uses an intuitive verification-phase emoji.",
+        "The title preserves the primary pull-request reference `[R#80600]`.",
+        "The concise subject still accurately reflects the `ThemeProvider` color-property change; exact wording and punctuation can differ.",
+        "The response contains only the title."
+      ]
     }
   ]
 }
