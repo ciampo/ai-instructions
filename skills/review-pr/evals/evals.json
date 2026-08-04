@@ -17,6 +17,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "explicit-panel-pr-review",
+      "prompt": "Run a coordinated panel review of this PR with security, migration compatibility, and UI-test specialists, then give me one response.",
+      "shouldTrigger": true
+    },
+    {
       "id": "repeated-external-pr-review",
       "prompt": "Run repeated reviews on this open source pull request until it is clear. I am only reviewing it and do not own its branch or fixes.",
       "shouldTrigger": true
@@ -73,7 +78,32 @@
         "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
         "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
         "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
+        "The review maps authorization to security and persisted-state migration to compatibility, then loads review-simplicity followed by review-coordinator before PR lookup instead of only announcing the handoff or handling either lane directly.",
         "Authorization and persisted-state evidence are assessed as separate material domains.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
+      ]
+    },
+    {
+      "id": "explicit-panel-coordinator-handoff",
+      "prompt": "Run a coordinated panel review of this PR with security, migration compatibility, and UI-test specialists, then give me one response.",
+      "context": "evals/fixtures/coordinator-handoff-routing.md",
+      "expectedOutcome": "One read-only panel review that enters through review-pr and completes the mandatory simplicity load before handing the pinned review to the coordinator.",
+      "assertions": [
+        "The explicit panel request enters through review-pr rather than loading review-coordinator directly.",
+        "The review reads review-pr, then review-simplicity, then review-coordinator before the first action that accesses PR context and before loading any direct specialist.",
+        "The coordinator receives the completed core-review result and simplicity handoff, then owns remaining specialist routing and one final response.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
+      ]
+    },
+    {
+      "id": "late-discovered-coordinator-handoff",
+      "prompt": "Review this pull request and provide one evidence-backed response.",
+      "context": "evals/fixtures/coordinator-handoff-routing.md",
+      "expectedOutcome": "One read-only review that discovers two material specialist lanes during source inspection and hands the completed core result to the coordinator for its single final delivery.",
+      "assertions": [
+        "The generic prompt loads review-simplicity before PR lookup without inventing specialist lanes from the request.",
+        "After pinned source inspection makes authorization and persisted-state migration material, the review loads review-coordinator before loading either direct specialist.",
+        "The coordinator receives the completed core-review result and mandatory simplicity handoff, then owns remaining specialist routing and the single final delivery.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
     },

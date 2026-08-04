@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case.
+description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case. Unless the user explicitly names review-coordinator, panel, coordinated, and multi-lane PR reviews enter only through this skill. For those requests, do not inspect PR context until review-pr, review-simplicity, and review-coordinator are read in that order. For a generic PR request, read only review-pr and review-simplicity before context; load review-coordinator later only if source inspection proves the threshold.
 ---
 
 # Review PR
@@ -11,6 +11,14 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 
 - Before starting the read-only review, check whether the pull request is authored by the user or the user explicitly owns another author's fix-and-push loop. If either ownership condition and an iterative Copilot and self-review request are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
 
+## Entry routing
+
+- If the user explicitly names `review-coordinator`, hand off to it directly and stop. The remaining entry rules apply to ordinary panel, coordinated, and multi-lane requests.
+- Before looking up PR context, identify the specialist lanes named in the request. Select the coordinator for an explicit panel or coordinated review, or when two or more independent additional lanes are material. `review-security` covers authorization or security. `review-compatibility` covers persisted-state migration or compatibility, so their combination meets the two-lane threshold.
+- When the request is generic and identifies neither coordination nor two material lanes, do not load `review-coordinator` at entry. Inspect the pinned source after loading `review-simplicity`, then apply the late threshold in step 7.
+- Load `review-simplicity` for every PR in a separate action before any action names or accesses PR context; do not batch this load with context lookup. When the coordinator is selected, load `review-coordinator` immediately after `review-simplicity`, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading requires reading the skill; stating an intention to use it is not a handoff.
+- Loading the methods at entry does not pass incomplete review results. Complete the core and simplicity passes below, then give the coordinator their results and the pinned snapshot. If the request does not reveal the coordinator threshold, source inspection can still select it in step 7. Keep an ordinary single-lane review in this workflow.
+
 ## Steps
 
 1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). Identify the repository and diff base from fresh PR metadata; PRs can be stacked, so do not assume `trunk` or `main`.
@@ -18,8 +26,8 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
 4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
 5. Perform the complete core review: accessibility, consistency, simplicity, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.
-6. Load `review-simplicity` for every PR and request its internal findings handoff. Apply its deletion-first method even when the user did not request simplification; an explicit no-findings result is valid.
-7. Use `review-coordinator` only when the user explicitly requests a panel or coordinated review, or when two or more independent additional specialist lanes are materially in scope. The mandatory simplicity pass does not count toward that threshold. Keep this workflow as the default for ordinary PRs. Pass the coordinator the pinned snapshot, completed core-review result, and simplicity handoff from steps 1-6, then stop this workflow: the coordinator owns remaining specialist routing, rechecking, refresh, and the single final delivery.
+6. Request the loaded `review-simplicity` skill's internal findings handoff. Apply its deletion-first method even when the user did not request simplification; an explicit no-findings result is valid.
+7. Use `review-coordinator` only when the user explicitly requests a panel or coordinated review, or when two or more independent additional specialist lanes are materially in scope. The mandatory simplicity pass does not count toward that threshold. If source inspection establishes the threshold after entry routing, load `review-coordinator` after the simplicity handoff and before any direct specialist. Pass the coordinator the pinned snapshot, completed core-review result, and simplicity handoff from steps 1-6, then stop this workflow: the coordinator owns remaining specialist routing, rechecking, refresh, and the single final delivery.
 8. If `review-coordinator` was not selected, load another specialist skill directly only when its domain is materially in scope:
    - Use `review-accessibility` for UI or interaction changes whose semantics, keyboard behavior, focus, announcements, contrast, motion, zoom, or target behavior require the deeper accessibility method. Continue to perform the core accessibility pass for every PR.
    - Use `review-api-design` when the PR adds or materially changes a public component, library, or package API. Ordinary internal type or implementation correctness stays in the core pass.

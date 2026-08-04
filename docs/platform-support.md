@@ -27,7 +27,7 @@ After installation, start a new session unless the product documents live reload
 ### Claude Code CLI
 
 1. Use Claude Code's skill discovery or matching prompts to confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills are available at user scope.
-2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`, while a two-lane PR selects `review-coordinator` and retains its sequential fallback where subagents are unavailable.
+2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`; a two-lane PR enters through `review-pr`, loads `review-simplicity`, then hands off to `review-coordinator`; and the coordinator retains its sequential fallback where subagents are unavailable. Confirm only an explicit `review-coordinator` invocation enters the coordinator directly.
 3. Change a bundled reference, run `./setup.sh update --agent claude` when using copy mode, and verify the skill uses the updated reference.
 
 ### Codex app, CLI, and IDE extension
@@ -39,7 +39,7 @@ After installation, start a new session unless the product documents live reload
 ### GitHub Copilot CLI
 
 1. Use Copilot CLI's skill discovery or slash commands to confirm `review-pr`, `review-coordinator`, and the `review-*` specialist skills are available at user scope.
-2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`, while a two-lane PR selects `review-coordinator` and retains its sequential fallback where subagents are unavailable.
+2. Invoke each specialist directly on a matching prompt. Confirm an ordinary PR prompt remains with `review-pr`; a two-lane PR enters through `review-pr`, loads `review-simplicity`, then hands off to `review-coordinator`; and the coordinator retains its sequential fallback where subagents are unavailable. Confirm only an explicit `review-coordinator` invocation enters the coordinator directly.
 3. Ask Copilot to summarize one rule from the core personal instructions to confirm `~/.copilot/copilot-instructions.md` is loaded.
 
 ### Google Antigravity CLI (preview)

@@ -10,6 +10,11 @@
       "id": "implementation-correctness",
       "prompt": "Review this internal data transformation for correctness and test coverage.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across documentation accuracy, localization, and test quality.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

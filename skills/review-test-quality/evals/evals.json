@@ -10,6 +10,11 @@
       "id": "aria-semantics-audit",
       "prompt": "Audit this dialog for keyboard and screen-reader accessibility.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across UI test quality, security, and documentation.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

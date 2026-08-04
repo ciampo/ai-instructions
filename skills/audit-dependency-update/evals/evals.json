@@ -20,6 +20,11 @@
       "id": "publish-prepared-release",
       "prompt": "Publish the already prepared package release.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across dependency compatibility, security, and documentation.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

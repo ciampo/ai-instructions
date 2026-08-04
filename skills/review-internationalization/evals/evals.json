@@ -10,6 +10,11 @@
       "id": "security-boundary-review",
       "prompt": "Review this API route for authorization and input-validation risks.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across localization, security, and migration compatibility.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

@@ -10,6 +10,11 @@
       "id": "public-prop-ergonomics",
       "prompt": "Review these new exported component props for API design and type ergonomics.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across migration compatibility, authorization security, and test quality.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

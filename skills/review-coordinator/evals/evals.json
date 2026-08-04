@@ -12,6 +12,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "explicit-coordinator-invocation",
+      "prompt": "Use review-coordinator to continue this review from its pinned core result and completed simplicity handoff.",
+      "shouldTrigger": true
+    },
+    {
       "id": "ordinary-pr-review",
       "prompt": "Review this small pull request for correctness and test coverage.",
       "shouldTrigger": false

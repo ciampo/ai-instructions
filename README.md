@@ -34,7 +34,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [engineering-standards](skills/engineering-standards/SKILL.md) | implementation or code review | Routes to only the relevant accessibility, design-system, language, i18n, security, performance, naming, or error-handling reference |
 | [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
 | [automattic-github-enterprise](skills/automattic-github-enterprise/SKILL.md) | `github.a8c.com` or Automattic GitHub Enterprise access | Applies the approved macOS/POSIX route and avoids sandbox authentication false negatives |
-| [review-pr](skills/review-pr/SKILL.md) | "review this PR" | Structured, read-only PR review |
+| [review-pr](skills/review-pr/SKILL.md) | "review this PR"; panel, coordinated, or multi-lane PR review | Structured, read-only PR review and entry workflow |
 | [review-accessibility](skills/review-accessibility/SKILL.md) | accessibility, WCAG, ARIA, keyboard, focus, or screen-reader audit | Read-only, source-verified accessibility review |
 | [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or public-contract compatibility | Read-only, consumer-focused API review |
 | [review-compatibility](skills/review-compatibility/SKILL.md) | upgrade, migration, backward compatibility, persisted state, or wire format | Read-only, supported-state compatibility review |
@@ -44,7 +44,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [review-internationalization](skills/review-internationalization/SKILL.md) | i18n, localization, translation, locale, or RTL | Read-only, locale and translation review |
 | [review-documentation](skills/review-documentation/SKILL.md) | documentation, examples, JSDoc, comments, or developer experience | Read-only, source-verified documentation review |
 | [review-simplicity](skills/review-simplicity/SKILL.md) | every PR review; simplification, code removal, code bloat, duplication, or overengineering | Mandatory, read-only, deletion-first implementation review |
-| [review-coordinator](skills/review-coordinator/SKILL.md) | panel, subagent, coordinated, or multi-specialist PR review | One rechecked response from material specialist handoffs |
+| [review-coordinator](skills/review-coordinator/SKILL.md) | internal `review-pr` handoff or explicit `review-coordinator` invocation | One rechecked response from material specialist handoffs |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with the simplicity baseline and a no-subagent fallback |
 | [iterate-pr-review](skills/iterate-pr-review/SKILL.md) | repeated Copilot and self-review loop on an authored or explicitly owned PR | Bounded review iterations with an evidence-based recap |
 | [write-pr-description](skills/write-pr-description/SKILL.md) | "write/update PR description" | PR description writer following the repository template |

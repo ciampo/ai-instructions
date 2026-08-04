@@ -1,6 +1,6 @@
 ---
 name: review-internationalization
-description: Perform a read-only internationalization and localization review of user-facing text, translation behavior, locale-aware formatting, bidirectional layout, pluralization, or translator context. Use for i18n, l10n, translation, locale, RTL, date or number formatting, plural, or translatable UI review. Never edit source, commit, or write remotely.
+description: Perform a read-only internationalization and localization review of user-facing text, translation behavior, locale-aware formatting, bidirectional layout, pluralization, or translator context. Use for i18n, l10n, translation, locale, RTL, date or number formatting, plural, or translatable UI review. Do not use as a standalone general PR review; review-pr may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
 ---
 
 # Review Internationalization
