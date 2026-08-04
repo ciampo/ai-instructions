@@ -1,6 +1,6 @@
 ---
 name: review-coordinator
-description: Continue the internal second-stage synthesis for a loaded review-pr workflow. Receive its pinned snapshot, completed core result, and mandatory review-simplicity handoff; select materially relevant specialist investigations; and return one rechecked response. For panel or multi-lane reviews, load only after both review-pr and review-simplicity. Direct load is allowed only when the user explicitly names review-coordinator. Never edit source, commit, or write remotely.
+description: Continue the internal second-stage synthesis for a loaded review-pr workflow. Receive its pinned snapshot, completed core result, and mandatory review-simplicity handoff; select materially relevant specialist investigations; and return one rechecked response. For panel or multi-lane reviews, load after both review-pr and review-simplicity but before PR context. Direct load is allowed only when the user explicitly names review-coordinator. Never edit source, commit, or write remotely.
 ---
 
 # Review Coordinator
