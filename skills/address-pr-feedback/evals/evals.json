@@ -64,6 +64,18 @@
       ]
     },
     {
+      "id": "parent-gated-feedback-loop",
+      "prompt": "Address the accepted feedback as part of the active iterate-pr-review round.",
+      "context": "evals/fixtures/parent-gated-feedback-loop.md",
+      "expectedOutcome": "Verified fixes handed back to the parent iteration workflow without an early commit or push, so its required exact-commit evaluation runs before publication.",
+      "assertions": [
+        "The workflow accepts the parent iteration bundle as authority for the fix, verification, coherent commit, required model evaluation, and same-branch push without another task-authority question.",
+        "The feedback workflow applies and verifies the accepted fix, then returns it to iterate-pr-review without committing or pushing from its standalone publication step.",
+        "The parent workflow creates the coherent commit, runs the required model-backed evaluation for that exact commit, and pushes only after the evaluation passes; a failed or blocked evaluation prevents publication.",
+        "The workflow does not post replies or reviews, resolve threads, change pull-request metadata, mark ready, merge, release, or change another branch."
+      ]
+    },
+    {
       "id": "external-feedback-without-ownership",
       "prompt": "Address the valid feedback on this contributor's pull request.",
       "context": "evals/fixtures/external-feedback-without-ownership.md",

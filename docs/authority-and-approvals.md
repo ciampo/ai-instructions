@@ -26,7 +26,7 @@ a narrower limit:
 | Implement a change and open a draft pull request | Create the task branch, edit, verify, make coherent commits, push that branch, and create or update the authored draft pull request | Public comments or reviews, thread resolution, ready-for-review transitions, merge, release, and unrelated metadata |
 | Implement or update a change on an authored pull request, or address its feedback | Apply accepted fixes, verify them, make coherent commits, push the same task branch, and refresh the resulting head | Read-only inspection remains read-only; branch integration or history rewrites unless requested, posted replies, thread resolution, ready-for-review transitions, merge, and release |
 | Iterate an authored pull request | Request one Copilot review per exact head, consume its evidence, run the independent review, apply accepted fixes, verify, commit, push, and repeat within the configured round limit | Other reviewer mutations, posting the agent's own public review or replies, resolving threads, marking ready, merging, releasing, and unrelated pull-request changes |
-| Rebase an authored pull request, then iterate it | The iteration bundle plus one verified rebase and an exact `--force-with-lease` update of that pull request's branch | Plain `--force`, another branch, a history rewrite without the requested rebase, and every excluded iteration action |
+| Rebase an authored pull request, then iterate it | The iteration bundle plus one verified rebase and an update using `--force-with-lease=refs/heads/<TASK-BRANCH>:<RECORDED-REMOTE-HEAD>` | A bare lease, plain `--force`, another branch, a history rewrite without the requested rebase, and every excluded iteration action |
 
 For another author's pull request, remote fix actions require explicit ownership
 of its branch and fix-and-push loop. A request that explicitly prohibits commits,
@@ -34,6 +34,11 @@ pushes, or remote writes overrides the bundle. If an unchanged workflow is
 missing authority, ask one consolidated question before the first affected
 action and retain the answer while the repository, pull request, branch,
 destination, payload class, and round limit stay unchanged.
+
+When a workflow loads another workflow, preserve the stricter parent sequence.
+For example, `address-pr-feedback` returns verified fixes to
+`iterate-pr-review` when that parent must commit, evaluate the exact commit, and
+only then push it.
 
 ## Standing skill-evaluation authority
 
@@ -93,7 +98,7 @@ prove that the boundary works.
 | Accepted fixes, verification, commits, and pushes while addressing feedback on an authored or explicitly owned branch | Include in the feedback task; respect local-only or no-push limits | `address-pr-feedback` |
 | Accepted fixes, verification, commits, and pushes within the review-round limit | Include in the authored iteration bundle | `iterate-pr-review` |
 | Exact-head Copilot reviewer requests | Include one request per recorded head without another question; use the connector-first procedure and preserve CLI and authenticated UI fallbacks | `iterate-pr-review` |
-| Exact-lease history update after an explicitly requested rebase | Include only after patch-replay and remote-head verification | `repository-maintenance` and `iterate-pr-review` |
+| Exact-lease history update after an explicitly requested rebase | Include only after patch-replay and remote-head verification; bind the branch ref to the recorded head in `--force-with-lease=<ref>:<SHA>` | `repository-maintenance` and `iterate-pr-review` |
 | Public tracked skill-evaluation data sent to the OpenAI Codex service, including in-scope exact-head reruns | Record as narrow standing personal consent | Private user-level instructions or client settings |
 | Update the recorded authored draft pull request's Evaluation section with exact-head results | Include only when matching standing consent names that write and the active pull request, task branch, and head match | Personal consent, consumed by `write-pr-description` |
 | Read-only GitHub, CI, and Enterprise preflight commands | Task authority is already read-only; use a runtime allow rule only for a stable command shape | Private command rules or managed policy |

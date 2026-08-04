@@ -36,7 +36,7 @@ How AI agents should use GitHub access, `gh`, and `git`.
 ## Git
 
 - **[STRONG]** When the calling request authorizes commits, commit frequently during refactors and multi-step work to keep diffs reviewable. See `writing-conventions.md` (Commit Messages section) for message format.
-- **[RULE]** Use `--force-with-lease` for force pushes, never `--force`.
+- **[RULE]** For an authorized history rewrite, bind the lease to the verified remote branch and recorded head with `--force-with-lease=refs/heads/<TASK-BRANCH>:<RECORDED-REMOTE-HEAD>`. Never use a bare lease or plain `--force`.
 - **[PREFER]** Prefer `git rebase` for integrating upstream changes on feature branches.
 - **[RULE]** Open PRs as drafts. Convert to ready only when polished and verified.
 - **[PREFER]** Support stacked PRs: comfortable rebasing on top of other PRs.
