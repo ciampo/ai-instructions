@@ -10,6 +10,11 @@
       "id": "visual-copy-review",
       "prompt": "Review this button-label change for clarity and visual consistency.",
       "shouldTrigger": false
+    },
+    {
+      "id": "general-multi-lane-pr-review",
+      "prompt": "Review this pull request across authorization security, migration compatibility, and test quality.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [
