@@ -9,7 +9,7 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
 
 ## Ownership boundary
 
-- Before starting the read-only review, check whether the user explicitly owns another author's fix-and-push loop and requests iterative Copilot and self-review. If both are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
+- Before starting the read-only review, check whether the pull request is authored by the user or the user explicitly owns another author's fix-and-push loop. If either ownership condition and an iterative Copilot and self-review request are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
 
 ## Steps
 
