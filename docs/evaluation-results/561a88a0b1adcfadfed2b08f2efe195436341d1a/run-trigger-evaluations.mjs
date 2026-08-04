@@ -2,7 +2,12 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { promises as fs, realpathSync } from 'node:fs';
+import {
+	promises as fs,
+	realpathSync,
+	rmSync,
+	unlinkSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,9 +37,13 @@ const childEnvironmentKeys = [
 	'TMPDIR',
 	'ZDOTDIR',
 ];
+const modelShellEnvironmentKeys = childEnvironmentKeys.filter(
+	( key ) => key !== 'CODEX_HOME'
+);
 const temporaryRoots = [
 	...new Set( [ os.tmpdir(), realpathSync( os.tmpdir() ) ] ),
-];
+].sort( ( left, right ) => right.length - left.length );
+const sensitiveRoots = new Set();
 
 const scriptPath = fileURLToPath( import.meta.url );
 const repositoryRoot = path.resolve( path.dirname( scriptPath ), '../../..' );
@@ -52,7 +61,25 @@ if ( outputFlag === -1 || ! process.argv[ outputFlag + 1 ] ) {
 }
 
 const outputPath = path.resolve( process.argv[ outputFlag + 1 ] );
+const outputTemporaryPath = path.join(
+	path.dirname( outputPath ),
+	`.${ path.basename( outputPath ) }.${ process.pid }.tmp`
+);
 const codexExecutable = resolveExecutable( 'codex' );
+
+for ( const [ signal, exitCode ] of [
+	[ 'SIGHUP', 129 ],
+	[ 'SIGINT', 130 ],
+	[ 'SIGTERM', 143 ],
+] ) {
+	process.on( signal, () => {
+		for ( const root of sensitiveRoots ) {
+			rmSync( root, { recursive: true, force: true } );
+		}
+		rmSync( outputTemporaryPath, { force: true } );
+		process.exit( exitCode );
+	} );
+}
 
 function resolveExecutable( name ) {
 	const result = spawnSync( 'which', [ name ], { encoding: 'utf8' } );
@@ -274,30 +301,53 @@ async function createAttemptEnvironment( isolatedEnvironment, skillNames ) {
 	const root = await fs.mkdtemp(
 		path.join( os.tmpdir(), 'ai-instructions-evaluation-attempt-' )
 	);
-	const userHome = path.join( root, 'home' );
-	const installedRoot = path.join( userHome, '.agents', 'skills' );
-	const workspace = path.join( root, 'workspace' );
+	const sensitiveRoot = await fs.mkdtemp(
+		path.join( os.tmpdir(), 'ai-instructions-client-state-' )
+	);
+	sensitiveRoots.add( sensitiveRoot );
 
-	await fs.mkdir( installedRoot, { recursive: true } );
-	await fs.mkdir( workspace );
-	for ( const skill of skillNames ) {
-		await fs.symlink(
-			path.join( isolatedEnvironment.installedRoot, skill ),
-			path.join( installedRoot, skill ),
-			'dir'
-		);
+	try {
+		const userHome = path.join( root, 'home' );
+		const installedRoot = path.join( userHome, '.agents', 'skills' );
+		const workspace = path.join( root, 'workspace' );
+
+		await fs.mkdir( installedRoot, { recursive: true } );
+		await fs.mkdir( workspace );
+		for ( const skill of skillNames ) {
+			await fs.symlink(
+				path.join( isolatedEnvironment.installedRoot, skill ),
+				path.join( installedRoot, skill ),
+				'dir'
+			);
+		}
+
+		const installedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
+
+		if (
+			JSON.stringify( installedSkillNames ) !== JSON.stringify( skillNames )
+		) {
+			throw new Error( 'A per-attempt installed skill inventory is not exact.' );
+		}
+
+		const codexHome = await createIsolatedCodexHome( sensitiveRoot );
+		const shellConfiguration = await createShellConfiguration( root );
+
+		return {
+			codexHome,
+			root,
+			sensitiveRoot,
+			shellConfiguration,
+			userHome,
+			workspace,
+		};
+	} catch ( error ) {
+		await Promise.all( [
+			fs.rm( root, { recursive: true, force: true } ),
+			fs.rm( sensitiveRoot, { recursive: true, force: true } ),
+		] );
+		sensitiveRoots.delete( sensitiveRoot );
+		throw error;
 	}
-
-	const installedSkillNames = ( await fs.readdir( installedRoot ) ).sort();
-
-	if ( JSON.stringify( installedSkillNames ) !== JSON.stringify( skillNames ) ) {
-		throw new Error( 'A per-attempt installed skill inventory is not exact.' );
-	}
-
-	const codexHome = await createIsolatedCodexHome( root );
-	const shellConfiguration = await createShellConfiguration( root );
-
-	return { codexHome, root, shellConfiguration, userHome, workspace };
 }
 
 function createChildEnvironment(
@@ -318,6 +368,20 @@ function createChildEnvironment(
 		TMPDIR: temporaryDirectory,
 		ZDOTDIR: shellConfiguration,
 	};
+}
+
+function createModelShellEnvironment( childEnvironment ) {
+	return Object.fromEntries(
+		Object.entries( childEnvironment ).filter(
+			( [ key ] ) => key !== 'CODEX_HOME'
+		)
+	);
+}
+
+function formatTomlInlineTable( values ) {
+	return `{ ${ Object.entries( values )
+		.map( ( [ key, value ] ) => `${ key } = ${ JSON.stringify( value ) }` )
+		.join( ', ' ) } }`;
 }
 
 function sanitize( value ) {
@@ -371,6 +435,24 @@ function verifyClassifier() {
 			);
 		}
 	}
+
+	const frontmatter = '---\nname: target\ndescription: Test\n---\n';
+	const command = '/bin/zsh -lc "sed -n 1,40p /tmp/skills/target/SKILL.md"';
+	const detectorChecks = [
+		[ command, frontmatter, 0, [ 'target' ] ],
+		[ command, frontmatter, 1, [] ],
+		[ command, 'name: target\n', 0, [] ],
+		[ '/bin/zsh -lc "pwd"', frontmatter, 0, [] ],
+	];
+
+	for ( const [ detectorCommand, output, exitCode, expected ] of detectorChecks ) {
+		const actual = loadedSkillNames( detectorCommand, output, exitCode );
+		if ( JSON.stringify( actual ) !== JSON.stringify( expected ) ) {
+			throw new Error(
+				`Skill detector self-check failed: expected ${ expected }, received ${ actual }.`
+			);
+		}
+	}
 }
 
 async function verifyEnvironmentContract() {
@@ -389,12 +471,24 @@ async function verifyEnvironmentContract() {
 			shellConfiguration
 		);
 		const actualKeys = Object.keys( environment ).sort();
+		const modelShellEnvironment = createModelShellEnvironment( environment );
+		const actualModelShellKeys = Object.keys( modelShellEnvironment ).sort();
 
 		if (
 			JSON.stringify( actualKeys ) !==
 			JSON.stringify( childEnvironmentKeys )
 		) {
 			throw new Error( 'Environment self-check failed: unexpected variables.' );
+		}
+
+		if (
+			JSON.stringify( actualModelShellKeys ) !==
+			JSON.stringify( modelShellEnvironmentKeys ) ||
+			'CODEX_HOME' in modelShellEnvironment
+		) {
+			throw new Error(
+				'Environment self-check failed: model shell can locate client state.'
+			);
 		}
 
 		if (
@@ -407,7 +501,7 @@ async function verifyEnvironmentContract() {
 		const loginShell = spawnSync(
 			'/bin/zsh',
 			[ '-lc', 'printf %s "$PATH"' ],
-			{ encoding: 'utf8', env: environment }
+			{ encoding: 'utf8', env: modelShellEnvironment }
 		);
 
 		if ( loginShell.status !== 0 || loginShell.stdout !== isolatedPath ) {
@@ -450,14 +544,27 @@ function signalProcessGroup( processGroupId, signal ) {
 async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) {
 	const { codexHome, shellConfiguration, userHome, workspace } =
 		attemptEnvironment;
+	const clientEnvironment = createChildEnvironment(
+		userHome,
+		codexHome,
+		workspace,
+		shellConfiguration
+	);
+	const modelShellEnvironment = createModelShellEnvironment( clientEnvironment );
+	const authenticationPath = path.join( codexHome, 'auth.json' );
 	const startedAt = Date.now();
 	const observedSkills = [];
 	const skillLoadEvents = [];
+	const commandEvents = [];
 	const messages = [];
+	const stdoutHash = createHash( 'sha256' );
 	const stderrHash = createHash( 'sha256' );
 	let completed = false;
 	let timedOut = false;
 	let intentionallyStopped = false;
+	let authenticationRemoved = false;
+	let authenticationBoundaryFailed = false;
+	let stdoutBytes = 0;
 	let stderrBytes = 0;
 	let stderrCharacters = 0;
 	let stderrPreview = '';
@@ -503,6 +610,12 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		`model_reasoning_effort="${ reasoningEffort }"`,
 		'-c',
 		`service_tier="${ serviceTier }"`,
+		'-c',
+		'shell_environment_policy.inherit="none"',
+		'-c',
+		`shell_environment_policy.set=${ formatTomlInlineTable(
+			modelShellEnvironment
+		) }`,
 		'-C',
 		workspace,
 		testCase.prompt,
@@ -511,12 +624,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	const child = spawn( codexExecutable, args, {
 		cwd: workspace,
 		detached: true,
-		env: createChildEnvironment(
-			userHome,
-			codexHome,
-			workspace,
-			shellConfiguration
-		),
+		env: clientEnvironment,
 		stdio: [ 'ignore', 'pipe', 'pipe' ],
 	} );
 
@@ -526,6 +634,25 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			await new Promise( ( resolve ) => setTimeout( resolve, 2_000 ) );
 			signalProcessGroup( child.pid, 'SIGKILL' );
 		} )();
+	}
+
+	function removeAuthenticationCopy() {
+		if ( authenticationRemoved ) {
+			return;
+		}
+
+		try {
+			unlinkSync( authenticationPath );
+			authenticationRemoved = true;
+		} catch ( error ) {
+			if ( error.code === 'ENOENT' ) {
+				authenticationRemoved = true;
+				return;
+			}
+
+			authenticationBoundaryFailed = true;
+			requestStop();
+		}
 	}
 
 	function inspectLine( line ) {
@@ -539,6 +666,9 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		} catch {
 			return;
 		}
+
+		const authenticationRemovedBeforeEvent = authenticationRemoved;
+		removeAuthenticationCopy();
 
 		if ( event.type === 'turn.completed' ) {
 			completed = true;
@@ -555,20 +685,36 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			event.type === 'item.completed' &&
 			event.item?.type === 'command_execution'
 		) {
-			for ( const skill of loadedSkillNames(
+			if ( ! authenticationRemovedBeforeEvent ) {
+				authenticationBoundaryFailed = true;
+				requestStop();
+				return;
+			}
+
+			const eventLoadedSkills = loadedSkillNames(
 				event.item.command,
 				event.item.aggregated_output,
 				event.item.exit_code
-			) ) {
+			);
+			const outputSha256 = createHash( 'sha256' )
+				.update( event.item.aggregated_output )
+				.digest( 'hex' );
+
+			commandEvents.push( {
+				command: sanitize( event.item.command ),
+				exitCode: event.item.exit_code,
+				outputSha256,
+				loadedSkills: eventLoadedSkills,
+			} );
+
+			for ( const skill of eventLoadedSkills ) {
 				if ( ! observedSkills.includes( skill ) ) {
 					observedSkills.push( skill );
 					skillLoadEvents.push( {
 						skill,
 						command: sanitize( event.item.command ),
 						exitCode: event.item.exit_code,
-						outputSha256: createHash( 'sha256' )
-							.update( event.item.aggregated_output )
-							.digest( 'hex' ),
+						outputSha256,
 					} );
 				}
 			}
@@ -585,6 +731,8 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 
 	child.stdout.setEncoding( 'utf8' );
 	child.stdout.on( 'data', ( chunk ) => {
+		stdoutHash.update( chunk );
+		stdoutBytes += Buffer.byteLength( chunk );
 		stdoutBuffer += chunk;
 		const lines = stdoutBuffer.split( '\n' );
 		stdoutBuffer = lines.pop();
@@ -620,7 +768,9 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		inspectLine( stdoutBuffer );
 	}
 
-	const status = classifyAttempt( testCase, observedSkills, completed );
+	const status = authenticationBoundaryFailed
+		? 'blocked'
+		: classifyAttempt( testCase, observedSkills, completed );
 
 	return {
 		ordinal,
@@ -635,7 +785,16 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 		signal: close.signal,
 		durationMs: Date.now() - startedAt,
 		messages,
+		commandEvents,
 		skillLoadEvents,
+		authentication: {
+			removedBeforeCommands:
+				authenticationRemoved && ! authenticationBoundaryFailed,
+		},
+		stdout: {
+			bytes: stdoutBytes,
+			sha256: stdoutHash.digest( 'hex' ),
+		},
 		stderr: {
 			bytes: stderrBytes,
 			sha256: stderrHash.digest( 'hex' ),
@@ -665,10 +824,17 @@ async function runAttempt(
 			attemptEnvironment
 		);
 	} finally {
-		await fs.rm( attemptEnvironment.root, {
-			recursive: true,
-			force: true,
-		} );
+		await Promise.all( [
+			fs.rm( attemptEnvironment.root, {
+				recursive: true,
+				force: true,
+			} ),
+			fs.rm( attemptEnvironment.sensitiveRoot, {
+				recursive: true,
+				force: true,
+			} ),
+		] );
+		sensitiveRoots.delete( attemptEnvironment.sensitiveRoot );
 	}
 }
 
@@ -676,7 +842,10 @@ let outputWrite = Promise.resolve();
 
 function writeOutput( campaign ) {
 	const snapshot = `${ JSON.stringify( campaign, null, 2 ) }\n`;
-	outputWrite = outputWrite.then( () => fs.writeFile( outputPath, snapshot ) );
+	outputWrite = outputWrite.then( async () => {
+		await fs.writeFile( outputTemporaryPath, snapshot );
+		await fs.rename( outputTemporaryPath, outputPath );
+	} );
 	return outputWrite;
 }
 
@@ -700,7 +869,7 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 4,
+		schemaVersion: 5,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
@@ -726,10 +895,13 @@ try {
 			concurrency,
 			timeoutSeconds: timeoutMs / 1000,
 			workspace: 'Fresh outside-repository temporary directory for every attempt.',
-			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store with a private authentication copy. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A private authentication copy initialized the client, then was removed before any retained command event; model shell policy omitted CODEX_HOME. Login-shell profiles reset PATH to the recorded system-only value. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
 			environmentVariables: childEnvironmentKeys,
+			modelShellEnvironmentVariables: modelShellEnvironmentKeys,
 			path: isolatedPath,
 			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin; the preflight executes /bin/zsh -lc and requires the recorded value.',
+			authentication: 'Private client state used a separate temporary root with interruption cleanup. The auth copy was removed on the first client event, before command execution, and CODEX_HOME was excluded from model shell environments.',
+			commandEvidence: 'Every completed command retained its sanitized command, exit code, loaded-skill classification, and full-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
 			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
 			positiveStop: 'Stop after the target skill loads.',
 			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
@@ -768,5 +940,8 @@ try {
 	await writeOutput( campaign );
 } finally {
 	spawnSync( 'chmod', [ '-R', 'u+w', isolatedEnvironment.root ] );
-	await fs.rm( isolatedEnvironment.root, { recursive: true, force: true } );
+	await Promise.all( [
+		fs.rm( isolatedEnvironment.root, { recursive: true, force: true } ),
+		fs.rm( outputTemporaryPath, { force: true } ),
+	] );
 }
