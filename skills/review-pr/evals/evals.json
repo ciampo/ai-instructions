@@ -78,14 +78,25 @@
       ]
     },
     {
-      "id": "severity-normalization",
-      "prompt": "Review this self-contained authorization and persisted-state change, then apply the shared severity contract to the confirmed findings.",
-      "context": "evals/fixtures/coordinator-handoff-routing.md",
-      "expectedOutcome": "A deduplicated review whose severities follow the evidence-based contract rather than the discovery path.",
+      "id": "direct-authorization-severity-normalization",
+      "prompt": "Review this self-contained authorization change and apply the shared severity contract to the confirmed finding.",
+      "context": "evals/fixtures/direct-authorization-severity.md",
+      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
       "assertions": [
+        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
         "The reachable cross-account deletion is reported as [critical].",
+        "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
+      ]
+    },
+    {
+      "id": "direct-persisted-state-severity-normalization",
+      "prompt": "Review this self-contained supported-upgrade change and apply the shared severity contract to the confirmed finding.",
+      "context": "evals/fixtures/direct-persisted-state-severity.md",
+      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
+      "assertions": [
+        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
         "The supported-upgrade persisted-state regression is reported as [major].",
-        "The final severities are normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
+        "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
       ]
     },
     {
