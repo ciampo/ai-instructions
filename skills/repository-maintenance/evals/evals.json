@@ -54,6 +54,17 @@
         "The title does not invent issue details that are absent from the supplied context.",
         "The response contains only the title."
       ]
+    },
+    {
+      "id": "github-task-title-context-insufficient",
+      "prompt": "Using the supplied context, choose the task title when neither canonical GitHub metadata nor additional verified task context is available. Return only the title.",
+      "context": "evals/fixtures/github-task-title-context-insufficient.md",
+      "expectedOutcome": "The existing anchored title remains unchanged because there is not enough verified context to replace it safely.",
+      "assertions": [
+        "The response preserves the complete current title without changing its reference or subject.",
+        "The response does not invent a new pull-request subject from the number alone.",
+        "The response contains only the title."
+      ]
     }
   ]
 }
