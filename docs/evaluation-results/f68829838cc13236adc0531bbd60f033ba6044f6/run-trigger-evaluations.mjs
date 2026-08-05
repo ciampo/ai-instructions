@@ -683,7 +683,7 @@ function pathVariants( root ) {
 function replacePathRoot( value, root, replacement ) {
 	return value.replace(
 		new RegExp(
-			`(^|[\\s'"=(,:])${ escapeRegExp( root ) }(?=\\/|$|[\\s'")},:])`,
+			`(^|[\\s'"\\x60=(,:])${ escapeRegExp( root ) }(?=\\/|$|[\\s'"\\x60)},:])`,
 			'g'
 		),
 		( _match, prefix ) => `${ prefix }${ replacement }`
@@ -763,6 +763,18 @@ function verifyClassifier() {
 		[ 'sed -n SKILL.md README.md', frontmatter, 0, [] ],
 		[ 'sed -f SKILL.md README.md', frontmatter, 0, [] ],
 		[ 'nl -s SKILL.md README.md', frontmatter, 0, [] ],
+		[
+			'for f in /tmp/skills/target/SKILL.md; do\n/bin/cat "$f"\ndone',
+			frontmatter,
+			0,
+			[ 'target' ],
+		],
+		[
+			'for f in /tmp/README.md; do\n/bin/cat "$f"\ndone',
+			frontmatter,
+			0,
+			[],
+		],
 		[ '/bin/zsh -lc "cat SKILL.md.bak"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat NOTSKILL.md"', frontmatter, 0, [] ],
 	];
@@ -782,7 +794,9 @@ function verifyClassifier() {
 	] ) {
 		if (
 			sanitize( temporaryRoot ) !== '[temporary]' ||
-			sanitize( path.join( temporaryRoot, 'child' ) ) !== '[temporary]/child'
+			sanitize( path.join( temporaryRoot, 'child' ) ) !== '[temporary]/child' ||
+			sanitize( `\`${ path.join( temporaryRoot, 'child' ) }\`` ) !==
+				'`[temporary]/child`'
 		) {
 			throw new Error( 'Temporary-root sanitizer self-check failed.' );
 		}
@@ -879,8 +893,11 @@ function loadedSkillNames( command, aggregatedOutput ) {
 		/^(?:\/[^\s'"]+\/)?(?:zsh|bash|sh)\s+-(?:lc|c)\s+(['"])([\s\S]*)\1$/
 	);
 	const shellScript = shellInvocation?.[ 2 ] ?? normalizedCommand;
-	const readsSkillFile = shellCommandSegments( shellScript ).some(
-		( words ) => supportedReadOperands( words ).some( isSkillPath )
+	const commandSegments = shellCommandSegments( shellScript );
+	const loopVariables = shellLoopVariables( commandSegments );
+	const readsSkillFile = commandSegments.some(
+		( words ) =>
+			supportedReadOperands( words, loopVariables ).some( isSkillPath )
 	);
 
 	if ( ! readsSkillFile ) {
@@ -987,9 +1004,12 @@ function shellCommandSegments( shellScript ) {
 	return segments;
 }
 
-function supportedReadOperands( words ) {
+function supportedReadOperands( words, loopVariables ) {
 	let commandIndex = 0;
 	if ( words[ commandIndex ] === 'command' ) {
+		commandIndex++;
+	}
+	while ( [ 'do', 'then', 'else' ].includes( words[ commandIndex ] ) ) {
 		commandIndex++;
 	}
 	const executable = path.basename( words[ commandIndex ] ?? '' );
@@ -1005,21 +1025,24 @@ function supportedReadOperands( words ) {
 	);
 
 	if ( executable === 'cat' ) {
-		return fileOperands( args );
+		return expandLoopOperands( fileOperands( args ), loopVariables );
 	}
 	if ( executable === 'nl' ) {
-		return fileOperands( args, new Set( [
-			'-b',
-			'-d',
-			'-f',
-			'-h',
-			'-i',
-			'-l',
-			'-n',
-			'-s',
-			'-v',
-			'-w',
-		] ) );
+		return expandLoopOperands(
+			fileOperands( args, new Set( [
+				'-b',
+				'-d',
+				'-f',
+				'-h',
+				'-i',
+				'-l',
+				'-n',
+				'-s',
+				'-v',
+				'-w',
+			] ) ),
+			loopVariables
+		);
 	}
 
 	const operands = [];
@@ -1056,7 +1079,33 @@ function supportedReadOperands( words ) {
 		operands.push( argument );
 	}
 
-	return operands;
+	return expandLoopOperands( operands, loopVariables );
+}
+
+function shellLoopVariables( commandSegments ) {
+	const variables = new Map();
+
+	for ( const words of commandSegments ) {
+		if (
+			words[ 0 ] === 'for' &&
+			/^[A-Za-z_][A-Za-z0-9_]*$/.test( words[ 1 ] ?? '' ) &&
+			words[ 2 ] === 'in'
+		) {
+			variables.set( words[ 1 ], words.slice( 3 ) );
+		}
+	}
+
+	return variables;
+}
+
+function expandLoopOperands( operands, loopVariables = new Map() ) {
+	return operands.flatMap( ( operand ) => {
+		const variable = operand.match(
+			/^\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))$/
+		);
+		const values = loopVariables.get( variable?.[ 1 ] ?? variable?.[ 2 ] );
+		return values ?? [ operand ];
+	} );
 }
 
 function fileOperands( args, optionsWithValues = new Set() ) {
@@ -1262,33 +1311,35 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 			! matchesBoundaryCommand( proof.command, probeCommand )
 		) {
 			throw new Error(
-				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, command exit ${ proof?.exit_code ?? 'missing' }, output ${ JSON.stringify( sanitize( proof?.aggregated_output ?? '' ) ) }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
+				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, command exit ${ proof?.exit_code ?? 'missing' }, output ${ JSON.stringify( sanitize( proof?.aggregated_output ?? '' ) ) }, retained stderr ${ createHash( 'sha256' ).update( sanitize( stderr ) ).digest( 'hex' ) }).`
 			);
 		}
+		const retainedCommand = sanitize( proof.command );
+		const retainedOutput = sanitize( proof.aggregated_output );
+		const retainedProbeScript = sanitize( probeScript );
+		const retainedStdout = sanitize( stdout );
+		const retainedStderr = sanitize( stderr );
 
 		return {
 			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained command that invokes a fixed hashed no-content probe script. Client-root, parent-root, source-authentication, and /Applications reads were denied; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
 			status: 'pass',
-			command: sanitize( proof.command ),
-			output: sanitize( proof.aggregated_output ),
-			probeScript: sanitize( probeScript ),
-			probeScriptSha256: createHash( 'sha256' )
-				.update( probeScript )
-				.digest( 'hex' ),
+			command: retainedCommand,
+			output: retainedOutput,
+			probeScript: retainedProbeScript,
 			retainedProbeScriptSha256: createHash( 'sha256' )
-				.update( sanitize( probeScript ) )
+				.update( retainedProbeScript )
 				.digest( 'hex' ),
-			commandSha256: createHash( 'sha256' )
-				.update( proof.command )
+			retainedCommandSha256: createHash( 'sha256' )
+				.update( retainedCommand )
 				.digest( 'hex' ),
-			outputSha256: createHash( 'sha256' )
-				.update( proof.aggregated_output )
+			retainedOutputSha256: createHash( 'sha256' )
+				.update( retainedOutput )
 				.digest( 'hex' ),
-			stdoutSha256: createHash( 'sha256' )
-				.update( stdout )
+			retainedStdoutSha256: createHash( 'sha256' )
+				.update( retainedStdout )
 				.digest( 'hex' ),
-			stderrSha256: createHash( 'sha256' )
-				.update( stderr )
+			retainedStderrSha256: createHash( 'sha256' )
+				.update( retainedStderr )
 				.digest( 'hex' ),
 		};
 	} finally {
@@ -1332,15 +1383,11 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	const skillLoadEvents = [];
 	const commandEvents = [];
 	const messages = [];
-	const stdoutHash = createHash( 'sha256' );
-	const stderrHash = createHash( 'sha256' );
 	let completed = false;
 	let timedOut = false;
 	let intentionallyStopped = false;
-	let stdoutBytes = 0;
-	let stderrBytes = 0;
-	let stderrCharacters = 0;
-	let stderrPreview = '';
+	let stdout = '';
+	let stderr = '';
 	let stdoutBuffer = '';
 	let stopPromise;
 	let forceKill;
@@ -1407,19 +1454,16 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 				event.item.command,
 				event.item.aggregated_output
 			);
-			const outputSha256 = createHash( 'sha256' )
-				.update( event.item.aggregated_output )
-				.digest( 'hex' );
 			const retainedOutput = sanitize( event.item.aggregated_output );
+			const retainedOutputSha256 = createHash( 'sha256' )
+				.update( retainedOutput )
+				.digest( 'hex' );
 
 			commandEvents.push( {
 				command: sanitize( event.item.command ),
 				exitCode: event.item.exit_code,
 				output: retainedOutput,
-				outputSha256,
-				retainedOutputSha256: createHash( 'sha256' )
-					.update( retainedOutput )
-					.digest( 'hex' ),
+				retainedOutputSha256,
 				loadedSkills: eventLoadedSkills,
 			} );
 
@@ -1430,7 +1474,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 						skill,
 						command: sanitize( event.item.command ),
 						exitCode: event.item.exit_code,
-						outputSha256,
+						retainedOutputSha256,
 					} );
 				}
 			}
@@ -1447,8 +1491,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 
 	child.stdout.setEncoding( 'utf8' );
 	child.stdout.on( 'data', ( chunk ) => {
-		stdoutHash.update( chunk );
-		stdoutBytes += Buffer.byteLength( chunk );
+		stdout += chunk;
 		stdoutBuffer += chunk;
 		const lines = stdoutBuffer.split( '\n' );
 		stdoutBuffer = lines.pop();
@@ -1458,14 +1501,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	} );
 	child.stderr.setEncoding( 'utf8' );
 	child.stderr.on( 'data', ( chunk ) => {
-		stderrHash.update( chunk );
-		stderrBytes += Buffer.byteLength( chunk );
-		stderrCharacters += chunk.length;
-		const remainingCharacters = stderrPreviewLimit - stderrPreview.length;
-
-		if ( remainingCharacters > 0 ) {
-			stderrPreview += chunk.slice( 0, remainingCharacters );
-		}
+		stderr += chunk;
 	} );
 
 	const timeout = setTimeout( () => {
@@ -1493,6 +1529,8 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	}
 
 	const status = classifyAttempt( testCase, observedSkills, completed );
+	const retainedStdout = sanitize( stdout );
+	const retainedStderr = sanitize( stderr );
 
 	return {
 		ordinal,
@@ -1515,14 +1553,18 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 			hostHomeDeniedToModel: true,
 		},
 		stdout: {
-			bytes: stdoutBytes,
-			sha256: stdoutHash.digest( 'hex' ),
+			retainedBytes: Buffer.byteLength( retainedStdout ),
+			retainedSha256: createHash( 'sha256' )
+				.update( retainedStdout )
+				.digest( 'hex' ),
 		},
 		stderr: {
-			bytes: stderrBytes,
-			sha256: stderrHash.digest( 'hex' ),
-			preview: sanitize( stderrPreview ),
-			truncated: stderrCharacters > stderrPreview.length,
+			retainedBytes: Buffer.byteLength( retainedStderr ),
+			retainedSha256: createHash( 'sha256' )
+				.update( retainedStderr )
+				.digest( 'hex' ),
+			preview: retainedStderr.slice( 0, stderrPreviewLimit ),
+			truncated: retainedStderr.length > stderrPreviewLimit,
 		},
 	};
 }
@@ -1602,7 +1644,7 @@ try {
 		isolatedEnvironment.installedRoot
 	);
 	const campaign = {
-		schemaVersion: 9,
+		schemaVersion: 10,
 		repositoryRevision: targetRevision,
 		fixtureRevision: targetRevision,
 		runner: {
@@ -1638,9 +1680,9 @@ try {
 			path: isolatedPath,
 			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin. The exact Codex exec preflight requires the effective command PATH and other key isolated environment values.',
 			authentication: 'Credential-bearing client state used a separate temporary root with interruption cleanup. Static and exact Codex exec checks proved that client-root, parent-root, and source-auth canaries were unreadable. Codex per-command argument scratch remained readable by design, and the exact preflight proved CODEX_HOME was absent from the effective model command.',
-			commandEvidence: 'Every completed command retained its sanitized command, output, exit code, loaded-skill classification, original full-output SHA-256, and retained-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
+			commandEvidence: 'Every completed command retained its sanitized command, output, exit code, loaded-skill classification, and retained-output SHA-256. Every attempt retained SHA-256 digests only after sanitizing its full stdout and stderr streams. No pre-sanitization digest is public.',
 			interruption: 'SIGHUP, SIGINT, and SIGTERM stop active detached process groups, await active attempts, remove private and non-private temporary roots, and preserve the last atomically written evidence snapshot. Per-attempt stops schedule a two-second forced-kill fallback and cancel it when the child closes.',
-			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
+			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and a SHA-256 digest of the sanitized full stream.`,
 			positiveStop: 'Stop after the target skill loads.',
 			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
 			classification: 'Positive cases pass when the target loads and fail when a completed turn omits it. Negative cases fail when the target loads and pass only on completion without it. Incomplete attempts are blocked.',
