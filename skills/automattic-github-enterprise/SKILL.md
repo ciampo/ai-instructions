@@ -25,6 +25,7 @@ The two probes below are harmless read-only checks. When the host can execute co
    ```
 
 4. If the identity probe succeeds, apply both environment variables directly to each intended `gh` invocation. Continue to honor the user's authority boundary for any mutating command.
+5. In the result, state that this command and its outcome apply only to the configured macOS/POSIX environment. Do not prescribe the route for Windows, PowerShell, or another unconfigured environment.
 
 ## Diagnosis boundaries
 
