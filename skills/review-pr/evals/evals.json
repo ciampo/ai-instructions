@@ -65,6 +65,7 @@
       "expectedOutcome": "One read-only review that keeps review-pr responsible for the ordinary direct-specialist path and final delivery.",
       "assertions": [
         "The response is a single synthesized review, not a separate specialist artifact.",
+        "The review accepts the supplied complete immutable fixture as its evidence route and does not attempt remote lookup.",
         "The review keeps this one-lane case on the ordinary review-pr delivery path because the mandatory simplicity pass does not trigger coordinator escalation.",
         "It treats the behavioral test gap as a test-quality concern without claiming unobserved browser behavior."
       ]
@@ -114,6 +115,7 @@
       "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
       "assertions": [
         "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
+        "The review accepts the supplied complete immutable fixture as its evidence route and does not attempt remote lookup.",
         "The reachable cross-account deletion is reported as [critical].",
         "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
       ]
@@ -138,6 +140,17 @@
         "The workflow returns one synthesized review directly in chat.",
         "The main workflow and its internal specialist handoffs do not create or open local review documents.",
         "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ]
+    },
+    {
+      "id": "unavailable-pr-snapshot-stop",
+      "prompt": "Review the referenced pull request and return copy-pasteable findings.",
+      "context": "evals/fixtures/unavailable-pr-snapshot.md",
+      "expectedOutcome": "A bounded stop that requests a complete immutable snapshot after the available evidence routes fail their capability check.",
+      "assertions": [
+        "The review treats the supplied capability facts as complete and does not claim that it inspected the pull request.",
+        "It stops and requests a complete immutable snapshot containing the repository, base revision, head revision, diff, and needed source.",
+        "It does not enumerate unrelated local files, try unauthenticated web clients, or retry alternate network routes."
       ]
     },
     {
