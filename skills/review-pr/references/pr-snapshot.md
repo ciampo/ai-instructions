@@ -2,6 +2,8 @@
 
 Use this procedure before a remote PR review, self-review, or feedback pass. It pins repository state, discussion, and source inspection to one PR base and head.
 
+Before collecting the snapshot, verify one usable evidence route: a supplied complete immutable snapshot, an exact local checkout, or an authenticated supported pull-request read interface. A self-contained fixture that explicitly declares itself the complete immutable boundary is a supplied snapshot; use it without remote lookup. If no route can provide the canonical repository, base revision, head revision, and review evidence, stop after that capability check and request the missing snapshot. Do not enumerate unrelated local files, try unauthenticated web clients, or retry alternate network routes.
+
 1. **Pin the boundary.** Record the canonical repository, base revision, and head revision. Do not infer them from the current local branch or another mutable ref.
 2. **Inspect the PR.** Establish the changed-file scope, then inspect the exact merge-base diff and full source for every changed file.
 3. **Add only needed remote state.** Use narrow reads and fetch merged discussion or resolved thread state only when it affects the review.

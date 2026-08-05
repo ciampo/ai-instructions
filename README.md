@@ -70,7 +70,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
 - **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
 - **Specialist execution**: Reusable review methods live in skills. The coordinator can use host-provided subagents for independent, material lanes and has a sequential fallback; add a custom agent only when it demonstrates value beyond that workflow.
-- **Skill evaluation**: New or materially changed skills use versioned trigger and output fixtures; see the [evaluation guide](docs/skill-evaluations.md).
+- **Skill evaluation**: New or materially changed skills use versioned trigger and output fixtures; see the [evaluation guide](docs/skill-evaluations.md) and [results ledger](docs/skill-evaluation-results.md).
 
 ## Setup
 
