@@ -630,62 +630,64 @@ async function verifySandboxReadBoundary() {
 }
 
 function sanitize( value ) {
-	let sanitized = value.replaceAll(
-		sourceAuthPath,
-		'[source-client-home]/auth.json'
-	);
-	if ( sourceCodexHome !== path.parse( sourceCodexHome ).root ) {
-		sanitized = sanitized
-			.replaceAll(
-				`${ sourceCodexHome }${ path.sep }`,
-				'[source-client-home]/'
-			)
-			.replaceAll( sourceCodexHome, '[source-client-home]' );
+	const pathReplacements = [
+		[ sourceAuthPath, '[source-client-home]/auth.json' ],
+		[ sourceCodexHome, '[source-client-home]' ],
+		[ repositoryRoot, '[repository]' ],
+		[ os.homedir(), '[home]' ],
+		...[ ...clientHomeRoots ].map( ( root ) => [ root, '[client-home]' ] ),
+		...[ ...sensitiveRoots ].map( ( root ) => [ root, '[client-state]' ] ),
+		...restrictedTemporaryRoots.map( ( root ) => [ root, '[temporary]' ] ),
+		...conventionalTemporaryRoots.map( ( root ) => [ root, '[temporary]' ] ),
+	]
+		.flatMap( ( [ root, replacement ] ) =>
+			pathVariants( root ).map( ( variant ) => [ variant, replacement ] )
+		)
+		.filter(
+			( [ root ] ) => root && root !== path.parse( root ).root
+		)
+		.sort( ( [ left ], [ right ] ) => right.length - left.length );
+	let sanitized = value;
+
+	for ( const [ root, replacement ] of pathReplacements ) {
+		sanitized = replacePathRoot( sanitized, root, replacement );
 	}
+
 	sanitized = sanitized
-		.replaceAll( repositoryRoot, '[repository]' )
-		.replaceAll( os.homedir(), '[home]' )
 		.replace( /\bCODEX_THREAD_ID=[^\s]+/g, 'CODEX_THREAD_ID=[thread]' )
 		.replace(
 			/(\b(?:no thread with id|thread id|thread_id)["']?\s*[:=]\s*["']?)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(["']?)/gi,
 			'$1[thread]$2'
 		);
-
-	for ( const clientHomeRoot of [ ...clientHomeRoots ].sort(
-		( left, right ) => right.length - left.length
-	) ) {
-		sanitized = sanitized
-			.replaceAll( `${ clientHomeRoot }${ path.sep }`, '[client-home]/' )
-			.replaceAll( clientHomeRoot, '[client-home]' );
-	}
-	for ( const sensitiveRoot of [ ...sensitiveRoots ].sort(
-		( left, right ) => right.length - left.length
-	) ) {
-		sanitized = sanitized
-			.replaceAll( `${ sensitiveRoot }${ path.sep }`, '[client-state]/' )
-			.replaceAll( sensitiveRoot, '[client-state]' );
-	}
-	for ( const temporaryRoot of restrictedTemporaryRoots ) {
-		sanitized = sanitized.replaceAll(
-			`${ temporaryRoot }${ path.sep }`,
-			'[temporary]/'
-		);
-		sanitized = sanitized.replaceAll( temporaryRoot, '[temporary]' );
-	}
-	for ( const temporaryRoot of conventionalTemporaryRoots ) {
-		sanitized = sanitized.replace(
-			new RegExp(
-				`(^|[\\s'"=(])${ escapeRegExp( temporaryRoot ) }(?=\\/|$|[\\s'")])`,
-				'g'
-			),
-			'$1[temporary]'
-		);
-	}
 	for ( const [ value, replacement ] of hostIdentityReplacements ) {
 		sanitized = sanitized.replaceAll( value, replacement );
 	}
 
 	return sanitized;
+}
+
+function pathVariants( root ) {
+	const variants = new Set( [ root ] );
+
+	try {
+		variants.add( realpathSync( root ) );
+	} catch ( error ) {
+		if ( error.code !== 'ENOENT' ) {
+			throw error;
+		}
+	}
+
+	return [ ...variants ];
+}
+
+function replacePathRoot( value, root, replacement ) {
+	return value.replace(
+		new RegExp(
+			`(^|[\\s'"=(,:])${ escapeRegExp( root ) }(?=\\/|$|[\\s'")},:])`,
+			'g'
+		),
+		( _match, prefix ) => `${ prefix }${ replacement }`
+	);
 }
 
 function escapeRegExp( value ) {
@@ -756,6 +758,11 @@ function verifyClassifier() {
 		[ '/bin/zsh -lc "pwd"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "echo SKILL.md"', frontmatter, 0, [] ],
 		[ 'printf "cat SKILL.md"', frontmatter, 0, [] ],
+		[ 'cat README.md # SKILL.md', frontmatter, 0, [] ],
+		[ 'cat README.md > SKILL.md', frontmatter, 0, [] ],
+		[ 'sed -n SKILL.md README.md', frontmatter, 0, [] ],
+		[ 'sed -f SKILL.md README.md', frontmatter, 0, [] ],
+		[ 'nl -s SKILL.md README.md', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat SKILL.md.bak"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat NOTSKILL.md"', frontmatter, 0, [] ],
 	];
@@ -872,17 +879,9 @@ function loadedSkillNames( command, aggregatedOutput ) {
 		/^(?:\/[^\s'"]+\/)?(?:zsh|bash|sh)\s+-(?:lc|c)\s+(['"])([\s\S]*)\1$/
 	);
 	const shellScript = shellInvocation?.[ 2 ] ?? normalizedCommand;
-	const skillPathPattern =
-		/(?:^|[\s'"])(?:[^\s'";&|()<>{}]*\/)?SKILL\.md(?=$|[\s'";&|()<>{}])/;
-	const readsSkillFile = shellScript
-		.split( /&&|\|\||[;|\n()]/ )
-		.map( ( segment ) => segment.trim() )
-		.some(
-			( segment ) =>
-				/^(?:command\s+)?(?:\/(?:usr\/)?bin\/)?(?:cat|sed|nl)(?=\s|$)/.test(
-					segment
-				) && skillPathPattern.test( segment )
-		);
+	const readsSkillFile = shellCommandSegments( shellScript ).some(
+		( words ) => supportedReadOperands( words ).some( isSkillPath )
+	);
 
 	if ( ! readsSkillFile ) {
 		return [];
@@ -895,6 +894,196 @@ function loadedSkillNames( command, aggregatedOutput ) {
 			) ].map( ( match ) => match[ 1 ] )
 		),
 	];
+}
+
+function shellCommandSegments( shellScript ) {
+	const segments = [];
+	let words = [];
+	let word = '';
+	let quote;
+	let escaped = false;
+
+	const pushWord = () => {
+		if ( word ) {
+			words.push( word );
+			word = '';
+		}
+	};
+	const pushSegment = () => {
+		pushWord();
+		if ( words.length ) {
+			segments.push( words );
+			words = [];
+		}
+	};
+
+	for ( let index = 0; index < shellScript.length; index++ ) {
+		const character = shellScript[ index ];
+
+		if ( escaped ) {
+			word += character;
+			escaped = false;
+			continue;
+		}
+		if ( quote ) {
+			if ( character === quote ) {
+				quote = undefined;
+			} else if ( character === '\\' && quote === '"' ) {
+				escaped = true;
+			} else {
+				word += character;
+			}
+			continue;
+		}
+		if ( character === '\\' ) {
+			escaped = true;
+			continue;
+		}
+		if ( character === "'" || character === '"' ) {
+			quote = character;
+			continue;
+		}
+		if ( character === '#' && ! word ) {
+			while (
+				index + 1 < shellScript.length &&
+				shellScript[ index + 1 ] !== '\n'
+			) {
+				index++;
+			}
+			pushSegment();
+			continue;
+		}
+		if ( /\s/.test( character ) ) {
+			pushWord();
+			if ( character === '\n' ) {
+				pushSegment();
+			}
+			continue;
+		}
+		if ( ';|&()'.includes( character ) ) {
+			pushSegment();
+			if ( shellScript[ index + 1 ] === character ) {
+				index++;
+			}
+			continue;
+		}
+		if ( character === '<' || character === '>' ) {
+			pushWord();
+			if ( /^\d+$/.test( words.at( -1 ) ?? '' ) ) {
+				words.pop();
+			}
+			let operator = character;
+			while ( shellScript[ index + 1 ] === character ) {
+				operator += shellScript[ ++index ];
+			}
+			words.push( operator );
+			continue;
+		}
+
+		word += character;
+	}
+
+	pushSegment();
+	return segments;
+}
+
+function supportedReadOperands( words ) {
+	let commandIndex = 0;
+	if ( words[ commandIndex ] === 'command' ) {
+		commandIndex++;
+	}
+	const executable = path.basename( words[ commandIndex ] ?? '' );
+	if ( ! [ 'cat', 'sed', 'nl' ].includes( executable ) ) {
+		return [];
+	}
+	const redirectionIndex = words.findIndex(
+		( word, index ) => index > commandIndex && /^[<>]/.test( word )
+	);
+	const args = words.slice(
+		commandIndex + 1,
+		redirectionIndex === -1 ? undefined : redirectionIndex
+	);
+
+	if ( executable === 'cat' ) {
+		return fileOperands( args );
+	}
+	if ( executable === 'nl' ) {
+		return fileOperands( args, new Set( [
+			'-b',
+			'-d',
+			'-f',
+			'-h',
+			'-i',
+			'-l',
+			'-n',
+			'-s',
+			'-v',
+			'-w',
+		] ) );
+	}
+
+	const operands = [];
+	let hasProgram = false;
+	let optionsEnded = false;
+	for ( let index = 0; index < args.length; index++ ) {
+		const argument = args[ index ];
+		if ( ! optionsEnded && argument === '--' ) {
+			optionsEnded = true;
+			continue;
+		}
+		if (
+			! optionsEnded &&
+			[ '-e', '--expression', '-f', '--file' ].includes( argument )
+		) {
+			hasProgram = true;
+			index++;
+			continue;
+		}
+		if (
+			! optionsEnded &&
+			( /^-e.+/.test( argument ) || /^-f.+/.test( argument ) )
+		) {
+			hasProgram = true;
+			continue;
+		}
+		if ( ! optionsEnded && argument.startsWith( '-' ) ) {
+			continue;
+		}
+		if ( ! hasProgram ) {
+			hasProgram = true;
+			continue;
+		}
+		operands.push( argument );
+	}
+
+	return operands;
+}
+
+function fileOperands( args, optionsWithValues = new Set() ) {
+	const operands = [];
+	let optionsEnded = false;
+
+	for ( let index = 0; index < args.length; index++ ) {
+		const argument = args[ index ];
+		if ( ! optionsEnded && argument === '--' ) {
+			optionsEnded = true;
+			continue;
+		}
+		if ( ! optionsEnded && optionsWithValues.has( argument ) ) {
+			index++;
+			continue;
+		}
+		if ( ! optionsEnded && argument.startsWith( '-' ) ) {
+			continue;
+		}
+		operands.push( argument );
+	}
+
+	return operands;
+}
+
+function isSkillPath( value ) {
+	return /(?:^|\/)SKILL\.md$/.test( value );
 }
 
 function signalProcessGroup( processGroupId, signal ) {
