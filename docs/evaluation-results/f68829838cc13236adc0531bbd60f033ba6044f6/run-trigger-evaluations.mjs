@@ -683,10 +683,10 @@ function pathVariants( root ) {
 function replacePathRoot( value, root, replacement ) {
 	return value.replace(
 		new RegExp(
-			`(^|[\\s'"\\x60=(,:])${ escapeRegExp( root ) }(?=\\/|$|[\\s'"\\x60)},:])`,
+			`${ escapeRegExp( root ) }(?=\\/|$|[\\s'"\\x60(){}\\[\\],:;|&<>#?=!])`,
 			'g'
 		),
-		( _match, prefix ) => `${ prefix }${ replacement }`
+		replacement
 	);
 }
 
@@ -748,7 +748,7 @@ function verifyClassifier() {
 			[ 'target' ],
 		],
 		[
-			'/bin/zsh -lc \\"cat /tmp/skills/target/SKILL.md\\"',
+			'/bin/zsh -lc "cat \\"/tmp/skills/target/SKILL.md\\""',
 			frontmatter,
 			0,
 			[ 'target' ],
@@ -775,6 +775,12 @@ function verifyClassifier() {
 			0,
 			[],
 		],
+		[
+			String.raw`/bin/zsh -lc 'for f in /tmp/skills/target/SKILL.md; do wc -l "$f"; sed -n '"'1,520p' \""'$f"; done'`,
+			frontmatter,
+			0,
+			[ 'target' ],
+		],
 		[ '/bin/zsh -lc "cat SKILL.md.bak"', frontmatter, 0, [] ],
 		[ '/bin/zsh -lc "cat NOTSKILL.md"', frontmatter, 0, [] ],
 	];
@@ -783,7 +789,7 @@ function verifyClassifier() {
 		const actual = loadedSkillNames( detectorCommand, output );
 		if ( JSON.stringify( actual ) !== JSON.stringify( expected ) ) {
 			throw new Error(
-				`Skill detector self-check failed: expected ${ expected }, received ${ actual }.`
+				`Skill detector self-check failed for ${ JSON.stringify( detectorCommand ) }: expected ${ expected }, received ${ actual }.`
 			);
 		}
 	}
@@ -792,13 +798,20 @@ function verifyClassifier() {
 		...restrictedTemporaryRoots,
 		...conventionalTemporaryRoots,
 	] ) {
-		if (
-			sanitize( temporaryRoot ) !== '[temporary]' ||
-			sanitize( path.join( temporaryRoot, 'child' ) ) !== '[temporary]/child' ||
-			sanitize( `\`${ path.join( temporaryRoot, 'child' ) }\`` ) !==
-				'`[temporary]/child`'
-		) {
-			throw new Error( 'Temporary-root sanitizer self-check failed.' );
+		const pathWithChild = path.join( temporaryRoot, 'child' );
+		for ( const [ value, expected ] of [
+			[ temporaryRoot, '[temporary]' ],
+			[ pathWithChild, '[temporary]/child' ],
+			[ `\`${ pathWithChild }\``, '`[temporary]/child`' ],
+			[ `<${ pathWithChild }>`, '<[temporary]/child>' ],
+			[ `${ pathWithChild }; next`, '[temporary]/child; next' ],
+			[ `${ pathWithChild }|next`, '[temporary]/child|next' ],
+			[ `${ pathWithChild }&&next`, '[temporary]/child&&next' ],
+			[ `${ temporaryRoot }-suffix`, `${ temporaryRoot }-suffix` ],
+		] ) {
+			if ( sanitize( value ) !== expected ) {
+				throw new Error( 'Temporary-root sanitizer self-check failed.' );
+			}
 		}
 	}
 	for ( const [ value, replacement ] of hostIdentityReplacements ) {
@@ -888,11 +901,14 @@ function verifyEnvironmentContract() {
 }
 
 function loadedSkillNames( command, aggregatedOutput ) {
-	const normalizedCommand = command.replace( /\\+(?=['"])/g, '' );
-	const shellInvocation = normalizedCommand.match(
-		/^(?:\/[^\s'"]+\/)?(?:zsh|bash|sh)\s+-(?:lc|c)\s+(['"])([\s\S]*)\1$/
-	);
-	const shellScript = shellInvocation?.[ 2 ] ?? normalizedCommand;
+	const wrapperSegments = shellCommandSegments( command );
+	const wrapperWords = wrapperSegments.length === 1 ? wrapperSegments[ 0 ] : [];
+	const shellScript =
+		wrapperWords.length === 3 &&
+		[ 'zsh', 'bash', 'sh' ].includes( path.basename( wrapperWords[ 0 ] ) ) &&
+		/^-l?c$/.test( wrapperWords[ 1 ] )
+			? wrapperWords[ 2 ]
+			: command;
 	const commandSegments = shellCommandSegments( shellScript );
 	const loopVariables = shellLoopVariables( commandSegments );
 	const readsSkillFile = commandSegments.some(
