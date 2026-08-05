@@ -4,6 +4,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
 	promises as fs,
+	readdirSync,
 	realpathSync,
 } from 'node:fs';
 import os from 'node:os';
@@ -45,6 +46,24 @@ const restrictedTemporaryRoots = [
 const conventionalTemporaryRoots = [ '/private/tmp', '/tmp' ].sort(
 	( left, right ) => right.length - left.length
 );
+const runtimeRootNames = new Set( [
+	'System',
+	'bin',
+	'dev',
+	'private',
+	'sbin',
+	'usr',
+] );
+const defaultDeniedRoots = [
+	...readdirSync( '/' )
+		.filter( ( name ) => ! runtimeRootNames.has( name ) )
+		.map( ( name ) => path.join( '/', name ) ),
+	...readdirSync( '/private' ).map( ( name ) =>
+		path.join( '/private', name )
+	),
+	'/usr/local',
+];
+const runtimeReadableRoots = [ '/private/var/select' ];
 const hostIdentityReplacements = [
 	[ os.userInfo().username, '[user]' ],
 	[ os.hostname(), '[host]' ],
@@ -512,8 +531,30 @@ function formatTomlInlineTable( values ) {
 }
 
 function permissionProfile( readableRoots, deniedRoots = [] ) {
-	const filesystem = new Map( [ [ '/', 'read' ], [ os.homedir(), 'deny' ] ] );
+	const filesystem = new Map( [
+		[ '/', 'read' ],
+		[ '/System', 'read' ],
+		[ '/usr', 'read' ],
+		[ '/bin', 'read' ],
+		[ '/sbin', 'read' ],
+		[ '/dev', 'read' ],
+		[ os.homedir(), 'deny' ],
+	] );
 
+	for ( const deniedRoot of defaultDeniedRoots ) {
+		filesystem.set( deniedRoot, 'deny' );
+		try {
+			filesystem.set( realpathSync( deniedRoot ), 'deny' );
+		} catch ( error ) {
+			if ( error.code !== 'ENOENT' ) {
+				throw error;
+			}
+		}
+	}
+	for ( const readableRoot of runtimeReadableRoots ) {
+		filesystem.set( readableRoot, 'read' );
+		filesystem.set( realpathSync( readableRoot ), 'read' );
+	}
 	for ( const temporaryRoot of restrictedTemporaryRoots ) {
 		filesystem.set( temporaryRoot, 'deny' );
 	}
@@ -562,7 +603,7 @@ async function verifySandboxReadBoundary() {
 				'--',
 				'/bin/sh',
 				'-c',
-				'test -r "$1" && ! test -r "$2" && ! test -r "$3"',
+				'test -r "$1" && ! test -r "$2" && ! test -r "$3" && ! test -r /Applications',
 				'boundary-check',
 				allowedProbe,
 				deniedProbe,
@@ -573,7 +614,9 @@ async function verifySandboxReadBoundary() {
 
 		if ( result.status !== 0 ) {
 			throw new Error(
-				result.stderr || 'Model-shell credential read boundary failed.'
+				result.stderr ||
+					result.stdout ||
+					`Model-shell credential read boundary failed with status ${ result.status }.`
 			);
 		}
 	} finally {
@@ -907,6 +950,7 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 			`test ! -r ${ shellSingleQuote( clientCanary ) }`,
 			`test ! -r ${ shellSingleQuote( sensitiveCanary ) }`,
 			`test ! -r ${ shellSingleQuote( sourceAuthPath ) }`,
+			'test ! -r /Applications',
 			`test -r ${ shellSingleQuote( allowedCanary ) }`,
 			'test -z "${CODEX_HOME+x}"',
 			`test "$HOME" = ${ shellSingleQuote( attemptEnvironment.userHome ) }`,
@@ -1029,12 +1073,12 @@ async function verifyExecBoundary( isolatedEnvironment ) {
 			! matchesBoundaryCommand( proof.command, probeCommand )
 		) {
 			throw new Error(
-				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
+				`Exact Codex exec boundary check failed (${ close.exitCode }, ${ close.signal }, command ${ JSON.stringify( sanitize( proof?.command ?? '' ) ) }, command exit ${ proof?.exit_code ?? 'missing' }, output ${ JSON.stringify( sanitize( proof?.aggregated_output ?? '' ) ) }, stderr ${ createHash( 'sha256' ).update( stderr ).digest( 'hex' ) }).`
 			);
 		}
 
 		return {
-			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained command that invokes a fixed hashed no-content probe script. Client-root, parent-root, and source-authentication canaries were unreadable; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
+			method: 'A dedicated Codex exec turn used the campaign configuration to run one exact retained command that invokes a fixed hashed no-content probe script. Client-root, parent-root, source-authentication, and /Applications reads were denied; the workspace canary was readable; CODEX_HOME was absent; and HOME, TMPDIR, PATH, and ZDOTDIR had their configured isolated values. Codex-added runtime variables were allowed.',
 			status: 'pass',
 			command: sanitize( proof.command ),
 			output: sanitize( proof.aggregated_output ),
@@ -1110,6 +1154,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	let stderrPreview = '';
 	let stdoutBuffer = '';
 	let stopPromise;
+	let forceKill;
 
 	const args = createCodexExecArguments(
 		workspace,
@@ -1129,8 +1174,16 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	function requestStop() {
 		stopPromise ||= ( async () => {
 			signalProcessGroup( child.pid, 'SIGTERM' );
-			await new Promise( ( resolve ) => setTimeout( resolve, 2_000 ) );
-			signalProcessGroup( child.pid, 'SIGKILL' );
+			await new Promise( ( resolve ) => {
+				forceKill = setTimeout( () => {
+					signalProcessGroup( child.pid, 'SIGKILL' );
+					resolve();
+				}, 2_000 );
+				child.once( 'close', () => {
+					clearTimeout( forceKill );
+					resolve();
+				} );
+			} );
 		} )();
 	}
 
@@ -1244,6 +1297,7 @@ async function executeAttempt( testCase, attempt, ordinal, attemptEnvironment ) 
 	}
 
 	clearTimeout( timeout );
+	clearTimeout( forceKill );
 	await stopPromise;
 	if ( stdoutBuffer ) {
 		inspectLine( stdoutBuffer );
@@ -1386,7 +1440,7 @@ try {
 			concurrency,
 			timeoutSeconds: timeoutMs / 1000,
 			workspace: 'Fresh outside-repository temporary directory for every attempt.',
-			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A split filesystem permission profile denied model-shell reads of the host home, the runner logical and resolved temporary roots, and credential-bearing client state while allowing the isolated attempt and staged target roots. Codex exposes its per-command argument scratch directory so the command can execute. The exact-exec preflight verified credential and key effective-environment invariants while allowing Codex-added runtime variables. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
+			ambientCapabilities: 'No host environment or home directory inherited. Every attempt used a fresh isolated HOME, exact links to the read-only target-revision skill stage, and a fresh session store. A narrowed host-root permission profile allowed root metadata; core system runtime paths; the macOS shell selector; the isolated attempt root; and the staged target root. It denied every detected non-runtime top-level entry, every other /private child, /usr/local, the host home, runner temporary roots, and credential-bearing client state. Static and exact-exec preflights proved /Applications unreadable. Codex exposes its per-command argument scratch directory so the command can execute. The exact-exec preflight also verified credential and key effective-environment invariants while allowing Codex-added runtime variables. User config, rules, plugins, apps, browser, computer use, image generation, multi-agent, memory, hooks, remote plugins, and tool suggestions disabled.',
 			clientEnvironmentVariables:
 				environmentContract.clientEnvironmentVariables,
 			configuredModelShellEnvironmentVariables:
@@ -1396,7 +1450,7 @@ try {
 			loginShell: 'Isolated ZDOTDIR resets PATH in .zshenv, .zprofile, and .zlogin. The exact Codex exec preflight requires the effective command PATH and other key isolated environment values.',
 			authentication: 'Credential-bearing client state used a separate temporary root with interruption cleanup. Static and exact Codex exec checks proved that client-root, parent-root, and source-auth canaries were unreadable. Codex per-command argument scratch remained readable by design, and the exact preflight proved CODEX_HOME was absent from the effective model command.',
 			commandEvidence: 'Every completed command retained its sanitized command, output, exit code, loaded-skill classification, original full-output SHA-256, and retained-output SHA-256. Every attempt retained a full stdout-stream SHA-256.',
-			interruption: 'SIGHUP, SIGINT, and SIGTERM stop active detached process groups, await active attempts, remove private and non-private temporary roots, and preserve the last atomically written evidence snapshot.',
+			interruption: 'SIGHUP, SIGINT, and SIGTERM stop active detached process groups, await active attempts, remove private and non-private temporary roots, and preserve the last atomically written evidence snapshot. Per-attempt stops schedule a two-second forced-kill fallback and cancel it when the child closes.',
 			stderr: `Drained completely; retained a sanitized ${ stderrPreviewLimit }-character preview and full-stream SHA-256.`,
 			positiveStop: 'Stop after the target skill loads.',
 			negativeStop: 'Run to turn completion or timeout and record every observed skill load.',
