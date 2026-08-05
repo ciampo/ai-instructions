@@ -20,10 +20,22 @@
       "expectedOutcome": "An independent, read-only review that checks the PR description, commit scope, SHA-pinned source, and CI before reporting confirmed findings or no findings.",
       "assertions": [
         "The review captures the title and description, base/head revisions, and base-to-head commit history before judging scope or completeness.",
+        "The review accepts the supplied complete immutable snapshot as its evidence route and does not attempt remote lookup.",
         "The review pins both boundaries, inspects the merge-base diff and every changed file, and can obtain needed review state when the CLI cannot provide it.",
         "The independent pass applies the mandatory review-simplicity baseline even though the prompt does not request simplification.",
         "The review stops and reports the missing capability when required state cannot be verified.",
         "The review does not edit source, commit, push, or change the pull request."
+      ]
+    },
+    {
+      "id": "unavailable-pr-identity-stop",
+      "prompt": "Perform one adversarial self-review of my current pull request and do not change anything.",
+      "context": "evals/fixtures/unavailable-pr-identity.md",
+      "expectedOutcome": "An immediate stop that requests the canonical pull-request identity before any tool or repository discovery.",
+      "assertions": [
+        "The workflow treats the supplied capability facts as complete and does not claim that it inspected or reviewed a pull request.",
+        "It stops and requests the canonical pull-request identity plus a usable immutable, local, or authenticated evidence route.",
+        "It does not inspect the current directory, search for alternate clients or repository metadata, enumerate unrelated local files, try unauthenticated web clients, retry network routes, or launch an independent review."
       ]
     },
     {

@@ -63,7 +63,7 @@
       "assertions": [
         "The workflow treats the supplied capability facts as complete and does not claim that it inspected or reviewed the pull request.",
         "It stops and requests a complete immutable snapshot containing the repository, base revision, head revision, diff, review state, and CI status.",
-        "It does not enumerate unrelated local files, try unauthenticated web clients, retry alternate network routes, request Copilot review, or start a fix loop."
+        "It stops before tool or repository discovery and does not inspect the current directory, search for alternate clients or repository metadata, enumerate unrelated local files, try unauthenticated web clients, retry network routes, request Copilot review, or start a fix loop."
       ]
     },
     {
