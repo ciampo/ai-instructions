@@ -11,7 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const targetRevision = '707b50268857641d42fe4e9e4acb9c9618c4d9ba';
+const targetRevision = 'caa6e7e5e8e65c417a9d02ab69370293edcccf6d';
 const attemptsPerCase = 3;
 const concurrency = 3;
 const timeoutMs = 90_000;
@@ -880,6 +880,32 @@ function verifyClassifier() {
 			'Boundary-command matcher erased a meaningful quote difference.'
 		);
 	}
+
+	const signalCalls = [];
+	signalProcessGroup( 42, 'SIGTERM', ( processId, signal ) => {
+		signalCalls.push( [ processId, signal ] );
+		if ( processId < 0 ) {
+			const error = new Error( 'group signaling denied' );
+			error.code = 'EPERM';
+			throw error;
+		}
+	} );
+	if (
+		JSON.stringify( signalCalls ) !==
+		JSON.stringify( [ [ -42, 'SIGTERM' ], [ 42, 'SIGTERM' ] ] )
+	) {
+		throw new Error( 'Process-group fallback self-check failed.' );
+	}
+	let missingGroupFallbackCalled = false;
+	signalProcessGroup( 42, 'SIGTERM', () => {
+		const error = new Error( 'group missing' );
+		error.code = 'ESRCH';
+		if ( missingGroupFallbackCalled ) {
+			throw new Error( 'Unexpected process fallback.' );
+		}
+		missingGroupFallbackCalled = true;
+		throw error;
+	} );
 }
 
 function verifyEnvironmentContract() {
@@ -1166,12 +1192,23 @@ function isSkillPath( value ) {
 	return /(?:^|\/)SKILL\.md$/.test( value );
 }
 
-function signalProcessGroup( processGroupId, signal ) {
+function signalProcessGroup( processGroupId, signal, kill = process.kill ) {
 	try {
-		process.kill( -processGroupId, signal );
+		kill( -processGroupId, signal );
 	} catch ( error ) {
-		if ( error.code !== 'ESRCH' ) {
+		if ( error.code === 'ESRCH' ) {
+			return;
+		}
+		if ( error.code !== 'EPERM' ) {
 			throw error;
+		}
+
+		try {
+			kill( processGroupId, signal );
+		} catch ( fallbackError ) {
+			if ( ! [ 'EPERM', 'ESRCH' ].includes( fallbackError.code ) ) {
+				throw fallbackError;
+			}
 		}
 	}
 }

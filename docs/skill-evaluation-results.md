@@ -27,9 +27,9 @@ Static fixture validation, installation checks, or one successful prompt cannot 
 
 ## Active campaign
 
-Repository revision: `9dc3cce595b007562635b241aec1118139077f09`.
+Repository revision: `caa6e7e5e8e65c417a9d02ab69370293edcccf6d`.
 
-Evaluation-fixture revision: `9dc3cce595b007562635b241aec1118139077f09`.
+Evaluation-fixture revision: `caa6e7e5e8e65c417a9d02ab69370293edcccf6d`.
 
 | Prerequisite | Required behavior | Status |
 | --- | --- | --- |
@@ -55,8 +55,8 @@ The historical Codex output runs used one disposable workspace per case and a 24
 
 The committed trigger evidence retains each prompt, completed command event, observed skill-load event, model message, authentication boundary, timeout state, and sanitized stdout and stderr digests. The historical artifacts retain output text, grading fields, token use, workspace deltas, and generated artifacts, subject to the unverified limitations below:
 
-- [trigger results](evaluation-results/9dc3cce595b007562635b241aec1118139077f09/codex-trigger-results.json), SHA-256 `3290ddf3e1116704c107b9f03751b25afc7d5d1cbf10b1e02316537fcfff573a`;
-- [trigger runner](evaluation-results/9dc3cce595b007562635b241aec1118139077f09/run-trigger-evaluations.mjs), SHA-256 `f2e3165926e24163ec8f9a3b07af3f9f44d606e9d429443031b04d607aa9c870`;
+- [trigger results](evaluation-results/caa6e7e5e8e65c417a9d02ab69370293edcccf6d/codex-trigger-results.json), SHA-256 `642d5130e2de45f2280fccebd4e5de04b205cb4a947df9da061988bc9bb6b06a`;
+- [trigger runner](evaluation-results/caa6e7e5e8e65c417a9d02ab69370293edcccf6d/run-trigger-evaluations.mjs), SHA-256 `bbfedbefd80919fd8c52b45eb4d5af41dd3de08a1bd1699243e9959f4d7d17f9`;
 - [output results](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-output-results.json), SHA-256 `99086237fd7f0943df1b3a8273a85bf532748e75b932527097ec8c7ceaf800ad`;
 - [direct and coordinated comparison](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/codex-review-comparison.json), SHA-256 `2d1be2aeb9b3799e134522676eeb423ed67f8ac9a24ce14069d1729fe51f5660`.
 - [Antigravity canary note](evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/antigravity-canary.json), SHA-256 `f521622ad936bf76d62292bf630a930c2629e692a0d883cde6af6ee3121425de`.
@@ -68,14 +68,14 @@ The output campaign used an unversioned, one-off Node.js harness, and the direct
 Verify the retained files with:
 
 ```sh
-shasum -a 256 docs/evaluation-results/9dc3cce595b007562635b241aec1118139077f09/*.json docs/evaluation-results/9dc3cce595b007562635b241aec1118139077f09/*.mjs docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.json
+shasum -a 256 docs/evaluation-results/caa6e7e5e8e65c417a9d02ab69370293edcccf6d/*.json docs/evaluation-results/caa6e7e5e8e65c417a9d02ab69370293edcccf6d/*.mjs docs/evaluation-results/561a88a0b1adcfadfed2b08f2efe195436341d1a/*.json
 ```
 
 ### Codex trigger results
 
 Every trigger case ran three times. `+` means the named skill should load during the turn. `-` means the named skill must not load anywhere in the completed turn.
 
-Summary: all 97 cases passed. Across 291 attempts, all 291 passed, with no failures, blocked attempts, or timeouts. The retained JSON records every attempt, 1,274 completed command events and outputs, observed skill-load events, authentication boundaries, timeout states, and sanitized stdout and stderr digests.
+Summary: all 97 cases passed. Across 291 attempts, all 291 passed, with no failures, blocked attempts, or timeouts. The retained JSON records every attempt, 1,382 completed command events and outputs, 558 observed skill-load events, authentication boundaries, timeout states, and sanitized stdout and stderr digests.
 
 ### Codex output observations (unverified)
 
@@ -133,7 +133,7 @@ The `review-accessibility/no-artifact-delivery` canary is reported blocked, but 
 
 The current trigger revision has no accepted instruction-routing failures. The final campaign confirms that each former gap in [#98](https://github.com/ciampo/ai-instructions/issues/98), [#99](https://github.com/ciampo/ai-instructions/issues/99), [#100](https://github.com/ciampo/ai-instructions/issues/100), [#101](https://github.com/ciampo/ai-instructions/issues/101), [#108](https://github.com/ciampo/ai-instructions/issues/108), and [#109](https://github.com/ciampo/ai-instructions/issues/109) now passes all three attempts. The former timeout control for reviewing another author's pull request also passes all three attempts after `review-pr` gained an explicit unavailable-snapshot stop rule.
 
-The target adds output regression fixtures for supplied immutable pull-request snapshots and unavailable pull-request identity or snapshot evidence in `review-pr`, `iterate-pr-review`, and `self-review-pr`. Focused direct Codex turns confirmed that supplied snapshots proceed without remote lookup, unavailable evidence stops before repository discovery, and delegated feedback loads `draft-review-comment` only at the final-wording step. These focused observations do not replace the still-unverified historical full output campaign.
+The target adds output regression fixtures for supplied immutable pull-request snapshots, explicitly unavailable pull-request evidence, and current-checkout identity resolution in `review-pr`, `iterate-pr-review`, and `self-review-pr`. Unretained focused Codex turns suggested that supplied snapshots proceed without remote lookup, explicitly unavailable evidence stops before repository discovery, and delegated feedback loads `draft-review-comment` only at the final-wording step. Treat these as unverified observations. They do not satisfy the retained output-evidence contract or replace the still-unverified historical full output campaign.
 
 Issue bodies #98–#109 preserve earlier campaign snapshots and therefore contain superseded counts or hashes. This ledger and the current pull-request description are authoritative for the final campaign. The rerun also confirms that the former gaps tracked by [#74](https://github.com/ciampo/ai-instructions/issues/74), [#76](https://github.com/ciampo/ai-instructions/issues/76), [#91](https://github.com/ciampo/ai-instructions/issues/91), and [#92](https://github.com/ciampo/ai-instructions/issues/92) pass all three attempts. The general pull-request case from [#73](https://github.com/ciampo/ai-instructions/issues/73) passes all three attempts. The focused cases recorded in [#102](https://github.com/ciampo/ai-instructions/issues/102), [#103](https://github.com/ciampo/ai-instructions/issues/103), [#104](https://github.com/ciampo/ai-instructions/issues/104), [#105](https://github.com/ciampo/ai-instructions/issues/105), [#106](https://github.com/ciampo/ai-instructions/issues/106), and [#107](https://github.com/ciampo/ai-instructions/issues/107) pass all three final attempts.
 
