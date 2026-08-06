@@ -67,4 +67,6 @@ missing task authority.
 3. Grade every assertion with evidence from the output. Use deterministic checks for facts such as a file existing or valid JSON; reserve human review for judgement calls such as clarity.
 4. Record failures and the chosen revision in the pull request. Keep the fixture realistic instead of tuning it to a single phrase.
 
+Run focused output cases first. Fix confirmed instruction gaps, then rerun only the affected trigger and output cases while iterating. Run the full trigger and output suites after every focused case passes. Retain the versioned runners, exact target revision, the sanitized event and command detail needed to support each claim, assertion grades, and provenance. Document each runner's retention boundary. Distinguish instruction failures from missing fixture capabilities and runner-observability gaps.
+
 The [Agent Skills description guidance](https://agentskills.io/skill-creation/optimizing-descriptions) recommends realistic positive and near-miss negative prompts. Its [evaluation guidance](https://agentskills.io/skill-creation/evaluating-skills) recommends an isolated baseline and evidence-backed assertions.
