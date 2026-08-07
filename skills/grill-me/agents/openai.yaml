@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grill Me"
+  short_description: "Resolve material plan gaps through questions"
+  default_prompt: "Use $grill-me to question this plan until every material decision gap is resolved."
