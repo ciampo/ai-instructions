@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "explicit-grill-request",
+      "prompt": "Grill me on this migration plan. Ask questions until there are no material gaps, then wait for my confirmation before we implement it.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "interactive-architecture-interview",
+      "prompt": "Interview me one question at a time to stress-test this architecture and surface every unresolved decision.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "one-shot-plan-review",
+      "prompt": "Poke holes in this plan and return one consolidated list of concerns. Do not ask me follow-up questions.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "direct-implementation-plan",
+      "prompt": "Draft an implementation plan from this approved specification without interviewing me.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "pull-request-review",
+      "prompt": "Review this pull request for correctness and test coverage, then draft the findings.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "ask-highest-impact-decision",
+      "prompt": "Grill me on this async export plan. Ask one question at a time until it has no material gaps. Do not modify or implement anything.",
+      "context": "evals/fixtures/async-export-plan.md",
+      "expectedOutcome": "A read-only interview that uses the supplied repository facts and asks one dependency-ready permission question with a recommendation.",
+      "assertions": [
+        "The response uses the supplied repository facts instead of asking the user to rediscover them.",
+        "The response asks exactly one answerable decision question and focuses it on download authorization after an administrator's role changes.",
+        "The response gives a clear recommended answer with a brief reason or trade-off while leaving the decision to the user.",
+        "The response does not produce a completed plan, edit files, implement code, commit, publish, or claim convergence."
+      ]
+    },
+    {
+      "id": "stop-at-convergence",
+      "prompt": "We have finished grilling this plan. Check whether it is ready and close the session if nothing material is missing.",
+      "context": "evals/fixtures/resolved-export-plan.md",
+      "expectedOutcome": "A compact convergence check that does not invent work, asks for final user confirmation, and stops before planning or implementation.",
+      "assertions": [
+        "The response summarizes the resolved decisions, intentional non-goals or deferrals, and residual risks or evidence gaps from the supplied context.",
+        "The response marks the plan ready for confirmation rather than inventing an unrelated low-impact question.",
+        "The response asks exactly one final confirmation question and does not claim user confirmation has already occurred.",
+        "The response does not create a plan artifact, edit files, implement code, commit, or publish."
+      ]
+    }
+  ]
+}
