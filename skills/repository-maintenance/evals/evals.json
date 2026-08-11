@@ -41,14 +41,24 @@
       ]
     },
     {
+      "id": "github-pr-title-from-metadata",
+      "prompt": "Using the supplied context, choose the initial task title for this pull-request review. Return only the title.",
+      "context": "evals/fixtures/github-pr-title-from-metadata.md",
+      "expectedOutcome": "The initial title uses the canonical pull-request title instead of a generic review label.",
+      "assertions": [
+        "The title is exactly `👀 [R#80600] Theme: Omit color properties when neither provided nor inherited`.",
+        "The title does not use a generic subject such as `Review pull request` or `Review Gutenberg PR`.",
+        "The response contains only the title."
+      ]
+    },
+    {
       "id": "anchored-github-task-title",
       "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
       "context": "evals/fixtures/anchored-github-task-title.md",
-      "expectedOutcome": "The title accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened. Brevity is preferred but not required.",
+      "expectedOutcome": "The generic title is corrected from canonical metadata and remains anchored to the primary pull-request review after the supporting issue is opened.",
       "assertions": [
-        "The title starts with `👀 [R#80600]`.",
-        "The subject accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ from the source title.",
-        "The subject uses the pull-request metadata to describe the specific outcome instead of a generic label such as `Review Gutenberg PR`.",
+        "The title is exactly `👀 [R#80600] Theme: Omit color properties when neither provided nor inherited`.",
+        "The subject uses the canonical pull-request title instead of a generic label such as `Review pull request`.",
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
       ]
@@ -77,14 +87,26 @@
       ]
     },
     {
-      "id": "github-task-title-phase-change",
-      "prompt": "Using the supplied context, choose the task title after the primary task enters verification. Return only the title.",
-      "context": "evals/fixtures/github-task-title-phase-change.md",
-      "expectedOutcome": "The title reflects the materially different verification phase while keeping the same primary pull-request reference and task subject. Brevity is preferred but not required.",
+      "id": "review-pr-title-workflow-continuation",
+      "prompt": "Using the supplied context, choose the task title after the review enters another workflow step. Return only the title.",
+      "context": "evals/fixtures/review-pr-title-workflow-continuation.md",
+      "expectedOutcome": "The complete review title remains unchanged when the user asks to iterate and verify the updated pull-request head.",
       "assertions": [
-        "The title uses an intuitive verification-phase emoji.",
-        "The title preserves the primary pull-request reference `[R#80600]`.",
-        "The subject still accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ.",
+        "The title is exactly `👀 [R#80600] Theme: Omit color properties when neither provided nor inherited`.",
+        "The title keeps the review purpose emoji instead of changing to an iteration or verification emoji.",
+        "The title does not change its work type, pull-request reference, or canonical subject.",
+        "The response contains only the title."
+      ]
+    },
+    {
+      "id": "authored-pr-title-workflow-continuation",
+      "prompt": "Using the supplied context, choose the task title after the authored pull request enters later workflow steps. Return only the title.",
+      "context": "evals/fixtures/authored-pr-title-workflow-continuation.md",
+      "expectedOutcome": "The complete authoring title remains unchanged through feedback fixes, a rebase, and a supporting follow-up.",
+      "assertions": [
+        "The title is exactly `🛠️ [A#81234] Button: Preserve shortcut descriptions for icon-only controls`.",
+        "The title keeps the authoring purpose emoji instead of changing to a feedback, fix, rebase, or follow-up purpose.",
+        "The title does not change its work type, pull-request reference, or canonical subject.",
         "The response contains only the title."
       ]
     },
