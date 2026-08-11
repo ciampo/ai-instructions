@@ -98,6 +98,18 @@
       ]
     },
     {
+      "id": "github-issue-to-authored-pr-transition",
+      "prompt": "Using the supplied context, choose the task title after the issue task becomes an authored pull request. Return only the title.",
+      "context": "evals/fixtures/github-issue-to-authored-pr-transition.md",
+      "expectedOutcome": "The title transitions once from the source issue to the authored pull request that becomes the session's primary delivery.",
+      "assertions": [
+        "The title is exactly `🛠️ [A#655] Login: Prevent redirect loops after expired sessions`.",
+        "The title replaces the issue work type and reference with the authored pull-request work type and reference.",
+        "The subject uses the canonical authored pull-request title without paraphrasing it.",
+        "The response contains only the title."
+      ]
+    },
+    {
       "id": "review-pr-title-workflow-continuation",
       "prompt": "Using the supplied context, choose the task title after the review enters another workflow step. Return only the title.",
       "context": "evals/fixtures/review-pr-title-workflow-continuation.md",
