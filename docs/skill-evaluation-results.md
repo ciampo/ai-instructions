@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial. The PR #115 review-prose campaign passed every changed-skill output case and all 103 selected trigger cases across 309 attempts. Eight of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations, one unchanged workflow selected the wrong task-title purpose, and one unchanged accessibility workflow omitted primary-source links. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial. The PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Eight of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations, one unchanged workflow selected the wrong task-title purpose, and one unchanged accessibility workflow omitted primary-source links. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -35,7 +35,7 @@ Independent self-review found that the simplified `review-api-design` descriptio
 
 The focused trigger gate covered ten cases and passed all 30 attempts. The focused output gate covered eight cases and 30 assertions. Its raw result was four passing and four partial cases, with 25 passing, two failing, and three blocked assertions. The four affected review-routing cases then reran serially and passed all 16 assertions. Replacing those exact cases gives the selected focused outcome: all eight cases and all 30 assertions pass.
 
-The full output suite covered 99 cases and 362 assertions. Its raw result was 86 passing and 13 partial cases, with 347 passing and 15 failing assertions and no blocked assertions. Seven inconsistent cases reran serially. Five passed. `review-accessibility/source-proven-read-only-finding` retained one failing assertion, and `repository-maintenance/github-issue-to-authored-pr-transition` retained one failing assertion. Replacing those exact cases gives the selected outcome: 91 passing and eight partial cases, with 353 passing and nine failing assertions. Every output case for a changed skill or workflow passes.
+The full output suite covered 99 cases and 362 assertions. Its raw result was 86 passing and 13 partial cases, with 347 passing and 15 failing assertions and no blocked assertions. Seven inconsistent cases reran serially. Five passed. `review-accessibility/source-proven-read-only-finding` retained one failing assertion, and `repository-maintenance/github-issue-to-authored-pr-transition` retained one failing assertion. Replacing those exact cases gives the selected outcome: 91 passing and eight partial cases, with 353 passing and nine failing assertions. Every output case tied to the changed workflow bodies or API-design boundary fix passes.
 
 Six partial cases require a writable checkout, simulated remote write, or another mutation capability that their immutable fixtures do not provide:
 
