@@ -8,7 +8,7 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 
 - Lead with the main point. Use short sentences.
 - Preserve every conclusion, constraint, caveat, piece of evidence, uncertainty, exact identifier, and explanation the source gives for a technical term.
-- Replace unnecessary jargon. Briefly explain each necessary technical concept in source-supported everyday language. Keep the original wording for a technical relationship when a simpler phrase could change its meaning. Do not infer what an identifier does or what state it has.
+- Replace unnecessary jargon. Briefly explain each necessary technical concept in source-supported everyday language. Keep technical relationships exact: for example, do not rewrite `behind` a flag as `disabled`. Do not infer what an identifier does or what state it has.
 - Remove decorative metaphors, repetition, and filler.
 - Do not add claims or make existing claims more certain.
 
