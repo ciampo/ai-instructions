@@ -8,7 +8,7 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 
 - Lead with the main point. Use short sentences.
 - Preserve every conclusion, constraint, caveat, piece of evidence, uncertainty, exact identifier, and explanation the source gives for a technical term.
-- Replace unnecessary jargon. Briefly explain each necessary technical concept in source-supported everyday language. Keep technical relationships exact: for example, do not rewrite `behind` a flag as `disabled`. Keep evidence scope exact: `reproduced` does not mean `occurs`, and `not reproduced` does not mean `did not occur`. Do not infer what an identifier does or what state it has.
+- Replace unnecessary jargon. Briefly explain each necessary technical concept in source-supported everyday language. Keep technical relationships exact: for example, do not rewrite `behind` a flag as `disabled`. Keep evidence-status terms verbatim when a substitute could change scope. If the source says `reproduced` or `not reproduced`, use those exact terms; they do not mean `occurs` or `did not occur`. Do not infer what an identifier does or what state it has.
 - Remove decorative metaphors, repetition, and filler.
 - Do not add claims or make existing claims more certain.
 
