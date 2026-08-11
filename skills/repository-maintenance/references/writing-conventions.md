@@ -8,7 +8,7 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 
 - Lead with the main point. Use short sentences.
 - Preserve every conclusion, constraint, caveat, piece of evidence, uncertainty, and exact identifier.
-- Replace unnecessary jargon. For each technical term that remains, add a brief everyday-language definition instead of only repeating the term.
+- Replace unnecessary jargon. Briefly explain each necessary technical concept in source-supported everyday language. Do not guess what an identifier does or what state it has.
 - Remove decorative metaphors, repetition, and filler.
 - Do not add claims or make existing claims more certain.
 
