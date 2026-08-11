@@ -4,7 +4,7 @@ How I expect written artifacts to be structured.
 
 ## Plain-language repair
 
-When the user asks for `bro`, `say that simply`, plain English, or equivalent wording, simplify the current explanation or artifact without changing its substance:
+When the user asks for `bro`, `say that simply`, plain English, or equivalent wording while drafting an artifact covered by this reference, simplify it without changing its substance:
 
 - Lead with the main point. Use short sentences.
 - Preserve every conclusion, constraint, caveat, piece of evidence, uncertainty, and exact identifier.
