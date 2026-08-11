@@ -110,6 +110,18 @@
       ]
     },
     {
+      "id": "github-coequal-task-title-transition",
+      "prompt": "Using the supplied context, choose the task title after the user makes another task co-equal. Return only the title.",
+      "context": "evals/fixtures/github-coequal-task-title-transition.md",
+      "expectedOutcome": "The title changes from a single pull-request title to a concise batch subject only because the user explicitly makes the second task co-equal.",
+      "assertions": [
+        "The title subject accounts for both the pull request's theme color properties and the issue's contrast-fallback cleanup.",
+        "The title does not remain the unchanged single pull-request title.",
+        "The title does not list both GitHub references.",
+        "The response contains only the title."
+      ]
+    },
+    {
       "id": "review-pr-title-workflow-continuation",
       "prompt": "Using the supplied context, choose the task title after the review enters another workflow step. Return only the title.",
       "context": "evals/fixtures/review-pr-title-workflow-continuation.md",
