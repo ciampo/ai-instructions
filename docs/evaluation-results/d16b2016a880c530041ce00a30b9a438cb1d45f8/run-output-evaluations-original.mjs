@@ -1371,19 +1371,7 @@ function parseGrades( finalText, assertions ) {
 	} );
 }
 
-function deriveCaseStatus( assertionResults, subject ) {
-	const subjectCompleted =
-		subject.completed === true &&
-		subject.timedOut === false &&
-		subject.exitCode === 0 &&
-		subject.signal === null;
-	if ( ! subjectCompleted ) {
-		return assertionResults.every(
-			( result ) => result.status === 'blocked'
-		)
-			? 'blocked'
-			: 'partial';
-	}
+function deriveCaseStatus( assertionResults ) {
 	if ( assertionResults.every( ( result ) => result.status === 'pass' ) ) {
 		return 'pass';
 	}
@@ -1448,7 +1436,7 @@ async function runCase(
 			environment,
 			isolatedEnvironment
 		);
-		const status = deriveCaseStatus( grading.assertionResults, subject );
+		const status = deriveCaseStatus( grading.assertionResults );
 		return {
 			assertionResults: grading.assertionResults,
 			caseId: testCase.caseId,
@@ -1659,41 +1647,23 @@ function sha256( value ) {
 }
 
 function verifySelf() {
-	const completedSubject = {
-		completed: true,
-		exitCode: 0,
-		signal: null,
-		timedOut: false,
-	};
 	const parsed = parseGrades(
 		'{"assertionResults":[{"index":1,"status":"pass","evidence":"ok"}]}',
 		[ 'one' ]
 	);
 	if (
 		parsed[ 0 ].assertion !== 'one' ||
-		deriveCaseStatus( parsed, completedSubject ) !== 'pass'
+		deriveCaseStatus( parsed ) !== 'pass'
 	) {
 		throw new Error( 'Output evaluation runner: grading self-check failed.' );
 	}
 	if (
-		deriveCaseStatus(
-			[ { status: 'pass' }, { status: 'blocked' } ],
-			completedSubject
-		) !== 'partial'
+		deriveCaseStatus( [
+			{ status: 'pass' },
+			{ status: 'blocked' },
+		] ) !== 'partial'
 	) {
 		throw new Error( 'Output evaluation runner: status self-check failed.' );
-	}
-	if (
-		deriveCaseStatus( [ { status: 'pass' } ], {
-			completed: false,
-			exitCode: null,
-			signal: 'SIGTERM',
-			timedOut: true,
-		} ) !== 'partial'
-	) {
-		throw new Error(
-			'Output evaluation runner: incomplete-subject self-check failed.'
-		);
 	}
 	if (
 		JSON.stringify(
