@@ -2,6 +2,16 @@
 
 How I expect written artifacts to be structured.
 
+## Plain-language repair
+
+When the user asks for `bro`, `say that simply`, plain English, or equivalent wording, simplify the current explanation or artifact without changing its substance:
+
+- Lead with the main point. Use short sentences.
+- Preserve conclusions, constraints, caveats, evidence, uncertainty, and exact identifiers.
+- Replace unnecessary jargon. Explain technical terms that are still required.
+- Remove decorative metaphors, repetition, and filler.
+- Do not add claims or make existing claims more certain.
+
 ## PR Descriptions
 
 - **[STRONG]** Follow the repo's existing PR template. If no template exists, use: What / Why / How / Testing Instructions.
