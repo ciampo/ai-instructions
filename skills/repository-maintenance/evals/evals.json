@@ -52,6 +52,17 @@
       ]
     },
     {
+      "id": "github-issue-title-from-metadata",
+      "prompt": "Using the supplied context, choose the initial task title for this issue investigation. Return only the title.",
+      "context": "evals/fixtures/github-issue-title-from-metadata.md",
+      "expectedOutcome": "The initial title uses the canonical issue title without paraphrasing it.",
+      "assertions": [
+        "The title is exactly `🔍 [I#654] Login redirects loop after expired sessions`.",
+        "The title does not use a generic subject such as `Investigate GitHub issue`.",
+        "The response contains only the title."
+      ]
+    },
+    {
       "id": "anchored-github-task-title",
       "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
       "context": "evals/fixtures/anchored-github-task-title.md",
