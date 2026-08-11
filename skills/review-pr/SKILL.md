@@ -1,23 +1,23 @@
 ---
 name: review-pr
-description: Perform a read-only, multi-round GitHub pull-request review with accessibility first, a mandatory deletion-first simplicity pass, consumer analysis, and copy-pasteable findings. Use when asked to review someone else's PR unless the user explicitly owns its fix-and-push loop and requests iterative Copilot and self-review; use iterate-pr-review for that case. Unless the user explicitly names review-coordinator, panel, coordinated, and multi-lane PR reviews enter only through this skill. For those requests, do not inspect PR context until review-pr, review-simplicity, and review-coordinator are read in that order. For a generic PR request, read only review-pr and review-simplicity before context; load review-coordinator later only if source inspection proves the threshold.
+description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review only when the user explicitly owns the fix-and-push loop and requests iterative Copilot and self-review. General, panel, coordinated, and multi-lane PR requests start here unless they explicitly name review-coordinator. Before PR context, load review-simplicity; for explicit coordination, load review-coordinator next. For generic reviews, load the coordinator later only if source inspection finds two material specialist lanes.
 ---
 
 # Review PR
 
-A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this PR" or share a PR URL.
+Review a GitHub pull request without changing it.
 
 ## Ownership boundary
 
-- Before starting the read-only review, check whether the pull request is authored by the user or the user explicitly owns another author's fix-and-push loop. If either ownership condition and an iterative Copilot and self-review request are explicit, hand off to `iterate-pr-review`. Otherwise, continue here and do not infer ownership from iterative wording.
+- Before the review, check whether the user authored the pull request or explicitly owns another author's fix-and-push loop. If that ownership and an iterative Copilot and self-review request are both explicit, hand off to `iterate-pr-review`. Otherwise, continue here. Iterative wording alone does not establish ownership.
 
 ## Entry routing
 
-- If the user explicitly names `review-coordinator`, hand off to it directly and stop. The remaining entry rules apply to ordinary panel, coordinated, and multi-lane requests.
-- Before looking up PR context, identify the specialist lanes named in the request. Select the coordinator for an explicit panel or coordinated review, or when two or more independent additional lanes are material. `review-security` covers authorization or security. `review-compatibility` covers persisted-state migration or compatibility, so their combination meets the two-lane threshold.
-- When the request is generic and identifies neither coordination nor two material lanes, do not load `review-coordinator` at entry. Inspect the pinned source after loading `review-simplicity`, then apply the late threshold in step 7.
-- Load `review-simplicity` for every PR in a separate action before any action names or accesses PR context; do not batch this load with context lookup. When the coordinator is selected, load `review-coordinator` immediately after `review-simplicity`, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading requires reading the skill; stating an intention to use it is not a handoff.
-- Loading the methods at entry does not pass incomplete review results. Complete the core and simplicity passes below, then give the coordinator their results and the pinned snapshot. If the request does not reveal the coordinator threshold, source inspection can still select it in step 7. Keep an ordinary single-lane review in this workflow.
+- If the user explicitly names `review-coordinator`, hand off to it and stop. Otherwise, panel, coordinated, and multi-lane requests start here.
+- Before accessing PR context, identify the requested specialist lanes. Select the coordinator for an explicit panel or coordinated review, or for two or more material independent lanes. For example, authorization maps to `review-security`, while persisted-state migration maps to `review-compatibility`; together they meet the threshold.
+- Load `review-simplicity` for every PR in a separate action before any action names or accesses PR context. Do not combine this load with context lookup. If the coordinator is selected, load `review-coordinator` next, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading means reading the skill, not announcing an intention.
+- For a generic request that does not reveal the threshold, load only `review-simplicity` at entry. Inspect the pinned source, then apply the late threshold in step 7.
+- Loading a method does not pass review results. Complete the core and simplicity passes before handing their results and the pinned snapshot to the coordinator. Keep an ordinary single-lane review here.
 
 ## Steps
 
@@ -38,10 +38,10 @@ A repeatable workflow for reviewing a GitHub PR. Invoked when I say "review this
    - Use `review-test-quality` when behavioral evidence, UI semantics, regression coverage, mocks, or verification quality are material to the change.
    - Use `review-internationalization` for user-facing translations, locale formatting, pluralization, or directional UI.
    - Use `review-documentation` when public or developer documentation, examples, migration guidance, or meaningful code comments change.
-9. For the mandatory simplicity pass and any directly invoked specialist, request an internal findings handoff instead of its standalone delivery. The specialist must return structured findings and verification gaps to this workflow without creating a separate review artifact or returning a user-facing path. When `review-coordinator` was selected, pass it the simplicity handoff; it owns remaining specialist routing and synthesis.
-10. When the coordinator was not selected, synthesize specialist results into the main review. Recheck each finding against the actual PR diff and consumers, apply the severity normalization contract in the code-review reference, remove duplicates, and keep verification gaps separate from confirmed findings. The main review owns prioritization and final delivery.
-11. When the coordinator was not selected, refresh the remote review state used, then re-read field-limited PR metadata before concluding. If either captured SHA changed, refresh the snapshot and repeat the review rather than mixing state from different PR boundaries; otherwise account for new or resolved feedback.
-12. When the coordinator was not selected, use the `draft-review-comment` skill for delivery. `chat only` and `no artifact` select chat delivery; `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. This review remains read-only in every delivery mode. Otherwise, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path.
+9. For the simplicity pass and each directly invoked specialist, request an internal handoff with structured findings and verification gaps. Do not let a specialist create a separate review artifact or return a user-facing path.
+10. Synthesize those handoffs into the main review. Recheck each finding against the diff and consumers, normalize severity with the code-review reference, remove duplicates, and separate verification gaps from confirmed findings. The main review owns prioritization and delivery.
+11. Refresh the remote review state used, then re-read field-limited PR metadata. If either captured SHA changed, refresh the snapshot and repeat the review. Otherwise, account for new or resolved feedback.
+12. Load `draft-review-comment` for delivery. `chat only` and `no artifact` require chat delivery. `do not write files` and `do not modify files` prohibit all local writes and also require chat delivery. The review stays read-only in every mode. Otherwise, write the full review to `<pr-number>-review.md` in the OS temporary directory, then open it when supported or return the path.
 13. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
 14. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
 
