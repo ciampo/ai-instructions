@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial. The current Codex trigger campaign passed every selected case and attempt. Eight retained output cases remain partial: seven fixtures cannot exercise required local mutations or remote actions, and one subject violated an explicit load-order rule. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial. The PR #112 task-title campaign passed every changed title case and every selected trigger case and attempt. Ten selected output cases remain partial because immutable fixtures cannot perform required mutations, one subject timed out, or review subjects violated existing load-order rules. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -17,7 +17,67 @@ Each campaign must record:
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
 
-## Current output and trigger campaign
+## PR #112 task-title campaign
+
+Repository revision: `d16b2016a880c530041ce00a30b9a438cb1d45f8`.
+
+Evaluation-fixture revision: `d16b2016a880c530041ce00a30b9a438cb1d45f8`.
+
+Base revision: `d5c55cf780037f8dced2314a9d5f63140c42e1d1` from `main`.
+
+The later evidence commit changes only documentation and retained evaluation artifacts. Its `skills` tree matches the evaluated revision.
+
+Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tier. Every subject, grader, and trigger attempt used a fresh isolated home and outside-repository workspace. The runners staged the immutable target with `git archive`, rejected skill-tree changes, and retained sanitized command and event evidence with exact target-tree provenance. The trigger runner retained an independent exact-exec boundary preflight. The output runner retained its configured denial profile but not an independent exact-exec preflight.
+
+### Evaluation order
+
+A nine-case focused title run at the preceding revision exposed one self-contained skill gap and two assertion overconstraints. The repository skill omitted the universal rule that co-equal tasks use a batch subject instead of listing every reference. Two assertions also required fixed emoji even though the policy requires an intuitive purpose emoji. The instruction and assertions changed in one commit. The three affected cases then passed all 11 assertions at the recorded exact revision.
+
+The full output suite ran only after the affected gate passed. It covered 99 cases and 362 assertions. Its original runner recorded 90 passing and nine partial cases, with 349 passing and 13 failing assertions and no blocked assertions. All nine task-title cases passed, including canonical issue and pull-request naming, unavailable-metadata behavior, issue-to-authored-PR and co-equal transitions, and stable review and authoring continuation.
+
+Final independent review found that the original output runner could report `pass` when every assertion passed even if the subject timed out before completing. The retained `iterate-pr-review/owned-external-local-authority` subject had timed out, but the raw full result counted it as passing. The repaired runner requires a completed, zero-exit, unsignaled subject before allowing `pass` and includes a deterministic self-check for this boundary. Its exact affected rerun retained the case as partial, with one passing and two failing assertions. Replacing that exact case gives the selected outcome: 89 passing and ten partial cases, with 347 passing and 15 failing assertions. No selected assertion is blocked.
+
+Seven partial cases require a writable checkout, simulated remote write, or another mutation capability that their immutable fixtures do not provide:
+
+- `address-pr-feedback/parent-gated-feedback-loop`;
+- `iterate-pr-review/local-only-fix-authority`;
+- `iterate-pr-review/copilot-request-surface`;
+- `repository-maintenance/open-draft-pr-authority`;
+- `repository-maintenance/authored-pr-rebase-authority`;
+- `repository-maintenance/authored-pr-no-rebase-plain-force`;
+- `write-pr-description/exact-head-evaluation-update`.
+
+The additional `iterate-pr-review/owned-external-local-authority` case is partial because its subject timed out before it completed verification and reported the unpublished local state.
+
+The final two partial cases, `review-pr/explicit-panel-coordinator-handoff` and `review-pr/late-discovered-coordinator-handoff`, accessed supplied pull-request context before separately loading the required review workflows. The retained results preserve those existing load-order failures instead of reporting them as passes.
+
+The full trigger suite covered 102 cases and 306 attempts. Its raw result was 305 passes and one failure: one `review-simplicity/implementation-request` negative attempt loaded the excluded review-only skill before recognizing the boundary. The exact three-attempt affected rerun passed 3 of 3. Replacing that case's earlier attempts gives the selected outcome: all 102 cases and all 306 attempts pass.
+
+### Evidence
+
+- [Original output runner](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-output-evaluations-original.mjs), SHA-256 `ecb96fa57d4104efa47e5e75d5a4850ab22f16a1b4bd4afc766a297f95082a8b`.
+- [Repaired output runner](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-output-evaluations.mjs), SHA-256 `e5d48fdb3a2d102b7149ef375321aa028e99f45aa473c489e7de7d8533e39ff3`.
+- [Affected output rerun](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/codex-output-affected-rerun.json.gz), compressed SHA-256 `7f151aea3bae0ba2a8829407a78ea7e6a7209bf3c3ab21358a387971d487c5fc`; decompressed JSON SHA-256 `22d8679480b64852acd8b2851c6c947c87cb33bd8ad917acc0deafe82131f9be`.
+- [Full output results](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/codex-output-results.json.gz), compressed SHA-256 `5a0c69be58e6a160371e8db542f3b2cd5d1f6f11e54baa20b7951b7c2e69200d`; decompressed JSON SHA-256 `15393089fc263a999417cae4981cf6cb3afd4ca2e6b6b67eda4494f4d290c4f8`.
+- [Timed-out output rerun](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/codex-output-timeout-rerun.json.gz), compressed SHA-256 `f044f5d23b488722ff0ffb858ee4dbc258fecd6ffaeaaad850430d28c9059001`; decompressed JSON SHA-256 `108e1cea8f4660f107baf6a7dec7c712276305fece96b551170ebf57c25e6207`.
+- [Trigger runner](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-trigger-evaluations.mjs), SHA-256 `e40bc6a761e6821cc67e139901de1c2ab3e9435ed2c3d70dcfbe1dc30a519707`.
+- [Affected trigger rerun](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/codex-trigger-affected-rerun.json.gz), compressed SHA-256 `227f45994974581647145b128b730ed72b984d9d35e4774add1c958731e76e8d`; decompressed JSON SHA-256 `d1102e809f87c4c53f78fd646b1c536dfa7fbb4d51c589a7668d00e83d7a7854`.
+- [Full trigger results](evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/codex-trigger-results.json.gz), compressed SHA-256 `58c58fdd19aae82c64de0a7992153045ff0eadef375ab3dea4c3d4c1fb79a6e8`; decompressed JSON SHA-256 `4f2f08ad5c29c73bd5d3bfd0a7b338f6809482685e79cfa86c5d65e95a43fd5e`.
+
+The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations. Compression changed no retained evidence.
+
+Verify them with:
+
+```sh
+node docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-output-evaluations.mjs --verify-self
+node docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-output-evaluations-original.mjs --verify-self
+node docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/run-trigger-evaluations.mjs --verify-classifier
+shasum -a 256 docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/*
+gzip -t docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/*.json.gz
+for file in docs/evaluation-results/d16b2016a880c530041ce00a30b9a438cb1d45f8/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
+```
+
+## Previous output and trigger campaign
 
 Repository revision: `595ab7cc2a3eafe096f1f643d5d78def7c3595f5`.
 

@@ -41,14 +41,35 @@
       ]
     },
     {
+      "id": "github-pr-title-from-metadata",
+      "prompt": "Using the supplied context, choose the initial task title for this pull-request review. Return only the title.",
+      "context": "evals/fixtures/github-pr-title-from-metadata.md",
+      "expectedOutcome": "The initial title uses the canonical pull-request title instead of a generic review label.",
+      "assertions": [
+        "The title uses an intuitive review-purpose emoji, the reference `[R#80600]`, and exactly the canonical subject `Theme: Omit color properties when neither provided nor inherited`.",
+        "The title does not use a generic subject such as `Review pull request` or `Review Gutenberg PR`.",
+        "The response contains only the title."
+      ]
+    },
+    {
+      "id": "github-issue-title-from-metadata",
+      "prompt": "Using the supplied context, choose the initial task title for this issue investigation. Return only the title.",
+      "context": "evals/fixtures/github-issue-title-from-metadata.md",
+      "expectedOutcome": "The initial title uses the canonical issue title without paraphrasing it.",
+      "assertions": [
+        "The title is exactly `🔍 [I#654] Login redirects loop after expired sessions`.",
+        "The title does not use a generic subject such as `Investigate GitHub issue`.",
+        "The response contains only the title."
+      ]
+    },
+    {
       "id": "anchored-github-task-title",
       "prompt": "Using the supplied context, choose the task title after the follow-up issue is opened. Return only the title.",
       "context": "evals/fixtures/anchored-github-task-title.md",
-      "expectedOutcome": "The title accurately reflects the pull request and remains anchored to the primary pull-request review after the supporting issue is opened. Brevity is preferred but not required.",
+      "expectedOutcome": "The generic title is corrected from canonical metadata and remains anchored to the primary pull-request review after the supporting issue is opened.",
       "assertions": [
-        "The title starts with `👀 [R#80600]`.",
-        "The subject accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ from the source title.",
-        "The subject uses the pull-request metadata to describe the specific outcome instead of a generic label such as `Review Gutenberg PR`.",
+        "The title is exactly `👀 [R#80600] Theme: Omit color properties when neither provided nor inherited`.",
+        "The subject uses the canonical pull-request title instead of a generic label such as `Review pull request`.",
         "The supporting follow-up issue does not replace the primary pull-request reference or subject.",
         "The response contains only the title."
       ]
@@ -59,7 +80,7 @@
       "context": "evals/fixtures/github-task-title-metadata-unavailable.md",
       "expectedOutcome": "The title uses the verified context supplied by the user without inventing unavailable GitHub metadata.",
       "assertions": [
-        "The title starts with `🔍 [I#321]`.",
+        "The title starts with an intuitive issue-investigation emoji followed by `[I#321]`.",
         "The subject accurately reflects the user-supplied expired-session redirect loop; exact wording and punctuation can differ from the supplied title.",
         "The title does not invent issue details that are absent from the supplied context.",
         "The response contains only the title."
@@ -77,14 +98,50 @@
       ]
     },
     {
-      "id": "github-task-title-phase-change",
-      "prompt": "Using the supplied context, choose the task title after the primary task enters verification. Return only the title.",
-      "context": "evals/fixtures/github-task-title-phase-change.md",
-      "expectedOutcome": "The title reflects the materially different verification phase while keeping the same primary pull-request reference and task subject. Brevity is preferred but not required.",
+      "id": "github-issue-to-authored-pr-transition",
+      "prompt": "Using the supplied context, choose the task title after the issue task becomes an authored pull request. Return only the title.",
+      "context": "evals/fixtures/github-issue-to-authored-pr-transition.md",
+      "expectedOutcome": "The title transitions once from the source issue to the authored pull request that becomes the session's primary delivery.",
       "assertions": [
-        "The title uses an intuitive verification-phase emoji.",
-        "The title preserves the primary pull-request reference `[R#80600]`.",
-        "The subject still accurately reflects omitting theme color properties when values are neither provided nor inherited; exact wording and punctuation can differ.",
+        "The title is exactly `🛠️ [A#655] Login: Prevent redirect loops after expired sessions`.",
+        "The title replaces the issue work type and reference with the authored pull-request work type and reference.",
+        "The subject uses the canonical authored pull-request title without paraphrasing it.",
+        "The response contains only the title."
+      ]
+    },
+    {
+      "id": "github-coequal-task-title-transition",
+      "prompt": "Using the supplied context, choose the task title after the user makes another task co-equal. Return only the title.",
+      "context": "evals/fixtures/github-coequal-task-title-transition.md",
+      "expectedOutcome": "The title changes from a single pull-request title to a concise batch subject only because the user explicitly makes the second task co-equal.",
+      "assertions": [
+        "The title subject accounts for both the pull request's theme color properties and the issue's contrast-fallback cleanup.",
+        "The title does not remain the unchanged single pull-request title.",
+        "The title does not list both GitHub references.",
+        "The response contains only the title."
+      ]
+    },
+    {
+      "id": "review-pr-title-workflow-continuation",
+      "prompt": "Using the supplied context, choose the task title after the review enters another workflow step. Return only the title.",
+      "context": "evals/fixtures/review-pr-title-workflow-continuation.md",
+      "expectedOutcome": "The complete review title remains unchanged when the user asks to iterate and verify the updated pull-request head.",
+      "assertions": [
+        "The title is exactly `👀 [R#80600] Theme: Omit color properties when neither provided nor inherited`.",
+        "The title keeps the review purpose emoji instead of changing to an iteration or verification emoji.",
+        "The title does not change its work type, pull-request reference, or canonical subject.",
+        "The response contains only the title."
+      ]
+    },
+    {
+      "id": "authored-pr-title-workflow-continuation",
+      "prompt": "Using the supplied context, choose the task title after the authored pull request enters later workflow steps. Return only the title.",
+      "context": "evals/fixtures/authored-pr-title-workflow-continuation.md",
+      "expectedOutcome": "The complete authoring title remains unchanged through feedback fixes, a rebase, and a supporting follow-up.",
+      "assertions": [
+        "The title is exactly `🛠️ [A#81234] Button: Preserve shortcut descriptions for icon-only controls`.",
+        "The title keeps the authoring purpose emoji instead of changing to a feedback, fix, rebase, or follow-up purpose.",
+        "The title does not change its work type, pull-request reference, or canonical subject.",
         "The response contains only the title."
       ]
     },
