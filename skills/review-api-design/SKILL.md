@@ -1,6 +1,6 @@
 ---
 name: review-api-design
-description: Perform a read-only review of a public component, library, or package API for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use when the user explicitly requests API-design review of exports, types, props, callbacks, composition, or public-contract compatibility; use review-compatibility for supported-version, upgrade, migration, or persisted-state behavior. Do not use as a standalone general PR review, internal implementation review, or API implementation; `review-pr` may invoke this skill as a targeted specialist pass. Never edit source, commit, or write remotely.
+description: Review a public component, library, or package API read-only for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use directly for focused API-design review requests about exports, types, props, callbacks, composition, or public contracts. Use review-compatibility for versions, upgrades, migrations, or persisted state. Do not use for general PR review, internal implementation review, or API implementation; review-pr may invoke it as a specialist. Never edit source, commit, or write remotely.
 ---
 
 # Review API Design

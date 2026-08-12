@@ -1,6 +1,6 @@
 ---
 name: review-internationalization
-description: Perform a read-only internationalization and localization review of user-facing text, translation behavior, locale-aware formatting, bidirectional layout, pluralization, or translator context. Use directly only for a focused i18n, l10n, translation, locale, RTL, formatting, pluralization, or translatable-UI review. A general, panel, coordinated, or multi-lane PR review must start with review-pr even when it names localization; review-pr or review-coordinator may later delegate this specialist. Never edit source, commit, or write remotely.
+description: Review user-facing text read-only for internationalization and localization, including translation, locale formatting, bidirectional layout, pluralization, and translator context. Use directly only for focused i18n, l10n, locale, RTL, formatting, pluralization, or translatable-UI requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist. Never edit source, commit, or write remotely.
 ---
 
 # Review Internationalization

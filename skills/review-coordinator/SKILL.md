@@ -1,6 +1,6 @@
 ---
 name: review-coordinator
-description: Continue the internal second-stage synthesis for a loaded review-pr workflow. Receive its pinned snapshot, completed core result, and mandatory review-simplicity handoff; select materially relevant specialist investigations; and return one rechecked response. Match a user prompt directly only when it explicitly names review-coordinator. Otherwise review-pr loads this skill after review-simplicity when coordination is required. Never edit source, commit, or write remotely.
+description: Coordinate the second stage of a loaded review-pr workflow. Receive its pinned snapshot, completed core result, and review-simplicity handoff; select material specialist investigations; and return one rechecked response. Match directly only when the user names review-coordinator. Otherwise, review-pr loads it after review-simplicity when coordination is required. Never edit source, commit, or write remotely.
 ---
 
 # Review Coordinator

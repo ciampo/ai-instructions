@@ -10,6 +10,11 @@
       "id": "internal-refactor",
       "prompt": "Review this internal implementation refactor for correctness and tests; no public API changes are involved.",
       "shouldTrigger": false
+    },
+    {
+      "id": "public-api-implementation",
+      "prompt": "Implement these new public SelectControl props and exported types, update the tests, and commit the change.",
+      "shouldTrigger": false
     }
   ],
   "outputCases": [

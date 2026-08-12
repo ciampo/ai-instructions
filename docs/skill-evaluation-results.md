@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial. The PR #112 task-title campaign passed every changed title case and every selected trigger case and attempt. Ten selected output cases remain partial because immutable fixtures cannot perform required mutations, one subject timed out, or review subjects violated existing load-order rules. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial. The PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -16,6 +16,75 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #115 review-prose campaign
+
+Repository revision: `4c683c3fab5f045e88a56f4883c19a7e27bf2e62`.
+
+Evaluation-fixture revision: `4c683c3fab5f045e88a56f4883c19a7e27bf2e62`.
+
+Base revision: `a97b4cc6897584184e72a194c8b85f24ccde5dcc` from `main`.
+
+The later evidence commit changes only documentation and retained evaluation artifacts. Its `skills` tree matches the evaluated revision.
+
+Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tier. Every subject, grader, and trigger attempt used a fresh isolated home and outside-repository workspace. The runners staged the immutable target with `git archive`, rejected skill-tree changes, and retained sanitized command and event evidence with exact target-tree provenance. The target `skills` tree is `ff3ba5d0f1ee7dcd6f6a7e3a3f5c3a0a519635e8`. The trigger runner retained an independent exact-exec boundary preflight. The output runner retained its configured denial profile but not an independent exact-exec preflight.
+
+### Evaluation order
+
+Independent self-review found that the simplified `review-api-design` description no longer explicitly excluded public API implementation requests. The accepted fix restored that boundary and added the `review-api-design/public-api-implementation` negative trigger fixture. A second independent review found no actionable feedback at the recorded exact revision.
+
+The focused trigger gate covered ten cases and passed all 30 attempts. The focused output gate covered eight cases and 30 assertions. Its raw result was four passing and four partial cases, with 25 passing, two failing, and three blocked assertions. The four affected review-routing cases then reran serially and passed all 16 assertions. Replacing those exact cases gives the selected focused outcome: all eight cases and all 30 assertions pass.
+
+The full output suite covered 99 cases and 362 assertions. Its raw result was 86 passing and 13 partial cases, with 347 passing and 15 failing assertions and no blocked assertions. Seven inconsistent cases reran serially. Five passed. `review-accessibility/source-proven-read-only-finding` retained one failing assertion, and `repository-maintenance/github-issue-to-authored-pr-transition` retained one failing assertion. Replacing those exact cases initially gave 91 passing and eight partial cases, with 353 passing and nine failing assertions.
+
+Because the accessibility result differed from the earlier retained campaign, a later paired comparison ran the same case three times against exact trunk `a97b4cc6897584184e72a194c8b85f24ccde5dcc` and the pull-request source revision. Both revisions passed 3 of 3 attempts and all nine assertions per revision, for 18 of 18 combined. The fixture context SHA-256 was `92c21dd060ab4852536f557c9661e23eb875351f6278bc0c145ffcd1d2efadbd` for every attempt. The two runners are identical except for the immutable target revision. The concordant pull-request attempts supersede the earlier single partial, and the case is counted once in the selected suite. The final selected outcome is 92 passing and seven partial cases, with 354 passing and eight failing assertions. This paired sample does not show an accessibility regression. Every output case tied to the changed workflow bodies or API-design boundary fix passes.
+
+Six partial cases require a writable checkout, simulated remote write, or another mutation capability that their immutable fixtures do not provide:
+
+- `address-pr-feedback/parent-gated-feedback-loop`;
+- `iterate-pr-review/copilot-request-surface`;
+- `repository-maintenance/open-draft-pr-authority`;
+- `repository-maintenance/authored-pr-rebase-authority`;
+- `repository-maintenance/authored-pr-no-rebase-plain-force`;
+- `write-pr-description/exact-head-evaluation-update`.
+
+The `repository-maintenance/github-issue-to-authored-pr-transition` subject used the issue-triage purpose emoji instead of the required authored-pull-request purpose emoji. This unchanged workflow is unrelated to the review-prose changes.
+
+The full trigger suite covered 103 cases and 309 attempts. Its raw result was 308 passes and one failure: one `draft-review-comment/perform-pr-review` negative attempt loaded `draft-review-comment` only after `review-pr` stopped because the fixture did not supply pull-request context. The other two raw attempts passed. The exact three-attempt affected rerun passed 3 of 3. Replacing that case's earlier attempts gives the selected outcome: all 103 cases and all 309 attempts pass. The new public API implementation exclusion passes 3 of 3.
+
+Copilot review was intentionally deferred at the user's request. Do not infer a complete `iterate-pr-review` cycle from the self-review and evaluation results alone.
+
+### Evidence
+
+- [Output runner](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-output-evaluations.mjs), SHA-256 `7fd8d79b10a4b80c7e1ba0f01f51f66ffbb7128a55e7986a590b95e005b9fed3`.
+- [Focused output results](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-focused-results.json.gz), compressed SHA-256 `ee40583c4f97f425a47457fe62e69244c1f7370f73c619999b9c58b1a9db979f`; decompressed JSON SHA-256 `3f5510ab82778e865f4284b90a95f2f3800f650be5513eeedbf8cbf1e8621275`.
+- [Focused output rerun](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-focused-rerun.json.gz), compressed SHA-256 `7e6c964ab04137261139909c886c47f1c108859ae14e3832faf9176e724a4635`; decompressed JSON SHA-256 `4d6efdca0eaea3e5564aed19b4163275b2cd2718ed122642572f93ad21fc975d`.
+- [Full output results](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-results.json.gz), compressed SHA-256 `1278a68e65185fd45c50a13480a4cd6a6c16a708264d4aaa2186ae67d5d96977`; decompressed JSON SHA-256 `45cb55ba25854fbde431621e78e75cdd778ff50bdd439ee361342ee1ddf487ee`.
+- [Affected output rerun](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-affected-rerun.json.gz), compressed SHA-256 `6a747b06637f10f43ef4500999cbc84923e6c45ba575eeaeba244eca63c554d5`; decompressed JSON SHA-256 `fc3ccf31f5fbc63a1e8cde024cb0c44c91230455d7e1c8363965d9c3ecf03f49`.
+- [Trunk comparison runner](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-output-trunk-comparison.mjs), SHA-256 `69510a4ce1f7f90bf9a659d3b68c0bc938a6bf582229e0c42eea9f8da556b62c`.
+- [Pull-request accessibility attempt 1](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-pr-attempt-1.json.gz), compressed SHA-256 `27b10cc31a6ffa557771bd2d82f6a8c6b977f16da152c04ce7dc940f76dbb9f9`; decompressed JSON SHA-256 `42dcda06a294ced63603c952a9a23a385a5243b7ef04be827bfc544808fd2722`.
+- [Pull-request accessibility attempt 2](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-pr-attempt-2.json.gz), compressed SHA-256 `a99b1d6243e0dc41efe1e542efcae1f1860fdd0d1ce8a3b2bcb06a15300dbbec`; decompressed JSON SHA-256 `669fa175b0ee0a8b9da1023ec86bbeea3b0b4a6c404c6a9bdf02459fefe57761`.
+- [Pull-request accessibility attempt 3](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-pr-attempt-3.json.gz), compressed SHA-256 `195e4f2d00a3f9f0ff8889d4e982b697ea9bc45ccae668dc2165f6e4dbe2d38d`; decompressed JSON SHA-256 `3d9d91d9f5cbd2619b0999330c52aa3cc7704cd2894f57ff81a40714fd3b6604`.
+- [Trunk accessibility attempt 1](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-trunk-attempt-1.json.gz), compressed SHA-256 `34de013c8c737f58315ee0a2d901ae21ba783d90aca8d9a0783a242b7b63ef6c`; decompressed JSON SHA-256 `cd846b907c8cb49df280382d73af83cae82eee9dc2bcb0cb3e87e82662e8f990`.
+- [Trunk accessibility attempt 2](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-trunk-attempt-2.json.gz), compressed SHA-256 `17a0ee139a047331adecabeccc8688ea7aa53683e8965134cc056a2fda26648a`; decompressed JSON SHA-256 `4c74fd95e652afcee1871ca102e4bfd909bdfd9a88c8ec4de709199baa2b6aba`.
+- [Trunk accessibility attempt 3](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-output-accessibility-trunk-attempt-3.json.gz), compressed SHA-256 `bc7ce53964d45b851bee8c968fadc5e63631283df81cb5d7bc204cecc28e1a3b`; decompressed JSON SHA-256 `bcf90b52aa693ca533a98d89e4e5d558350d10c909e0511a2b555bfb5bcb2d27`.
+- [Trigger runner](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-trigger-evaluations.mjs), SHA-256 `dfe1d5868a4c19ccd4568a2725389e5f14328f70bdb202db4025b186536b714a`.
+- [Focused trigger results](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-trigger-focused-results.json.gz), compressed SHA-256 `75a8b6dc59660a30adf5799b8c8b320896f64cde2414f0d89f7bac95c56a29a5`; decompressed JSON SHA-256 `fb68527d3aed618a5217a7410f26560060eae0babe534ad1954ab2f13c679775`.
+- [Full trigger results](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-trigger-results.json.gz), compressed SHA-256 `58b21f065f37e4bfa40c7e1abae1455777856f24e46a575e98b24bab4a33d44f`; decompressed JSON SHA-256 `bb4fb42be37d843fc2b6ad45c1c17902aa1d27e13d4bd0d7893206169311f333`.
+- [Affected trigger rerun](evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/codex-trigger-affected-rerun.json.gz), compressed SHA-256 `43fd3d77148d8dda09f157a3d7730fbc5d5ddb11b06a10aa5dd1d20fd7f56235`; decompressed JSON SHA-256 `632d553fb5ccaedc8910d56a3fe470c81ed1e1cf7d172024d371bce615060cc2`.
+
+The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations. Compression changed no retained evidence.
+
+Verify them with:
+
+```sh
+node docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-output-evaluations.mjs --verify-self
+node docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-output-trunk-comparison.mjs --verify-self
+node docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/run-trigger-evaluations.mjs --verify-classifier
+shasum -a 256 docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/*
+gzip -t docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/*.json.gz
+for file in docs/evaluation-results/4c683c3fab5f045e88a56f4883c19a7e27bf2e62/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
+```
 
 ## PR #112 task-title campaign
 
