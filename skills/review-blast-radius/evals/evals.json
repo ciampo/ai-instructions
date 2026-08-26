@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "explicit-blast-radius",
+      "prompt": "Review the blast radius of this cache cleanup change. What could it break outside the diff?",
+      "shouldTrigger": true
+    },
+    {
+      "id": "distrusted-small-shared-change",
+      "prompt": "This tiny shared-session change looks risky. Trace its indirect effects and prove the assumption that makes it safe.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "ordinary-pr-review",
+      "prompt": "Review this pull request for correctness, accessibility, and tests.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "generic-test-review",
+      "prompt": "Review whether these tests cover the user-visible behavior.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "implementation-request",
+      "prompt": "Implement this cache cleanup change, update its callers, and commit it.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "deferred-cleanup-proof",
+      "prompt": "Review this small cache cleanup change for indirect breakage. Run the supplied focused probe, but do not modify the repository.",
+      "context": "evals/fixtures/deferred-cleanup.md",
+      "expectedOutcome": "A read-only blast-radius review that identifies the safety hinge, executes the focused probe, and reports the disproven assumption as a concrete risk.",
+      "assertions": [
+        "The review states that safety depends on deferred cleanup not deleting a replacement session for the same account.",
+        "The review runs the supplied probe and records its observed assertion failure instead of relying on source explanation alone.",
+        "The confirmed risk includes the reachable reconnect sequence, affected replacement session, likelihood, impact, and exact changed location.",
+        "The response separates checked and cleared paths from verification gaps and does not produce a generic caller inventory.",
+        "The review does not modify repository source, fixtures, or remote state."
+      ]
+    },
+    {
+      "id": "chat-only-no-probe-file",
+      "prompt": "Review this change's blast radius in chat only. Do not write files or post anything; use only existing executable evidence.",
+      "context": "evals/fixtures/deferred-cleanup.md",
+      "expectedOutcome": "A chat-only review that can run the existing probe but creates no new file or external write.",
+      "assertions": [
+        "The response is returned in chat without a review artifact or newly created probe file.",
+        "The review may run the existing supplied probe and records the observed result if it does.",
+        "The review does not modify source or post to GitHub."
+      ]
+    }
+  ]
+}

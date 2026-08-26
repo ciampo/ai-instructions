@@ -23,6 +23,7 @@ Coordinate independent specialist investigations without replacing the core `rev
    - `review-compatibility` for supported versions, upgrades, persisted state, migrations, wire formats, or integrations.
    - `review-performance` for material bundle, runtime, layout, or scale risk.
    - `review-security` for trust boundaries, authority, sensitive data, injection, or secrets. Do not use it as a substitute for dependency auditing.
+   - `review-blast-radius` for materially uncertain indirect effects across lifecycle timing, dependency semantics, generated artifacts, persisted data, wire formats, language boundaries, or downstream systems. Ordinary caller analysis stays in the core review.
    - `audit-dependency-update` for every dependency change. Include its release, resolved-version, compatibility, audit, and build evidence in the coordinated result when the change is otherwise in scope.
    - `review-test-quality` when behavior, regressions, UI semantics, mocks, or verification evidence are material.
    - `review-internationalization` for localized text, formatting, pluralization, or directional UI.

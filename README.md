@@ -41,6 +41,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [review-compatibility](skills/review-compatibility/SKILL.md) | upgrade, migration, backward compatibility, persisted state, or wire format | Read-only, supported-state compatibility review |
 | [review-performance](skills/review-performance/SKILL.md) | performance, bundle, rendering, layout, paint, or scale | Read-only, evidence-based performance review |
 | [review-security](skills/review-security/SKILL.md) | security, privacy, authorization, injection, secrets, or sensitive data | Read-only, trust-boundary security review |
+| [review-blast-radius](skills/review-blast-radius/SKILL.md) | blast radius, indirect breakage, risky small diff, or downstream effects | Read-only, executable-proof review of indirect change impact |
 | [review-test-quality](skills/review-test-quality/SKILL.md) | test strategy, behavioral testing, UI tests, or verification | Read-only, user-observable test-quality review |
 | [review-internationalization](skills/review-internationalization/SKILL.md) | i18n, localization, translation, locale, or RTL | Read-only, locale and translation review |
 | [review-documentation](skills/review-documentation/SKILL.md) | documentation, examples, JSDoc, comments, or developer experience | Read-only, source-verified documentation review |
@@ -61,7 +62,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 
 ### Specialist reviews
 
-Accessibility, API design, compatibility, performance, security, test quality, internationalization, documentation, and simplicity reviews are direct skills. Simplicity is a mandatory baseline for every ordinary, coordinated, and self-review PR pass; the other specialist lanes remain conditional on material scope. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) supports host-provided subagents for material additional lanes and rechecks one final response. The repository still bundles no custom agents.
+Accessibility, API design, compatibility, performance, security, blast radius, test quality, internationalization, documentation, and simplicity reviews are direct skills. Simplicity is a mandatory baseline for every ordinary, coordinated, and self-review PR pass; the other specialist lanes remain conditional on material scope. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) supports host-provided subagents for material additional lanes and rechecks one final response. The repository still bundles no custom agents.
 
 ## Conventions
 

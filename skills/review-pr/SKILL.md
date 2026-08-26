@@ -34,6 +34,7 @@ Review a GitHub pull request without changing it.
    - Use `review-compatibility` for supported-version behavior, upgrades, migrations, persisted state, wire formats, or integration compatibility. Keep public API shape in `review-api-design`.
    - Use `review-performance` when the change plausibly affects bundle loading, a user-critical runtime path, rendering or layout work, or behavior at meaningful scale. Do not invoke it for generic optimization ideas or harmless local computation.
    - Use `review-security` for untrusted input, authentication, authorization, secrets, sensitive data, injection, or security-sensitive dependency changes.
+   - Use `review-blast-radius` when a small or shared change has materially uncertain indirect effects across lifecycle timing, dependency semantics, generated artifacts, persisted data, wire formats, language boundaries, or downstream systems. Keep ordinary caller and consumer analysis in the core pass.
    - Use `audit-dependency-update` for every dependency addition, removal, or version change. Include its version, release, compatibility, audit, and build evidence in the synthesized review.
    - Use `review-test-quality` when behavioral evidence, UI semantics, regression coverage, mocks, or verification quality are material to the change.
    - Use `review-internationalization` for user-facing translations, locale formatting, pluralization, or directional UI.
