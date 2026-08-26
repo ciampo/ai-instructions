@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "explicit-unslop-request",
+      "prompt": "Unslop this release note. Keep its technical meaning and uncertainty intact.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "less-generated-rewrite",
+      "prompt": "Rewrite this announcement so it sounds less AI-generated, but keep my informal tone.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "documentation-review",
+      "prompt": "Review this migration guide for accuracy, missing steps, and unnecessary prose.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "ordinary-pr-description",
+      "prompt": "Write a concise pull-request description from this completed diff.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "meaning-preserving-rewrite",
+      "prompt": "Unslop this release note. Return only the revised text.",
+      "context": "evals/fixtures/release-note.md",
+      "expectedOutcome": "A direct release note that removes formulaic filler while preserving every supported fact, limitation, identifier, and uncertainty marker.",
+      "assertions": [
+        "The revision preserves the exact identifiers `cacheMode`, `legacy`, and `v3.4.0`, plus the measured 18 percent result.",
+        "The revision preserves that the Windows result is preliminary and does not claim confirmed or universal performance.",
+        "The revision removes generic praise, vague attribution, repetition, and the unsupported claim about changing how teams work.",
+        "The revision does not add facts, sources, opinions, anecdotes, or a change log."
+      ]
+    },
+    {
+      "id": "requested-voice-preservation",
+      "prompt": "Make this update sound less generated. Keep the first-person voice, contractions, and candid tone. Return only the revision.",
+      "context": "evals/fixtures/project-update.md",
+      "expectedOutcome": "A shorter project update that keeps the author's candid first-person voice and unresolved limitation without adding artificial personality.",
+      "assertions": [
+        "The revision retains first-person voice and the statement that the author does not yet know why Safari fails.",
+        "The revision keeps the concrete Chrome and Firefox result and the planned Safari investigation.",
+        "The revision removes the generic opening and closing without making the text sterile or more formal.",
+        "The revision does not invent a cause, confidence level, opinion, anecdote, or stylistic quirk."
+      ]
+    }
+  ]
+}
