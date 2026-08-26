@@ -56,7 +56,8 @@
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
         "Each confirmed finding appears once, without a repeated summary or review-process narrative.",
         "The review includes the mandatory review-simplicity baseline even though the prompt does not request simplification.",
-        "Focused specialist findings are synthesized instead of delivered as competing reports."
+        "Focused specialist findings are synthesized instead of delivered as competing reports.",
+        "The final summary and comments use direct, specific prose without chatbot filler, sycophantic praise, promotional language, or generic conclusions, while retaining exact severities, file locations, identifiers, and evidence."
       ]
     },
     {

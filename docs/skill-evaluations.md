@@ -49,6 +49,12 @@ The fixture is JSON at `skills/<name>/evals/evals.json` and uses this shape:
 
 Every output case needs a `context` path relative to its skill directory. It must identify a version-controlled, self-contained source artifact that an isolated evaluator can inspect. For a pull request, record the repository URL and immutable base and head revisions in that artifact; for a component or library review, include available source, consumers, and tests, and name any missing evidence. `npm run content:check` validates complete skill coverage, fixture version, identifiers, positive and negative trigger coverage, output assertions, context files, and the aggregate skill-description budget. It does not claim to execute a model evaluation.
 
+## Cross-skill cases
+
+When one request should load multiple skills, repeat the exact prompt as a positive trigger case in every expected skill. Add an output assertion to the skill that owns the artifact. The assertion must cover both that skill's output contract and the other skill's observable effect.
+
+Run the shared prompt once with the complete skill catalog and record every loaded skill. The case passes only when all expected skills load and the combined output satisfies the owning fixture. Separate successful runs do not prove co-activation. Compare the combined result with the previous skill revision or a no-skill baseline when attribution matters.
+
 ## Running an evaluation
 
 Use an isolated task or fresh session and a client that can expose which skills it loads.

@@ -12,6 +12,16 @@
       "shouldTrigger": true
     },
     {
+      "id": "pr-description-cross-skill",
+      "prompt": "Write a concise pull-request description from this completed diff.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "pr-review-cross-skill",
+      "prompt": "Please review https://github.com/example/widgets/pull/42 for correctness, tests, and accessibility.",
+      "shouldTrigger": true
+    },
+    {
       "id": "exact-json-output",
       "prompt": "Return this JSON object byte-for-byte with no surrounding prose: {\"status\":\"pending\"}",
       "shouldTrigger": false
