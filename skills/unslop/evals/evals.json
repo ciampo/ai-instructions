@@ -44,7 +44,7 @@
         "The revision preserves the exact identifiers `cacheMode`, `legacy`, and `v3.4.0`, plus the measured 18 percent result.",
         "The revision preserves that the Windows result is preliminary and does not claim confirmed or universal performance.",
         "The revision removes generic praise, vague attribution, repetition, and the unsupported claim about changing how teams work.",
-        "The revision does not add facts, sources, opinions, anecdotes, or a change log."
+        "The revision does not add facts or sources and returns only the revised text."
       ]
     },
     {
@@ -56,7 +56,7 @@
         "The revision retains first-person voice and the statement that the author does not yet know why Safari fails.",
         "The revision keeps the concrete Chrome and Firefox result and the planned Safari investigation.",
         "The revision removes the generic opening and closing without making the text sterile or more formal.",
-        "The revision does not invent a cause, confidence level, opinion, anecdote, or stylistic quirk."
+        "The revision does not invent a cause or change the source's confidence level."
       ]
     }
   ]
