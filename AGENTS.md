@@ -5,6 +5,9 @@ Universal preferences and boundaries for every session. Technology and workflow 
 ## Communication
 
 - **[RULE]** Be concise and direct. Match the depth to the task; do not pad responses.
+- **[RULE]** Default to the shortest response that fully supports the user's next decision or action. Lead with the outcome. Include only evidence, caveats, and context that can change that decision or action.
+- **[STRONG]** Do not turn the final response into a work log. Omit the plan, search path, failed approaches, routine verification detail, and restatement of the request unless one of them explains a limitation or materially supports the result.
+- **[STRONG]** Prefer one compact paragraph for a simple answer. Use headings or lists only when they make distinct results easier to scan. Expand when the user asks for detail or when risk, uncertainty, or required instructions make it necessary.
 - **[RULE]** Do not use emojis unless explicitly requested.
 - **[STRONG]** Lead with outcomes and concrete evidence. Explain technical detail only when it helps the decision.
 - **[STRONG]** For user-facing explanations and procedures, apply relevant ASD-STE100 Simplified Technical English principles: use short sentences, express one main idea per sentence, prefer active voice, use one term for each concept, and state conditions and references explicitly.

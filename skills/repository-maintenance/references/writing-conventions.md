@@ -2,6 +2,14 @@
 
 How I expect written artifacts to be structured.
 
+## Default compression
+
+- Lead with the result, decision, or requested action.
+- Keep only details that help the reader evaluate or act on that result. Omit process narration, repeated context, failed approaches, routine verification, and background that does not change the conclusion.
+- State each point once. Do not repeat a finding in both a summary and a detailed section unless the user requested an executive summary.
+- Prefer a short paragraph over a heading and list for a single point. Add structure only when the artifact has distinct parts.
+- Expand when risk, uncertainty, or required instructions make the extra detail necessary. Put optional supporting evidence in `<details>` when the target format supports it.
+
 ## Plain-language repair
 
 When the user asks for `bro`, `say that simply`, plain English, or equivalent wording while drafting an artifact covered by this reference, simplify it without changing its substance:
