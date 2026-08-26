@@ -72,6 +72,18 @@
       ]
     },
     {
+      "id": "direct-blast-radius-routing",
+      "prompt": "Review this small shared-cache pull request, trace what it could break beyond the diff, and provide one evidence-backed response.",
+      "context": "evals/fixtures/direct-blast-radius-routing.md",
+      "expectedOutcome": "One read-only review that delegates the materially uncertain indirect effect to review-blast-radius and synthesizes its executable evidence on the ordinary direct-specialist path.",
+      "assertions": [
+        "The review keeps this one-lane case on the ordinary review-pr path and loads review-blast-radius without escalating to the coordinator.",
+        "The specialist identifies deferred cleanup not deleting a replacement session as the safety hinge and runs the supplied focused probe.",
+        "The final review synthesizes the observed failure into one confirmed finding with the reconnect sequence and replacement-session impact.",
+        "The specialist does not create a competing review artifact or modify repository source."
+      ]
+    },
+    {
       "id": "coordinator-handoff-routing",
       "prompt": "Review this pull request with authorization and persisted-state migration changes, then provide one evidence-backed response.",
       "context": "evals/fixtures/coordinator-handoff-routing.md",

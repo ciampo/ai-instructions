@@ -18,7 +18,7 @@ The coordinator may use host-provided subagents in parallel. Where that capabili
 The specialist set is:
 
 - simplicity as a mandatory baseline for every review;
-- accessibility, public API design, compatibility, performance, security, test quality, internationalization, and documentation when material;
+- accessibility, public API design, compatibility, performance, security, blast radius, test quality, internationalization, and documentation when material;
 - dependency-specific security work remains with `audit-dependency-update`.
 
 The coordinator rechecks every candidate against the pinned diff, consumers, repository policy, and existing review state. It treats agreement as a prompt to verify, never as proof. A single final response contains only confirmed, deduplicated findings; uncertainty stays in verification gaps.
