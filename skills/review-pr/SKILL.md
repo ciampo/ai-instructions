@@ -47,25 +47,12 @@ Review a GitHub pull request without changing it.
 
 ## Output Format
 
-The review document should contain a summary followed by individual comment sections.
+- If there are no findings, state that in one sentence. Add a compact verification-gaps list only when a gap materially limits the conclusion.
+- If there are findings, give each finding once. Do not add a prose summary or findings overview that repeats the comments. Use `## PR Review: #NNNNN -- Title`, then one concise section per finding.
+- Include process, snapshot, and verification details only when they establish scope, limit confidence, or require user action. Keep exact revisions to one compact line when the workflow requires them.
 
-### Review Summary
-
-```markdown
-## PR Review: #NNNNN -- Title
-
-### Summary
-(2-3 sentences on what the PR does and overall assessment)
-
-### Findings Overview
-1. **[severity]** One-line description (`file:start-end` when applicable)
-2. ...
-```
-
-### Individual Comments
-
-After the summary, one section per finding. Each section must:
+Each finding must:
 
 - State the **exact file path and line range** for an inline finding (e.g., **`src/components/Button.tsx:42-45`**). Use a file path without an invented line for a file-level finding, and no fabricated location for a general finding.
 - Be self-contained and copy-pasteable into a GitHub review thread.
-- Follow the formatting rules from the `draft-review-comment` skill: concise, collaborative tone, `<details>` for extended content, concrete alternatives or clarifying questions.
+- Follow the formatting rules from the `draft-review-comment` skill: state the problem, impact, and requested action in one short paragraph by default; use `<details>` only for necessary supporting content.

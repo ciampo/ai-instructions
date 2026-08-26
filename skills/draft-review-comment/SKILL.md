@@ -18,10 +18,10 @@ Craft review comments that are ready to paste into GitHub. This skill can handle
 
 1. Identify the pull request, code, and concern that each comment addresses.
 2. Use a concise, collaborative tone. Lead with plain language and put extended technical content in `<details>`.
-   - Lead with a high-level explanation of the result, concern, or decision before discussing code mechanics.
+   - Default to one short paragraph that states the problem, its concrete impact, and the requested change or question. Add a second paragraph only when the reader needs it to act.
+   - Start with the concern. Omit greetings, praise, review-process narration, repeated context, and low-level mechanics that do not change the requested action.
    - When the behavior can be observed, include short reproduction or verification steps: where to go, what to do, and what to expect.
-   - Keep implementation details and suggested diffs secondary. Put them in `<details>` when the comment is understandable without them.
-   - Acknowledge what the PR does well only when it adds useful context. Keep it to one sentence and do not let it delay the main point.
+   - Keep supporting evidence, implementation details, and suggested diffs secondary. Put them in `<details>` when the comment is understandable without them.
    - Inline findings must specify the **exact file path and line range** they apply to (e.g., **`src/components/Button.tsx:42-45`**). File-level findings need the file path but no invented line. General or architectural findings may omit a code location when no honest location exists.
    - Each feedback item should propose a concrete alternative or ask a clarifying question.
 3. Follow **Output Delivery**. Use one self-contained, copy-pasteable section per comment thread or review point.

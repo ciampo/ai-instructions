@@ -84,6 +84,18 @@
         "The workflow does not create, open, or modify a local file.",
         "The workflow does not post comments, replies, or reviews to GitHub."
       ]
+    },
+    {
+      "id": "compress-overlong-source-notes",
+      "prompt": "Turn these confirmed notes into copy-pasteable review comments. Return them in chat only.",
+      "context": "evals/fixtures/overlong-findings.md",
+      "expectedOutcome": "Two short, copy-pasteable comments that preserve the problem, impact, and requested change without repeating the supplied investigation narrative.",
+      "assertions": [
+        "Each comment leads with the concern and states its concrete impact and requested change or question.",
+        "The comments omit the supplied investigation history, failed approaches, routine verification detail, and repeated background.",
+        "Each finding appears once rather than in both a summary and a detailed section.",
+        "The workflow returns only the requested comments in chat and does not create a local artifact or post to GitHub."
+      ]
     }
   ]
 }

@@ -54,6 +54,7 @@
         "The review retrieves only the remote state it needs and uses a thread-aware interface when resolved state or merged discussion matters.",
         "The review refreshes the remote review state it used before delivery and accounts for new or resolved feedback.",
         "Each confirmed finding is tied to the pull request diff and relevant consumers.",
+        "Each confirmed finding appears once, without a repeated summary or review-process narrative.",
         "The review includes the mandatory review-simplicity baseline even though the prompt does not request simplification.",
         "Focused specialist findings are synthesized instead of delivered as competing reports."
       ]
