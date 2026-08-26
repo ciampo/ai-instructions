@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "triggerCases": [
     {
-      "id": "explicit-unslop-request",
-      "prompt": "Unslop this release note. Keep its technical meaning and uncertainty intact.",
+      "id": "ordinary-technical-answer",
+      "prompt": "Explain why this deployment did not complete and what we know so far.",
       "shouldTrigger": true
     },
     {
@@ -12,17 +12,29 @@
       "shouldTrigger": true
     },
     {
-      "id": "documentation-review",
-      "prompt": "Review this migration guide for accuracy, missing steps, and unnecessary prose.",
+      "id": "exact-json-output",
+      "prompt": "Return this JSON object byte-for-byte with no surrounding prose: {\"status\":\"pending\"}",
       "shouldTrigger": false
     },
     {
-      "id": "ordinary-pr-description",
-      "prompt": "Write a concise pull-request description from this completed diff.",
+      "id": "verbatim-quotation",
+      "prompt": "Repeat this quotation verbatim and add nothing: ‘Of course—the future looks bright.’",
       "shouldTrigger": false
     }
   ],
   "outputCases": [
+    {
+      "id": "ordinary-user-response",
+      "prompt": "Answer the user's question from the supplied evidence. Do not mention writing style.",
+      "context": "evals/fixtures/deployment-status.md",
+      "expectedOutcome": "A direct, natural status answer that leads with the known failure, preserves the unknown cause, and avoids generic conversational filler.",
+      "assertions": [
+        "The answer states that deployment stopped during the database migration and that no retry ran.",
+        "The answer preserves that the root cause is unknown and does not make the evidence more certain.",
+        "The answer responds directly without an automatic greeting, praise, vague attribution, or generic conclusion.",
+        "The answer does not mention the skill, writing process, or AI-writing patterns."
+      ]
+    },
     {
       "id": "meaning-preserving-rewrite",
       "prompt": "Unslop this release note. Return only the revised text.",
