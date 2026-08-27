@@ -33,6 +33,7 @@
         "The What and Why sections lead with the user-visible focus-restoration outcome rather than implementation mechanics.",
         "Testing Instructions describe the exact dialog interaction and expected focus result.",
         "Routine lint and unit-test commands are omitted from the primary manual instructions or placed in secondary details.",
+        "The prose is direct and specific, with no chatbot opening, puffery, vague attribution, forced contrast, or generic conclusion; it preserves the required headings, links, and technical terms.",
         "The workflow returns a local draft and does not update the remote pull request."
       ]
     },
