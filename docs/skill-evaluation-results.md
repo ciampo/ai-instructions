@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial. The PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -16,6 +16,47 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #119 unslop cross-skill campaign
+
+Repository revision: `a0328fbafd28cb604de52e2a6fd50300a8b843b2`.
+
+Evaluation-fixture revision: `a0328fbafd28cb604de52e2a6fd50300a8b843b2`.
+
+Base revision: `a5f7e09954e2ee4b0054fa26aca80193d83055a1` from `main`.
+
+The later evidence commit changes only documentation and retained evaluation artifacts. Its `skills` tree matches the evaluated revision. The target `skills` tree is `197ef404e8ec6694abd422d2f4ed999e94460e8f`.
+
+Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tier. Every subject, grader, and trigger attempt used a fresh isolated home and outside-repository workspace. The runners staged the immutable target with `git archive`, rejected skill-tree changes, and retained sanitized command and event evidence with exact target-tree provenance. The trigger runner retained an independent exact-exec boundary preflight. The output runner retained its configured denial profile but not an independent exact-exec boundary preflight.
+
+### Results
+
+The focused trigger run covered the shared pull-request-description and review prompts under both expected skills. All 12 target classifications passed across three attempts per fixture case.
+
+The three `write-pr-description/draft-description` attempts loaded both `write-pr-description` and `unslop`. The three `review-pr/review-a-shared-pr` attempts loaded both `review-pr` and `unslop`. The mirrored `unslop/pr-review-cross-skill` attempts also loaded both skills. Two of three mirrored `unslop/pr-description-cross-skill` attempts loaded both skills; the remaining attempt stopped when the target `unslop` skill loaded, as required by the positive-case early-stop rule, before later loads could be observed. The complete owning-skill attempts provide the co-activation evidence for both shared prompts.
+
+The focused output run passed both cases and all 15 assertions. `write-pr-description/behavior-first-local-draft` loaded `write-pr-description` and `unslop`, then passed all six artifact and prose assertions. `review-pr/read-only-synthesized-review` loaded `review-pr`, `unslop`, and its required review workflows, then passed all nine assertions. No case or assertion failed, remained partial, or was blocked.
+
+This campaign proves co-activation and the combined output contracts for the two selected workflows. It does not isolate how much `unslop` changed the prose because no previous-revision or no-skill baseline ran.
+
+### Evidence
+
+- [Output runner](evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/run-output-evaluations.mjs), SHA-256 `df1640f239c72e30bb3e42168bdfb9b6cfcebbcac560ba0593c04c52e6adb9fe`.
+- [Focused output results](evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/codex-output-cross-skill-results.json.gz), compressed SHA-256 `c8fa64e0d2c566933b8798ad8a57a7e88e367531509952c1c11bb370d9033a7f`; decompressed JSON SHA-256 `3d7ef0766f0c84b91bc69d749e769c4ce4a607f07b1ab9cc519fc8bc841bc26f`.
+- [Trigger runner](evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/run-trigger-evaluations.mjs), SHA-256 `3764c97497e780f4329e9724f8671a48079a5d21beffedc681ba3224aaa7541a`.
+- [Focused trigger results](evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/codex-trigger-cross-skill-results.json.gz), compressed SHA-256 `cc02969c4aeca5088d97b58edc97d3871074c476e02477c48352a6ad82b083a3`; decompressed JSON SHA-256 `3ac3c2d3f05b32bd750e9c11c58cf26784f11d50a10dc984318d0b298bb54e9a`.
+
+The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations. Compression changed no retained evidence.
+
+Verify them with:
+
+```sh
+node docs/evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/run-output-evaluations.mjs --verify-self
+node docs/evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/run-trigger-evaluations.mjs --verify-classifier
+shasum -a 256 docs/evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/*
+gzip -t docs/evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/*.json.gz
+for file in docs/evaluation-results/a0328fbafd28cb604de52e2a6fd50300a8b843b2/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
+```
 
 ## PR #115 review-prose campaign
 
