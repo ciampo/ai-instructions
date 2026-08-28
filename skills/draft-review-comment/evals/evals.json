@@ -32,12 +32,12 @@
       "id": "mixed-finding-locations",
       "prompt": "Draft these confirmed findings as one portable review document. Do not post anything.",
       "context": "evals/fixtures/mixed-findings.md",
-      "expectedOutcome": "One concise review document with honest locations and self-contained comments, without any GitHub write.",
+      "expectedOutcome": "One concise review document with honest location metadata and short comments ready for their existing GitHub threads, without any GitHub write.",
       "assertions": [
         "The inline comment uses the exact supplied file path and line range.",
         "The file-level comment names its file without inventing a line number.",
         "The general finding does not invent a code location.",
-        "Each comment explains the consequence and gives a concrete alternative or question.",
+        "Each comment gives a concrete alternative or question and explains the consequence only when it is not already clear.",
         "The workflow creates at most one local review document and does not post to GitHub."
       ]
     },
@@ -89,12 +89,26 @@
       "id": "compress-overlong-source-notes",
       "prompt": "Turn these confirmed notes into copy-pasteable review comments. Return them in chat only.",
       "context": "evals/fixtures/overlong-findings.md",
-      "expectedOutcome": "Two short, copy-pasteable comments that preserve the problem, impact, and requested change without repeating the supplied investigation narrative.",
+      "expectedOutcome": "Two short, human review comments that use the thread context and omit the supplied investigation narrative.",
       "assertions": [
-        "Each comment leads with the concern and states its concrete impact and requested change or question.",
+        "Each comment uses one or two natural sentences for the concern and requested change or question, adding impact only when it is not already clear.",
         "The comments omit the supplied investigation history, failed approaches, routine verification detail, and repeated background.",
+        "Locations and severities, if included, stay outside the copy-pasteable comment text.",
         "Each finding appears once rather than in both a summary and a detailed section.",
         "The workflow returns only the requested comments in chat and does not create a local artifact or post to GitHub."
+      ]
+    },
+    {
+      "id": "compress-addressed-feedback-replies",
+      "prompt": "Draft friendly replies to these addressed review comments. Return only the replies in chat.",
+      "context": "evals/fixtures/addressed-feedback-replies.md",
+      "expectedOutcome": "Two brief replies that acknowledge the feedback, state the outcome, and optionally name the short commit without repeating technical proof.",
+      "assertions": [
+        "Each reply is one sentence or two at most and sounds like a natural response in an existing review thread.",
+        "The first reply says that the balance styles moved to the compositions layer and may include the supplied short commit SHA.",
+        "The second reply owns the oversight and says that the omitted behavior was restored, and may include the supplied short commit SHA.",
+        "The replies omit file paths, selector lists, cascade mechanics, test narration, and other supplied proof.",
+        "The workflow returns only the requested replies in chat and does not create a local artifact or post to GitHub."
       ]
     }
   ]

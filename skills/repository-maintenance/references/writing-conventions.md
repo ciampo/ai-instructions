@@ -32,6 +32,14 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 - **[PREFER]** Add a "TODO / Follow-ups" section when there is deferred work.
 - **[PREFER]** When referencing related issues or PRs, put them at the top.
 
+## PR Review Comments and Replies
+
+- Default to the shortest response that works in the existing GitHub thread. Do not restate context the thread already shows.
+- For a finding, use one or two natural sentences: the concrete concern and the requested change or question. Mention impact only when it is not obvious.
+- For an accepted fix, acknowledge the point and state the outcome in one sentence or two at most. Add the short commit SHA only when useful.
+- Keep investigation notes, implementation detail, and routine verification out of the visible comment. Put genuinely useful optional context in `<details>`.
+- Sound like a friendly collaborator, not a formal review report.
+
 ## Commit Messages
 
 - **[STRONG]** Granular commits that group logically by concern. Each commit should be a coherent unit of change.

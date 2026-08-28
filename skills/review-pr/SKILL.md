@@ -54,6 +54,6 @@ Review a GitHub pull request without changing it.
 
 Each finding must:
 
-- State the **exact file path and line range** for an inline finding (e.g., **`src/components/Button.tsx:42-45`**). Use a file path without an invented line for a file-level finding, and no fabricated location for a general finding.
-- Be self-contained and copy-pasteable into a GitHub review thread.
-- Follow the formatting rules from the `draft-review-comment` skill: state the problem, impact, and requested action in one short paragraph by default; use `<details>` only for necessary supporting content.
+- Identify the **exact file path and line range** for an inline finding (e.g., **`src/components/Button.tsx:42-45`**) outside the suggested comment. Use a file path without an invented line for a file-level finding, and no fabricated location for a general finding.
+- Provide a copy-pasteable GitHub comment that uses the thread context instead of repeating the location or review evidence.
+- Follow the `draft-review-comment` rules: default to one or two short, natural sentences with a concrete concern and requested change or question. Include impact only when it is not obvious. Put optional evidence or technical explanation in `<details>`.

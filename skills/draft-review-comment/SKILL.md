@@ -17,13 +17,16 @@ Craft review comments that are ready to paste into GitHub. This skill can handle
 ## Steps
 
 1. Identify the pull request, code, and concern that each comment addresses.
-2. Use a concise, collaborative tone. Lead with plain language and put extended technical content in `<details>`.
-   - Default to one short paragraph that states the problem, its concrete impact, and the requested change or question. Add a second paragraph only when the reader needs it to act.
-   - Start with the concern. Omit greetings, praise, review-process narration, repeated context, and low-level mechanics that do not change the requested action.
-   - When the behavior can be observed, include short reproduction or verification steps: where to go, what to do, and what to expect.
-   - Keep supporting evidence, implementation details, and suggested diffs secondary. Put them in `<details>` when the comment is understandable without them.
-   - Inline findings must specify the **exact file path and line range** they apply to (e.g., **`src/components/Button.tsx:42-45`**). File-level findings need the file path but no invented line. General or architectural findings may omit a code location when no honest location exists.
-   - Each feedback item should propose a concrete alternative or ask a clarifying question.
-3. Follow **Output Delivery**. Use one self-contained, copy-pasteable section per comment thread or review point.
+2. Draft the smallest useful response in a friendly, natural tone. The GitHub thread already supplies context, so do not repeat the original feedback, code location, investigation, or proof in the visible comment unless the reader needs it to understand or act.
+   - **Review finding:** Default to one or two short sentences. State the concrete concern and ask for the smallest clear change or clarification. Mention impact only when it is not already obvious.
+   - **Reply after a fix:** Default to one short sentence, or two at most: acknowledge the point naturally and state what changed. Add the short commit SHA only when useful. For example: `Good point. Moved the \`balance\` styles to the \`compositions\` layer in abc1234.`
+   - **Reply after an oversight:** Own it without a long explanation. For example: `Right, that was an oversight on my end. Restored in abc1234.`
+   - **Reply when declining:** Give the high-level reason or trade-off in one or two sentences. Add more only when the disagreement cannot be evaluated without it.
+   - Put optional evidence, reproduction steps, implementation detail, or verification in `<details><summary>More context</summary>...</details>`. Do not add a details block when the short response is enough.
+   - Avoid formal report language, canned praise, review-process narration, and exhaustive technical justification.
+   - Each finding should still give a concrete alternative or ask a clarifying question, but do not force separate problem, impact, and action sentences when one natural sentence covers them.
+3. Follow **Output Delivery**. Use one copy-pasteable section per comment thread or review point.
+   - Identify an inline finding with its exact file path and line range outside the comment text. Identify a file-level finding with its file path. Do not invent a location for a general finding.
+   - Keep artifact metadata, severity, and verification gaps outside the text intended for the GitHub thread unless they materially help the author.
 4. **Do not post to GitHub.**
 5. If I edit or refine the draft, preserve its delivery mode: update and re-open the existing review document for file delivery, or return only the revised comment or comments for chat delivery.
