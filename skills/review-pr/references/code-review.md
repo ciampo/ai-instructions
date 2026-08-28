@@ -22,9 +22,10 @@ Missing evidence is a verification gap, not a reason to lower a confirmed findin
 
 ## Output Format
 
-- Structured: Summary, Issues Found (numbered with severity), Suggestions.
-- Output as portable markdown. Never post directly to GitHub unless asked.
-- When drafting comments for GitHub, keep them concise, collaborative, actionable, and self-contained. Put extended detail in `<details>` when useful.
+- Output as portable Markdown. Never post directly to GitHub unless asked.
+- Keep severity and location as compact artifact metadata instead of repeating them in the suggested comment.
+- Draft the GitHub comment as one or two short, natural sentences. State the concern and requested change or question. Add impact only when it is not obvious from the concern.
+- Put optional evidence or technical explanation in `<details>` only when the author needs it.
 
 ## Uncertain Findings
 
@@ -34,17 +35,17 @@ Missing evidence is a verification gap, not a reason to lower a confirmed findin
 <details>
 <summary>Examples: review comment quality</summary>
 
-Good review comment (actionable, specific, references the code):
+Good review comment (actionable and brief):
 
-> **[major]** The `onClose` callback is not called when the user presses Escape (`dialog.tsx:42`). The `Dialog` component in the same package handles this via `onKeyDown` -- this should match that pattern.
+> Escape closes the dialog without returning focus to its trigger. Could we restore focus after close?
 
 Noisy comment (vague, opinion-based, no impact):
 
 > **[nit]** I would name this variable differently.
 
-Uncertain finding (hedged, asks for verification):
+Uncertain finding (clear about what remains unknown):
 
-> **[Possible issue]** I'm not certain, but it looks like `ref` might be null when `useEffect` runs on first render (`tooltip.tsx:28`). Could you verify whether the ref is guaranteed to be attached by that point?
+> Could `ref` still be null when this effect first runs? If so, this access needs a guard.
 
 </details>
 

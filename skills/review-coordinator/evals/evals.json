@@ -32,6 +32,7 @@
         "The final response states one fixture repository, base revision, head revision, and target audience before its deduplicated findings.",
         "The coordinator includes the mandatory review-simplicity baseline in addition to the selected material specialist lanes.",
         "The final response deduplicates evidence and keeps unproven concerns as verification gaps.",
+        "Each suggested GitHub comment uses one or two natural sentences, while severity, location, and necessary evidence stay in compact artifact metadata or optional details.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major], matching the direct review contract.",
         "The response does not expose a panel transcript or vote count."
       ]

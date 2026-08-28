@@ -20,7 +20,8 @@ Missing evidence is a verification gap, not a reason to lower a confirmed findin
 
 ## Delivery
 
-- Use portable Markdown with a summary and numbered, concise, self-contained findings.
-- Give inline findings exact file paths and line ranges when available; do not invent locations.
+- Use portable Markdown with numbered, concise findings. Do not repeat them in a summary.
+- Give inline findings exact file paths and line ranges as artifact metadata when available; do not invent locations or repeat them in the suggested comment.
+- Draft each suggested GitHub comment as one or two short, natural sentences with the concern and requested change or question. Add impact only when it is not obvious. Put optional evidence or technical explanation in `<details>`.
 - Do not post to GitHub unless explicitly asked.
 - Keep the final review to one response. Do not expose panel transcripts, vote counts, or competing specialist reports.

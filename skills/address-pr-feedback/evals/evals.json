@@ -35,7 +35,8 @@
       "assertions": [
         "The workflow applies and verifies accepted local fixes because chat-only delivery does not revoke local-fix authority.",
         "The workflow completes the fixture-required focused assertions, completes or reports every required check, defers only the fixture-named optional broader check, and does not reconstruct missing repository configuration in the self-contained fixture.",
-        "After applying fixes, the final response uses the calling workflow's chat-delivery override to name the focused checks and their results before the replies, so retained tool events can prove verification completed within the evaluation bound.",
+        "The workflow keeps any necessary verification status separate from the copy-pasteable replies and does not add test narration to each reply.",
+        "Each accepted-feedback reply uses one or two friendly sentences to acknowledge the point and state the outcome, with a short commit SHA only when useful.",
         "The workflow returns the draft replies in chat without creating or opening a local reply document.",
         "The workflow does not post replies, resolve threads, or edit pull-request metadata."
       ]
