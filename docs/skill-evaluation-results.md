@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its broader affected output run passed 15 of 19 cases; four existing review-pr cases remained partial on rerun because of internal-handoff observability, skill-load ordering, or timeout limits. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -75,17 +75,21 @@ Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tie
 
 The focused output run covered the four new delegation-sizing cases plus two existing coordinator regression cases. All six cases and all 25 assertions passed. The coordinator kept a small cohesive change and a 4,000-line mechanical change local, assigned two bounded investigations for separate authorization and migration probes, and retained deep checks for a small high-risk change. The cases did not require one agent per applicable review method.
 
-The affected output suite covered every `review-coordinator` and `review-pr` output case. Fifteen of 19 cases passed, with 67 passing, six failing, and three blocked assertions. The four partial cases reran at lower concurrency and remained partial, with 18 passing, five failing, and two blocked assertions:
+The affected output suite covered every `review-coordinator` and `review-pr` output case. Fifteen of 19 cases passed, with 67 passing, six failing, and three blocked assertions. The four partial cases reran at lower concurrency and remained partial. The exact trunk comparison covered all 15 pre-existing output cases. Trunk and the pull-request revision each had 11 passing and four partial common cases. Across 61 common assertions, 60 had equal results, one improved from fail to pass, and none regressed.
+
+The common partial cases were:
 
 - `review-pr/coordinator-handoff-routing` produced the correct single review and loaded only the two material specialist skills, but the retained trace cannot prove that an internal simplicity result was handed to the coordinator.
 - `review-pr/explicit-panel-coordinator-handoff` and `review-pr/late-discovered-coordinator-handoff` produced the expected findings and final delivery, but their subjects read `context.md` before the required separate simplicity load. The latter passed in the focused gate, so the load-order behavior is inconsistent across fresh sessions.
-- `review-pr/read-only-synthesized-review` timed out twice before its final refresh and delivery. Its other assertions do not establish a complete review result.
+- `review-pr/read-only-synthesized-review` initially timed out twice on the pull-request revision. A paired run with equal 20-minute limits completed on both revisions. Each passed nine of ten assertions and failed only the same artifact-format assertion because supporting evidence appeared inside the suggested comments instead of separate metadata.
 
-These partials affect existing review-pr process assertions. Every new delegation-sizing case passed in both the focused and affected runs. No instruction change was made to conceal the partial results.
+The exact trunk run retained the same three coordinator-handoff partials. These are shared evaluation limitations or inconsistent process behavior rather than regressions in this pull request. No instruction change was made to conceal them.
 
-The affected trigger suite covered all 12 trigger cases owned by the two changed skills. All 36 attempts passed. Ordinary and focused single-lane reviews stayed outside the coordinator, while explicit panels, multi-lane reviews, and direct coordinator requests selected the intended workflow.
+The four current delegation-sizing fixtures also ran against the exact trunk skill instructions. All four passed on both revisions. Their traces still show the intended efficiency change: on the 4,000-line mechanical fixture, trunk assigned a redundant documentation investigation after the completed core and documentation checks, while the pull-request revision used zero subagents. The pull-request subject completed in 33 seconds with 57,634 input tokens, compared with 73 seconds and 127,937 input tokens on trunk. This is one paired observation, not a production performance claim.
 
-This campaign verifies the intended allocation decisions in isolated scenarios. It does not measure production token savings, wall time, or finding quality against the previous coordinator revision; that direct comparison remains future work.
+The affected trigger suite covered all 12 trigger cases owned by the two changed skills. The pull-request and exact trunk revisions each passed all 36 attempts. Ordinary and focused single-lane reviews stayed outside the coordinator, while explicit panels, multi-lane reviews, and direct coordinator requests selected the intended workflow.
+
+Within these complete affected-skill suites, the campaign found no regression against exact trunk and one common assertion improvement. This is evidence for the tested prompts and fixtures, not proof about every production pull request or a general performance measurement.
 
 ### Evidence
 
@@ -93,8 +97,18 @@ This campaign verifies the intended allocation decisions in isolated scenarios. 
 - [Focused output results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-focused-results.json.gz), compressed SHA-256 `d8ffce4ed940a8f4e7bf03d0711d5351b92acea64559fc9ac6cb5a8e5ad725d6`; decompressed JSON SHA-256 `eb0738f091f95e47e53277abc8c8eea692f1423a153a66b18ff1455014b71138`.
 - [Affected output results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-affected-results.json.gz), compressed SHA-256 `eddf2a0c298dbf0b7dfb1dd1ccd9c6a665c8ea5394ce7dba45b69dfcb6430ce5`; decompressed JSON SHA-256 `4c880390fedc96e14483846a08218f46a84e387b5f5cf6910e883bd11010e9aa`.
 - [Affected output rerun](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-affected-rerun.json.gz), compressed SHA-256 `2372fca1436e016ea0496436b168c10e35f05806535cb205c08a7774752c0380`; decompressed JSON SHA-256 `b485c0303603901f2aef8f4142462fe1bdde95275cbd1d85005c9c6bc9ca6952`.
+- [Trunk output comparison runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-comparison.mjs), SHA-256 `780dd47b0b82bd66fa4e372638e00cdff83bf48c68b4760dc4d2e3f01feb1761`.
+- [Trunk output results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-trunk-results.json.gz), compressed SHA-256 `b60068961f3be4b45b8911275ce4aa2fe0a3543a66d1af2c1c8db8cc6a2115f1`; decompressed JSON SHA-256 `b701fe680a698750a9e9cd07d4ef79a4102ced73354284c2cf7c2b1842b4e1b7`.
+- [Extended pull-request output runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-pr-extended.mjs), SHA-256 `0120f1d4abb1ddc678d73234aac847f89ee42290a4e53ebec565e8d12d513e0a`.
+- [Extended pull-request output](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-pr-extended.json.gz), compressed SHA-256 `b5911fc46e46807fda251d22ae53641d0184da2e5990279c28b9f4b4ca63640c`; decompressed JSON SHA-256 `9b1557ed3e93afb8ace0af87d6e28d032a9dcabdb0fe0b16f0e7c951da2ea55b`.
+- [Extended trunk output runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-extended.mjs), SHA-256 `f234dc8a943e102f7f1104d611042b1d4df13ff5ac114db5b7159ba350dc2bb1`.
+- [Extended trunk output](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-trunk-extended.json.gz), compressed SHA-256 `a159054e2571d1a3d7a6262ef3bff79aed155f5c04a0dd89e4b514cdc36678be`; decompressed JSON SHA-256 `f52aaf1b66efe881ba7d9b7a59cd32abde57031a5da6eff04d54f71898ad2cfa`.
+- [Trunk-current-fixture runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-current-fixtures.mjs), SHA-256 `6eb0d072aaa147d4137b9963662914e2b1fc73aa7fe167b20a34b4fcbd87f017`.
+- [Trunk-current-fixture results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-trunk-current-fixtures.json.gz), compressed SHA-256 `410aa82652a7db06372416ecc8ae2ee2b213771c107a8d10330ee983b1b71f98`; decompressed JSON SHA-256 `324370a01f9664fdd314f780e2f73d6191047d480bdd905e259caee3519f06f7`.
 - [Trigger runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-evaluations.mjs), SHA-256 `d2538857dff16a9cd87787e14bf49c6e7206da5986e90851d52e8a1aad7f2ba2`.
 - [Affected trigger results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-trigger-affected-results.json.gz), compressed SHA-256 `b8f98c0ef213906fa4458e7bde9477eb8d11ed35899a3d370b0d7d207d0d3cbf`; decompressed JSON SHA-256 `ff5ca553a33b36979bc761b087ce1b4d6191887629c4fc7a5cef15e7bf05e7ae`.
+- [Trunk trigger comparison runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-trunk-comparison.mjs), SHA-256 `c441f9efdb3344f022372da90d9e2cd7cd20b8f05d852ec2cde8ea5ee7b3bd29`.
+- [Trunk trigger results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-trigger-trunk-results.json.gz), compressed SHA-256 `91543f8dd5c46ae402b8747f6ccf4064b8632a01b0ac775629e3e0dfecffa457`; decompressed JSON SHA-256 `d90f89420d10869ede5ca4fa3426d8537d44da6c4aa284f29c1075d1bac0e8eb`.
 
 The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations. Compression changed no retained evidence.
 
@@ -102,7 +116,12 @@ Verify them with:
 
 ```sh
 node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-evaluations.mjs --verify-self
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-comparison.mjs --verify-self
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-pr-extended.mjs --verify-self
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-extended.mjs --verify-self
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-trunk-current-fixtures.mjs --verify-self
 node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-evaluations.mjs --verify-classifier
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-trunk-comparison.mjs --verify-classifier
 shasum -a 256 docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*
 gzip -t docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*.json.gz
 for file in docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
