@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its broader affected output run passed 15 of 19 cases; four existing review-pr cases remained partial on rerun because of internal-handoff observability, skill-load ordering, or timeout limits. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -57,6 +57,55 @@ node docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/run-output
 shasum -a 256 docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/* docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*
 gzip -t docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/*.json.gz docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*.json.gz
 for file in docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/*.json.gz docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
+```
+
+## PR #121 review delegation sizing campaign
+
+Repository revision: `6967f35eab76a906bcbfdb55a10c585c93a6285e`.
+
+Evaluation-fixture revision: `6967f35eab76a906bcbfdb55a10c585c93a6285e`.
+
+Base revision: `358d2aa41b1b60812c6b16e231ccd44464ba1d92` from `main`.
+
+The later evidence commit changes only documentation and retained evaluation artifacts. Its `skills` tree matches the evaluated revision. The target `skills` tree is `e2d82e8dc0f549045299ce9569e0893bf8e8ba47`.
+
+Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tier. Every subject, grader, and trigger attempt used a fresh isolated home and outside-repository workspace. The runners staged the immutable target with `git archive`, rejected skill-tree changes, and retained sanitized command and event evidence with exact target-tree provenance. The trigger runner retained an independent exact-exec boundary preflight. The output runner retained its configured denial profile but not an independent exact-exec boundary preflight.
+
+### Results
+
+The focused output run covered the four new delegation-sizing cases plus two existing coordinator regression cases. All six cases and all 25 assertions passed. The coordinator kept a small cohesive change and a 4,000-line mechanical change local, assigned two bounded investigations for separate authorization and migration probes, and retained deep checks for a small high-risk change. The cases did not require one agent per applicable review method.
+
+The affected output suite covered every `review-coordinator` and `review-pr` output case. Fifteen of 19 cases passed, with 67 passing, six failing, and three blocked assertions. The four partial cases reran at lower concurrency and remained partial, with 18 passing, five failing, and two blocked assertions:
+
+- `review-pr/coordinator-handoff-routing` produced the correct single review and loaded only the two material specialist skills, but the retained trace cannot prove that an internal simplicity result was handed to the coordinator.
+- `review-pr/explicit-panel-coordinator-handoff` and `review-pr/late-discovered-coordinator-handoff` produced the expected findings and final delivery, but their subjects read `context.md` before the required separate simplicity load. The latter passed in the focused gate, so the load-order behavior is inconsistent across fresh sessions.
+- `review-pr/read-only-synthesized-review` timed out twice before its final refresh and delivery. Its other assertions do not establish a complete review result.
+
+These partials affect existing review-pr process assertions. Every new delegation-sizing case passed in both the focused and affected runs. No instruction change was made to conceal the partial results.
+
+The affected trigger suite covered all 12 trigger cases owned by the two changed skills. All 36 attempts passed. Ordinary and focused single-lane reviews stayed outside the coordinator, while explicit panels, multi-lane reviews, and direct coordinator requests selected the intended workflow.
+
+This campaign verifies the intended allocation decisions in isolated scenarios. It does not measure production token savings, wall time, or finding quality against the previous coordinator revision; that direct comparison remains future work.
+
+### Evidence
+
+- [Output runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-evaluations.mjs), SHA-256 `8da2eeaed087ccc90cff2808adb1337ac67a602c6c0a959ffcddbc5222afea52`.
+- [Focused output results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-focused-results.json.gz), compressed SHA-256 `d8ffce4ed940a8f4e7bf03d0711d5351b92acea64559fc9ac6cb5a8e5ad725d6`; decompressed JSON SHA-256 `eb0738f091f95e47e53277abc8c8eea692f1423a153a66b18ff1455014b71138`.
+- [Affected output results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-affected-results.json.gz), compressed SHA-256 `eddf2a0c298dbf0b7dfb1dd1ccd9c6a665c8ea5394ce7dba45b69dfcb6430ce5`; decompressed JSON SHA-256 `4c880390fedc96e14483846a08218f46a84e387b5f5cf6910e883bd11010e9aa`.
+- [Affected output rerun](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-output-affected-rerun.json.gz), compressed SHA-256 `2372fca1436e016ea0496436b168c10e35f05806535cb205c08a7774752c0380`; decompressed JSON SHA-256 `b485c0303603901f2aef8f4142462fe1bdde95275cbd1d85005c9c6bc9ca6952`.
+- [Trigger runner](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-evaluations.mjs), SHA-256 `d2538857dff16a9cd87787e14bf49c6e7206da5986e90851d52e8a1aad7f2ba2`.
+- [Affected trigger results](evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/codex-trigger-affected-results.json.gz), compressed SHA-256 `b8f98c0ef213906fa4458e7bde9477eb8d11ed35899a3d370b0d7d207d0d3cbf`; decompressed JSON SHA-256 `ff5ca553a33b36979bc761b087ce1b4d6191887629c4fc7a5cef15e7bf05e7ae`.
+
+The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations. Compression changed no retained evidence.
+
+Verify them with:
+
+```sh
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-output-evaluations.mjs --verify-self
+node docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/run-trigger-evaluations.mjs --verify-classifier
+shasum -a 256 docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*
+gzip -t docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*.json.gz
+for file in docs/evaluation-results/6967f35eab76a906bcbfdb55a10c585c93a6285e/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
 ```
 
 ## PR #119 unslop cross-skill campaign
