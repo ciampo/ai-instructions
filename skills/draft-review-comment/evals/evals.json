@@ -110,6 +110,32 @@
         "The replies omit file paths, selector lists, cascade mechanics, test narration, and other supplied proof.",
         "The workflow returns only the requested replies in chat and does not create a local artifact or post to GitHub."
       ]
+    },
+    {
+      "id": "separate-report-context-and-actions",
+      "prompt": "Prepare a full review document from these notes without posting it.",
+      "context": "evals/fixtures/report-notes.md",
+      "expectedOutcome": "A readable report that separates an overall assessment, earlier-feedback status, and concrete next steps from ready-to-paste comments.",
+      "assertions": [
+        "The short overall assessment states why changes are needed without repeating every concern or the investigation narrative.",
+        "Previous feedback links both supplied threads and distinguishes the unaddressed guide change from the fixed false-value concern whose thread is still open.",
+        "The actions include the new cache fix, the guide update without a duplicate reply, and a clearly labeled reply to discussion_r302 reporting the verified outcome.",
+        "Copy-pasteable text is visually separate from action instructions, severity, exact location metadata, and optional evidence.",
+        "The cache comment explains that the second request can get text in the wrong language and asks to include locale in the key and test two locales, without compressed identity-aliasing terminology.",
+        "The report preserves the major severity, exact source location, supplied links, supported-version concern, and verified fix without adding claims.",
+        "It drafts from supplied evidence without fetching PR state or posting, and creates at most one report."
+      ]
+    },
+    {
+      "id": "draft-with-unchecked-feedback",
+      "prompt": "Prepare a full review document from these confirmed findings. Do not investigate the PR or post anything.",
+      "context": "evals/fixtures/mixed-findings.md",
+      "expectedOutcome": "A full report that marks previous feedback as unchecked instead of claiming there is none.",
+      "assertions": [
+        "It uses the supplied findings and does not fetch or inspect additional PR evidence.",
+        "It states that previous feedback was not checked because no assessment was supplied, rather than claiming no feedback exists or all concerns are addressed.",
+        "It keeps the overall assessment, previous-feedback limit, and actions distinct while preserving supplied locations and concise suggested comments."
+      ]
     }
   ]
 }

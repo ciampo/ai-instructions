@@ -22,7 +22,7 @@ Missing evidence is a verification gap, not a reason to lower a confirmed findin
 
 ## Output Format
 
-- Output as portable Markdown. Never post directly to GitHub unless asked.
+- Use the full-review format from `draft-review-comment`: a short overall assessment, previous-feedback status, and numbered actions with clearly marked suggested comments. Never post directly to GitHub unless asked.
 - Keep severity and location as compact artifact metadata instead of repeating them in the suggested comment.
 - Draft the GitHub comment as one or two short, natural sentences. State the concern and requested change or question. Add impact only when it is not obvious from the concern.
 - Put optional evidence or technical explanation in `<details>` only when the author needs it.
