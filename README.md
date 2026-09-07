@@ -72,7 +72,7 @@ See [CONVENTIONS.md](CONVENTIONS.md) for meta-conventions used across all files:
 - **Severity tags**: `[RULE]` / `[STRONG]` / `[PREFER]` to help AI agents calibrate hard rules vs. soft preferences.
 - **Agent Skills**: Each workflow has a `SKILL.md` entrypoint with standard `name` and `description` frontmatter.
 - **Progressive disclosure**: Skill directories carry their own bundled references and are installed as complete units.
-- **Specialist execution**: Reusable review methods live in skills. The coordinator can use host-provided subagents for independent, material lanes and has a sequential fallback; add a custom agent only when it demonstrates value beyond that workflow.
+- **Specialist execution**: Reusable review methods live in skills. The coordinator weighs substantive diff size, risk, overlap, and remaining verification work before delegating. It can apply several methods with zero subagents, or assign bounded independent investigations when useful. Hosts without subagents keep local review coverage; add a custom agent only when it demonstrates value beyond that workflow.
 - **Skill evaluation**: New or materially changed skills use versioned trigger and output fixtures; see the [evaluation guide](docs/skill-evaluations.md) and [results ledger](docs/skill-evaluation-results.md).
 
 ## Setup

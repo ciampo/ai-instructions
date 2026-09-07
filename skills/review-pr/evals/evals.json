@@ -120,6 +120,7 @@
         "The generic prompt loads review-simplicity before PR lookup without inventing specialist lanes from the request.",
         "After pinned source inspection makes authorization and persisted-state migration material, the review loads review-coordinator before loading either direct specialist.",
         "The coordinator receives the completed core-review result and mandatory simplicity handoff, then owns remaining specialist routing and the single final delivery.",
+        "Loading review-simplicity or review-coordinator does not itself spawn an agent. Any delegated work follows the coordinator's sizing decision rather than a one-agent-per-skill rule.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
     },
