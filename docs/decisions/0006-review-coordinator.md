@@ -13,7 +13,7 @@ That decision does not rule out a distinct coordination job. Complex pull reques
 
 Distribute `review-coordinator` as an optional direct-skill MVP. It uses `review-pr` as the canonical snapshot, core-review, severity, deduplication, and delivery workflow; it always includes the `review-simplicity` baseline, then assigns only materially relevant additional specialist skills to bounded independent handoffs.
 
-The coordinator may use host-provided subagents in parallel. Where that capability is unavailable, it performs the same handoffs sequentially. It is not a custom-agent definition and does not introduce adapter-specific model routing.
+The coordinator selects review methods separately from agent count. It considers substantive changed lines and files, risk, overlapping scope, and verification work remaining after the core review. It applies methods locally by default and may delegate substantial independent investigations to host-provided subagents. Zero subagents is valid, and a small diff does not exempt high-risk changes from deeper review. Where subagents are unavailable, it performs the selected checks locally. It is not a custom-agent definition and does not introduce adapter-specific model routing.
 
 The specialist set is:
 

@@ -24,6 +24,52 @@
   ],
   "outputCases": [
     {
+      "id": "small-overlapping-review-local",
+      "prompt": "Use review-coordinator to finish the Small cohesive change review from its completed core and simplicity handoffs. Return one response in chat only.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "The coordinator finishes the cohesive review locally without duplicating completed work across specialist agents.",
+      "assertions": [
+        "No subagent is spawned despite host availability and the test, localization, documentation, and label-related scope.",
+        "The coordinator uses the completed core and simplicity evidence without repeating those passes or treating each changed file as an independent investigation.",
+        "The response does not invent findings, unsupported browser claims, a panel transcript, or a delegation report."
+      ]
+    },
+    {
+      "id": "large-mechanical-review-local",
+      "prompt": "Use review-coordinator to finish the Large mechanical change review from its completed handoffs. Return one response in chat only.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "Thousands of changed lines do not cause automatic delegation when the mechanical change is already verified.",
+      "assertions": [
+        "The coordinator distinguishes 4,000 changed lines of mechanical prose edits from substantive behavior changes.",
+        "No subagent is spawned solely because of the line count or 400-file scope.",
+        "The coordinator reuses the supplied complete transformation checks without inventing runtime or dependency work."
+      ]
+    },
+    {
+      "id": "independent-work-allocation",
+      "prompt": "Use review-coordinator for the Independent verification work handoff. Based on the supplied scope, describe which remaining investigations you would delegate and why. This is an allocation assessment only; do not launch agents or run the hypothetical probes.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "A bounded allocation based on separate unanswered questions and available verification, without a blanket panel or claims that probes ran.",
+      "assertions": [
+        "The plan assigns separate bounded investigations for real middleware authorization and interrupted or retried persisted-state migration.",
+        "Test-quality and compatibility or security methods are combined with their relevant investigation instead of receiving separate agents for the same source graph.",
+        "The plan preserves the completed core and simplicity passes, identifies required evidence, and keeps new delegation decisions with the coordinator.",
+        "No agents or probes run, and no security or data-loss finding is claimed as reproduced."
+      ]
+    },
+    {
+      "id": "small-diff-material-risk",
+      "prompt": "Use review-coordinator to review this small change set. Consider its size when choosing the review work, and return findings in chat only.",
+      "context": "evals/fixtures/multi-lane-pr.md",
+      "expectedOutcome": "The small source scope preserves deep security and migration checks without requiring a full panel.",
+      "assertions": [
+        "The review checks both cross-account deletion and supported upgrades despite the small source snippets.",
+        "The reachable cross-account deletion is [critical] and the supported-upgrade persisted-state regression is [major].",
+        "Any delegated investigation has a concrete remaining question or high-consequence assumption to check, rather than one agent per applicable skill.",
+        "The coordinator does not fabricate diff counts that the fixture does not supply."
+      ]
+    },
+    {
       "id": "single-evidence-backed-review",
       "prompt": "Coordinate a read-only review of this self-contained change set using the material specialist lanes.",
       "context": "evals/fixtures/multi-lane-pr.md",
