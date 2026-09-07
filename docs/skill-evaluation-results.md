@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The direct-versus-coordinated comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -16,6 +16,48 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #122 review-report campaign
+
+Final repository and fixture revision: `647c3ddb0c34b231ceb40335b91112f1219ef9b2`.
+
+Initial pull-request revision: `0b1993461bada279d16e8c782edfff75e37247be`.
+
+Base revision: `358d2aa41b1b60812c6b16e231ccd44464ba1d92` from `main`.
+
+The later evidence commit changes only documentation and retained evaluation artifacts. Its `skills` tree matches the evaluated final revision. The final target `skills` tree is `e2ea7d7de9eff868e179644ce4222947854eb784`.
+
+Codex CLI `0.145.0` ran `gpt-5.6-sol` with `xhigh` reasoning on the priority tier. Each subject and grader used a fresh isolated home and outside-repository workspace. The runners staged immutable skill trees with `git archive`, rejected tree mismatches, disabled live apps, plugins, browsers, memories, and remote tools, and retained sanitized command, event, artifact, timeout, and provenance evidence. The final runner enabled the host multi-agent feature and used a deterministic local marker to make the independent self-review start observable. It used three concurrent workers, 240-second subject timeouts, 720-second timeouts for full-review workflows, and a 120-second grader timeout.
+
+### Evaluation order and results
+
+The paired first run used the same eight new synthetic cases and assertions against the base and initial pull-request revisions. The base produced zero passing and eight partial cases: 30 assertions passed, 25 failed, and one was blocked. The initial pull-request revision produced seven passing and one partial case: 53 assertions passed, two failed, and one was blocked.
+
+The initial result exposed one instruction problem in `self-review-pr`: its Overall section repeated every finding and described internal review mechanics. The skill now starts its independent pass before it reads earlier feedback and explicitly keeps review mechanics and repeated findings out of Overall. The affected case then passed its ten report-content checks. A runner-only change increased the self-review timeout, required one grader result for every assertion, and recorded the independent-pass start that the retained CLI event stream did not expose.
+
+The final run covered all eight PR-specific cases across `draft-review-comment`, `review-pr`, `review-coordinator`, and `self-review-pr`. All eight cases and all 56 assertions passed. The reports used separate Overall, Previous feedback, and Actions and suggested comments sections; checked open, resolved, outdated, and unanswered feedback against current code; kept incomplete discussion access explicit; and separated required changes, replies, and verification. No selected assertion failed or was blocked.
+
+The trigger suite did not run because this pull request does not change skill descriptions, routing boundaries, or trigger fixtures.
+
+### Evidence
+
+- [Base runner](evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/run-output-base.mjs), SHA-256 `ca935e1b3e8321f573d3607d396eeabfc3c7321f260e9fd3f5ef1cbfe3874e93`.
+- [Base results](evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/codex-output-base.json.gz), compressed SHA-256 `dab4aaaf23c20534519e330f17ae2553a17078b94c63302ba66896e21394a6f6`; decompressed JSON SHA-256 `8ee7855ced10ffbe46f0caff3efd4d140bfd1c2565935bb1cead1b7077e605e4`.
+- [Initial pull-request runner](evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/run-output-pr.mjs), SHA-256 `911a18bd62a87043581965ad63b76e2d2a8b1568a0ae4626e22d006308ea1902`.
+- [Initial pull-request results](evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/codex-output-pr.json.gz), compressed SHA-256 `aed899f9ca364ad8c7a194c161d38f1f748c10b205aad79693e2b52465d8bc44`; decompressed JSON SHA-256 `19ffd34bd697511f74fb8846f77541499f7967f38c9c56cc9453402252d9c29f`.
+- [Final pull-request runner](evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/run-output-pr.mjs), SHA-256 `fb5442e8f7713831c3a0c57d92bcb4bbf3236601b72c36aaa4d8c6057124a2ff`.
+- [Final pull-request results](evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/codex-output-final-eight.json.gz), compressed SHA-256 `9ded9586eba88733d347ba0bee48d30d666b8b0306b5a787d43a31295081e282`; decompressed JSON SHA-256 `18abdaf3fe837275f283321f9600bf7aabba4c74a298377422ddeb301579a89c`.
+
+The result files are lossless `gzip -n -9` encodings of the exact JSON produced by the recorded runner invocations.
+
+Verify them with:
+
+```sh
+node docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/run-output-pr.mjs --verify-self
+shasum -a 256 docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/* docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*
+gzip -t docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/*.json.gz docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*.json.gz
+for file in docs/evaluation-results/0b1993461bada279d16e8c782edfff75e37247be/*.json.gz docs/evaluation-results/647c3ddb0c34b231ceb40335b91112f1219ef9b2/*.json.gz; do gzip -cd "$file" | shasum -a 256; done
+```
 
 ## PR #119 unslop cross-skill campaign
 

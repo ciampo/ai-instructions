@@ -58,6 +58,37 @@
         "Neither the coordinator nor its specialist lanes create or open a local review document.",
         "The workflow does not post comments, replies, or reviews to GitHub."
       ]
+    },
+    {
+      "id": "previous-feedback-and-clear-actions",
+      "prompt": "Use review-coordinator to review this supplied PR snapshot and prepare one review document. Do not change code or post anything.",
+      "context": "evals/fixtures/previous-feedback.md",
+      "expectedOutcome": "One plain-language review that distinguishes new findings, earlier feedback still needing attention, and addressed concerns, with explicit actions and draft destinations.",
+      "assertions": [
+        "The report separates a short overall assessment, previous-feedback status, and a numbered set of actions with clearly marked copy-pasteable text. It does not repeat each finding in the overview.",
+        "It checks all supplied discussion sources and retains the open false-value concern as needing a change despite the author claiming it was fixed.",
+        "It identifies the open trimming concern as fixed in code, without calling it an outstanding code defect, and distinguishes any reply still needed.",
+        "It retains the null-name problem despite the resolved flag and treats the locale concern as addressed despite its outdated location.",
+        "It accounts for the unanswered numeric-ID question in the review body and the explained, accepted decision about the default in the PR conversation.",
+        "It reports the new numeric-ID lookup failure separately from previous feedback, with src/normalize.js:3 as its location, and does not invent links or code locations.",
+        "It links follow-ups to the supplied original discussions and does not draft duplicate new comments for concerns already raised. Any suggested reply adds useful information and uses the correct user role.",
+        "Visible explanations state concrete effects and next steps in plain language, without dense technical shorthand or investigation narration. Necessary identifiers, uncertainty, and severity remain accurate.",
+        "It keeps optional proof outside suggested comments and distinguishes required changes from verification or discussion actions.",
+        "It does not modify code, post comments or reviews, resolve threads, or claim that the current PR has no outstanding feedback."
+      ]
+    },
+    {
+      "id": "no-new-findings-partial-feedback",
+      "prompt": "Use review-coordinator to review this supplied PR snapshot in chat only. Do not change files or post anything.",
+      "context": "evals/fixtures/partial-feedback.md",
+      "expectedOutcome": "A partial review with no duplicate new finding that still flags the known outstanding concern and missing discussion access.",
+      "assertions": [
+        "It distinguishes no new findings from an outstanding previously raised false-value defect and retains that concern as a follow-up action.",
+        "It links discussion_r201 without inventing whether the thread is open or resolved, and does not draft a duplicate new finding.",
+        "It explicitly identifies unavailable review bodies, remaining threads, and PR conversation comments as a coverage limit instead of claiming all previous feedback was checked or addressed.",
+        "It uses the supplied code to assess the accessible concern without trying unavailable evidence routes or treating missing discussion as no comments.",
+        "It returns one concise report in chat with the assessment, prior-feedback status, and actions distinct, without writing files or posting to GitHub."
+      ]
     }
   ]
 }

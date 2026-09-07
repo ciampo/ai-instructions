@@ -20,7 +20,7 @@ Missing evidence is a verification gap, not a reason to lower a confirmed findin
 
 ## Delivery
 
-- Use portable Markdown with numbered, concise findings. Do not repeat them in a summary.
+- Use the full-review format from `draft-review-comment` for portable Markdown: a short overall assessment, previous-feedback status, and numbered actions with clearly marked suggested comments. The overview must not repeat each finding.
 - Give inline findings exact file paths and line ranges as artifact metadata when available; do not invent locations or repeat them in the suggested comment.
 - Draft each suggested GitHub comment as one or two short, natural sentences with the concern and requested change or question. Add impact only when it is not obvious. Put optional evidence or technical explanation in `<details>`.
 - Do not post to GitHub unless explicitly asked.

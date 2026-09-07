@@ -24,10 +24,10 @@ Review a GitHub pull request without changing it.
 1. Read [the code-review reference](references/code-review.md) and the [PR snapshot procedure](references/pr-snapshot.md). Identify the repository and diff base from fresh PR metadata; PRs can be stacked, so do not assume `trunk` or `main`.
 2. Follow the snapshot procedure. Review only the pinned PR diff and its changed source; do not substitute the current local branch or a later remote state.
 3. Read all modified source files in full (not just the diff hunks) and identify their consumers/call sites.
-4. Read existing GitHub comments and reviews on the PR. **Skip issues that have already been raised or resolved** — do not duplicate findings.
+4. Check previous feedback using the snapshot procedure. Read review bodies, inline threads and replies, and PR conversation comments, including resolved or outdated threads. Check each actionable concern against the pinned code. Keep GitHub thread state separate from whether the concern is addressed. Carry outstanding feedback into the report and link to its existing discussion instead of drafting a duplicate finding.
 5. Perform the complete core review: accessibility, consistency, simplicity, API correctness, test adequacy, blast radius, build/dependency correctness, documentation, and scope. Cross-reference sibling modules and verify external claims against primary sources.
 6. Request the loaded `review-simplicity` skill's internal findings handoff. Apply its deletion-first method even when the user did not request simplification; an explicit no-findings result is valid.
-7. Use `review-coordinator` only when the user explicitly requests a panel or coordinated review, or when two or more independent additional specialist lanes are materially in scope. The mandatory simplicity pass does not count toward that threshold. If source inspection establishes the threshold after entry routing, load `review-coordinator` after the simplicity handoff and before any direct specialist. Pass the coordinator the pinned snapshot, completed core-review result, and simplicity handoff from steps 1-6, then stop this workflow: the coordinator owns remaining specialist routing, rechecking, refresh, and the single final delivery.
+7. Use `review-coordinator` only when the user explicitly requests a panel or coordinated review, or when two or more independent additional specialist lanes are materially in scope. The mandatory simplicity pass does not count toward that threshold. If source inspection establishes the threshold after entry routing, load `review-coordinator` after the simplicity handoff and before any direct specialist. Pass the coordinator the pinned snapshot, previous-feedback assessment, completed core-review result, and simplicity handoff from steps 1-6, then stop this workflow: the coordinator owns remaining specialist routing, rechecking, refresh, and the single final delivery.
 8. If `review-coordinator` was not selected, load another specialist skill directly only when its domain is materially in scope:
    - Use `review-accessibility` for UI or interaction changes whose semantics, keyboard behavior, focus, announcements, contrast, motion, zoom, or target behavior require the deeper accessibility method. Continue to perform the core accessibility pass for every PR.
    - Use `review-api-design` when the PR adds or materially changes a public component, library, or package API. Ordinary internal type or implementation correctness stays in the core pass.
@@ -46,14 +46,8 @@ Review a GitHub pull request without changing it.
 13. Do NOT post anything to GitHub. No signature lines or AI-attribution footers (e.g., "Co-Authored-By: Claude").
 14. Support multi-round reviews: when I say "do another round" or "the PR was updated", re-fetch and re-analyze, focusing on what changed since the last round. Preserve the chosen delivery mode: update the same review document for file delivery, or return the updated requested comments for chat delivery.
 
-## Output Format
+## Output format
 
-- If there are no findings, state that in one sentence. Add a compact verification-gaps list only when a gap materially limits the conclusion.
-- If there are findings, give each finding once. Do not add a prose summary or findings overview that repeats the comments. Use `## PR Review: #NNNNN -- Title`, then one concise section per finding.
-- Include process, snapshot, and verification details only when they establish scope, limit confidence, or require user action. Keep exact revisions to one compact line when the workflow requires them.
+Use the full-review format in `draft-review-comment`: **Overall**, **Previous feedback**, and **Actions and suggested comments**. Give the reader a short assessment, then clearly separate existing discussion from new findings and text ready to paste. A result with no new findings must still flag earlier feedback that needs a change, reply, or verification. Preserve a request for comments only instead of forcing a full report.
 
-Each finding must:
-
-- Identify the **exact file path and line range** for an inline finding (e.g., **`src/components/Button.tsx:42-45`**) outside the suggested comment. Use a file path without an invented line for a file-level finding, and no fabricated location for a general finding.
-- Provide a copy-pasteable GitHub comment that uses the thread context instead of repeating the location or review evidence.
-- Follow the `draft-review-comment` rules: default to one or two short, natural sentences with a concrete concern and requested change or question. Include impact only when it is not obvious. Put optional evidence or technical explanation in `<details>`.
+Keep severity, exact locations, and the pinned revisions outside suggested comments. Include evidence needed to support an action or explain uncertainty, but move optional technical detail out of the main reading path. Do not repeat the same concern as both an old thread and a new finding.
