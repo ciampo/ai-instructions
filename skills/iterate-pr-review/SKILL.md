@@ -1,6 +1,6 @@
 ---
 name: iterate-pr-review
-description: Iterate an authored or explicitly owned PR through independent local agent reviews and accepted fixes until no actionable findings remain. Use only when the user says the PR is theirs or explicitly owns its branch and fix-and-push loop. Otherwise use review-pr. Use self-review-pr for a one-time authored review.
+description: Iterate an authored or explicitly owned PR through independent local agent reviews and accepted fixes until no actionable findings remain. For automatic selection, authorship or ownership of the branch and fix-and-push loop must already be explicit before loading. Contributor PR iteration without that ownership belongs to review-pr. Use self-review-pr for a one-time authored review.
 ---
 
 # Iterate PR Review
