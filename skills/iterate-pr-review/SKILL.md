@@ -1,6 +1,6 @@
 ---
 name: iterate-pr-review
-description: Iterate an authored or explicitly owned PR through independent local agent reviews and accepted fixes until no actionable findings remain. For automatic selection, authorship or ownership of the branch and fix-and-push loop must already be explicit before loading. Contributor PR iteration without that ownership belongs to review-pr. Use self-review-pr for a one-time authored review.
+description: Iterate an authored or explicitly owned PR through independent local agent reviews and accepted fixes until no actionable findings remain. For automatic selection, authorship or ownership of the branch and fix-and-push loop must already be explicit before loading. Do not infer ownership from requests to iterate, fix, commit, or push. Contributor PR iteration without it belongs to review-pr. Use self-review-pr for a one-time authored review.
 ---
 
 # Iterate PR Review
@@ -9,7 +9,7 @@ Review locally, assess findings, fix accepted issues, verify, and review again.
 
 ## Authority and limits
 
-- Require user authorship or explicit ownership of the branch and fix-and-push loop. Otherwise hand off to read-only `review-pr`.
+- Require user authorship or explicit ownership of the branch and fix-and-push loop. Requests to iterate, fix, commit, or push do not establish ownership. Otherwise hand off to read-only `review-pr`.
 - An iteration request authorizes accepted fixes, required checks and evaluations, coherent commits, and publication to that same branch. Honor narrower instructions, including local-only or review-only requests.
 - Record the repository, PR, branch, evaluation destination and payload, and round limit once. Ask one consolidated question for missing authority; retain it while that scope is unchanged. Use matching personal standing consent for model-backed evaluations. Never send secrets, private material, untracked files, or unrelated data.
 - Only explicit rebase authority permits rewriting the task branch. Use `--force-with-lease` against its recorded remote head after verification.
