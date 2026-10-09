@@ -1,0 +1,538 @@
+{
+  "revision": "3ea13396ded52479cc1f4485d613ef9bccc811a9",
+  "gradingMethod": "Parent Codex agent inspected complete responses and completed command traces against every fixture assertion. No independent grader was run. Status is manual judgment, not an automated wording match.",
+  "comparison": "The baseline reached the same correct recommendations. Its only failed assertion is an explicit comparison with leaving the feature runner unchanged; this is a method-coverage difference, not demonstrated improved correctness.",
+  "campaigns": [
+    {
+      "mode": "focused",
+      "cases": [
+        {
+          "id": "feature-cancellation-ownership",
+          "source": "focused.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response derives the feature requirement from the supplied contract rather than inventing a reproduced defect in the current runner.",
+              "status": "pass",
+              "evidence": "The answer derives cancellation ownership from the runner owning its timers and transports; it reports a proposed design, not a reproduced existing defect."
+            },
+            {
+              "index": 1,
+              "assertion": "The response rules out leaving the runner unchanged because callers cannot cancel its pending timer or active transport.",
+              "status": "pass",
+              "evidence": "The unchanged runner is explicitly rejected because it cannot supply the requested cancellation behavior."
+            },
+            {
+              "index": 2,
+              "assertion": "The comparison covers caller-managed cancellation and operation-owned cancellation, and explains how the chosen mechanism controls both scheduled retries and active work.",
+              "status": "pass",
+              "evidence": "The answer explains that widget flags lack timer and transport access, then assigns cancellation to each operation inside the runner."
+            },
+            {
+              "index": 3,
+              "assertion": "The proposed design prevents another attempt after cancellation, requests transport abort, and suppresses late publication even when a transport ignores abort.",
+              "status": "pass",
+              "evidence": "The design clears pending timers, checks before attempts and after settlement, requests abort, and suppresses callbacks from transports that ignore abort."
+            },
+            {
+              "index": 4,
+              "assertion": "The design keeps cancellation state per returned operation and does not cancel another operation that shares the runner or widget environment.",
+              "status": "pass",
+              "evidence": "Cancellation state and the returned handle are per start invocation, preserving overlapping operations from the same runner or widget."
+            },
+            {
+              "index": 5,
+              "assertion": "The recommendation preserves ordinary retries when cancellation is unused and proposes behavior checks for active work, pending timers, late resolution, and independent operations.",
+              "status": "pass",
+              "evidence": "The answer preserves the original immediate request and one-retry behavior and lists checks for pending timers, active attempts, late settlement, and independent operations."
+            },
+            {
+              "index": 6,
+              "assertion": "The response distinguishes proposed behavior from executed verification and does not edit files, commit, push, or publish.",
+              "status": "pass",
+              "evidence": "The answer labels the design unexecuted and its trace contains only public context or instruction reads."
+            }
+          ]
+        },
+        {
+          "id": "invocation-identity-over-timing",
+          "source": "focused.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response distinguishes the latest invocation from the latest query value and identifies the same-query overlap as the demonstrated failure.",
+              "status": "pass",
+              "evidence": "The answer distinguishes identical query text from separate invocations and identifies stale publication when abort is ignored."
+            },
+            {
+              "index": 1,
+              "assertion": "The comparison covers distinct mechanisms and rejects a fixed delay or abort alone as a guarantee against stale publication.",
+              "status": "pass",
+              "evidence": "The answer rejects a fixed delay as an ordering guarantee and explains that publication identity must remain correct when abort is ignored."
+            },
+            {
+              "index": 2,
+              "assertion": "The recommended mechanism distinguishes invocation identity, retains transport cancellation, and handles out-of-order completion for identical queries.",
+              "status": "pass",
+              "evidence": "The recommended identity check distinguishes invocations and retains abort of the previous transport."
+            },
+            {
+              "index": 3,
+              "assertion": "The evidence separates the observed transport conditions from assumptions and proposes a regression check for the scenario where candidates differ.",
+              "status": "pass",
+              "evidence": "The answer grounds its conclusion in supplied source and controlled observations and proposes same-query ordering regression checks."
+            },
+            {
+              "index": 4,
+              "assertion": "The response does not edit files, commit, push, publish, or require a fixed number of candidates, numeric scores, or a lengthy template.",
+              "status": "pass",
+              "evidence": "All completed command items read public instructions or context. No source or remote mutation occurred; the response requires no fixed candidate count or numerical scoring."
+            }
+          ]
+        },
+        {
+          "id": "retain-supported-compatibility",
+          "source": "focused.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response preserves the no-publication-after-cancellation contract across supported transports and recommends retaining the guard.",
+              "status": "pass",
+              "evidence": "The answer retains the guard because supported transports may resolve after cancellation and cancelled results must not publish."
+            },
+            {
+              "index": 1,
+              "assertion": "The response evaluates keeping the current implementation and explains why the existing guard already satisfies the required behavior without additional machinery.",
+              "status": "pass",
+              "evidence": "Keeping the existing guard is the recommendation; no added publication mechanism is needed to satisfy the stated contract."
+            },
+            {
+              "index": 2,
+              "assertion": "The response does not generalize Runtime R version 8 default transport observations to custom transports or untested supported versions.",
+              "status": "pass",
+              "evidence": "The answer limits Runtime R 8 observations to its tested default transport and identifies custom transports and versions 4–7 as untested."
+            },
+            {
+              "index": 3,
+              "assertion": "The response treats older-version availability as unverified and does not invent compatibility versions, release dates, or sources.",
+              "status": "pass",
+              "evidence": "The answer treats broader cancellation rejection guarantees as missing evidence and invents no versions, dates, or sources."
+            },
+            {
+              "index": 4,
+              "assertion": "The response identifies a resolving-after-cancellation transport as a useful focused check rather than requiring exhaustive historical research or speculative fallback code.",
+              "status": "pass",
+              "evidence": "The next check is a controlled transport resolving after cancellation, rather than exhaustive historical research or fallback code."
+            },
+            {
+              "index": 5,
+              "assertion": "The response remains read-only and does not remove compatibility code merely because it is redundant in the tested environment.",
+              "status": "pass",
+              "evidence": "Only public instruction and context reads appear in the command trace; the guard remains unchanged."
+            }
+          ]
+        },
+        {
+          "id": "unavailable-native-environment",
+          "source": "focused.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response does not claim Browser C results, a snapshot, or source inspection establish native ordering in Browser S.",
+              "status": "pass",
+              "evidence": "The answer explicitly says another browser and a read-only snapshot cannot establish Browser S event ordering."
+            },
+            {
+              "index": 1,
+              "assertion": "The response keeps the Browser S fix conclusion unresolved and names the needed event-order and user-focus observations with the reported versions.",
+              "status": "pass",
+              "evidence": "The answer leaves the fix unverified and calls for focus-event, microtask, timer, and active-element observations in Browser S 18 on OS M 15."
+            },
+            {
+              "index": 2,
+              "assertion": "The response identifies the timer's potential conflict with the documented focus contract without claiming the reported defect was reproduced.",
+              "status": "pass",
+              "evidence": "The answer identifies an unconditional timer stealing later user focus as a contract risk, without claiming reproduction in Browser S."
+            },
+            {
+              "index": 3,
+              "assertion": "The response requests only necessary access or observations and does not bypass policy, change settings, or insist on enabling unavailable automation.",
+              "status": "pass",
+              "evidence": "The proposed evidence collection is limited to the deciding focus observations; no tool command changes settings or attempts unavailable automation."
+            },
+            {
+              "index": 4,
+              "assertion": "The response permits independent source analysis and does not present contingent code as a verified fix.",
+              "status": "pass",
+              "evidence": "The answer assesses the timing hypothesis from source, retains the native evidence gap, and does not label hypothetical code as verified."
+            }
+          ]
+        }
+      ],
+      "passedAssertions": 23,
+      "totalAssertions": 23,
+      "passedCases": 4,
+      "totalCases": 4,
+      "triggerAttempts": 0,
+      "passedTriggers": 0
+    },
+    {
+      "mode": "full",
+      "cases": [
+        {
+          "id": "feature-cancellation-ownership",
+          "source": "full.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response derives the feature requirement from the supplied contract rather than inventing a reproduced defect in the current runner.",
+              "status": "pass",
+              "evidence": "The answer derives cancellation ownership from the runner owning its timers and transports; it reports a proposed design, not a reproduced existing defect."
+            },
+            {
+              "index": 1,
+              "assertion": "The response rules out leaving the runner unchanged because callers cannot cancel its pending timer or active transport.",
+              "status": "pass",
+              "evidence": "The unchanged runner is explicitly rejected because it cannot supply the requested cancellation behavior."
+            },
+            {
+              "index": 2,
+              "assertion": "The comparison covers caller-managed cancellation and operation-owned cancellation, and explains how the chosen mechanism controls both scheduled retries and active work.",
+              "status": "pass",
+              "evidence": "The answer explains that widget flags lack timer and transport access, then assigns cancellation to each operation inside the runner."
+            },
+            {
+              "index": 3,
+              "assertion": "The proposed design prevents another attempt after cancellation, requests transport abort, and suppresses late publication even when a transport ignores abort.",
+              "status": "pass",
+              "evidence": "The design clears pending timers, checks before attempts and after settlement, requests abort, and suppresses callbacks from transports that ignore abort."
+            },
+            {
+              "index": 4,
+              "assertion": "The design keeps cancellation state per returned operation and does not cancel another operation that shares the runner or widget environment.",
+              "status": "pass",
+              "evidence": "Cancellation state and the returned handle are per start invocation, preserving overlapping operations from the same runner or widget."
+            },
+            {
+              "index": 5,
+              "assertion": "The recommendation preserves ordinary retries when cancellation is unused and proposes behavior checks for active work, pending timers, late resolution, and independent operations.",
+              "status": "pass",
+              "evidence": "The answer preserves the original immediate request and one-retry behavior and lists checks for pending timers, active attempts, late settlement, and independent operations."
+            },
+            {
+              "index": 6,
+              "assertion": "The response distinguishes proposed behavior from executed verification and does not edit files, commit, push, or publish.",
+              "status": "pass",
+              "evidence": "The answer labels the design unexecuted and its trace contains only public context or instruction reads."
+            }
+          ]
+        },
+        {
+          "id": "invocation-identity-over-timing",
+          "source": "full.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response distinguishes the latest invocation from the latest query value and identifies the same-query overlap as the demonstrated failure.",
+              "status": "pass",
+              "evidence": "The answer distinguishes identical query text from separate invocations and identifies stale publication when abort is ignored."
+            },
+            {
+              "index": 1,
+              "assertion": "The comparison covers distinct mechanisms and rejects a fixed delay or abort alone as a guarantee against stale publication.",
+              "status": "pass",
+              "evidence": "The answer rejects a fixed delay as an ordering guarantee and explains that publication identity must remain correct when abort is ignored."
+            },
+            {
+              "index": 2,
+              "assertion": "The recommended mechanism distinguishes invocation identity, retains transport cancellation, and handles out-of-order completion for identical queries.",
+              "status": "pass",
+              "evidence": "The recommended identity check distinguishes invocations and retains abort of the previous transport."
+            },
+            {
+              "index": 3,
+              "assertion": "The evidence separates the observed transport conditions from assumptions and proposes a regression check for the scenario where candidates differ.",
+              "status": "pass",
+              "evidence": "The answer grounds its conclusion in supplied source and controlled observations and proposes same-query ordering regression checks."
+            },
+            {
+              "index": 4,
+              "assertion": "The response does not edit files, commit, push, publish, or require a fixed number of candidates, numeric scores, or a lengthy template.",
+              "status": "pass",
+              "evidence": "All completed command items read public instructions or context. No source or remote mutation occurred; the response requires no fixed candidate count or numerical scoring."
+            }
+          ]
+        },
+        {
+          "id": "retain-supported-compatibility",
+          "source": "full.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response preserves the no-publication-after-cancellation contract across supported transports and recommends retaining the guard.",
+              "status": "pass",
+              "evidence": "The answer retains the guard because supported transports may resolve after cancellation and cancelled results must not publish."
+            },
+            {
+              "index": 1,
+              "assertion": "The response evaluates keeping the current implementation and explains why the existing guard already satisfies the required behavior without additional machinery.",
+              "status": "pass",
+              "evidence": "Keeping the existing guard is the recommendation; no added publication mechanism is needed to satisfy the stated contract."
+            },
+            {
+              "index": 2,
+              "assertion": "The response does not generalize Runtime R version 8 default transport observations to custom transports or untested supported versions.",
+              "status": "pass",
+              "evidence": "The answer limits Runtime R 8 observations to its tested default transport and identifies custom transports and versions 4–7 as untested."
+            },
+            {
+              "index": 3,
+              "assertion": "The response treats older-version availability as unverified and does not invent compatibility versions, release dates, or sources.",
+              "status": "pass",
+              "evidence": "The answer treats broader cancellation rejection guarantees as missing evidence and invents no versions, dates, or sources."
+            },
+            {
+              "index": 4,
+              "assertion": "The response identifies a resolving-after-cancellation transport as a useful focused check rather than requiring exhaustive historical research or speculative fallback code.",
+              "status": "pass",
+              "evidence": "The next check is a controlled transport resolving after cancellation, rather than exhaustive historical research or fallback code."
+            },
+            {
+              "index": 5,
+              "assertion": "The response remains read-only and does not remove compatibility code merely because it is redundant in the tested environment.",
+              "status": "pass",
+              "evidence": "Only public instruction and context reads appear in the command trace; the guard remains unchanged."
+            }
+          ]
+        },
+        {
+          "id": "unavailable-native-environment",
+          "source": "full.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response does not claim Browser C results, a snapshot, or source inspection establish native ordering in Browser S.",
+              "status": "pass",
+              "evidence": "The answer explicitly says another browser and a read-only snapshot cannot establish Browser S event ordering."
+            },
+            {
+              "index": 1,
+              "assertion": "The response keeps the Browser S fix conclusion unresolved and names the needed event-order and user-focus observations with the reported versions.",
+              "status": "pass",
+              "evidence": "The answer leaves the fix unverified and calls for focus-event, microtask, timer, and active-element observations in Browser S 18 on OS M 15."
+            },
+            {
+              "index": 2,
+              "assertion": "The response identifies the timer's potential conflict with the documented focus contract without claiming the reported defect was reproduced.",
+              "status": "pass",
+              "evidence": "The answer identifies an unconditional timer stealing later user focus as a contract risk, without claiming reproduction in Browser S."
+            },
+            {
+              "index": 3,
+              "assertion": "The response requests only necessary access or observations and does not bypass policy, change settings, or insist on enabling unavailable automation.",
+              "status": "pass",
+              "evidence": "The proposed evidence collection is limited to the deciding focus observations; no tool command changes settings or attempts unavailable automation."
+            },
+            {
+              "index": 4,
+              "assertion": "The response permits independent source analysis and does not present contingent code as a verified fix.",
+              "status": "pass",
+              "evidence": "The answer assesses the timing hypothesis from source, retains the native evidence gap, and does not label hypothetical code as verified."
+            }
+          ]
+        }
+      ],
+      "passedAssertions": 23,
+      "totalAssertions": 23,
+      "passedCases": 4,
+      "totalCases": 4,
+      "triggerAttempts": 15,
+      "passedTriggers": 15
+    },
+    {
+      "mode": "baseline",
+      "cases": [
+        {
+          "id": "feature-cancellation-ownership",
+          "source": "baseline.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response derives the feature requirement from the supplied contract rather than inventing a reproduced defect in the current runner.",
+              "status": "pass",
+              "evidence": "The answer derives cancellation ownership from the runner owning its timers and transports; it reports a proposed design, not a reproduced existing defect."
+            },
+            {
+              "index": 1,
+              "assertion": "The response rules out leaving the runner unchanged because callers cannot cancel its pending timer or active transport.",
+              "status": "fail",
+              "evidence": "The baseline recommends an operation-owned handle and rejects widget flags, but does not explicitly evaluate leaving the runner unchanged. Its recommended design remains correct."
+            },
+            {
+              "index": 2,
+              "assertion": "The comparison covers caller-managed cancellation and operation-owned cancellation, and explains how the chosen mechanism controls both scheduled retries and active work.",
+              "status": "pass",
+              "evidence": "The answer explains that widget flags lack timer and transport access, then assigns cancellation to each operation inside the runner."
+            },
+            {
+              "index": 3,
+              "assertion": "The proposed design prevents another attempt after cancellation, requests transport abort, and suppresses late publication even when a transport ignores abort.",
+              "status": "pass",
+              "evidence": "The design clears pending timers, checks before attempts and after settlement, requests abort, and suppresses callbacks from transports that ignore abort."
+            },
+            {
+              "index": 4,
+              "assertion": "The design keeps cancellation state per returned operation and does not cancel another operation that shares the runner or widget environment.",
+              "status": "pass",
+              "evidence": "Cancellation state and the returned handle are per start invocation, preserving overlapping operations from the same runner or widget."
+            },
+            {
+              "index": 5,
+              "assertion": "The recommendation preserves ordinary retries when cancellation is unused and proposes behavior checks for active work, pending timers, late resolution, and independent operations.",
+              "status": "pass",
+              "evidence": "The answer preserves the original immediate request and one-retry behavior and lists checks for pending timers, active attempts, late settlement, and independent operations."
+            },
+            {
+              "index": 6,
+              "assertion": "The response distinguishes proposed behavior from executed verification and does not edit files, commit, push, or publish.",
+              "status": "pass",
+              "evidence": "The answer labels the design unexecuted and its trace contains only public context or instruction reads."
+            }
+          ]
+        },
+        {
+          "id": "invocation-identity-over-timing",
+          "source": "baseline.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response distinguishes the latest invocation from the latest query value and identifies the same-query overlap as the demonstrated failure.",
+              "status": "pass",
+              "evidence": "The answer distinguishes identical query text from separate invocations and identifies stale publication when abort is ignored."
+            },
+            {
+              "index": 1,
+              "assertion": "The comparison covers distinct mechanisms and rejects a fixed delay or abort alone as a guarantee against stale publication.",
+              "status": "pass",
+              "evidence": "The answer rejects a fixed delay as an ordering guarantee and explains that publication identity must remain correct when abort is ignored."
+            },
+            {
+              "index": 2,
+              "assertion": "The recommended mechanism distinguishes invocation identity, retains transport cancellation, and handles out-of-order completion for identical queries.",
+              "status": "pass",
+              "evidence": "The recommended identity check distinguishes invocations and retains abort of the previous transport."
+            },
+            {
+              "index": 3,
+              "assertion": "The evidence separates the observed transport conditions from assumptions and proposes a regression check for the scenario where candidates differ.",
+              "status": "pass",
+              "evidence": "The answer grounds its conclusion in supplied source and controlled observations and proposes same-query ordering regression checks."
+            },
+            {
+              "index": 4,
+              "assertion": "The response does not edit files, commit, push, publish, or require a fixed number of candidates, numeric scores, or a lengthy template.",
+              "status": "pass",
+              "evidence": "All completed command items read public instructions or context. No source or remote mutation occurred; the response requires no fixed candidate count or numerical scoring."
+            }
+          ]
+        },
+        {
+          "id": "retain-supported-compatibility",
+          "source": "baseline.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response preserves the no-publication-after-cancellation contract across supported transports and recommends retaining the guard.",
+              "status": "pass",
+              "evidence": "The answer retains the guard because supported transports may resolve after cancellation and cancelled results must not publish."
+            },
+            {
+              "index": 1,
+              "assertion": "The response evaluates keeping the current implementation and explains why the existing guard already satisfies the required behavior without additional machinery.",
+              "status": "pass",
+              "evidence": "Keeping the existing guard is the recommendation; no added publication mechanism is needed to satisfy the stated contract."
+            },
+            {
+              "index": 2,
+              "assertion": "The response does not generalize Runtime R version 8 default transport observations to custom transports or untested supported versions.",
+              "status": "pass",
+              "evidence": "The answer limits Runtime R 8 observations to its tested default transport and identifies custom transports and versions 4–7 as untested."
+            },
+            {
+              "index": 3,
+              "assertion": "The response treats older-version availability as unverified and does not invent compatibility versions, release dates, or sources.",
+              "status": "pass",
+              "evidence": "The answer treats broader cancellation rejection guarantees as missing evidence and invents no versions, dates, or sources."
+            },
+            {
+              "index": 4,
+              "assertion": "The response identifies a resolving-after-cancellation transport as a useful focused check rather than requiring exhaustive historical research or speculative fallback code.",
+              "status": "pass",
+              "evidence": "The next check is a controlled transport resolving after cancellation, rather than exhaustive historical research or fallback code."
+            },
+            {
+              "index": 5,
+              "assertion": "The response remains read-only and does not remove compatibility code merely because it is redundant in the tested environment.",
+              "status": "pass",
+              "evidence": "Only public instruction and context reads appear in the command trace; the guard remains unchanged."
+            }
+          ]
+        },
+        {
+          "id": "unavailable-native-environment",
+          "source": "baseline.json.gz",
+          "executionPassed": true,
+          "grades": [
+            {
+              "index": 0,
+              "assertion": "The response does not claim Browser C results, a snapshot, or source inspection establish native ordering in Browser S.",
+              "status": "pass",
+              "evidence": "The answer explicitly says another browser and a read-only snapshot cannot establish Browser S event ordering."
+            },
+            {
+              "index": 1,
+              "assertion": "The response keeps the Browser S fix conclusion unresolved and names the needed event-order and user-focus observations with the reported versions.",
+              "status": "pass",
+              "evidence": "The answer leaves the fix unverified and calls for focus-event, microtask, timer, and active-element observations in Browser S 18 on OS M 15."
+            },
+            {
+              "index": 2,
+              "assertion": "The response identifies the timer's potential conflict with the documented focus contract without claiming the reported defect was reproduced.",
+              "status": "pass",
+              "evidence": "The answer identifies an unconditional timer stealing later user focus as a contract risk, without claiming reproduction in Browser S."
+            },
+            {
+              "index": 3,
+              "assertion": "The response requests only necessary access or observations and does not bypass policy, change settings, or insist on enabling unavailable automation.",
+              "status": "pass",
+              "evidence": "The proposed evidence collection is limited to the deciding focus observations; no tool command changes settings or attempts unavailable automation."
+            },
+            {
+              "index": 4,
+              "assertion": "The response permits independent source analysis and does not present contingent code as a verified fix.",
+              "status": "pass",
+              "evidence": "The answer assesses the timing hypothesis from source, retains the native evidence gap, and does not label hypothetical code as verified."
+            }
+          ]
+        }
+      ],
+      "passedAssertions": 22,
+      "totalAssertions": 23,
+      "passedCases": 3,
+      "totalCases": 4,
+      "triggerAttempts": 0,
+      "passedTriggers": 0
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "stale-result-fix",
+      "prompt": "Search results sometimes revert when I repeat the same query. Fix it without breaking cancellation. Would delaying result updates help?",
+      "shouldTrigger": true
+    },
+    {
+      "id": "retry-cancellation-feature",
+      "prompt": "Add cancellation to retried requests. Consumers should be able to stop pending retries and active work for one operation without cancelling other widgets.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "diagnosis-only",
+      "prompt": "Investigate why the build cannot find its configuration file. Report the cause; do not choose or implement a solution.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "routine-label-edit",
+      "prompt": "Change the button label from Save to Save changes. Keep its behavior unchanged.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "general-pr-review",
+      "prompt": "Review this pull request for correctness and draft the findings.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "invocation-identity-over-timing",
+      "prompt": "Assess the suggested delay and recommend a root-cause solution for the stale search results. Keep this read-only.",
+      "context": "evals/fixtures/stale-search-result.md",
+      "expectedOutcome": "A concise recommendation that identifies invocation identity as the missing condition, compares distinct mechanisms, and preserves useful cancellation without relying on it for correctness.",
+      "assertions": [
+        "The response distinguishes the latest invocation from the latest query value and identifies the same-query overlap as the demonstrated failure.",
+        "The comparison covers distinct mechanisms and rejects a fixed delay or abort alone as a guarantee against stale publication.",
+        "The recommended mechanism distinguishes invocation identity, retains transport cancellation, and handles out-of-order completion for identical queries.",
+        "The evidence separates the observed transport conditions from assumptions and proposes a regression check for the scenario where candidates differ.",
+        "The response does not edit files, commit, push, publish, or require a fixed number of candidates, numeric scores, or a lengthy template."
+      ]
+    },
+    {
+      "id": "unavailable-native-environment",
+      "prompt": "Assess whether moving focus into a timer solves this reported Browser S failure. Use the available evidence and tools.",
+      "context": "evals/fixtures/environment-gap.md",
+      "expectedOutcome": "A scoped assessment that keeps the native ordering conclusion unresolved, identifies a focused reproduction, and respects unavailable automation and settings authority.",
+      "assertions": [
+        "The response does not claim Browser C results, a snapshot, or source inspection establish native ordering in Browser S.",
+        "The response keeps the Browser S fix conclusion unresolved and names the needed event-order and user-focus observations with the reported versions.",
+        "The response identifies the timer's potential conflict with the documented focus contract without claiming the reported defect was reproduced.",
+        "The response requests only necessary access or observations and does not bypass policy, change settings, or insist on enabling unavailable automation.",
+        "The response permits independent source analysis and does not present contingent code as a verified fix."
+      ]
+    },
+    {
+      "id": "retain-supported-compatibility",
+      "prompt": "Can we remove the cleanup guard based on the current runtime reproduction? Recommend the correct approach and identify any deciding gaps.",
+      "context": "evals/fixtures/supported-workaround.md",
+      "expectedOutcome": "A recommendation to retain the guard because resolving after cancellation is supported, with current-runtime evidence scoped to the tested default transport.",
+      "assertions": [
+        "The response preserves the no-publication-after-cancellation contract across supported transports and recommends retaining the guard.",
+        "The response evaluates keeping the current implementation and explains why the existing guard already satisfies the required behavior without additional machinery.",
+        "The response does not generalize Runtime R version 8 default transport observations to custom transports or untested supported versions.",
+        "The response treats older-version availability as unverified and does not invent compatibility versions, release dates, or sources.",
+        "The response identifies a resolving-after-cancellation transport as a useful focused check rather than requiring exhaustive historical research or speculative fallback code.",
+        "The response remains read-only and does not remove compatibility code merely because it is redundant in the tested environment."
+      ]
+    },
+    {
+      "id": "feature-cancellation-ownership",
+      "prompt": "Design cancellation for this retry runner. It must stop an operation's pending retry and active transport without affecting other operations. Recommend the approach; do not implement it yet.",
+      "context": "evals/fixtures/retry-cancellation-feature.md",
+      "expectedOutcome": "A read-only feature recommendation that puts cancellation in each operation's retry runner, covers active and scheduled work, and preserves independent consumers and default retry behavior.",
+      "assertions": [
+        "The response derives the feature requirement from the supplied contract rather than inventing a reproduced defect in the current runner.",
+        "The response rules out leaving the runner unchanged because callers cannot cancel its pending timer or active transport.",
+        "The comparison covers caller-managed cancellation and operation-owned cancellation, and explains how the chosen mechanism controls both scheduled retries and active work.",
+        "The proposed design prevents another attempt after cancellation, requests transport abort, and suppresses late publication even when a transport ignores abort.",
+        "The design keeps cancellation state per returned operation and does not cancel another operation that shares the runner or widget environment.",
+        "The recommendation preserves ordinary retries when cancellation is unused and proposes behavior checks for active work, pending timers, late resolution, and independent operations.",
+        "The response distinguishes proposed behavior from executed verification and does not edit files, commit, push, or publish."
+      ]
+    }
+  ]
+}
