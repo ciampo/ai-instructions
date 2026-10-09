@@ -12,6 +12,7 @@ This is an immutable synthetic snapshot. Do not fetch or mutate a live PR.
 - CI: remote HEAD passed; the local candidate is not covered by that run
 - Authority: local fixes and checks only, no commits, pushes, or remote mutations
 - Delivery: internal handoff only, no review or reply artifacts
+- Executable corpus: adjacent `parent-local-candidate/` directory. Run `node --test test/iteration-limit.test.mjs` there.
 
 ## Candidate diff
 
@@ -39,9 +40,10 @@ import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
 assert.equal( getChangeRoundLimit(), 5 );
 assert.equal( getChangeRoundLimit( 2 ), 2 );
+assert.equal( getChangeRoundLimit( 0 ), 0 );
 ```
 
 For the feedback workflow only, the parent's completed local agent handoff
-reports that the candidate violates the zero-limit contract. Verify the finding
-against this source, describe the local fix and focused zero-limit check, then
-return to the parent. Do not claim execution of unavailable fixture commands.
+reports that the candidate violates the zero-limit contract. Verify the finding against the writable corpus, apply the local fix, run the
+focused test, and return the verified result to the parent. Do not commit, push,
+request remote reviews, or create reply artifacts.

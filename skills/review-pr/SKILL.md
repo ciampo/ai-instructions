@@ -9,7 +9,7 @@ Review a GitHub pull request without changing it.
 
 ## Ownership boundary
 
-- Before the review, check whether the user authored the pull request or explicitly owns another author's fix-and-push loop. If that ownership and an iterative local review and fixes request are both explicit, hand off to `iterate-pr-review`. Otherwise, continue here. Iterative wording alone does not establish ownership.
+- Check the user request and retained context before entry routing or PR lookup. For an authored or explicitly owned PR with an iterative review-and-fix request, hand off immediately to `iterate-pr-review` and preserve narrower limits. Do not run this skill's entry routing or review steps first. Otherwise continue read-only. Iterative wording does not establish ownership.
 
 ## Entry routing
 
