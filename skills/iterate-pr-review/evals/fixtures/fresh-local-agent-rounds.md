@@ -7,21 +7,22 @@
 - Local review capability: read-only subagents
 - Existing remote feedback: none
 - Current-head Copilot review or request: none
-- CI: passed
+- CI: the focused zero-limit regression currently fails
 - Change-round limit: five
-- Authority: accepted fixes, verification, commits, and pushes to this branch
+- Authority: apply accepted fixes and checks locally; no commits or pushes in this isolated run
+- Executable corpus: adjacent `fresh-local-agent-rounds/` directory. Run commands there.
 
-Treat this as an immutable synthetic snapshot. Describe the loop without
-mutating a live PR. The first independent agent reports that the changed test
-omits the explicit-limit path. Assess that finding against the source and test
-below. After the accepted fix, the next fresh agent review reports no actionable
-findings and required verification passes. Each review covers its own candidate.
+Treat the PR identity as immutable synthetic evidence. Use the writable local
+corpus for the review-and-fix loop; do not mutate a live PR. Run fresh independent
+reviews and `node --test test/iteration-limit.test.mjs` against each changed
+candidate. The existing exported helper is a public API used by several callers.
+Its contract permits zero and defaults null or undefined to five.
 
 ## Candidate source
 
 ```js
 export function getChangeRoundLimit( requestedLimit ) {
-  return requestedLimit ?? 5;
+  return requestedLimit || 5;
 }
 ```
 
@@ -32,6 +33,8 @@ import assert from 'node:assert/strict';
 import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
 assert.equal( getChangeRoundLimit(), 5 );
+assert.equal( getChangeRoundLimit( 0 ), 0 );
+assert.equal( getChangeRoundLimit( null ), 5 );
 ```
 
 No remote reviewer request is needed for either candidate. Do not carry the

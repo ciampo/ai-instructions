@@ -27,8 +27,11 @@ import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
 assert.equal( getChangeRoundLimit(), 5 );
 assert.equal( getChangeRoundLimit( 2 ), 2 );
+assert.equal( getChangeRoundLimit( 0 ), 0 );
+assert.equal( getChangeRoundLimit( null ), 5 );
 ```
 
-The diff replaces the same inline expression with this function and updates its
-call site. No public contract changes. Inspect the source and both assertions
+The existing public helper changes its fallback from `requestedLimit || 5` to
+`requestedLimit ?? 5`. Callers rely on this exported API, including zero-limit
+handling. No public contract changes. Inspect the source and both assertions
 through the disclosed fresh-context fallback. Passing CI alone is not a review.

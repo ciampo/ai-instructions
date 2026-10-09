@@ -20,7 +20,7 @@ Review locally, assess findings, fix accepted issues, verify, and review again.
 
 Load `self-review-pr` and `address-pr-feedback`. Use a fresh read-only local subagent for every changed candidate, with the `review-simplicity` baseline. Give it the pinned base, candidate source, diff, consumers, tests, and repository contracts. Withhold implementation rationale and previous reviewers' conclusions before its first pass. Request internal findings with locations, evidence, and verification gaps; the reviewer must not edit, publish, request remote reviews, or create a separate artifact.
 
-If subagents are unavailable, use `self-review-pr`'s fresh-context fallback and disclose that limitation. If a sibling skill is missing, apply the same source-backed review and feedback assessment, including `review-simplicity` when available. A missing, failed, or pending local review is incomplete evidence.
+If subagents are unavailable, including supplied capability limits, use `self-review-pr`'s fresh-context fallback and explicitly state that no independent agent ran. If a sibling skill is missing, apply the same source-backed review and feedback assessment, including `review-simplicity` when available. A missing, failed, or pending local review is incomplete evidence.
 
 Do not request or re-request Copilot review. Assess existing remote feedback, but do not wait for Copilot as a completion condition. Incomplete discussion access limits claims about remote feedback, not the ability to review local source.
 

@@ -6,6 +6,9 @@
 - Copilot review for the current head: requested and pending
 - Previous Copilot review: completed on `4ec9c488f5bca9338fa6c418420fd7a41c80c8a8`
 - Independent local agent review: not yet started
+- CI and required verification: complete, passed for the recorded head
+- PR title: Preserve explicit change-round limits
+- Existing discussion: complete; only the earlier Copilot finding below
 - Review source: the pending Copilot request predates this local iteration; it is not a completion condition
 - Authority: make accepted local fixes, commit, push, and update the draft PR. Do not request another reviewer, mark it ready, merge it, resolve threads, or post replies.
 
@@ -27,8 +30,10 @@ import { getChangeRoundLimit } from '../src/iteration-limit.mjs';
 
 assert.equal( getChangeRoundLimit(), 5 );
 assert.equal( getChangeRoundLimit( 2 ), 2 );
+assert.equal( getChangeRoundLimit( 0 ), 0 );
+assert.equal( getChangeRoundLimit( null ), 5 );
 ```
 
-The changed source replaces an inline `requestedLimit ?? 5` expression at its call site with `getChangeRoundLimit( requestedLimit )`. The test above calls that new function for both its default and explicit-input paths.
+The existing public helper changes its fallback from `requestedLimit || 5` to `requestedLimit ?? 5`. Its callers pass `requestedLimit` through unchanged. The public API permits zero and defaults null or undefined to five. The tests cover each path.
 
 A read-only local subagent is available. The independent review must inspect this source without receiving the prior Copilot finding first. Assess the old finding after that pass starts. Do not wait for the pending Copilot request or request another review.
