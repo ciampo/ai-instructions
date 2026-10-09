@@ -29,6 +29,8 @@ Distinguish intended behavior from implementation side effects. Check consumers 
 
 For a material design choice, consider a local adjustment, moving responsibility to the correct owner or time, and removing or delegating the behavior to an existing mechanism. Include the suggested fix. Use distinct approaches rather than cosmetic variants, and explain when an approach is inapplicable. Do not require a fixed candidate count or numerical scores.
 
+Include keeping the existing implementation when it may already satisfy the requirement. Recommend no change when the evidence supports it. For an unmet feature requirement, identify the missing behavior that rules out keeping the implementation unchanged.
+
 Ask where this behavior would belong if implemented directly from the contract. Check whether guards, delays, precedence rules, or overrides remove the cause or merely hide the conflict. Timing changes can be valid when timing is part of the contract; prove that relationship.
 
 Compare candidates against the scenarios that could decide the choice:

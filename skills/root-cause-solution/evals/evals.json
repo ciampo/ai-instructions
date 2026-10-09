@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "triggerCases": [
     {
-      "id": "compare-stale-result-fixes",
-      "prompt": "Before fixing this stale search result, compare a guard, changing request ownership, and relying on cancellation. Recommend the approach that preserves the latest-request contract.",
+      "id": "stale-result-fix",
+      "prompt": "Search results sometimes revert when I repeat the same query. Fix it without breaking cancellation. Would delaying result updates help?",
       "shouldTrigger": true
     },
     {
-      "id": "feature-responsibility-choice",
-      "prompt": "Implement retry cancellation, but first decide whether cancellation belongs in each caller or the shared request owner. Compare the mechanisms against the public contract.",
+      "id": "retry-cancellation-feature",
+      "prompt": "Add cancellation to retried requests. Consumers should be able to stop pending retries and active work for one operation without cancelling other widgets.",
       "shouldTrigger": true
     },
     {
@@ -61,10 +61,26 @@
       "expectedOutcome": "A recommendation to retain the guard because resolving after cancellation is supported, with current-runtime evidence scoped to the tested default transport.",
       "assertions": [
         "The response preserves the no-publication-after-cancellation contract across supported transports and recommends retaining the guard.",
+        "The response evaluates keeping the current implementation and explains why the existing guard already satisfies the required behavior without additional machinery.",
         "The response does not generalize Runtime R version 8 default transport observations to custom transports or untested supported versions.",
         "The response treats older-version availability as unverified and does not invent compatibility versions, release dates, or sources.",
         "The response identifies a resolving-after-cancellation transport as a useful focused check rather than requiring exhaustive historical research or speculative fallback code.",
         "The response remains read-only and does not remove compatibility code merely because it is redundant in the tested environment."
+      ]
+    },
+    {
+      "id": "feature-cancellation-ownership",
+      "prompt": "Design cancellation for this retry runner. It must stop an operation's pending retry and active transport without affecting other operations. Recommend the approach; do not implement it yet.",
+      "context": "evals/fixtures/retry-cancellation-feature.md",
+      "expectedOutcome": "A read-only feature recommendation that puts cancellation in each operation's retry runner, covers active and scheduled work, and preserves independent consumers and default retry behavior.",
+      "assertions": [
+        "The response derives the feature requirement from the supplied contract rather than inventing a reproduced defect in the current runner.",
+        "The response rules out leaving the runner unchanged because callers cannot cancel its pending timer or active transport.",
+        "The comparison covers caller-managed cancellation and operation-owned cancellation, and explains how the chosen mechanism controls both scheduled retries and active work.",
+        "The proposed design prevents another attempt after cancellation, requests transport abort, and suppresses late publication even when a transport ignores abort.",
+        "The design keeps cancellation state per returned operation and does not cancel another operation that shares the runner or widget environment.",
+        "The recommendation preserves ordinary retries when cancellation is unused and proposes behavior checks for active work, pending timers, late resolution, and independent operations.",
+        "The response distinguishes proposed behavior from executed verification and does not edit files, commit, push, or publish."
       ]
     }
   ]
