@@ -41,7 +41,7 @@ Remaining output limits include fixtures without the source or commit graph need
 
 ### Evidence
 
-All runner and result archives are lossless gzip with zero modification timestamps. Restore a `.mjs.gz` runner beside its archive before replay, in a checkout matching its recorded skill tree. Result files retain command and event evidence, workspace deltas, assertion grades, limits, and runner SHA-256 values. The final evidence commit changes only documentation and archives.
+All runner and result archives are lossless gzip with zero modification timestamps. Restore a `.mjs.gz` runner beside its archive before replay, in a checkout matching its recorded skill tree. Result files retain command and event evidence, workspace deltas, assertion grades, limits, and runner SHA-256 values. The evidence commit changes only documentation and archives. After publication, PR #124 landed its own lint-dependency fix on main. A normal follow-up commit adopts that upstream manifest and lockfile to remove the conflict; skill and fixture trees are unchanged.
 
 - [Initial focused results](evaluation-results/e9ea0d9ff5c6389ee086d67d315ce74cbad2ab56/output-focused.json.gz).
 - [Complete output run](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/output-full.json.gz), [initial trigger run](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/trigger-initial.json.gz), and [paired main comparison](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/output-base-comparison.json.gz).
