@@ -56,6 +56,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [audit-dependency-update](skills/audit-dependency-update/SKILL.md) | updating a dependency | Changelog, impact, compatibility, and security audit |
 | [address-pr-feedback](skills/address-pr-feedback/SKILL.md) | "address the feedback" | Systematic workflow for review comments |
 | [investigate-debug](skills/investigate-debug/SKILL.md) | "debug this" | Reproduce, isolate, fix, and verify |
+| [root-cause-solution](skills/root-cause-solution/SKILL.md) | material bug or feature solution choice | Compare mechanisms against contracts, deciding conditions, and supported behavior |
 | [refactor](skills/refactor/SKILL.md) | "refactor X" | Verified codebase-wide refactoring workflow |
 | [resume-session](skills/resume-session/SKILL.md) | "continue where we left off" | Recover and verify previous work |
 | [prepare-release](skills/prepare-release/SKILL.md) | "prepare a release" | Local release preparation without remote publication |
