@@ -7,8 +7,8 @@
     "content:check": "node scripts/validate-content.mjs",
     "docs:check": "node scripts/generate-support-table.mjs --check",
     "docs:generate": "node scripts/generate-support-table.mjs",
-    "lint": "markdownlint-cli2 \"**/*.md\"",
-    "lint:fix": "markdownlint-cli2 --fix \"**/*.md\"",
+    "lint": "markdownlint --config .markdownlint.json --dot --ignore node_modules \"**/*.md\"",
+    "lint:fix": "markdownlint --config .markdownlint.json --dot --ignore node_modules --fix \"**/*.md\"",
     "test": "npm run test:shell && npm run content:check && npm run test:installer",
     "test:installer": "npm run test:node && npm run test:legacy",
     "test:legacy": "bash tests/cursor-install.sh && bash tests/claude-install.sh && bash tests/codex-install.sh && bash tests/skills-agents-install.sh",
@@ -16,11 +16,14 @@
     "test:shell": "bash -n setup.sh tests/*.sh"
   },
   "devDependencies": {
-    "markdownlint-cli2": "^0.23.2"
+    "markdownlint-cli": "^0.49.1"
   },
   "overrides": {
-    "markdownlint-cli2": {
-      "js-yaml": "5.2.2"
+    "markdownlint-cli": {
+      "commander": "14.0.3",
+      "js-yaml": "5.4.3",
+      "run-con": "1.3.2",
+      "smol-toml": "1.9.1"
     }
   }
 }

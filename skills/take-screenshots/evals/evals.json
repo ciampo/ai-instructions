@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "pr-screenshot",
+      "prompt": "Take a screenshot of the expanded menu for this PR at 320px wide.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "storybook-capture",
+      "prompt": "Save a PNG of the Button's dark-mode Storybook example.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "before-after",
+      "prompt": "Capture before and after images of this layout fix in the local app.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "interpret-image",
+      "prompt": "Explain the error message in this attached screenshot.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "ui-tests",
+      "prompt": "Run the existing Storybook interaction tests for Button and report failures.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "general-pr-review",
+      "prompt": "Review this React component PR and give me actionable findings.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "known-url-efficient-capture",
+      "prompt": "Capture the requested expanded menu screenshot and return the saved image.",
+      "context": "evals/fixtures/known-story-url.md",
+      "expectedOutcome": "A readable viewport capture of the expanded popup from the correct local story, with no redundant story discovery or external writes.",
+      "assertions": [
+        "The workflow reuses the matching tab and running server after verifying their source, and skips Storybook queries because the URL is known.",
+        "The viewport is set to 320 by 640 before the menu is expanded through a supported interaction.",
+        "The capture includes the popup rendered outside the trigger container instead of cropping it with a trigger-element screenshot.",
+        "The workflow saves to an absolute path, inspects the image, and delivers an expanded-state image rather than the collapsed initial image.",
+        "The response identifies the story, source revision, viewport, and state without claiming integrated-app or accessibility-test coverage.",
+        "No screenshot after every interaction, extra theme matrix, upload, comment, or PR-description write occurs."
+      ]
+    },
+    {
+      "id": "storybook-discovery-browser-capture",
+      "prompt": "Find the existing dark-mode Button story and save the requested screenshot.",
+      "context": "evals/fixtures/discover-story.md",
+      "expectedOutcome": "Storybook resolves the story and Chrome saves an inspected image after its font and interaction state are ready.",
+      "assertions": [
+        "Storybook MCP resolves the existing story URL; the workflow does not invent a story ID or treat the preview link as a saved PNG.",
+        "Chrome DevTools MCP captures the story using its exposed schema after the font loads and the story interaction finishes.",
+        "The workflow inspects and delivers the saved PNG without creating a new story, editing source, running unrelated tests, or uploading the image."
+      ]
+    },
+    {
+      "id": "unavailable-mcp-fallback",
+      "prompt": "Capture the settings dialog with its validation error visible using the available tools.",
+      "context": "evals/fixtures/structured-fallback.md",
+      "expectedOutcome": "A structured browser capture through the computer-use tool without attempted MCP installation or desktop coordinate navigation.",
+      "assertions": [
+        "The workflow recognizes that configured but unexposed Chrome tools are unavailable and uses the documented structured browser API.",
+        "Semantic browser interactions reveal the error, and the inspected capture includes the dialog and validation message.",
+        "The workflow does not install MCP servers or addons, change global configuration, or use desktop coordinate clicks for this reachable browser UI.",
+        "The response reports the actual capture route without claiming measured speed improvements."
+      ]
+    },
+    {
+      "id": "matched-comparison",
+      "prompt": "Capture the requested before and after comparison without disturbing unrelated work.",
+      "context": "evals/fixtures/comparison.md",
+      "expectedOutcome": "Two inspected integrated-app screenshots from verified revisions with matching conditions and preserved unrelated work.",
+      "assertions": [
+        "The baseline and changed captures use verified separate revisions and avoid the stale hosted Storybook preview.",
+        "Both captures match viewport, scale, light theme, data, scroll position, and expanded-menu state.",
+        "Baseline setup preserves the unrelated uncommitted work; no reset or cleanup discards it.",
+        "Both saved images are inspected and labeled with their revision, route, viewport, and state, with no external upload or GitHub write."
+      ]
+    }
+  ]
+}
