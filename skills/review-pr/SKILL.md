@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review only when the user explicitly owns the fix-and-push loop and requests iterative Copilot and self-review. General, panel, coordinated, and multi-lane PR requests start here unless they explicitly name review-coordinator. Before PR context, load review-simplicity; for explicit coordination, load review-coordinator next. For generic reviews, load the coordinator later only if source inspection finds two material specialist lanes.
+description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review for iteration on user-authored PRs or explicitly owned fix-and-push loops. General, panel, coordinated, and multi-lane PR reviews start here unless the user explicitly names review-coordinator.
 ---
 
 # Review PR
@@ -9,13 +9,13 @@ Review a GitHub pull request without changing it.
 
 ## Ownership boundary
 
-- Before the review, check whether the user authored the pull request or explicitly owns another author's fix-and-push loop. If that ownership and an iterative Copilot and self-review request are both explicit, hand off to `iterate-pr-review`. Otherwise, continue here. Iterative wording alone does not establish ownership.
+- Check the user request and retained context before entry routing or PR lookup. For an authored or explicitly owned PR with an iterative review-and-fix request, hand off immediately to `iterate-pr-review` and preserve narrower limits. Do not run this skill's entry routing or review steps first. Otherwise continue read-only. Iterative wording does not establish ownership.
 
 ## Entry routing
 
 - If the user explicitly names `review-coordinator`, hand off to it and stop. Otherwise, panel, coordinated, and multi-lane requests start here.
 - Before accessing PR context, identify the requested specialist lanes. Select the coordinator for an explicit panel or coordinated review, or for two or more material independent lanes. For example, authorization maps to `review-security`, while persisted-state migration maps to `review-compatibility`; together they meet the threshold.
-- Load `review-simplicity` for every PR in a separate action before any action names or accesses PR context. Do not combine this load with context lookup. If the coordinator is selected, load `review-coordinator` next, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading means reading the skill, not announcing an intention.
+- For reviews that stay here, load `review-simplicity` in a separate action before any action names or accesses PR context. Do not combine this load with context lookup. If the coordinator is selected, load `review-coordinator` next, before PR lookup, a request for missing context, any direct specialist, or a final response. Loading means reading the skill, not announcing an intention.
 - For a generic request that does not reveal the threshold, load only `review-simplicity` at entry. Inspect the pinned source, then apply the late threshold in step 7.
 - Loading a method does not pass review results. Complete the core and simplicity passes before handing their results and the pinned snapshot to the coordinator. Keep an ordinary single-lane review here.
 - Loading a skill or handing control to the coordinator does not require spawning an agent. Apply the simplicity baseline and direct specialist methods in the current agent by default. Coordinator selection determines who manages the remaining review; its sizing decision determines whether any work needs delegation.

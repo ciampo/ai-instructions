@@ -7,4 +7,4 @@
 - User role: reviewer only
 - Branch and fix ownership: the user does not own either
 
-The user explicitly invokes `iterate-pr-review` and asks for repeated Copilot and independent reviews. The runtime ownership precondition must route this task to the read-only `review-pr` workflow before requesting reviews or changing source.
+The user explicitly invokes `iterate-pr-review` and asks for repeated local agent reviews and fixes. The runtime ownership precondition must route this task to the read-only `review-pr` workflow before starting a fix loop or changing source.

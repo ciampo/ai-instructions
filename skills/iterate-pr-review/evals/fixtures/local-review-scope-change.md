@@ -1,10 +1,10 @@
-# Copilot request scope-change context
+# Local review scope-change context
 
 - Recorded repository: <https://github.com/example/widgets>
 - Recorded pull request: synthetic authored draft <https://github.com/example/widgets/pull/66>
 - Recorded task branch: `fix/dialog-name`
 - Recorded exact head: `a2e35d57534525d5a05421878d8c2d349c37d0c6`
-- Recorded reviewer: Copilot
+- Local review capability: read-only subagents
 - Active change round: two of five
 - Current-head Copilot request: pending
 

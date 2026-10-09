@@ -20,9 +20,9 @@ Do not ask separately for routine steps already implied by an explicit outcome:
   and create or update the authored draft.
 - Update an authored pull request or address its feedback: apply accepted fixes,
   verify, commit, and push the same branch.
-- Iterate an authored pull request: request one Copilot review per current head,
-  run the independent review, apply accepted fixes, verify, commit, push, and
-  repeat within the round limit.
+- Iterate an authored pull request: run independent local agent reviews, assess
+  findings, apply accepted fixes, and verify within the round limit. Commit
+  where authorized and publish the verified branch after the local loop converges.
 - Rebase an authored pull request: verify the target and replay, then publish the
   rewritten task branch with `--force-with-lease` against its recorded remote
   head. Never use `--force`.
@@ -31,7 +31,7 @@ These contracts also apply when the user explicitly owns another pull request's
 branch and fix-and-push loop. Read-only or narrower instructions override them.
 They never include public comments or reviews, thread resolution,
 ready-for-review transitions, merges, releases, or unrelated pull-request
-changes.
+changes. Iteration does not request or re-request Copilot review.
 
 If authority is incomplete, ask one consolidated question and retain the answer
 while the repository, pull request, branch, external destination, payload class,

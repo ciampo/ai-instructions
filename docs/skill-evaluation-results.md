@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
 
 ## Purpose
 
@@ -16,6 +16,40 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #125 local review loop campaign
+
+The final discovery description separates authored or explicitly owned iteration from read-only contributor review. The iteration entrypoint is 32% shorter than the first PR revision. Evaluation-led fixes clarify ownership before loading, disclose the no-agent fallback, delegate owned iterations before standalone setup, and provide executable local-fix corpora.
+
+### Scope and method
+
+The complete affected suite covered `iterate-pr-review`, `review-pr`, `self-review-pr`, and `address-pr-feedback`: 19 trigger cases with three attempts each, and 45 output cases with 193 assertions. Codex CLI 0.162.0 ran `gpt-5.6-sol` with `xhigh` reasoning and the priority tier in isolated homes and workspaces. Subjects received only tracked public skills, synthetic fixtures, and sanitized metadata. Live apps, plugins, browsers, memories, and remote tools were disabled. Private authentication stayed outside the model permission profile. The trigger runner retained an exact-exec credential-read boundary check; the output runner retained its denial profile without that additional preflight.
+
+Output bodies and fixtures ran at `2670a4c9cbf540655eab2d95f5e9699c7e46cd3d`. The complete corrected trigger run and all 17 iteration output cases ran at `eac51ba04a3dbb13c3efb0a4840737afd1d80ac5`. Later targeted runs cover changed handoff instructions and the executable feedback-fix case. Each retained result records its actual repository, fixture, and runner revisions; the campaign does not claim one final full-suite revision.
+
+### Results and limits
+
+The corrected complete trigger run passed 57 of 57 attempts. It followed a repeatable ownership-routing failure and a focused six-attempt passing rerun. The final `review-pr` description was shortened further to remove conflicting procedural metadata. All 24 affected trigger attempts passed at `0f59bb7ffbfef0339ef6ba114c8b618a987bc458`; both owned-iteration handoff output cases also passed. The other corrected descriptions are unchanged from the complete passing trigger run.
+
+The full output run passed 31 of 45 cases and 168 of 193 assertions. It retained 13 partial cases and one blocked case, with 11 failed and 14 blocked assertions. Follow-up results are recorded separately rather than replacing or concealing that run. After selecting the latest affected-case reruns, 33 of 45 cases pass, 11 remain partial, and one is blocked. Assertions total 171 passes, eight failures, and 14 blocked. The campaign remains partial.
+
+The pending-Copilot and no-subagent scenarios improved against the exact main revision `f86b2b6d28061ba1bee44eae35357066b3cc477e` with identical corrected fixtures. Main refused convergence because Copilot was pending and called its fallback independent. The revised instructions passed both cases.
+
+The executable loop reproduced the zero-limit defect, applied the one-operator fix, and passed verification. CLI traces did not consistently expose reviewer-start events. A separate host-native evaluation therefore used a fresh executor and two observable read-only reviewers with `fork_turns: none`. It verified a failing test before the fix, a passing test afterward, and a clean final review. That run used inherited host model settings, whose exact identifier was unavailable, and session permissions rather than the CLI denial profile. Its evidence supplements the CLI results without converting blocked assertions into passes.
+
+Remaining output limits include fixtures without the source or commit graph needed for requested mutations, missing internal-handoff traces, and one invalid grader response. Some model runs also ignored explicit lookup or handoff ordering, or omitted a requested feedback detail. Those execution failures are retained. No source rule or assertion was weakened to report a clean suite.
+
+### Evidence
+
+All runner and result archives are lossless gzip with zero modification timestamps. Restore a `.mjs.gz` runner beside its archive before replay, in a checkout matching its recorded skill tree. Result files retain command and event evidence, workspace deltas, assertion grades, limits, and runner SHA-256 values. The evidence commit changes only documentation and archives. After publication, PR #124 landed its own lint-dependency fix on main. A normal follow-up commit adopts that upstream manifest and lockfile to remove the conflict; skill and fixture trees are unchanged.
+
+- [Initial focused results](evaluation-results/e9ea0d9ff5c6389ee086d67d315ce74cbad2ab56/output-focused.json.gz).
+- [Complete output run](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/output-full.json.gz), [initial trigger run](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/trigger-initial.json.gz), and [paired main comparison](evaluation-results/2670a4c9cbf540655eab2d95f5e9699c7e46cd3d/output-base-comparison.json.gz).
+- [Observable host loop](evaluation-results/6bc04b93f15b79256695851fadae6390847c2879/host-loop-handoff.json.gz).
+- [Complete corrected triggers](evaluation-results/eac51ba04a3dbb13c3efb0a4840737afd1d80ac5/trigger-final.json.gz) and [final iteration outputs](evaluation-results/eac51ba04a3dbb13c3efb0a4840737afd1d80ac5/output-iteration-final.json.gz).
+- [Executable feedback fix and handoff rerun](evaluation-results/254443b36a4166140d37bbd78f34a95041791d01/output-handoff-final.json.gz).
+- [Standalone setup clarification](evaluation-results/29762cf7c31c2329a309049fd2628649909e231f/output-handoff.json.gz).
+- [Final discovery triggers](evaluation-results/0f59bb7ffbfef0339ef6ba114c8b618a987bc458/trigger-final.json.gz), [passing handoff cases](evaluation-results/0f59bb7ffbfef0339ef6ba114c8b618a987bc458/output-handoff-final.json.gz), and [selected per-case results](evaluation-results/0f59bb7ffbfef0339ef6ba114c8b618a987bc458/output-selected.json.gz).
 
 ## PR #122 review-report campaign
 

@@ -3,7 +3,7 @@
 - Pull request: <https://github.com/example/widgets/pull/45>
 - Base revision: `c18f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
 - Current head revision: `e433b7eb0c92f2b2fa9769280f17330e602f2e72`
-- Copilot review for the current head: complete; it reports that the explicit-limit test is missing.
+- Existing PR comment for the current head: complete; it reports that the explicit-limit test is missing.
 - PR comments and review threads: no other feedback.
 - CI: the current-head test suite passed.
 - Capability gap: `self-review-pr` and `address-pr-feedback` are unavailable; `review-simplicity` remains available.
