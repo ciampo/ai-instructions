@@ -29,5 +29,6 @@ Use DOM snapshots for navigation, not screenshots after every interaction. Reuse
 - Verify before/after revisions separately. Match viewport, scale, theme, data, scroll position, and interaction state. Preserve unrelated work. Report an unavailable baseline instead of fabricating one.
 - Name images by subject and state. Show or link them with brief captions identifying source revision or checkout, story ID or app route, viewport, and state. Distinguish isolated stories from integrated-app evidence. Codex local image embeds require absolute paths.
 - Uploads and PR writes require existing authorization. Images prove appearance, not keyboard behavior, screen-reader support, or passing tests. Tool speed claims require timing evidence.
+- For authorized PR uploads, load `repository-maintenance` and follow its GitHub attachment guidance. Prefer supported native `gh` attachment uploads to browser upload.
 
 If schemas leave a capability unclear, consult the [Chrome tool reference](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md) or [Storybook MCP docs](https://storybook.js.org/docs/11/ai/mcp/overview/) matching the installed version.

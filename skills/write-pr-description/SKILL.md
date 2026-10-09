@@ -22,6 +22,6 @@ Matching standing evaluation consent may authorize updating only the Evaluation 
    - For user-facing changes, name the real app screen or Storybook example, then list the exact interactions and expected result.
    - Prefer steps that reflect what an end user or reviewer actually does.
    - Omit routine lint, type-check, build, and automated test commands already covered by git hooks or CI. Include commands only when the PR changes that infrastructure or they are necessary to reproduce or validate the change.
-5. Add Visual Preview or TODO / Follow-ups sections only when relevant. Put secondary technical and verification detail in `<details>`.
+5. Add Visual Preview or TODO / Follow-ups sections only when relevant. Put secondary technical and verification detail in `<details>`. For authorized local image or video uploads, load `repository-maintenance` and follow its GitHub attachment guidance. A local draft alone does not authorize uploads.
 6. Keep it concise. If in doubt, cut it.
 7. Deliver the Markdown locally unless the request already authorizes the GitHub write. Report whether the remote description changed.

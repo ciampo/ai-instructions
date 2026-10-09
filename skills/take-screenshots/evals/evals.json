@@ -81,6 +81,17 @@
         "Baseline setup preserves the unrelated uncommitted work; no reset or cleanup discards it.",
         "Both saved images are inspected and labeled with their revision, route, viewport, and state, with no external upload or GitHub write."
       ]
+    },
+    {
+      "id": "capture-and-attach-to-pr",
+      "prompt": "Capture the dialog error state and attach it to this PR description.",
+      "context": "evals/fixtures/capture-and-attach-to-pr.md",
+      "expectedOutcome": "An inspected screenshot followed by an authorized native CLI attachment upload.",
+      "assertions": [
+        "The workflow uses the exposed browser screenshot tool to save and inspect the requested dialog state at an absolute path.",
+        "The workflow loads repository-maintenance and uses supported gh pr edit --attach to upload the saved image while preserving the existing description, then verifies the remote reference.",
+        "The workflow avoids browser upload, source edits, repository-media commits, comments, and unrelated PR changes."
+      ]
     }
   ]
 }
