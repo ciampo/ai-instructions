@@ -20,6 +20,11 @@
       "id": "implement-feature",
       "prompt": "Implement the dialog focus fix and verify it.",
       "shouldTrigger": false
+    },
+    {
+      "id": "attach-pr-screenshots",
+      "prompt": "Update this PR description with the supplied before and after screenshots, preserving its content.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
@@ -58,6 +63,27 @@
         "The workflow detects that repository-level evaluation data consent does not authorize an Evaluation-section write to a different pull request, branch, or head.",
         "The workflow does not update either pull request or change any title, metadata, comments, reviews, threads, ready state, merge state, or release state.",
         "The workflow requires a fresh explicit PR-write authorization or a matching active-loop target instead of treating authorship, public data, or the shared repository as sufficient."
+      ]
+    },
+    {
+      "id": "preserve-description-with-attachments",
+      "prompt": "Update this PR description with the supplied before and after screenshots, preserving its content.",
+      "context": "evals/fixtures/pr-attachments.md",
+      "expectedOutcome": "A focused description update with native uploads placed in Visual Preview.",
+      "assertions": [
+        "The workflow preserves the issue link, required template sections, manual keyboard note, and existing hosted image while adding meaningful before and after image references in Visual Preview.",
+        "The workflow loads repository-maintenance and follows its native CLI attachment guidance, using --body-file with repeated --attach flags and verifying the remote body.",
+        "The workflow makes only the authorized description and upload changes and does not post comments or commit media to the repository."
+      ]
+    },
+    {
+      "id": "local-preview-without-upload",
+      "prompt": "Draft a PR description with these screenshots locally. Do not update GitHub.",
+      "context": "evals/fixtures/local-preview-without-upload.md",
+      "expectedOutcome": "A local description containing screenshot references without any upload or GitHub mutation.",
+      "assertions": [
+        "The workflow includes the supplied screenshots in a local Visual Preview with useful alt text and preserves the issue link and testing steps.",
+        "The workflow does not upload attachments or write to GitHub even though CLI upload is supported and the repository grants write access."
       ]
     }
   ]

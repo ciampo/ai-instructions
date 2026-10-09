@@ -16,6 +16,8 @@ evidence.
   clearer high-level operation exists.
 - For GitHub Enterprise, verify the repository's documented authentication and
   network route with a harmless read. Do not invent proxy or credential settings.
+- For local screenshots or videos, read [GitHub attachments](github-attachments.md).
+  Prefer native `gh` attachment uploads over browser upload when supported.
 
 ## Git
 
