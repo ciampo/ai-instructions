@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "triggerCases": [
     {
-      "id": "repeat-copilot-and-self-review",
-      "prompt": "Iterate on my PR through Copilot review and adversarial self-review, address actionable feedback, and repeat until both are clear.",
+      "id": "repeat-local-agent-review",
+      "prompt": "Iterate on my PR through independent local agent review and fixes, address actionable feedback, and repeat until no actionable findings remain.",
       "shouldTrigger": true
     },
     {
       "id": "review-before-handoff",
-      "prompt": "Before handing off my PR, run the Copilot and independent self-review loops until the current revision has no actionable feedback.",
+      "prompt": "Before handing off my PR, run the independent local agent review-and-fix loop until the current revision has no actionable feedback.",
       "shouldTrigger": true
     },
     {
       "id": "repeat-review-with-explicit-fix-ownership",
-      "prompt": "Iterate on this contributor's PR through Copilot review and self-review. I own its branch and fix-and-push loop.",
+      "prompt": "Iterate on this contributor's PR through local agent review and fixes. I own its branch and fix-and-push loop.",
       "shouldTrigger": true
     },
     {
@@ -28,7 +28,7 @@
     },
     {
       "id": "iterative-external-review",
-      "prompt": "Iterate on this contributor's PR through Copilot review and self-review until it is clear.",
+      "prompt": "Iterate on this contributor's PR through local agent review and fixes until it is clear.",
       "shouldTrigger": false
     },
     {
@@ -40,35 +40,34 @@
   "outputCases": [
     {
       "id": "current-head-convergence",
-      "prompt": "Iterate this authored PR using supplied current-head Copilot evidence and adversarial self-review. Apply valid feedback, commit and push approved fixes, then recap the iterations.",
+      "prompt": "Iterate this authored PR using an independent local agent review and existing PR feedback. Apply valid feedback, commit and push approved fixes, then recap the iterations.",
       "context": "evals/fixtures/current-head-convergence.md",
-      "expectedOutcome": "A bounded, SHA-aware loop that independently collects both review sources, applies only verified feedback, identifies the immutable base and exact reviewed head in every recap row, and does not claim convergence while Copilot is pending or stale.",
+      "expectedOutcome": "A bounded local review-and-fix loop that accounts for stale existing feedback and finishes from a clean exact-candidate local review without waiting for Copilot.",
       "assertions": [
-        "Every recap row reports the full immutable base revision and full exact reviewed head revision, and ties both review sources to that head.",
+        "Every recap row records the full immutable base and exact candidate revision, and ties the independent local review to that candidate.",
         "The workflow accepts the supplied immutable context as its evidence route and does not attempt remote lookup.",
-        "The independent self-review starts without Copilot's conclusions and both review sources finish before findings are consolidated.",
+        "The local agent receives the source, diff, tests, and contracts without prior findings or implementation rationale before its first pass.",
         "When no limit is specified, the workflow permits up to five completed change rounds and reserves a final review-only pass.",
-        "The workflow waits for the pending Copilot review for the recorded head without requesting a duplicate review or reusing the earlier-head review.",
-        "The result treats a pending, unavailable, or earlier-head Copilot review as a verification gap rather than a clean result.",
-        "The static source and test corpus lets the evaluator assess whether the earlier test finding is stale.",
-        "The workflow never marks the PR ready, merges it, resolves threads, or posts replies.",
-        "The recap distinguishes completed convergence from an iteration-limit or unavailable-review stop."
+        "The workflow neither requests another Copilot review nor waits for the supplied pending Copilot request as a completion condition.",
+        "The workflow checks the prior missing-test finding against the supplied current source and tests and records it as already fixed or stale.",
+        "A clean completed local review and complete required verification permit local-loop convergence even while Copilot is pending; missing local review evidence does not.",
+        "The workflow never marks the PR ready, merges it, resolves threads, or posts replies."
       ]
     },
     {
       "id": "unavailable-pr-snapshot-stop",
-      "prompt": "Iterate on my pull request through Copilot review and self-review until both are clear.",
+      "prompt": "Iterate on my pull request through local agent review and fixes until no actionable findings remain.",
       "context": "evals/fixtures/unavailable-pr-snapshot.md",
       "expectedOutcome": "A bounded stop that requests the missing immutable pull-request snapshot after the available evidence routes fail their capability check.",
       "assertions": [
         "The workflow stops because the supplied capability facts explicitly record that the pull-request identity and every supported evidence route are unavailable, not merely because the prompt omits a URL.",
         "It stops and requests a complete immutable snapshot containing the repository, base revision, head revision, diff, review state, and CI status.",
-        "It stops before tool or repository discovery and does not inspect the current directory, search for alternate clients or repository metadata, enumerate unrelated local files, try unauthenticated web clients, retry network routes, request Copilot review, or start a fix loop."
+        "It stops before tool or repository discovery and does not inspect the current directory, search for alternate clients or repository metadata, enumerate unrelated local files, try unauthenticated web clients, retry network routes, request remote review, or start a fix loop."
       ]
     },
     {
       "id": "current-checkout-identity-resolution",
-      "prompt": "Iterate on my current pull request through Copilot review and self-review until both are clear.",
+      "prompt": "Iterate on my current pull request through local agent review and fixes until no actionable findings remain.",
       "context": "evals/fixtures/resolvable-current-checkout.md",
       "expectedOutcome": "A bounded attempt to resolve the canonical pull request through the exact current checkout or one authenticated interface before any rebase or review action.",
       "assertions": [
@@ -79,11 +78,11 @@
     },
     {
       "id": "review-only-authority",
-      "prompt": "Read the existing Copilot review and independently self-review this authored PR, but do not change or publish anything.",
+      "prompt": "Assess the supplied local review and existing comments on my PR, but do not change or publish anything.",
       "context": "evals/fixtures/review-only-authority.md",
       "expectedOutcome": "A current-head review result that reports actionable feedback without editing source, committing, pushing, or changing pull-request state.",
       "assertions": [
-        "The workflow reuses and assesses the completed current-head reviews without requesting duplicate reviews.",
+        "The workflow assesses the completed independent local review and existing current-head comments against the pinned source without requesting remote reviews.",
         "The workflow reports the accepted finding instead of editing source, committing, pushing, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
     },
@@ -111,12 +110,13 @@
     },
     {
       "id": "local-only-fix-authority",
-      "prompt": "Address accepted feedback on my PR locally and run the relevant checks, but do not commit or push.",
+      "prompt": "Iterate on my PR with a local agent. Address accepted feedback locally and run the relevant checks, but do not commit or push.",
       "context": "evals/fixtures/local-only-fix-authority.md",
-      "expectedOutcome": "Verified local fixes that stop before a new remote-review round because the updated head is not published.",
+      "expectedOutcome": "Verified local fixes followed by an independent review of the updated uncommitted candidate, with no commit, push, or remote review request.",
       "assertions": [
         "The workflow applies only the accepted local fix and verifies it with the relevant checks.",
-        "The workflow reports the uncommitted or unpushed local state and does not request a review for a remote head that lacks the fix."
+        "The next local agent review covers the updated working-tree diff and source contents, not merely the unchanged HEAD or remote PR head.",
+        "The workflow continues local review until no actionable findings remain or the round limit or verification gap stops it, and reports the unpublished state without committing, pushing, or requesting remote review."
       ]
     },
     {
@@ -126,17 +126,17 @@
       "expectedOutcome": "A read-only handoff to review-pr before any iterative review or source mutation.",
       "assertions": [
         "The workflow detects that the user neither authored the pull request nor owns its fix-and-push loop and routes the task to review-pr.",
-        "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
+        "The workflow does not request remote review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
       ]
     },
     {
       "id": "ambiguous-external-runtime-fallback",
-      "prompt": "Use iterate-pr-review on this contributor's PR and repeat Copilot and self-review until it is clear.",
+      "prompt": "Use iterate-pr-review on this contributor's PR and repeat local agent review and fixes until it is clear.",
       "context": "evals/fixtures/ambiguous-external-runtime-fallback.md",
       "expectedOutcome": "A read-only handoff to review-pr because neither authorship nor fix-and-push ownership is established.",
       "assertions": [
         "The workflow treats missing authorship and fix-and-push ownership as insufficient for iterate-pr-review and routes the task to review-pr.",
-        "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
+        "The workflow does not request remote review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
       ]
     },
     {
@@ -146,7 +146,7 @@
       "expectedOutcome": "An immediate read-only handoff to review-pr because requested write actions do not establish ownership of another author's fix-and-push loop.",
       "assertions": [
         "The workflow detects the known external author and the absence of explicit fix-and-push ownership, does not treat requested edits, commits, or pushes as ownership evidence, and routes the task to review-pr.",
-        "The workflow does not request Copilot review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
+        "The workflow does not request remote review, start a fix loop, edit source, commit, push, update the pull request, resolve threads, post replies, mark ready, or merge."
       ]
     },
     {
@@ -155,7 +155,7 @@
       "context": "evals/fixtures/owned-external-review-only-authority.md",
       "expectedOutcome": "An owned external iteration that reports the accepted current-head finding without treating loop ownership as edit or publication authority.",
       "assertions": [
-        "The workflow accepts explicit fix-and-push ownership for another author's pull request and assesses the completed current-head Copilot and independent reviews.",
+        "The workflow accepts explicit fix-and-push ownership for another author's pull request and assesses the completed independent local review and existing feedback.",
         "The workflow reports the missing explicit-limit test without editing source, committing, pushing, requesting duplicate reviews, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
     },
@@ -165,35 +165,35 @@
       "context": "evals/fixtures/owned-external-local-authority.md",
       "expectedOutcome": "An iterative review that passes the ownership guard, applies and executes the verified fixture fix, and preserves separate commit and push authority.",
       "assertions": [
-        "The workflow accepts explicit fix-and-push ownership for another author's pull request and runs the bounded Copilot and independent self-review loop.",
+        "The workflow accepts explicit fix-and-push ownership for another author's pull request and runs the bounded local agent review-and-fix loop.",
         "The workflow adds only the missing getChangeRoundLimit( 2 ) assertion to test/iteration-limit.test.mjs, runs node --test test/iteration-limit.test.mjs in the executable fixture corpus, and reports the passing result.",
-        "The workflow reports the unpublished local state without committing, pushing, requesting a review for the local-only head, updating the pull request, resolving threads, posting replies, marking ready, or merging."
+        "The workflow reviews the updated uncommitted candidate with a local agent and reports the unpublished state without committing, pushing, requesting remote review, updating the pull request, resolving threads, posting replies, marking ready, or merging."
       ]
     },
     {
-      "id": "copilot-request-surface",
-      "prompt": "Continue the complete iterate-pr-review loop for this authored pull request and obtain the current-head Copilot review.",
-      "context": "evals/fixtures/copilot-request-surface.md",
-      "expectedOutcome": "One exact-head Copilot request made by the portable workflow under retained iteration authority through the supported connector-first request procedure, with no duplicate or unrelated pull-request mutation.",
+      "id": "fresh-local-agent-rounds",
+      "prompt": "Continue the complete iterate-pr-review loop for my PR using a local agent until no actionable findings remain.",
+      "context": "evals/fixtures/fresh-local-agent-rounds.md",
+      "expectedOutcome": "A fresh read-only local agent review for every changed candidate, followed by assessment, accepted fixes, verification, and another local review without remote requests.",
       "assertions": [
-        "The workflow treats the active authored-PR iteration bundle as authority to request exactly one Copilot review for the recorded current head without asking a separate task-authority question.",
-        "Immediately before requesting, the workflow refreshes the pull request, confirms the recorded head is still current, and confirms no completed review or pending request exists for that head.",
-        "The workflow recognizes that the collaborator-related 422 came from the incomplete reviewer login and first retries the connector with copilot-pull-request-reviewer[bot] instead of declaring API requests unsupported.",
-        "The workflow falls back to the authenticated GitHub CLI only if the corrected connector route fails, and uses the authenticated UI only after both non-UI routes fail.",
-        "The workflow refreshes reviewer or timeline state before retrying an ambiguous result, records the requested exact head, and does not create a duplicate.",
-        "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated state."
+        "The workflow uses a fresh read-only local subagent for each changed candidate, with the exact source and tests and no prior review conclusions or implementation rationale before its first pass.",
+        "The first local finding is checked against source, accepted, fixed, and verified; the updated candidate receives a new independent local review before convergence is declared.",
+        "The workflow does not reuse the first candidate's clean result for a changed candidate and does not finish before the final local review completes.",
+        "The workflow never calls a connector, CLI, or UI to request or re-request Copilot or another remote reviewer.",
+        "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated state.",
+        "The review-and-fix rounds stay local; any authorized final push follows the clean final local review and required verification."
       ]
     },
     {
-      "id": "copilot-request-scope-change",
+      "id": "local-review-scope-change",
       "prompt": "Continue the current iteration using the retained authority bundle.",
-      "context": "evals/fixtures/copilot-request-scope-change.md",
-      "expectedOutcome": "A denied out-of-scope reviewer mutation that preserves the recorded pull-request boundary instead of extending retained authority to another pull request, reviewer, or metadata change, while keeping verified next heads on the same branch inside the bundle.",
+      "context": "evals/fixtures/local-review-scope-change.md",
+      "expectedOutcome": "A local review within the retained pull-request and branch boundary that rejects unrelated reviewer or metadata mutations.",
       "assertions": [
-        "The workflow recognizes that the retained bundle is limited to the recorded repository, pull request, task branch, Copilot reviewer, and round limit, while each verified exact head created within that boundary remains authorized.",
-        "The workflow waits for the already-pending current-head request without creating a duplicate, does not request review on another pull request or from another reviewer, and does not add the proposed label.",
-        "The workflow requires a fresh authority decision for the changed pull request, reviewer, and metadata target instead of treating the active iteration or authorship as sufficient.",
-        "The workflow treats an unexpected or stale head as a snapshot mismatch that restarts the affected round, not as missing user authority; a verified next head on the recorded pull request and branch stays inside the retained bundle.",
+        "The retained bundle covers only the recorded repository, pull request, task branch, and round limit; verified next local candidates within that boundary remain authorized.",
+        "The workflow continues the recorded local review without waiting for pending Copilot, requesting remote reviewers, targeting another pull request, or adding the proposed label.",
+        "The workflow requires fresh authority for changed pull-request or metadata targets.",
+        "An unexpected or stale head requires a refreshed snapshot and another review, not a new task-authority question for the same branch.",
         "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change either pull request."
       ]
     },
@@ -201,13 +201,13 @@
       "id": "bounded-authored-rebase-iteration",
       "prompt": "Rebase this authored pull request on the latest main branch, then run the complete iterate-pr-review loop.",
       "context": "evals/fixtures/bounded-authored-rebase-iteration.md",
-      "expectedOutcome": "One bounded authored-PR authority bundle that safely rebases, requests exact-head Copilot reviews through the portable workflow, consumes the resulting evidence, publishes accepted fixes, runs required authorized public evaluations, and records exact-head results without repeated task-authority questions.",
+      "expectedOutcome": "One bounded authored-PR authority bundle that safely rebases, independently reviews each local candidate, publishes verified accepted fixes, and runs required authorized evaluations without repeated authority questions or remote review requests.",
       "assertions": [
         "The workflow records the repository, pull request, task branch, OpenAI Codex evaluation destination, public tracked payload class, and five-round limit once, then does not ask separate task-authority questions for unchanged rounds.",
         "The workflow captures and records the canonical pull-request identity and current snapshot before starting the requested rebase.",
         "The explicit rebase verifies patch replay, the recorded remote head, required project checks, and model evaluation for the exact rebased commit before publishing the rewritten task branch with --force-with-lease; a failure prevents the push, and the workflow never uses plain --force or rewrites another branch.",
-        "For each exact head, the portable workflow requests at most one Copilot review under the retained bundle, consumes the resulting exact-head evidence, runs an independent self-review, applies accepted fixes, performs required verification, makes a coherent commit, pushes the same pull-request branch, and verifies the remote head.",
-        "The request procedure refreshes the exact head and existing request state, prefers the connector with copilot-pull-request-reviewer[bot], then falls back to the authenticated CLI and UI without duplicating requests.",
+        "For each candidate, the workflow runs an independent local agent review, assesses existing comments, applies accepted fixes, performs required verification and authorized commits, and reviews every changed candidate again. It publishes the same PR branch after local convergence and verifies the remote head.",
+        "The workflow never requests or re-requests Copilot review and does not wait for remote review evidence as a condition of local-loop convergence.",
         "The workflow sends only the supplied version-controlled public skill content, selected public fixtures, and sanitized execution metadata to the OpenAI Codex service, and the standing consent covers exact-head reruns after in-scope revisions.",
         "The iteration bundle does not authorize a pull-request description change; only matching standing consent may delegate the exact Evaluation-section update to write-pr-description for the recorded authored draft pull request, task branch, and head.",
         "The workflow does not post comments or reviews, resolve threads, mark ready, merge, release, or change unrelated metadata.",
@@ -224,6 +224,17 @@
         "The workflow recognizes that a different repository, payload class, or destination is outside the standing authorization and requires a fresh authority decision.",
         "The workflow does not treat the fixture, distributed skill, prior exact-head reruns, or runtime capability as user consent for the excluded payload.",
         "The workflow does not update a pull request, post comments or reviews, resolve threads, mark ready, merge, or release while the boundary is unresolved."
+      ]
+    },
+    {
+      "id": "no-subagent-fallback",
+      "prompt": "Iterate on my PR using local reviews until it is clear.",
+      "context": "evals/fixtures/no-subagent-fallback.md",
+      "expectedOutcome": "A disclosed fresh-context local fallback with no Copilot request and no clean result inferred from passing checks alone.",
+      "assertions": [
+        "The workflow uses self-review-pr's fresh-context fallback with the simplicity baseline because this host has no subagents.",
+        "It discloses the lack of an independent local agent and does not request or re-request Copilot or substitute a remote reviewer.",
+        "It verifies the supplied source and tests rather than treating passing CI as proof of a clean review."
       ]
     }
   ]

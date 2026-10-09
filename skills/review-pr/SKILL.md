@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review only when the user explicitly owns the fix-and-push loop and requests iterative Copilot and self-review. General, panel, coordinated, and multi-lane PR requests start here unless they explicitly name review-coordinator. Before PR context, load review-simplicity; for explicit coordination, load review-coordinator next. For generic reviews, load the coordinator later only if source inspection finds two material specialist lanes.
+description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review only when the user explicitly owns the fix-and-push loop and requests iterative local review and fixes. General, panel, coordinated, and multi-lane PR requests start here unless they explicitly name review-coordinator. Before PR context, load review-simplicity; for explicit coordination, load review-coordinator next. For generic reviews, load the coordinator later only if source inspection finds two material specialist lanes.
 ---
 
 # Review PR
@@ -9,7 +9,7 @@ Review a GitHub pull request without changing it.
 
 ## Ownership boundary
 
-- Before the review, check whether the user authored the pull request or explicitly owns another author's fix-and-push loop. If that ownership and an iterative Copilot and self-review request are both explicit, hand off to `iterate-pr-review`. Otherwise, continue here. Iterative wording alone does not establish ownership.
+- Before the review, check whether the user authored the pull request or explicitly owns another author's fix-and-push loop. If that ownership and an iterative local review and fixes request are both explicit, hand off to `iterate-pr-review`. Otherwise, continue here. Iterative wording alone does not establish ownership.
 
 ## Entry routing
 

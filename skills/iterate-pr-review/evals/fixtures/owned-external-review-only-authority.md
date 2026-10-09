@@ -5,8 +5,8 @@
 - Base revision: `b18f0aa51b92fa6409f7cc2e94fcf4de18f55d91`
 - Current head revision: `e433b7eb0c92f2b2fa9769280f17330e602f2e72`
 - User role: maintainer who explicitly owns the branch and fix-and-push loop
-- Copilot review for the current head: complete; it correctly reports that the current test omits the explicit-limit path.
-- Independent self-review: complete; it confirms the missing explicit-limit path.
+- Existing PR comment for the current head: complete; it correctly reports that the current test omits the explicit-limit path.
+- Independent local agent review: complete; it confirms the missing explicit-limit path.
 - Authority: review only. Do not edit source, request duplicate reviews, commit, push, update pull-request metadata, resolve threads, post replies, mark ready, or merge.
 
 ## Current-head source

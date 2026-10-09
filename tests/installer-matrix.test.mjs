@@ -721,16 +721,16 @@ test( 'content contracts enforce the universal instruction budget and evaluation
 	assert.ok( result.universal.bytes <= 8 * 1024 );
 } );
 
-test( 'iterative review launcher requests exact-head Copilot reviews', async () => {
+test( 'iterative review launcher keeps repeated reviews with a local agent', async () => {
 	const launcher = normalizedWithTrailingNewline( await readFile(
 		path.join( repoDir, 'skills', 'iterate-pr-review', 'agents', 'openai.yaml' ),
 		'utf8'
 	) );
 	const defaultPrompt = launcher.match( /^  default_prompt: "([^"]+)"$/m )?.[ 1 ];
-	assert.equal(
-		defaultPrompt,
-		'Use $iterate-pr-review to request exact-head Copilot reviews, fix findings, verify, commit, push, and repeat until clean.'
-	);
+	assert.ok( defaultPrompt?.includes( '$iterate-pr-review' ) );
+	assert.match( defaultPrompt, /local agent/i );
+	assert.match( defaultPrompt, /repeat until/i );
+	assert.doesNotMatch( defaultPrompt, /copilot|request.*review/i );
 } );
 
 test( 'content contracts identify skills without evaluation fixtures', async ( t ) => {

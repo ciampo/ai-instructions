@@ -91,6 +91,18 @@
         "It uses the supplied code to assess the accessible concern without trying unavailable evidence routes or treating missing discussion as no comments.",
         "It returns one concise report in chat with the assessment, prior-feedback status, and actions distinct, without writing files or posting to GitHub."
       ]
+    },
+    {
+      "id": "parent-local-candidate-handoff",
+      "prompt": "Perform the independent local agent review for this iterate-pr-review candidate and return an internal handoff.",
+      "context": "evals/fixtures/parent-local-candidate.md",
+      "expectedOutcome": "A read-only independent review of the pinned uncommitted candidate returned to the parent without a standalone artifact or fixes.",
+      "assertions": [
+        "The independent pass receives the uncommitted candidate source and diff, consumers, tests, and contracts without prior findings, and applies review-simplicity.",
+        "It reports the zero-limit contract violation in the local candidate rather than reviewing only the unchanged HEAD or remote PR head.",
+        "It rechecks the working-tree source and diff before returning the handoff, and does not infer local verification from remote CI.",
+        "It returns internal findings and verification gaps without creating review artifacts, editing source, committing, pushing, requesting remote reviewers, or performing standalone delivery."
+      ]
     }
   ]
 }

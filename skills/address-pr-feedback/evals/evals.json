@@ -87,6 +87,17 @@
         "The workflow may apply and verify the accepted local fix, but it does not commit, push, integrate another branch, rebase, rewrite history, update the pull request, post replies, or resolve threads.",
         "The workflow reports the local state and identifies explicit fix-and-push ownership as the missing authority for remote publication."
       ]
+    },
+    {
+      "id": "parent-local-candidate-fix",
+      "prompt": "Assess and address this local agent finding under the parent iterate-pr-review gate.",
+      "context": "evals/fixtures/parent-local-candidate.md",
+      "expectedOutcome": "A source-verified local fix and focused verification plan returned to the parent, without remote lookup, premature publication, or reply artifacts.",
+      "assertions": [
+        "It accepts the complete supplied parent finding and discussion assessment without fetching remote comments or substituting remote HEAD for the local source.",
+        "It verifies the zero-limit defect, restores nullish defaulting in the local candidate, and proposes a focused getChangeRoundLimit( 0 ) assertion without claiming unavailable command execution.",
+        "It returns the verified concern assessment and local fix to the parent gate without committing, pushing, requesting reviewers, or creating reply drafts or artifacts."
+      ]
     }
   ]
 }
