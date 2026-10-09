@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review only when the user explicitly owns the fix-and-push loop and requests iterative local review and fixes. General, panel, coordinated, and multi-lane PR requests start here unless they explicitly name review-coordinator. Before PR context, load review-simplicity; for explicit coordination, load review-coordinator next. For generic reviews, load the coordinator later only if source inspection finds two material specialist lanes.
+description: Review another person's GitHub PR read-only with accessibility, deletion-first simplicity, consumer analysis, and copy-pasteable findings. Use iterate-pr-review for iteration on user-authored PRs or explicitly owned fix-and-push loops. General, panel, coordinated, and multi-lane PR reviews start here unless the user explicitly names review-coordinator.
 ---
 
 # Review PR
