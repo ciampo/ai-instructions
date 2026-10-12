@@ -17,6 +17,12 @@ Each campaign must record:
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
 
+## PR #127 root-cause solution campaign
+
+Revision `3ea13396ded52479cc1f4485d613ef9bccc811a9` passed all four focused output cases, all four full-suite output cases, and all 15 trigger attempts. Both output runs passed all 23 assertions. The no-skill baseline reached the same correct recommendations and passed 22 of 23 assertions; it omitted the explicit comparison with leaving the feature runner unchanged. These results support routing and method coverage, not a demonstrated correctness gain.
+
+The [campaign summary](evaluation-results/3ea13396ded52479cc1f4485d613ef9bccc811a9/summary.md) records the immutable skills tree, default-model and grading limits, verified sandbox boundary, retention policy, runner, sanitized results, and assertion grades. Later evidence-only commits preserve the evaluated skills tree.
+
 ## PR #125 local review loop campaign
 
 The final discovery description separates authored or explicitly owned iteration from read-only contributor review. The iteration entrypoint is 32% shorter than the first PR revision. Evaluation-led fixes clarify ownership before loading, disclose the no-agent fallback, delegate owned iterations before standalone setup, and provide executable local-fix corpora.
