@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "explicit-generation",
+      "prompt": "Create a project-local verification skill for this repo and prove its instructions once.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "reusable-verification-instructions",
+      "prompt": "Package our CLI launch, behavior checks, evidence capture, and cleanup as a reusable local skill for future agents.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "ordinary-test-run",
+      "prompt": "Run the existing tests and tell me whether they pass.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "test-quality-review",
+      "prompt": "Review whether these tests prove the intended behavior. Do not create or edit files.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "maintain-existing-skill",
+      "prompt": "Maintain the existing verify-taskbook skill and correct its outdated recipes.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "generate-and-prove-cli",
+      "prompt": "Create a local verification skill for Taskbook using the supplied project fixture. Prove it once and preserve the evidence after cleanup. Do not commit or publish anything.",
+      "context": "evals/fixtures/generate-cli.md",
+      "expectedOutcome": "A portable project-local skill and feature map grounded in the actual CLI, with a successful user-path proof and retained evidence.",
+      "assertions": [
+        "The subject copies the executable project fixture to a disposable workspace and preserves its product files and existing project-notes skill.",
+        "The generated skill uses the documented .agents/skills layout, portable name and description frontmatter, and no global install or duplicate vendor copies.",
+        "The generated instructions contain actual supported commands, read-only doctor checks, isolated data, evidence capture, and cleanup without requiring a PTY or invented tools.",
+        "The feature map describes add and list behavior, including a public read that proves an added task persisted.",
+        "The subject executes the generated instructions for at least one mapped feature and retains command, output, and exit-status evidence outside removed scratch data.",
+        "The report distinguishes the executed proof from total mapped coverage and makes no commit, push, PR, or scheduling claim."
+      ]
+    },
+    {
+      "id": "unavailable-runtime",
+      "prompt": "Generate the desktop project's verification skill from these inspected facts. Do not install tools or fix the app.",
+      "context": "evals/fixtures/missing-runtime.md",
+      "expectedOutcome": "Draft instructions with an explicit execution blocker, without fabricated validation or out-of-scope repairs.",
+      "assertions": [
+        "The subject labels any generated skill a draft and identifies the unsupported operating system and unavailable desktop driver.",
+        "The response states which launch, drive, evidence, and cleanup steps remain unverified and does not claim successful execution.",
+        "The subject does not modify product code, install dependencies or tools, change agent configuration, or publish anything."
+      ]
+    }
+  ]
+}

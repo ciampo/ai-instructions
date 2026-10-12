@@ -33,6 +33,8 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | --- | --- | --- |
 | [engineering-standards](skills/engineering-standards/SKILL.md) | implementation or code review | Routes to only the relevant accessibility, design-system, language, i18n, security, performance, naming, or error-handling reference |
 | [repository-maintenance](skills/repository-maintenance/SKILL.md) | repository, Git, package, or PR work | Loads repository-aware CLI and writing conventions |
+| [create-verification-skill](skills/create-verification-skill/SKILL.md) | create a reusable project verification skill | Generates and proves local launch, drive, evidence, cleanup, and feature-map instructions |
+| [maintain-verification-skill](skills/maintain-verification-skill/SKILL.md) | maintain or audit an existing verification skill | Checks source and live behavior, corrects authorized instruction drift, and reports product gaps |
 | [take-screenshots](skills/take-screenshots/SKILL.md) | browser or Storybook screenshots; before/after visual evidence | Prefers available Chrome DevTools MCP capture, resolves unknown stories, and verifies saved images with structured browser fallbacks |
 | [grill-me](skills/grill-me/SKILL.md) | "grill me"; interactive plan or design stress-test | Resolves known facts, then asks one dependency-ready decision question at a time until material gaps are closed |
 | [automattic-github-enterprise](skills/automattic-github-enterprise/SKILL.md) | `github.a8c.com` or Automattic GitHub Enterprise access | Applies the approved macOS/POSIX route and avoids sandbox authentication false negatives |

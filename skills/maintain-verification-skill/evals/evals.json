@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "maintain-recipes",
+      "prompt": "Maintain the existing verify-taskbook skill and correct its outdated recipes.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "audit-existing-skill",
+      "prompt": "Audit this project-local verification skill against source and live behavior. Report drift without editing files.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "generate-new-skill",
+      "prompt": "Create a project-local verification skill for this repo and prove its instructions once.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "ordinary-verification",
+      "prompt": "Use verify-taskbook to check that adding a task works. Do not maintain or audit the skill itself.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "product-fix",
+      "prompt": "Fix the reproduced task persistence bug in product code and add a regression test.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "serial-maintenance-and-proof",
+      "prompt": "Maintain the supplied Taskbook verification skill locally. Correct its drift and prove all mapped behavior without subagents. Do not change product code or publish anything.",
+      "context": "evals/fixtures/maintain-cli.md",
+      "expectedOutcome": "Proven local command corrections with complete source and live coverage, serial execution, and retained evidence.",
+      "assertions": [
+        "The subject copies the executable project to a disposable workspace and changes only the existing verification skill's directory.",
+        "The subject checks both mapped features from source serially and corrects the unsupported list --json command wherever it affects verification.",
+        "The live pass proves trimmed-title persistence, empty-title rejection without mutation, empty reads without created data, and populated reads without mutation.",
+        "The subject runs doctor checks for fresh recipe contexts and after failures, including the expected empty-title error, without recursive preflights for doctor commands.",
+        "The subject re-executes corrected recipes, retains command, output, and exit-status evidence outside removed data, and inspects that evidence.",
+        "The final response reports changed with coverage and evidence, without claiming a commit, PR, publication, or scheduled run."
+      ]
+    },
+    {
+      "id": "read-only-audit",
+      "prompt": "Audit the supplied Taskbook verification skill. Do not edit files, commit, or publish anything.",
+      "context": "evals/fixtures/audit-cli.md",
+      "expectedOutcome": "A completed evidence-backed read-only audit that reports proposed command corrections without applying them.",
+      "assertions": [
+        "The subject leaves the fixture and any copied product and verification files unchanged.",
+        "The audit checks source and isolated live behavior, identifies the unsupported --json flag, and proposes --format json with evidence.",
+        "The subject completes mapped behavior coverage using supported commands and reports drift with proposed corrections, rather than declaring clean, changed, or blocked solely because the audit is read-only.",
+        "The subject preserves captured evidence, cleans owned scratch data, and performs no external writes."
+      ]
+    },
+    {
+      "id": "preserve-product-contract",
+      "prompt": "Finish the verification-skill maintenance pass using this reproduced persistence failure. Keep changes within the verification skill.",
+      "context": "evals/fixtures/product-regression.md",
+      "expectedOutcome": "An honest blocked result that preserves the intended contract and separates the product regression from instruction drift.",
+      "assertions": [
+        "The response identifies the reproduced save/read persistence failure as a product gap, with the supplied public-path evidence.",
+        "The subject does not weaken the expected result, remove the failing feature, or modify product code.",
+        "The result is blocked and distinguishes passing features from the unresolved regression without claiming complete successful coverage.",
+        "The subject preserves proof artifacts through owned cleanup and does not commit, publish, or schedule future work."
+      ]
+    }
+  ]
+}
