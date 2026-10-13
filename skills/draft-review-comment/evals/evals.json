@@ -122,6 +122,7 @@
         "The actions include the new cache fix, the guide update without a duplicate reply, and a clearly labeled reply to discussion_r302 reporting the verified outcome.",
         "Copy-pasteable text is visually separate from action instructions, severity, exact location metadata, and optional evidence.",
         "The cache comment explains that the second request can get text in the wrong language and asks to include locale in the key and test two locales, without compressed identity-aliasing terminology.",
+        "Suggested comments use a professional, conversational, friendly voice. Necessary technical reasoning stays readable and visible rather than being compressed to satisfy a sentence count or hidden as optional context.",
         "The report preserves the major severity, exact source location, supplied links, supported-version concern, and verified fix without adding claims.",
         "It drafts from supplied evidence without fetching PR state or posting, and creates at most one report."
       ]

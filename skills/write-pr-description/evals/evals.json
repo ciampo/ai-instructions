@@ -36,6 +36,7 @@
       "assertions": [
         "The draft preserves the related issue link and manually added keyboard-regression note, and uses the repository's What, Why, How, and Testing Instructions headings.",
         "The What and Why sections lead with the user-visible focus-restoration outcome rather than implementation mechanics.",
+        "Each opening template section uses one short sentence by default, without repeating the same point or narrating files and implementation steps.",
         "Testing Instructions describe the exact dialog interaction and expected focus result.",
         "Routine lint and unit-test commands are omitted from the primary manual instructions or placed in secondary details.",
         "The prose is direct and specific, with no chatbot opening, puffery, vague attribution, forced contrast, or generic conclusion; it preserves the required headings, links, and technical terms.",
@@ -84,6 +85,21 @@
       "assertions": [
         "The workflow includes the supplied screenshots in a local Visual Preview with useful alt text and preserves the issue link and testing steps.",
         "The workflow does not upload attachments or write to GitHub even though CLI upload is supported and the repository grants write access."
+      ]
+    },
+    {
+      "id": "short-opening-with-collapsed-technical-context",
+      "prompt": "Draft a short PR description from this completed diff. Keep useful technical detail available and return the draft locally only.",
+      "context": "evals/fixtures/no-template-technical-description.md",
+      "expectedOutcome": "A brief opening and behavior-focused testing steps, with useful technical context collapsed and the required cache migration visible.",
+      "assertions": [
+        "Without a repository template, it uses Summary and Testing Instructions instead of adding separate What, Why, and How sections.",
+        "The opening explains the wrong-language cache problem and resulting behavior in one short paragraph, usually one or two sentences, and preserves Fixes #456.",
+        "The requirement to clear the persisted record cache before starting the new version remains visible with all details blocks closed.",
+        "Useful key-encoding context appears in a closed details block with a descriptive summary and correctly separated Markdown, without repeating the opening or adding investigation history.",
+        "The technical explanation names the condition and consequence in plain language rather than relying on compressed collision or identity terminology.",
+        "Testing Instructions describe the English, Italian, and English record interactions and expected language, without routine CI commands.",
+        "The workflow returns a local draft and does not write to GitHub."
       ]
     }
   ]
