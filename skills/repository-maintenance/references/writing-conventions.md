@@ -10,6 +10,12 @@ How I expect written artifacts to be structured.
 - Prefer a short paragraph over a heading and list for a single point. Add structure only when the artifact has distinct parts.
 - Expand when risk, uncertainty, or required instructions make the extra detail necessary. Put optional supporting evidence in `<details>` when the target format supports it.
 
+## Technical clarity and conversational tone
+
+- Make technical explanations easy to follow on the first read. Name what happens, why it happens, and its consequence in that order when those points matter. Use separate sentences rather than packing several mechanisms into technical shorthand.
+- Keep exact identifiers and necessary terms. Explain an unfamiliar concept briefly where it first matters, using a concrete example when that is clearer. Preserve evidence, uncertainty, and conditions. More words are useful when they prevent the reader from having to decode the explanation.
+- In review comments, replies, and discussions, sound like a professional, friendly teammate. Use natural phrasing and contractions when appropriate. Acknowledge a useful point briefly, and explain disagreement directly and respectfully. Avoid canned praise, formal report language, and forced familiarity.
+
 ## Plain-language repair
 
 When the user asks for `bro`, `say that simply`, plain English, or equivalent wording while drafting an artifact covered by this reference, simplify it without changing its substance:
@@ -22,10 +28,10 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 
 ## PR Descriptions
 
-- **[STRONG]** Follow the repo's existing PR template. If no template exists, use: What / Why / How / Testing Instructions.
-- **[RULE]** Optimize the What / Why / How sections for human comprehension. Start with the high-level outcome or reason, use plain language, and avoid low-level implementation details unless they are necessary to understand the change. Prefer one or two sentences per section when possible.
-- **[STRONG]** Keep the summary concise and easy to scan. A reviewer should understand the change in 30 seconds without needing deep knowledge of the code.
-- **[PREFER]** Put implementation details, API comparison tables, migration guides, and other secondary context in `<details>` sections.
+- **[STRONG]** Follow the repo's required PR template. If no template exists, use Summary and Testing Instructions.
+- **[STRONG]** Keep the opening to one short paragraph, usually one or two sentences total. State the problem and resulting behavior. If the template separates What / Why / How, aim for one short sentence each without repeating the same point.
+- **[RULE]** Keep necessary breaking changes, migration requirements, and material limitations visible. A reviewer must be able to understand the change and essential caveats with every details block closed.
+- **[STRONG]** Cut secondary context that does not help review. Put useful implementation explanations, API comparisons, extended migration guidance, and verification evidence in closed `<details>` blocks with descriptive `<summary>` labels and blank lines around the Markdown content. Do not repeat the opening or add a block just to fill it.
 - **[RULE]** Prioritize manual, behavior-focused testing instructions. Point reviewers to the real app or relevant Storybook example and describe the exact interactions and expected result for user-facing changes.
 - **[RULE]** Do not clutter testing instructions with routine lint, type-check, build, or automated test commands that already run in git hooks or CI. Include commands when the PR changes that infrastructure or when they are necessary to reproduce or validate the change; put secondary verification details in `<details>` when useful.
 - **[PREFER]** Include a "Visual Preview" section (screenshots/videos) when the change is visual.
@@ -36,9 +42,10 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 
 - Default to the shortest response that works in the existing GitHub thread. Do not restate context the thread already shows.
 - For a finding, use one or two natural sentences: the concrete concern and the requested change or question. Mention impact only when it is not obvious.
-- For an accepted fix, acknowledge the point and state the outcome in one sentence or two at most. Add the short commit SHA only when useful.
+- For an accepted fix, acknowledge the point and state the outcome, usually in one or two short sentences. Add the short commit SHA only when useful.
+- Treat sentence counts as defaults, not a reason to compress a technical explanation. Add a short explanation when the reader needs it to understand the concern, outcome, or disagreement.
 - Keep investigation notes, implementation detail, and routine verification out of the visible comment. Put genuinely useful optional context in `<details>`.
-- Sound like a friendly collaborator, not a formal review report.
+- Use the conversational tone above for copy-pasteable comments and replies. Keep report metadata and investigation notes separate from that text.
 
 ## Commit Messages
 
@@ -83,6 +90,7 @@ Follow the target repository's branch convention. When none exists, prefer `type
 
 - **[STRONG]** Follow the target repository's API-documentation policy. Add JSDoc to exported components and public APIs when required locally or when it clarifies behavior, constraints, or non-obvious usage.
 - **[RULE]** Describe behavior and constraints, not implementation internals. Do not mention internal/upstream libraries in public-facing docs.
+- **[STRONG]** Explain technical behavior in short, connected sentences. State the relevant condition and consequence explicitly. Do not assume a reader knows an internal term or compress several concepts into one phrase.
 - **[PREFER]** Include usage examples when the pattern is non-obvious.
 - **[PREFER]** Prefer guidance over prescription: "Most of the time you should do X because Y. If you do Z instead, the consequence is W" -- not "You must always X."
 

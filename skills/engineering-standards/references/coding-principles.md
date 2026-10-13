@@ -79,4 +79,5 @@ How I think about code. These principles apply across all projects.
 
 - **[STRONG]** Well-written code should be as self-explanatory as possible. Prefer meaningful names that convey intent.
 - **[RULE]** Do not narrate what the code does. But do leave comments for the important things: trade-offs, constraints, non-obvious reasoning, and context that future maintainers (including LLM agents inspecting the codebase) will benefit from. Good comments are an investment in long-term readability.
+- **[STRONG]** Make that reasoning easy to follow. State the relevant condition, why it matters, and the consequence in short, connected sentences. Keep exact identifiers, but explain an unfamiliar technical concept where it matters. Do not compress several mechanisms into jargon just to keep the comment short.
 - **[STRONG]** Add JSDoc to exported/public APIs when it clarifies behavior, constraints, or non-obvious usage. Follow the target repository's documentation policy.

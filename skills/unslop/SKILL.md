@@ -7,6 +7,12 @@ description: Cut AI tells from any writing. Must always apply.
 
 Edit text to remove AI patterns and add human voice.
 
+## Clarity and tone
+
+- In replies, reviews, and discussions, default to a professional, conversational, friendly voice. Use natural contractions and first person when they fit. Be direct about concerns and disagreements. Avoid canned praise, forced warmth, and unnecessary formality. Preserve an explicitly requested voice or required format.
+- Make technical explanations readable on the first pass. Name the concrete behavior before introducing the term for it. Briefly explain unfamiliar terms where they matter, and use separate sentences for the cause and consequence when needed. Keep exact identifiers, conditions, evidence, and uncertainty.
+- Brevity means removing unnecessary material. Do not shorten an explanation by stacking jargon or leaving the reader to infer a necessary step. A few clear sentences can be better than one dense sentence.
+
 ## Process
 
 1. Scan for the patterns below.
