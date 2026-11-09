@@ -38,5 +38,7 @@ evidence.
 
 ## Verification
 
+Before launching browsers for local macOS checks, read [local browser execution](local-browser-execution.md). It covers this user's Codex launch route and a conditional Firefox workaround. Keep project test commands and requirements in the target repository.
+
 Run the relevant repository-defined checks before pushing. Do not publish broken
 work; report any required check that remains incomplete.

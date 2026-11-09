@@ -13,6 +13,7 @@ Capture the requested UI state. Honor the user's browser or tool choice.
 - For unknown Storybook URLs, use available Storybook MCP discovery. Open known URLs directly. Preview links are not saved images.
 - Otherwise use an available structured browser API, including one exposed by computer use, or existing repository Playwright tooling. Use desktop interaction for UI those tools cannot reach. Report a blocker if no route works; do not install tools or change configuration just to capture.
 - Reuse a matching tab and server after verifying the URL and source checkout. Start the documented dev server only if needed. A stale or hosted build does not prove local changes.
+- Before launching a local browser on this user's macOS host, load `repository-maintenance` and read its `references/local-browser-execution.md`. Use the approved execution route and conditional Firefox fallback there. Reusing a working exposed browser session does not require a new launch.
 
 ## Capture
 
