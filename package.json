@@ -16,7 +16,7 @@
     "test:shell": "bash -n setup.sh tests/*.sh"
   },
   "devDependencies": {
-    "markdownlint-cli": "^0.49.1"
+    "markdownlint-cli": "^0.50.0"
   },
   "overrides": {
     "markdownlint-cli": {
