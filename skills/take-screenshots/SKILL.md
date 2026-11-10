@@ -1,11 +1,13 @@
 ---
 name: take-screenshots
-description: Capture browser or Storybook screenshots for PR evidence, visual previews, and before/after comparisons. Use for screenshot capture, not interpreting attached images or general UI testing.
+description: Capture browser or Storybook screenshots for PR evidence, visual previews, and before/after comparisons. Use for still images, not video recording, interpreting attached images, or general UI testing.
 ---
 
 # Take screenshots
 
 Capture the requested UI state. Honor the user's browser or tool choice.
+
+For video recordings, use `record-browser-video`.
 
 ## Choose tools
 

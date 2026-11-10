@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "triggerCases": [
+    {
+      "id": "chrome-demo",
+      "prompt": "Record a video of opening the settings menu and saving a change in Chrome.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "pr-comparison",
+      "prompt": "Capture before and after videos of this drag-and-drop fix for the PR.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "explicit-tool-choice",
+      "prompt": "Use the existing Playwright setup to save a video of this Firefox bug reproduction.",
+      "shouldTrigger": true
+    },
+    {
+      "id": "still-image",
+      "prompt": "Take a screenshot of the expanded menu for this PR at 320px wide.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "replayable-script",
+      "prompt": "Use Chrome DevTools Recorder to export a replayable checkout action script. I don't need a video.",
+      "shouldTrigger": false
+    },
+    {
+      "id": "performance-trace",
+      "prompt": "Record a Chrome performance trace and identify what makes this page load slowly.",
+      "shouldTrigger": false
+    }
+  ],
+  "outputCases": [
+    {
+      "id": "native-interaction-lifecycle",
+      "prompt": "Save a video of dragging the first card below the second card in the prepared Chrome page, with a visible cursor and no audio.",
+      "context": "evals/fixtures/native-session.md",
+      "expectedOutcome": "An inspected native recording captures only the requested drag interaction and uses the prepared session without installing or uploading anything.",
+      "assertions": [
+        "The workflow verifies the prepared page and uses its available native recorder rather than creating a new browser context or falling back to recordVideo.",
+        "Recording starts after setup, the real drag moves the first card below the second, and stop runs even if the interaction fails.",
+        "The output uses an absolute temporary MP4 path, requests no audio, and verifies the client's supported cursor overlay appears without modifying application styles.",
+        "The workflow plays the saved video or reports limited frame-based inspection, and does not treat a 60fps request or metadata alone as proof of 60 distinct frames per second.",
+        "Delivery identifies the source, route, viewport, and captured interaction, discloses the cursor overlay, and performs no package installation or external write."
+      ]
+    },
+    {
+      "id": "unknown-exposed-backend",
+      "prompt": "Record the save interaction using the exposed Chrome tools and return the video.",
+      "context": "evals/fixtures/unknown-backend.md",
+      "expectedOutcome": "The exposed recorder is used within its documented capabilities, without an unsupported claim that it uses Chrome's native recording API.",
+      "assertions": [
+        "The workflow reads the exposed start/stop schemas and uses the matching existing page; it does not infer a backend from the screencast_start name or MP4 extension.",
+        "The workflow records and finalizes the save interaction using the exposed tools instead of installing chrome-capture or requiring a raw protocol connection.",
+        "The workflow inspects the actual output and reports the unknown backend and any unverified audio/cursor behavior without claiming 120fps, native encoding, or desktop coverage.",
+        "The response returns the local recording and does not upload it or change source or configuration."
+      ]
+    },
+    {
+      "id": "older-browser-fallback",
+      "prompt": "Save a video of the menu bug using the installed browser tools. Keep my existing tab open.",
+      "context": "evals/fixtures/older-browser.md",
+      "expectedOutcome": "The available Playwright recorder captures the interaction in a separate context, preserves the user's tab, and reports the actual fallback and verification limits.",
+      "assertions": [
+        "The workflow recognizes the missing native protocol command and uses the existing Playwright recording capability without downloading a package, upgrading Chrome, or changing global configuration.",
+        "The workflow creates a separate context with recordVideo enabled, repeats the permitted setup, reproduces the bug, and closes only its own context to finalize the video.",
+        "The user's original tab and context remain open and unchanged, and the delivered format is WebM rather than an asserted native AV1 MP4.",
+        "The workflow inspects available frames and metadata, explicitly reports that continuous motion and audio playback were not verified, and makes no claim about distinct frame rate."
+      ]
+    }
+  ]
+}

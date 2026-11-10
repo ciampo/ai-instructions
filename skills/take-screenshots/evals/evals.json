@@ -22,6 +22,11 @@
       "shouldTrigger": true
     },
     {
+      "id": "browser-video",
+      "prompt": "Record a video of opening the settings menu and saving a change in Chrome.",
+      "shouldTrigger": false
+    },
+    {
       "id": "interpret-image",
       "prompt": "Explain the error message in this attached screenshot.",
       "shouldTrigger": false
