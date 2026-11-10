@@ -1,6 +1,6 @@
 ---
 name: record-browser-video
-description: Record browser interactions as video for demos, bug reproductions, or PR evidence. Use for browser video capture, not still screenshots, replayable action scripts, or performance traces.
+description: Create a video file of browser UI for demos, bug reproductions, or PR evidence. Use only when video output is requested. Do not load for still screenshots, Chrome DevTools Recorder action-script exports, or performance traces.
 ---
 
 # Record browser video

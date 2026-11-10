@@ -27,6 +27,11 @@
       "shouldTrigger": false
     },
     {
+      "id": "action-json",
+      "prompt": "Record the checkout steps as a replayable JSON script with Chrome DevTools Recorder. No video file is wanted.",
+      "shouldTrigger": false
+    },
+    {
       "id": "performance-trace",
       "prompt": "Record a Chrome performance trace and identify what makes this page load slowly.",
       "shouldTrigger": false
