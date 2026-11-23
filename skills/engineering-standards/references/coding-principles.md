@@ -5,10 +5,10 @@ How I think about code. These principles apply across all projects.
 ## Philosophy
 
 - **[RULE]** Simplicity over abstraction. Only expose what is needed now. Avoid premature generalization. If the question "is this overengineered?" comes up -- it probably is.
-- **[RULE]** Minimal API surface. Defer features without immediate use cases. Add capabilities only when a concrete consumer exists. "Let's not add X for now -- we'll add it only when needed."
+- **[RULE]** Before adding a public option or export, identify a concrete use that callers cannot express through the existing API. Keep a helper private when only an internal caller needs it.
 - **[STRONG]** Root-cause fixes over patches. When something breaks, find the real cause. Prefer the structural fix over the workaround.
 - **[STRONG]** Scope awareness. Keep the end goal in focus. Include an adjacent change only when it is required for correctness or explicitly approved; otherwise record it as a follow-up.
-- **[STRONG]** Think before coding. For non-trivial work, plan the approach before writing code. Understand the problem, identify the moving parts, and outline the strategy. This avoids wasted implementation cycles.
+- **[STRONG]** Before a nontrivial fix, trace the reported condition to a supported caller, user action, or documented guarantee. If only a synthetic reproduction is available, state which real use remains unverified. Ask the user when the evidence leaves a choice about which behavior to support.
 - **[STRONG]** Modern code. Prefer platform-native APIs (especially HTML tags/attributes, CSS properties) over custom JavaScript implementations.
 - **[STRONG]** Feature support. Use current specifications, vendor documentation, and maintained compatibility data such as MDN browser-compatibility tables. Match the target repository's supported environments and provide a reasonable fallback when required.
 
@@ -31,7 +31,7 @@ How I think about code. These principles apply across all projects.
 
 - **[RULE]** Use the target system's design tokens and CSS custom properties where they express the intended value. Do not invent tokens or replace intentional one-off values solely to avoid a literal.
 - **[PREFER]** Use [individual transform properties](https://drafts.csswg.org/css-transforms-2/#individual-transforms) such as `translate` and `rotate` for new, isolated transforms when their defined composition order matches the design. Do not mechanically replace an existing `transform`; verify computed behavior, animation, composition, and consumer overrides first.
-- **[STRONG]** DRY up shared styles. If a pattern repeats across sibling components, extract it.
+- **[STRONG]** Share sibling styles when they implement the same behavior and should change together. Keep matching declarations local when sharing would tie one component to another's markup or couple states that can change independently.
 - **[PREFER]** Use CSS layers (`@layer`) when the system supports it, to manage specificity between component styles and composition overrides.
 - **[PREFER]** Use container queries for component-level responsive behavior instead of viewport media queries where the component's container size is what matters.
 
