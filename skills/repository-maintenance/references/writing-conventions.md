@@ -34,7 +34,7 @@ When the user asks for `bro`, `say that simply`, plain English, or equivalent wo
 - **[STRONG]** Cut secondary context that does not help review. Put useful implementation explanations, API comparisons, extended migration guidance, and verification evidence in closed `<details>` blocks with descriptive `<summary>` labels and blank lines around the Markdown content. Do not repeat the opening or add a block just to fill it.
 - **[RULE]** Prioritize manual, behavior-focused testing instructions. Point reviewers to the real app or relevant Storybook example and describe the exact interactions and expected result for user-facing changes.
 - **[RULE]** Do not clutter testing instructions with routine lint, type-check, build, or automated test commands that already run in git hooks or CI. Include commands when the PR changes that infrastructure or when they are necessary to reproduce or validate the change; put secondary verification details in `<details>` when useful.
-- **[PREFER]** Include a "Visual Preview" section (screenshots/videos) when the change is visual.
+- **[STRONG]** Include screenshots whenever they help review. Follow `write-pr-description` for base and head comparisons, visible examples, and collapsed supporting screenshots.
 - **[PREFER]** Add a "TODO / Follow-ups" section when there is deferred work.
 - **[PREFER]** When referencing related issues or PRs, put them at the top.
 
