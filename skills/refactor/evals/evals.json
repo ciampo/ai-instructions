@@ -34,6 +34,17 @@
         "The workflow does not begin a partial rename while that material migration choice is unresolved.",
         "The plan uses verified batches and the supplied baseline, and it does not infer commit or remote-write authority."
       ]
+    },
+    {
+      "id": "migration-through-the-supported-caller",
+      "prompt": "We are migrating the restore command to the new archive reader. Plan how to verify the behavior the backup job relies on.",
+      "context": "evals/fixtures/archive-reader.md",
+      "expectedOutcome": "Compare restores from a piped stream through the CLI before and after the adapter changes.",
+      "assertions": [
+        "The plan exercises restore --input - with a non-seekable input on the baseline and the migrated implementation.",
+        "The plan compares the records restored to the temporary database with the expected fixture records.",
+        "The plan explains why path-based reader tests alone cannot verify the command adapter's handling of streamed input."
+      ]
     }
   ]
 }

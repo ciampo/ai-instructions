@@ -45,6 +45,17 @@
         "The answer recommends dropping the exploratory comparison once the implementer verifies the behavior covered by the existing assertions.",
         "The agent keeps the utility's equal-key regression test and the required public entry point test. It explains that the latter catches sortRows choosing the wrong field, which the utility test cannot detect."
       ]
+    },
+    {
+      "id": "related-fixes-with-independent-review-decisions",
+      "prompt": "Both the empty-export fix and the progress display are in scope. How would you split the work for review?",
+      "context": "evals/fixtures/export-scope.md",
+      "expectedOutcome": "Keep the complete empty-export fix together and plan the progress display as a separate PR.",
+      "assertions": [
+        "The fix covers both supported writers and keeps the relevant regression checks with the fix.",
+        "The progress display gets its own planned PR because it can ship independently and has an unresolved design decision.",
+        "The plan accounts for both requested changes without opening PRs."
+      ]
     }
   ]
 }

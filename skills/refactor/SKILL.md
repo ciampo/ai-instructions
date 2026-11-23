@@ -15,7 +15,7 @@ A refactor request authorizes the scoped local source changes and verification. 
 
 1. **Scope the change**: Identify exactly what is being refactored (a function, a pattern, a prop name, an API). Search the entire codebase for all instances. Categorize by type: application code, tests, config files, documentation, types, stories.
 2. **Assess impact**: Determine the blast radius. Are there downstream consumers? Does this change affect the public API? If so, flag it and discuss the migration strategy before proceeding.
-3. **Establish a verification baseline**: Before making any changes, identify the tests, linters, type-checks, and build steps that exercise the code being refactored. Run them and record the results. This baseline is the contract the refactor must preserve — any regression against it means the refactor introduced a problem.
+3. **Establish a verification baseline**: Trace a representative caller and establish its expected behavior using the migration guidance in the `engineering-standards` coding principles. Run the relevant tests, linters, type-checks, and build steps and record the results.
 4. **Plan the order**: For large refactors, define the migration order:
    - Start with types/interfaces (so the compiler catches remaining usage).
    - Then implementation code.
