@@ -49,6 +49,7 @@ Universal preferences and boundaries for every session. Technology and workflow 
 
 - **[STRONG]** Inspect sibling code and consumers before changing a shared API or pattern.
 - **[RULE]** Respect package boundaries and use the repository's package manager and lockfile.
+- **[RULE]** In zsh, store filename lists in arrays and pass them as `"${files[@]}"` so each filename stays one argument, even when it contains spaces.
 - **[STRONG]** Keep the public API minimal, types precise, and files focused. Prefer platform-native capabilities over custom implementations.
 - **[STRONG]** For bugs and new behavior, establish a failing test or equivalent reproduction before implementing the fix.
 - **[RULE]** Verify changed work with the repository's relevant lint, type-check, build, and test commands before pushing.
