@@ -26,8 +26,8 @@ Treat investigation, explanation, and diagnosis as read-only. Use non-mutating c
    - Use history bisection for regressions with unclear origins, but only in a disposable checkout unless changing the current checkout was authorized.
    - Compare against the main-branch ref without switching the user's checkout (regression vs. pre-existing).
 5. **Form a hypothesis**: Based on isolation, propose a specific cause. State it explicitly: "I believe the issue is X because Y."
-6. **Verify the hypothesis**: For diagnosis-only work, use an existing check or an external disposable reproduction that does not modify the repository. When implementation was requested, write a minimal failing test or check before writing the fix. Do not jump to fixing based on a guess.
+6. Verify the hypothesis. For diagnosis-only work, use an existing check or an external disposable reproduction that does not modify the repository. For an authorized fix, reproduce the failure with an existing test or create and run a temporary check before changing the implementation.
 7. **Stop or fix according to the request**: For diagnosis-only requests, stop with the evidence-backed cause, remaining uncertainty, and a proposed fix. When implementation was requested, apply the root-cause fix, not a workaround, and keep it minimal and focused.
-8. **Add a regression test for an implemented fix**: Write a test that would have caught the bug. Verify it fails without the fix and passes with it.
+8. Check regression coverage for an implemented fix. Verify that a test fails without the fix and passes with it, or use the reproduction from step 6. Keep a new or adapted test when it closes a gap in the existing suite. Remove a temporary reproduction once a retained test covers the same failure.
 9. **Verify implemented work**: Run the project's relevant verification suite. Confirm the original symptom is resolved and no new issues were introduced.
 10. **Report**: State the diagnosis, whether files changed, verification, and any remaining uncertainty. If the investigation hits a dead end, describe what was tried and ruled out instead of iterating silently on broken approaches.

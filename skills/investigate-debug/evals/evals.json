@@ -34,6 +34,16 @@
         "The workflow reports the evidence-backed root cause, remaining uncertainty, and a proposed fix without applying it.",
         "The workflow does not edit source, clear caches, switch branches, commit, push, or write remotely."
       ]
+    },
+    {
+      "id": "fix-with-existing-regression-test",
+      "prompt": "How should I fix and verify the import command's endpoint regression? Which tests should remain after the fix?",
+      "context": "evals/fixtures/endpoint-precedence.md",
+      "expectedOutcome": "The fix uses the existing failing command test as regression coverage.",
+      "assertions": [
+        "The answer identifies the reversed precedence and uses the supplied failing command test. It calls for rerunning that test after the fix without claiming an observed pass.",
+        "The answer keeps the existing explicit-endpoint and default-endpoint cases without proposing another test for the same precedence failure."
+      ]
     }
   ]
 }

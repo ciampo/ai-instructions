@@ -67,11 +67,15 @@ How I think about code. These principles apply across all projects.
 
 ## Testing
 
-- **[STRONG]** Red/green workflow. When fixing a bug or implementing a feature, write a failing test first that proves the bug exists or the feature is missing. Only then write the code to make the test pass. This ensures every change is backed by a test that would have caught the problem.
+- During an authorized feature, amendment, bug fix, or refactor, create and run temporary tests as needed without asking for separate confirmation. For a bug or new behavior, establish a failing test or equivalent reproduction before editing the implementation. Run it again after the change.
+- Before finalizing, review new and existing tests directly related to the change. For each, identify the distinct behavior or regression it protects and whether it could fail in its test environment if that behavior broke. Add or adapt a test for a real gap. When existing coverage is sufficient, no new permanent test is needed.
+- Consolidate or remove redundant, obsolete, or purely exploratory tests within scope. Preserve repository-required tests and unique regression coverage. Before removing an apparent duplicate, check its assertions and the conditions under which it runs.
+- When deciding whether delegated behavior is already covered, check what the dependency's relevant tests actually assert. This applies equally to a utility in the same package, another first-party package, or a third-party dependency. For versioned dependencies, check the version in use. If you cannot inspect the relevant coverage, treat it as unknown.
+- Cover each gap at the level that owns the behavior and can expose the failure. For example, a parser's tests can cover malformed input. An import command that uses the parser can test that a parsing error leaves stored records intact. Keep an integration test when it catches a failure the dependency's own suite cannot.
 - **[STRONG]** Use semantic queries (`getByRole`, `getByLabelText`) over test IDs. Test what users experience, not implementation details.
 - **[STRONG]** Question unnecessary mocks. If a mock can be avoided by using the real module, prefer that. Ask "are these mocks actually necessary?"
 - **[PREFER]** Type-level tests (`@ts-expect-error`, `satisfies`) for complex prop types and API contracts.
-- **[RULE]** Test accessibility: roles, ARIA attributes, focus management, keyboard interaction.
+- **[RULE]** Verify the accessibility behavior the change can affect, including roles, ARIA attributes, focus management, and keyboard interaction where relevant.
 - **[PREFER]** For E2E tests (Playwright, Cypress), test user flows end-to-end rather than individual components. Focus on critical paths: navigation, form submission, authentication, core feature workflows.
 - **[PREFER]** For visual regression tests, review snapshot diffs carefully. Update snapshots only when the visual change is intentional.
 

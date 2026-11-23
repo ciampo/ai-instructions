@@ -108,4 +108,4 @@ Patterns AI agents get wrong frequently -- watch for these:
 ## Testing
 
 - **[STRONG]** Manually verify screen reader behavior for complex interactive patterns.
-- **[STRONG]** Include accessibility-related assertions in automated tests (`getByRole`, `aria-*` attribute checks).
+- **[STRONG]** Use automated assertions for accessibility behavior the test environment can expose, such as a control's accessible name or expanded state.

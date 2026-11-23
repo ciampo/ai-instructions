@@ -38,9 +38,9 @@ Patterns for building and maintaining a design system component library. General
 
 ## Testing
 
-- **[STRONG]** Unit tests with React Testing Library. Use semantic queries (`getByRole`, `getByLabelText`) over test IDs.
+- **[STRONG]** When a component needs a React Testing Library test, use semantic queries such as `getByRole` and `getByLabelText` where available.
 - **[PREFER]** Type-level tests for complex prop types (`@ts-expect-error`, `satisfies`).
-- **[RULE]** Test accessibility: roles, ARIA attributes, focus management, keyboard interaction.
+- **[RULE]** Verify the accessibility behavior the wrapper can affect. Check the primitive's actual coverage when deciding which interactions need a wrapper test.
 
 ## Versioning and Deprecation
 

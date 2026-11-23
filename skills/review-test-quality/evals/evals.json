@@ -39,6 +39,17 @@
         "The workflow does not create or open a local review document.",
         "The workflow does not modify source or post to GitHub."
       ]
+    },
+    {
+      "id": "shared-picker-integration",
+      "prompt": "Review the tests for this picker migration. Which tests should the settings screen keep or change? Reply in chat.",
+      "context": "evals/fixtures/settings-picker.md",
+      "expectedOutcome": "The review separates verified picker coverage from the settings screen's persistence and focus behavior.",
+      "assertions": [
+        "It identifies the duplicate key-navigation assertion in the installed picker's browser suite.",
+        "It recommends adapting the settings test to assert that choosing Compact persists compact.",
+        "It retains the browser regression for focus after the settings screen removes the picker and explains why the mocked test cannot establish that behavior."
+      ]
     }
   ]
 }

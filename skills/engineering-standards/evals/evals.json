@@ -34,6 +34,17 @@
         "The repository's existing request-context convention takes precedence over a personal implementation preference.",
         "The review remains read-only and does not infer commit or remote-write authority."
       ]
+    },
+    {
+      "id": "temporary-test-during-refactor",
+      "prompt": "The sort refactor is authorized. Based on this snapshot, which checks can the implementer run now, and which tests should be in the final change?",
+      "context": "evals/fixtures/stable-sort.md",
+      "expectedOutcome": "The temporary check can run during implementation. The final suite keeps the existing regression coverage without another permanent test.",
+      "assertions": [
+        "The agent can create or run a temporary comparison without asking for separate confirmation.",
+        "The answer recommends dropping the exploratory comparison once the implementer verifies the behavior covered by the existing assertions.",
+        "The agent keeps the utility's equal-key regression test and the required public entry point test. It explains that the latter catches sortRows choosing the wrong field, which the utility test cannot detect."
+      ]
     }
   ]
 }
