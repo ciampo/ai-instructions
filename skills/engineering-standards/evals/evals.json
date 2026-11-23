@@ -56,6 +56,18 @@
         "The progress display gets its own planned PR because it can ship independently and has an unresolved design decision.",
         "The plan accounts for both requested changes without opening PRs."
       ]
+    },
+    {
+      "id": "public-component-example",
+      "prompt": "Prepare the published SearchField example from these drafts. Give the example, description, and Storybook changes, and say where each draft belongs.",
+      "context": "evals/fixtures/search-field-example.md",
+      "expectedOutcome": "Readers get a copyable example and accurate generated reference. The focus regression setup stays available to maintainers.",
+      "assertions": [
+        "The public example uses the exported SearchField with a label and onSearch callback and explains that submission supplies the query.",
+        "Public code and description omit the private focus helper, focus adapter, and test-only options.",
+        "The answer corrects the generated props table and controls to describe SearchField and exclude the fixture options. It also checks what readers see in the rendered docs.",
+        "The focus reproduction remains available as a maintainer regression fixture outside the published examples."
+      ]
     }
   ]
 }

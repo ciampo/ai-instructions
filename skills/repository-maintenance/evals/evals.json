@@ -287,6 +287,18 @@
         "The workflow retries only after.png against the existing PR 123 instead of rerunning gh pr create or reuploading before.png.",
         "The workflow preserves the existing body and draft state and verifies that both uploaded references are present after recovery."
       ]
+    },
+    {
+      "id": "export-documentation-by-audience",
+      "prompt": "Draft the user guide paragraph, the release note, and a source comment for the export change.",
+      "context": "evals/fixtures/export-documentation.md",
+      "expectedOutcome": "The guide and release note describe the supported result. The comment records the filesystem constraint a maintainer needs to preserve.",
+      "assertions": [
+        "The guide identifies --output PATH and explains what happens to an existing file on success and on a reported export error. It makes no guarantee about power loss.",
+        "The release note identifies the fix for failed exports without listing unchanged formatting or successful export behavior.",
+        "Both public texts omit the scratch file, rename mechanism, internal helper names, and filesystem layout.",
+        "The source comment explains why the scratch file belongs beside the destination: the final rename requires both paths to be on the same filesystem. All three texts omit the helper rename history."
+      ]
     }
   ]
 }

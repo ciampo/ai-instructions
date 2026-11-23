@@ -68,6 +68,7 @@ docs: Add migration guide for Button API changes
 ## CHANGELOG Entries
 
 - **[RULE]** Follow the target repository's release policy. When it requires a changelog entry for the change, use the correct category (Internal, Enhancement, New Feature, Bug Fix, Breaking Change).
+- **[STRONG]** In public release notes, name the change readers will notice and any action they need to take when upgrading. Omit private refactors and lists of behavior that stayed the same. Use the repository's Internal category when its policy requires one.
 - **[STRONG]** Include PR link in `([#NNNNN](URL))` format.
 - **[RULE]** Match the existing CHANGELOG format and conventions in the repo exactly.
 
@@ -86,10 +87,15 @@ docs: Add migration guide for Button API changes
 
 Follow the target repository's branch convention. When none exists, prefer `type/short-description`, such as `fix/focus-trap-escape` or `docs/migration-guide`.
 
+## Consumer and maintainer documentation
+
+- **[RULE]** Write each section for the person who will use it. In a guide, API reference, or exported comment that feeds generated docs, keep only what helps a caller choose or use the API. State supported behavior, caller obligations, and relevant limits.
+- **[RULE]** If the implementation could change while the public contract still holds, leave that detail out of public prose and examples. When an internal constraint affects callers, explain what they must do or what result they can expect.
+- **[STRONG]** In source comments and contributor docs, explain a mechanism or decision when a maintainer needs the reason to change the code safely. Put that explanation beside the code or in the relevant contributor section. Leave one-off PR history in the PR.
+
 ## JSDoc / API Documentation
 
 - **[STRONG]** Follow the target repository's API-documentation policy. Add JSDoc to exported components and public APIs when required locally or when it clarifies behavior, constraints, or non-obvious usage.
-- **[RULE]** Describe behavior and constraints, not implementation internals. Do not mention internal/upstream libraries in public-facing docs.
 - **[STRONG]** Explain technical behavior in short, connected sentences. State the relevant condition and consequence explicitly. Do not assume a reader knows an internal term or compress several concepts into one phrase.
 - **[PREFER]** Include usage examples when the pattern is non-obvious.
 - **[PREFER]** Prefer guidance over prescription: "Most of the time you should do X because Y. If you do Z instead, the consequence is W" -- not "You must always X."
