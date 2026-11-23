@@ -31,6 +31,7 @@ Patterns for building and maintaining a design system component library. General
 
 - **[STRONG]** Add stories when the repository uses Storybook and its contribution policy requires or benefits from an interactive example.
 - **[STRONG]** Reuse public API documentation as the Storybook description only when the repository's tooling supports that flow.
+- **[STRONG]** Show a supported pattern a consumer can copy. Keep setups used only for regression tests in maintainer fixtures. Check the rendered example, controls, and generated props table for private helpers or demo-only options that look like public API.
 - **[PREFER]** For props accepting ReactElement or ReactNode, show a custom control accepting strings of text.
 - **[PREFER]** For props with complex types (eg objects), either disable the control or provide a custom choice across a prepared list of viable options.
 - **[PREFER]** Disable irrelevant controls for specific stories. Prefer systematic disabling over one-by-one exclusion.
@@ -52,4 +53,4 @@ Patterns for building and maintaining a design system component library. General
 
 - **[RULE]** Keep sibling APIs consistent where their semantics support the same capability. Do not force symmetry that creates an invalid state; for example, the [APG alert-dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/) is modal by definition.
 - **[STRONG]** When adding a pattern to one component, audit whether siblings need the same treatment.
-- **[STRONG]** Document deviations from upstream behavior explicitly.
+- **[STRONG]** When a wrapper differs from its upstream dependency, document the supported behavior callers need. Explain the reason for the difference in a maintainer note when it matters for future changes.
