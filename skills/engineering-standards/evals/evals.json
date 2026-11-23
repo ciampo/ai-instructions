@@ -24,6 +24,28 @@
   ],
   "outputCases": [
     {
+      "id": "reported-reader-behavior-and-api",
+      "prompt": "Which reader issues should we fix, and should we export the row decoder as proposed?",
+      "context": "evals/fixtures/delimited-reader.md",
+      "expectedOutcome": "Fix the documented data loss through the existing API. Distinguish the synthetic delimiter change from a supported use and keep the decoder private.",
+      "assertions": [
+        "The missing final field violates the public readRows contract even though the repository's writer omits trailing empty fields.",
+        "The harness changes a private field directly. The response identifies the missing supported path and treats changing delimiters midstream as a product decision if that behavior is desired.",
+        "The adapter can get complete rows from the corrected readRows API and does not need a public decoder export."
+      ]
+    },
+    {
+      "id": "sibling-styles-with-different-behaviors",
+      "prompt": "As part of the component cleanup, which of these repeated styles would you share?",
+      "context": "evals/fixtures/sibling-indicators.md",
+      "expectedOutcome": "Use the shared focus treatment for both triggers and keep the table's selection styling independent.",
+      "assertions": [
+        "Both triggers can use the existing focus treatment because their keyboard focus appearance is intended to change together.",
+        "The selected row keeps its own styling because its persistent selection indicator can change independently, even though it currently looks the same.",
+        "The proposal avoids selectors that depend on another component's private markup."
+      ]
+    },
+    {
       "id": "load-only-relevant-standards",
       "prompt": "Review the proposed server-side JavaScript change using only the relevant engineering standards.",
       "context": "evals/fixtures/scoped-references.md",
