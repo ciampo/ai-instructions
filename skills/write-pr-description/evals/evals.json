@@ -94,7 +94,7 @@
       "expectedOutcome": "The reviewer sees the main visual change immediately and can expand the remaining scenarios.",
       "assertions": [
         "The draft includes a preview without an explicit screenshot request and uses the supplied images for all five scenarios.",
-        "Each of the four comparable scenarios pairs the same state on release/2.x at ba5e201 and the latest PR head at face203, with clear before and after labels and a caption describing the result.",
+        "Each of the four comparable scenarios has a caption describing the result. Both visible and collapsed comparisons render as two-column Markdown tables. In each row, Before on the left shows release/2.x at ba5e201 and After on the right shows the same state at the latest PR head, face203.",
         "With all details closed, one or two representative examples are visible. Additional comparisons stay together inside closed details blocks with descriptive summaries.",
         "The compact layout uses only its supplied after image and explains that the base lacks this layout.",
         "The draft uses local references and makes no upload or remote edit."

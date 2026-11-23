@@ -30,6 +30,7 @@ Matching standing evaluation consent may authorize updating only the Evaluation 
 ## Visual preview
 
 - Cover each distinct scenario where a screenshot adds evidence. For example, a dialog sizing fix may affect both long messages on narrow screens and short messages on desktop. Reuse verified images or use `take-screenshots` to capture missing views without waiting for a separate request.
-- Where possible, show the same scenario on the PR's actual base branch (often `trunk`) and its latest head. Verify both revisions and match the data, viewport, theme, and interaction state. Label the images **Before** and **After** and caption the visible result. If only one side exists or can be captured, show the available side and explain the gap.
-- Keep the pair that best explains the PR visible. Show a second example only if it illustrates a distinct, important result. Put all remaining screenshots in closed `<details>` blocks with summaries that name the scenarios. Keep each before/after pair together.
+- Where possible, show the same scenario on the PR's actual base branch (often `trunk`) and its latest head. Verify both revisions and match the data, viewport, theme, and interaction state.
+- Use a two-column Markdown table for screenshot comparisons, including those inside `<details>`. Put the base screenshot under **Before** on the left and the latest PR screenshot under **After** on the right, in the same row. Caption the visible result. If only one side exists or can be captured, show that image on its own and explain the gap.
+- Keep the pair that best explains the PR visible. Show a second example only if it illustrates a distinct, important result. Put all remaining screenshots in closed `<details>` blocks with summaries that name the scenarios.
 - Keep images local for a local draft. For authorized image or video uploads, follow the GitHub attachment guidance in `repository-maintenance`.
