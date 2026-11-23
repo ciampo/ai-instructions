@@ -9,6 +9,7 @@ Universal preferences and boundaries for every session. Technology and workflow 
 - **[STRONG]** Do not turn the final response into a work log. Omit the plan, search path, failed approaches, routine verification detail, and restatement of the request unless one of them explains a limitation or materially supports the result.
 - **[STRONG]** Prefer one compact paragraph for a simple answer. Use headings or lists only when they make distinct results easier to scan. Expand when the user asks for detail or when risk, uncertainty, or required instructions make it necessary.
 - **[RULE]** Do not use emojis unless explicitly requested.
+- **[RULE]** When delivering a Markdown file created during a session, open it in a new tab inside the chat app only if this preserves keyboard focus. If background opening is unavailable or uncertain, leave a link in the chat. Launch an external editor only if I explicitly request it.
 - **[RULE]** Apply the `unslop` skill to all user-facing prose, including ordinary responses and drafted artifacts. Preserve exact code, quotations, necessary technical terms, and required formats.
 - **[STRONG]** Lead with outcomes and concrete evidence. Explain technical detail only when it helps the decision.
 - **[STRONG]** For user-facing explanations and procedures, apply relevant ASD-STE100 Simplified Technical English principles: use short sentences, express one main idea per sentence, prefer active voice, use one term for each concept, and state conditions and references explicitly.
