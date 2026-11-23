@@ -21,6 +21,7 @@ Find the smallest coherent way to achieve the required outcome. Prefer deleting 
 4. **Search outside the diff**: Inspect sibling implementations and consumers for an existing primitive or direct path that can replace duplicated logic without expanding another public API.
 5. **Construct the deletion-first alternative**: Prefer removing dead or duplicated code, deriving values instead of synchronizing state, using an existing supported primitive, inlining a single-use abstraction, or narrowing scope. Do not move the same complexity behind a new helper or dependency.
 6. **Prove parity**: Identify the exact files, symbols, branches, or dependencies that can disappear and show how the remaining path preserves each invariant. Use existing tests and consumers; record missing runtime or contract evidence as a verification gap.
+   Include new and existing tests directly related to the change. Before recommending consolidation or removal, show where the same failure is still caught in a suitable environment, or why the tested behavior is obsolete. Preserve repository-required tests and unique regression coverage.
 7. **Report only material simplifications**: Retain a finding when the current structure creates a concrete correctness, maintenance, dependency, or comprehension cost and a smaller evidenced path exists. Keep aesthetic alternatives and speculative rewrites out of the findings.
 
 ## Output contract
