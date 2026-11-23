@@ -54,7 +54,7 @@ How I think about code. These principles apply across all projects.
 ## Consistency
 
 - **[RULE]** Consistency within a repo matters. Consistency within the same package matters even more. Before implementing something, check whether the same feature or pattern already exists in the codebase and follow it.
-- **[STRONG]** When applying a refactor or fix, actively look for opportunities to apply the same change across the codebase where appropriate. Do not fix something in one place and leave identical instances untouched elsewhere.
+- **[STRONG]** Look for other callers or implementations with the same issue. Keep changes that must land together in one PR, including their tests and documentation. When related work can land independently and makes the PR harder to review, plan smaller PRs. Keep any work outside the requested scope as a follow-up.
 
 ## Dependencies
 
@@ -67,6 +67,7 @@ How I think about code. These principles apply across all projects.
 
 ## Testing
 
+- For a migration, trace a representative caller and compare the behavior it relies on before and after the change through its normal entry point. An existing integration test can supply this evidence. If that path is unavailable, report what you verified and what remains uncertain.
 - During an authorized feature, amendment, bug fix, or refactor, create and run temporary tests as needed without asking for separate confirmation. For a bug or new behavior, establish a failing test or equivalent reproduction before editing the implementation. Run it again after the change.
 - Before finalizing, review new and existing tests directly related to the change. For each, identify the distinct behavior or regression it protects and whether it could fail in its test environment if that behavior broke. Add or adapt a test for a real gap. When existing coverage is sufficient, no new permanent test is needed.
 - Consolidate or remove redundant, obsolete, or purely exploratory tests within scope. Preserve repository-required tests and unique regression coverage. Before removing an apparent duplicate, check its assertions and the conditions under which it runs.
