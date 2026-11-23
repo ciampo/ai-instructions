@@ -29,6 +29,18 @@
   ],
   "outputCases": [
     {
+      "id": "revised-pagination-fix",
+      "prompt": "Bring the PR description up to date and give me the local draft.",
+      "context": "evals/fixtures/pagination-fix.md",
+      "expectedOutcome": "The reviewer can reproduce the account mix-up on page two using current commands and setup recovered from an earlier PR.",
+      "assertions": [
+        "The summary describes the account filter surviving pagination and drops the stale page-size claim.",
+        "The steps identify the archived alternating-accounts demo and use the current ledger entries command and --after option. They exclude the retired command and flag.",
+        "The steps request one blue entry, then use the returned token to request the next page without passing the account again. They distinguish red entry 100 on the base from blue entry 99 on the head.",
+        "The draft identifies the base outcome as inferred and the head integration test as observed, without claiming a manual run on either revision."
+      ]
+    },
+    {
       "id": "behavior-first-local-draft",
       "prompt": "Draft the pull-request description locally. Do not update GitHub.",
       "context": "evals/fixtures/behavior-first-description.md",

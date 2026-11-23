@@ -15,12 +15,13 @@ Matching standing evaluation consent may authorize updating only the Evaluation 
 
 ## Steps
 
-1. Read the repository template, current description when updating one, and actual diff. Preserve relevant manual content. Reading remote content does not authorize changing it.
+1. Read the repository template, current description when updating one, and actual diff. After a substantive revision, update any summary claims or testing steps the diff made stale. Preserve relevant manual content. Reading remote content does not authorize changing it.
 2. Place related issue or pull-request links first.
 3. Follow the repository's required headings. Without a template, use Summary and Testing Instructions. Keep the opening to one short paragraph, usually one or two sentences total, explaining the problem and resulting behavior. If the template separates What / Why / How, aim for one short sentence each without repeating the same point. Keep a necessary breaking change, migration requirement, or material limitation visible.
-4. Write Testing Instructions that prioritize manual reproduction and verification:
-   - For user-facing changes, name the real app screen or Storybook example, then list the exact interactions and expected result.
-   - Prefer steps that reflect what an end user or reviewer actually does.
+4. Give reviewers the shortest check that supports the PR's claim through the affected screen, Storybook example, command, or other real entry point.
+   - For a fix, describe the same setup on the PR's base and head. Give the action that exposes the failure on the base and the expected result with the fix. If either result is inferred, say which one.
+   - For a migration or refactor, name the caller, exercise it the way a user would, and say which observable behavior should stay the same. For a design proposal, show the scenario where the alternatives differ and name the decision you want reviewers to make.
+   - If the setup or trigger is unclear, look up earlier PRs that changed the same code. Use their testing instructions to find relevant data, entry points, or interactions. Check borrowed steps against the current code and supported interface before including them.
    - Omit routine lint, type-check, build, and automated test commands already covered by git hooks or CI. Include commands only when the PR changes that infrastructure or they are necessary to reproduce or validate the change.
 5. Include screenshots whenever they help a reviewer understand or verify the change. Follow the visual preview guidance below.
 6. Add TODO / Follow-ups when relevant. Put useful implementation explanations, alternatives, API comparisons, and extended verification in closed `<details>` blocks with descriptive `<summary>` labels. Leave blank lines around Markdown inside each block.
