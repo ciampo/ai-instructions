@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastReviewed": "2026-07-23",
+  "lastReviewed": "2026-11-23",
   "installPolicy": {
     "scope": "user",
     "portableDefault": "symlink",
@@ -15,7 +15,7 @@
       "product": "Cursor",
       "surface": "Cursor editor and Agent CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-22",
+      "lastAdapterChecked": "2026-11-10",
       "detection": {
         "userPath": ".cursor"
       },
@@ -72,7 +72,7 @@
       "product": "Claude Code",
       "surface": "Claude Code CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-22",
+      "lastAdapterChecked": "2026-11-10",
       "detection": {
         "userPath": ".claude"
       },
@@ -126,7 +126,7 @@
       "product": "Codex",
       "surface": "Codex app, CLI, and IDE extension",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-22",
+      "lastAdapterChecked": "2026-11-10",
       "detection": {
         "userPath": ".codex"
       },
@@ -180,7 +180,7 @@
       "product": "GitHub Copilot CLI",
       "surface": "GitHub Copilot CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-22",
+      "lastAdapterChecked": "2026-11-10",
       "detection": {
         "userPath": ".copilot"
       },
@@ -228,7 +228,7 @@
       "product": "Google Antigravity CLI",
       "surface": "Google Antigravity CLI",
       "supportTier": "preview",
-      "lastAdapterChecked": "2026-07-23",
+      "lastAdapterChecked": "2026-11-10",
       "detection": {
         "userPath": ".gemini"
       },
