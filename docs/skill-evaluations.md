@@ -88,6 +88,29 @@ node scripts/evals/run-output-evaluations.mjs --revision <sha> --model <id> --ou
 - `--model` is required, so a campaign never inherits a stale default. `--reasoning-effort` defaults to `xhigh` and `--service-tier` to `priority`.
 - `run-output-evaluations.mjs --verify-self` and `run-trigger-evaluations.mjs --verify-classifier` run the runners' self-checks without calling a model.
 
-Runner copies under `docs/evaluation-results/` belong to earlier campaigns. Keep them as provenance for those results. Do not add new copies.
+### Paired A/B runs in Claude Code
+
+`scripts/evals/run-claude-ab.mjs` compares two revisions of the core instructions and skills in a real Claude Code session. Use it to check that a change does not make results worse before you merge it.
+
+```bash
+node scripts/evals/run-claude-ab.mjs --base origin/main --head WORKTREE \
+  --suite core --suite skill:review-pr \
+  --model <id> --grader-model <id> --trials 3 --output <summary.json>
+```
+
+- Each trial runs `claude -p` in a fresh directory that holds only that variant's core, as project memory, and its skills. `--setting-sources project` and `--strict-mcp-config` keep user-level memory, skills, and MCP servers out. The subject can read files and load skills. It cannot edit, run commands, or reach the network.
+- `--suite core` runs the cases in `instructions/evals/evals.json`. `--suite skill:<name>` runs that skill's output and trigger cases. Fixtures come from `--head`.
+- A case can declare deterministic `checks`: `regex`, `notRegex`, `maxWords`, `noToolUse`, `loads`, and `notLoads`. Prefer a check to an assertion when the expected result is exact.
+- Skill loading comes from the session's event stream, not from the subject's own report. A trigger case passes when the skill loaded if and only if `shouldTrigger` is true.
+- A separate model call grades the assertions. It sees both responses under shuffled labels and does not know which is the base.
+- The summary reports, for each variant, passed assertions, checks, and triggers, total words, and cost. It also lists every failure. `--keep <dir>` saves the raw event streams outside the repository.
+
+Read the result as a paired comparison. Run base against itself first when you need the noise level, and treat a difference inside that range as no difference. Use at least three trials. The runner needs an authenticated `claude` CLI and spends the account's usage.
+
+### Retention
+
+Do not commit runners, transcripts, or result archives. Record each campaign in the [results ledger](skill-evaluation-results.md) with the target revision, the runner's commit and invocation, the client and model, pass counts, every failure with its cause, and the limits of the run. Attach the sanitized result archive to the pull request when a reviewer needs the raw evidence.
+
+Earlier campaigns committed their runners and archives under `docs/evaluation-results/`. Those files were removed from the working tree and remain in Git history. The ledger links to them at a fixed commit.
 
 The [Agent Skills description guidance](https://agentskills.io/skill-creation/optimizing-descriptions) recommends realistic positive and near-miss negative prompts. Its [evaluation guidance](https://agentskills.io/skill-creation/evaluating-skills) recommends an isolated baseline and evidence-backed assertions.

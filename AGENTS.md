@@ -5,9 +5,10 @@ This repository is the source for personal agent instructions and Agent Skills. 
 ## Layout
 
 - `instructions/core.md` is the always-on core that the installer distributes. It must stay product-neutral and within 150 lines and 8 KB.
+- `instructions/evals/` holds the behavior cases for the core. It is not distributed.
 - `skills/<name>/` holds one self-contained Agent Skill: `SKILL.md`, optional `references/`, and `evals/evals.json` with its fixtures.
 - `platforms/manifest.json` and `scripts/` drive the installer. `tests/` covers it.
-- `scripts/evals/` holds the shared evaluation runners. Do not copy a runner into `docs/evaluation-results/`.
+- `scripts/evals/` holds the shared evaluation runners. Do not commit runners, transcripts, or result archives; record campaign summaries in `docs/skill-evaluation-results.md`.
 - `docs/decisions/` records architecture decisions. Read [CONVENTIONS.md](CONVENTIONS.md) before changing instructions or skills.
 
 ## Verify
@@ -25,6 +26,7 @@ npm test
 ## Rules for changes
 
 - Put a rule in `instructions/core.md` only when it applies in every session. Procedures and technology guidance belong in a skill.
+- When you change `instructions/core.md`, run the core suite of `scripts/evals/run-claude-ab.mjs` against `main` and report the result in the pull request. Add a case to `instructions/evals/evals.json` for a new rule.
 - All skill descriptions together must stay under 12 KB. Check the count that `npm run content:check` prints, and leave headroom.
 - When you change a skill's description, routing, authority, output contract, or workflow, update its `evals/evals.json` in the same change. Follow [the evaluation guide](docs/skill-evaluations.md).
 - A skill must not link to files outside its own directory. Do not use absolute paths to this checkout.

@@ -1,1 +1,4 @@
 node_modules/
+
+# Raw evaluation results stay out of the repository.
+docs/evaluation-results/

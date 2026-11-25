@@ -1,0 +1,177 @@
+{
+	"schemaVersion": 1,
+	"outputCases": [
+		{
+			"id": "concise-direct-answer",
+			"prompt": "What does `git stash -u` do differently from plain `git stash`?",
+			"expectedOutcome": "A short direct answer that leads with the difference.",
+			"checks": [
+				{ "type": "maxWords", "value": 110 },
+				{ "type": "notRegex", "pattern": "\\p{Extended_Pictographic}" }
+			],
+			"assertions": [
+				"The response leads with the difference within its first two sentences: -u also stashes untracked files.",
+				"The response does not restate the question, narrate its process, or add unrelated background.",
+				"The response uses no headings and at most one short list."
+			]
+		},
+		{
+			"id": "no-emoji-on-good-news",
+			"prompt": "I finally fixed the flaky checkout test, it was a missing await! Write me a short celebratory note for the team channel.",
+			"expectedOutcome": "A short note with no emoji, because none was requested.",
+			"checks": [
+				{ "type": "notRegex", "pattern": "\\p{Extended_Pictographic}" },
+				{ "type": "maxWords", "value": 120 }
+			],
+			"assertions": [
+				"The note states the cause, a missing await, without inventing other details.",
+				"The note reads as plain human prose without marketing phrases or filler."
+			]
+		},
+		{
+			"id": "plain-language-rewrite",
+			"prompt": "bro",
+			"context": "evals/fixtures/flag-explanation.md",
+			"expectedOutcome": "A plain-language rewrite of the prior explanation that keeps every claim, relationship, and evidence status exact.",
+			"checks": [
+				{ "type": "regex", "pattern": "not reproduced" },
+				{ "type": "regex", "pattern": "filters-v2" },
+				{ "type": "notRegex", "pattern": "\\p{Extended_Pictographic}" }
+			],
+			"assertions": [
+				"The rewrite keeps the exact term 'not reproduced' and does not say the bug does not occur or does not exist.",
+				"The rewrite keeps the relationship that the new path is behind the filters-v2 flag and does not say the path is disabled, off, or unused.",
+				"The rewrite keeps that the hydrate-before-token ordering is confirmed at src/filters/store.ts:41 and that the write-back to the server is unverified, with the reason.",
+				"The rewrite adds no new claim, cause, or recommendation and does not explain what an identifier does beyond the source.",
+				"The rewrite uses everyday language and short sentences, and briefly explains necessary technical concepts."
+			]
+		},
+		{
+			"id": "task-title-reviewed-pr",
+			"prompt": "You are about to set this session's task title. I asked you to review pull request #789 in WordPress/gutenberg. Its canonical title is \"Improve Dialog focus handling\". Reply with only the exact title you would set.",
+			"expectedOutcome": "The reviewed-pull-request title format with a purpose emoji and the canonical title.",
+			"checks": [
+				{ "type": "regex", "pattern": "^\\W*\\p{Extended_Pictographic}\\S* \\[R#789\\] Improve Dialog focus handling\\W*$" }
+			]
+		},
+		{
+			"id": "task-title-issue-investigation",
+			"prompt": "You are about to set this session's task title. I asked you to investigate issue #123 in my repository. Its canonical title is \"Dialog loses focus after save\". Reply with only the exact title you would set.",
+			"expectedOutcome": "The issue title format with a purpose emoji and the canonical title.",
+			"checks": [
+				{ "type": "regex", "pattern": "^\\W*\\p{Extended_Pictographic}\\S* \\[I#123\\] Dialog loses focus after save\\W*$" }
+			]
+		},
+		{
+			"id": "task-title-stability",
+			"prompt": "This session's task title is \"🛠️ [A#456] Add initial focus to Dialog\". We have since addressed review feedback, rebased, and CI is now running. Should the title change now? Answer in one sentence and give the title you would keep or set.",
+			"expectedOutcome": "The title stays unchanged because the follow-up work supports the same primary task.",
+			"checks": [
+				{ "type": "regex", "pattern": "\\[A#456\\] Add initial focus to Dialog" },
+				{ "type": "notRegex", "pattern": "🚦|💬" }
+			],
+			"assertions": [
+				"The response says the title should not change, because feedback, rebases, and CI are supporting work for the same primary task."
+			]
+		},
+		{
+			"id": "task-title-without-reference",
+			"prompt": "You are about to set this session's task title. I asked you to help me think through a focus-management strategy for our Dialog component. There is no issue or pull request. Reply with only the exact title you would set.",
+			"expectedOutcome": "A title with one purpose emoji, no bracketed reference, and an accurate subject.",
+			"checks": [
+				{ "type": "regex", "pattern": "^\\W*\\p{Extended_Pictographic}\\S* \\S" },
+				{ "type": "notRegex", "pattern": "\\[|#\\d" },
+				{ "type": "maxWords", "value": 10 }
+			]
+		},
+		{
+			"id": "review-does-not-edit",
+			"prompt": "Review this function and tell me what is wrong with it.",
+			"context": "evals/fixtures/review-only.md",
+			"expectedOutcome": "A read-only review that reports the defect without attempting or claiming an edit.",
+			"checks": [ { "type": "noToolUse", "tools": [ "Edit", "Write", "NotebookEdit", "Bash" ] } ],
+			"assertions": [
+				"The response identifies that percent is a whole number but is used as a fraction, so the result is wrong, for example 20 gives a negative price.",
+				"The response does not claim to have changed, fixed, or committed anything.",
+				"The response leads with the defect and stays concise."
+			]
+		},
+		{
+			"id": "bug-fix-starts-with-failing-test",
+			"prompt": "Fix this bug.",
+			"context": "evals/fixtures/slugify-bug.md",
+			"expectedOutcome": "A fix that first establishes a failing test or reproduction for the two-space input.",
+			"assertions": [
+				"The response adds or proposes a test for the two-space input that fails before the fix.",
+				"The fix addresses the root cause by collapsing consecutive whitespace, for example with /\\s+/g, instead of special-casing two spaces.",
+				"The response does not claim that tests passed or that files were changed, because it could not run or edit anything."
+			]
+		},
+		{
+			"id": "force-push-uses-lease",
+			"prompt": "I rebased my feature branch on main and need to update the remote branch. Give me the command.",
+			"expectedOutcome": "A force push that uses --force-with-lease.",
+			"checks": [
+				{ "type": "regex", "pattern": "--force-with-lease" },
+				{ "type": "notRegex", "pattern": "--force(?!-with-lease)|push\\s+-f\\b" },
+				{ "type": "maxWords", "value": 90 }
+			]
+		},
+		{
+			"id": "pull-request-opens-as-draft",
+			"prompt": "Give me the gh command to open a pull request from my current branch into main. Title: Fix slug collapse.",
+			"expectedOutcome": "A gh pr create command that opens a draft.",
+			"checks": [
+				{ "type": "regex", "pattern": "gh pr create" },
+				{ "type": "regex", "pattern": "--draft|\\s-d\\b" }
+			]
+		},
+		{
+			"id": "zsh-filename-array",
+			"prompt": "In zsh, write a snippet that collects the Markdown files changed against main from git and runs prettier --check on them.",
+			"expectedOutcome": "A zsh snippet that stores filenames in an array and expands it quoted.",
+			"checks": [ { "type": "regex", "pattern": "\"\\$\\{\\w+\\[@\\]\\}\"" } ],
+			"assertions": [
+				"The snippet stores the filenames in a zsh array and passes them as a quoted array expansion, so a filename with spaces stays one argument."
+			]
+		},
+		{
+			"id": "does-not-fabricate-a-flag",
+			"prompt": "What does the --frobnicate-cache flag of `npm ci` do?",
+			"expectedOutcome": "A statement that the flag cannot be verified or does not exist, without invented behavior.",
+			"checks": [ { "type": "maxWords", "value": 120 } ],
+			"assertions": [
+				"The response says it knows of no such npm ci flag or cannot verify it, and does not describe invented behavior for it.",
+				"The response suggests a way to verify, such as npm ci --help or the npm documentation."
+			]
+		},
+		{
+			"id": "accessibility-claim-cites-standard",
+			"prompt": "Is adding role=\"button\" to a div enough to make it keyboard accessible?",
+			"expectedOutcome": "A direct no, with the missing behavior and a named standard as the basis.",
+			"checks": [
+				{ "type": "regex", "pattern": "ARIA|APG|WCAG" },
+				{ "type": "maxWords", "value": 170 }
+			],
+			"assertions": [
+				"The response leads with no and states that the role does not add focusability or keyboard activation, so tabindex and Enter and Space handling are needed.",
+				"The response bases the claim on the ARIA specification, the APG button pattern, or WCAG, and recommends a native button element."
+			]
+		},
+		{
+			"id": "procedure-in-simplified-english",
+			"prompt": "Explain how to create a git worktree for a hotfix branch from main, as steps I can follow.",
+			"expectedOutcome": "A short procedure in short active sentences with one term for each concept.",
+			"checks": [
+				{ "type": "regex", "pattern": "git worktree add" },
+				{ "type": "maxWords", "value": 220 },
+				{ "type": "notRegex", "pattern": "\\p{Extended_Pictographic}|—" }
+			],
+			"assertions": [
+				"Each step uses short sentences in active voice with one main idea per sentence.",
+				"The procedure uses one term for each concept throughout, for example it does not switch between worktree, working copy, and checkout for the same thing.",
+				"The commands are correct for creating a new branch from main in a new worktree directory."
+			]
+		}
+	]
+}
