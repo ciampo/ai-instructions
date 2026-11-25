@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Add `scripts/evals/run-claude-ab.mjs`, a paired A/B runner that compares two revisions of the core and skills in isolated Claude Code sessions, and add behavior cases for the core in `instructions/evals/`. ([#146](https://github.com/ciampo/ai-instructions/pull/146))
 - Remove retained evaluation runners and result archives from the working tree, about 30 MB. They remain in Git history, and the results ledger links to them at a fixed commit. New campaigns record summaries only. ([#145](https://github.com/ciampo/ai-instructions/pull/145))
 - Add shared trigger and output evaluation runners in `scripts/evals/` that take the revision and model as options, so a campaign no longer copies a runner. ([#143](https://github.com/ciampo/ai-instructions/pull/143))
 - Merge review coordination into `review-pr`, which now selects specialist methods, sizes any delegation, and delivers one rechecked response. `review-coordinator` remains as a deprecated compatibility route. ADR 0009 supersedes ADR 0006. ([#142](https://github.com/ciampo/ai-instructions/pull/142))
