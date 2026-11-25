@@ -73,6 +73,21 @@ missing task authority.
 3. Grade every assertion with evidence from the output. Use deterministic checks for facts such as a file existing or valid JSON; reserve human review for judgement calls such as clarity.
 4. Record failures and the chosen revision in the pull request. Keep the fixture realistic instead of tuning it to a single phrase.
 
-Run focused output cases first. Fix confirmed instruction gaps, then rerun only the affected trigger and output cases while iterating. Run the full trigger and output suites after every focused case passes. Retain the versioned runners, exact target revision, the sanitized event and command detail needed to support each claim, assertion grades, and provenance. Document each runner's retention boundary. Distinguish instruction failures from missing fixture capabilities and runner-observability gaps.
+Run focused output cases first. Fix confirmed instruction gaps, then rerun only the affected trigger and output cases while iterating. Run the full trigger and output suites after every focused case passes. Retain the runner's commit and invocation, exact target revision, the sanitized event and command detail needed to support each claim, assertion grades, and provenance. Document each runner's retention boundary. Distinguish instruction failures from missing fixture capabilities and runner-observability gaps.
+
+### Shared Codex runners
+
+`scripts/evals/` holds the shared trigger and output runners for the Codex CLI on macOS. Use them instead of copying a runner into each campaign directory. Each result file records the runner's path and SHA-256, so a campaign needs only the result files and the invocation.
+
+```bash
+node scripts/evals/run-trigger-evaluations.mjs --revision <sha> --model <id> --output <path> [--case <skill>/<case-id>]...
+node scripts/evals/run-output-evaluations.mjs --revision <sha> --model <id> --output <path> [--fixture-revision <sha>] [--case <skill>/<case-id>]... [--concurrency <1-8>]
+```
+
+- `--revision` is the full commit SHA whose `skills/` tree the subject installs. `--fixture-revision` selects a different commit for the fixtures, for example to run current fixtures against an older skill revision. It defaults to `--revision`.
+- `--model` is required, so a campaign never inherits a stale default. `--reasoning-effort` defaults to `xhigh` and `--service-tier` to `priority`.
+- `run-output-evaluations.mjs --verify-self` and `run-trigger-evaluations.mjs --verify-classifier` run the runners' self-checks without calling a model.
+
+Runner copies under `docs/evaluation-results/` belong to earlier campaigns. Keep them as provenance for those results. Do not add new copies.
 
 The [Agent Skills description guidance](https://agentskills.io/skill-creation/optimizing-descriptions) recommends realistic positive and near-miss negative prompts. Its [evaluation guidance](https://agentskills.io/skill-creation/evaluating-skills) recommends an isolated baseline and evidence-backed assertions.

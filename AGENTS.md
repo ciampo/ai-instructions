@@ -7,6 +7,7 @@ This repository is the source for personal agent instructions and Agent Skills. 
 - `instructions/core.md` is the always-on core that the installer distributes. It must stay product-neutral and within 150 lines and 8 KB.
 - `skills/<name>/` holds one self-contained Agent Skill: `SKILL.md`, optional `references/`, and `evals/evals.json` with its fixtures.
 - `platforms/manifest.json` and `scripts/` drive the installer. `tests/` covers it.
+- `scripts/evals/` holds the shared evaluation runners. Do not copy a runner into `docs/evaluation-results/`.
 - `docs/decisions/` records architecture decisions. Read [CONVENTIONS.md](CONVENTIONS.md) before changing instructions or skills.
 
 ## Verify
