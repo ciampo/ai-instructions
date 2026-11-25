@@ -1,6 +1,6 @@
 ---
 name: review-documentation
-description: Review documentation, examples, API docs, migration guidance, or code comments read-only for accuracy, audience fit, maintainability, and clear writing. Use directly only for focused documentation, README, example, JSDoc, code-comment, migration-guide, developer-experience, or prose requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist. Never edit source, commit, or write remotely.
+description: Review documentation, examples, API docs, migration guidance, or code comments read-only for accuracy, audience fit, maintainability, and clear writing. Use directly only for focused documentation, README, example, JSDoc, code-comment, migration-guide, developer-experience, or prose requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist.
 ---
 
 # Review Documentation
@@ -24,7 +24,7 @@ Review whether written guidance helps its intended reader complete a real task w
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A documentation finding must identify an incorrect, missing, unsafe, stale, or demonstrably obstructive statement and its reader impact. A subjective preference about concise writing without a reader consequence is not a finding.
 

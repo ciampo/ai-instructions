@@ -19,7 +19,7 @@ import { categories, loadManifest, resolveUserPath } from './lib/manifest.mjs';
 import { createPlatformInstaller } from './lib/platform-installer.mjs';
 
 const repoDir = path.resolve( path.dirname( fileURLToPath( import.meta.url ) ), '..' );
-const canonicalInstructionsPath = path.join( repoDir, 'AGENTS.md' );
+const canonicalInstructionsPath = path.join( repoDir, 'instructions', 'core.md' );
 const DEPRECATED_AGENT_ALIASES = {
 	gemini: 'antigravity',
 };

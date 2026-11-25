@@ -1,6 +1,6 @@
 ---
 name: review-compatibility
-description: Review a change read-only for compatibility across supported versions, upgrades, persisted data, wire formats, configuration, integrations, and migrations. Use directly for focused backward-compatibility, deprecation, rollout, schema, or cross-version requests. Use review-api-design for public API shape. General PR reviews start with review-pr, which may invoke this specialist. Never edit source, commit, or write remotely.
+description: Review a change read-only for compatibility across supported versions, upgrades, persisted data, wire formats, configuration, integrations, and migrations. Use directly for focused backward-compatibility, deprecation, rollout, schema, or cross-version requests. Use review-api-design for public API shape. General PR reviews start with review-pr, which may invoke this specialist.
 ---
 
 # Review Compatibility
@@ -24,7 +24,7 @@ Review whether a supported pre-change state can safely reach, use, and leave the
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. Confirmed findings use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when a supported boundary and incompatible behavior are evidenced. Missing historical data, policy, or upgrade coverage is a verification gap, not a severity finding.
 

@@ -1,6 +1,6 @@
 ---
 name: review-security
-description: Review a change read-only for security and privacy risks involving untrusted input, authentication, authorization, secrets, sensitive data, injection, or server-side trust boundaries. Use directly for focused security, privacy, permissions, data exposure, XSS, credentials, or threat-model requests. Use audit-dependency-update for dependency audits. General PR reviews start with review-pr, which may invoke this specialist. Never edit source, commit, or write remotely.
+description: Review a change read-only for security and privacy risks involving untrusted input, authentication, authorization, secrets, sensitive data, injection, or server-side trust boundaries. Use directly for focused security, privacy, permissions, data exposure, XSS, credentials, or threat-model requests. Use audit-dependency-update for dependency audits. General PR reviews start with review-pr, which may invoke this specialist.
 ---
 
 # Review Security
@@ -24,7 +24,7 @@ Review concrete trust boundaries and sensitive-data flows without presenting gen
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. A security finding must identify the reachable boundary, concrete missing or ineffective control, impact, and evidence. Possible attack paths without that evidence are verification gaps, not `[critical]` or `[major]` findings. Route dependency-release and vulnerability research to `audit-dependency-update` rather than duplicating it.
 

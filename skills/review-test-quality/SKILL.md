@@ -1,6 +1,6 @@
 ---
 name: review-test-quality
-description: Review test and verification quality read-only, including user-observable UI behavior, semantic queries, regression coverage, realistic failures, and mock limits. Use directly only for focused test-strategy, test-quality, behavioral-testing, UI-test, verification, regression-test, or implementation-detail testing requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist. Never edit source, commit, or write remotely.
+description: Review test and verification quality read-only, including user-observable UI behavior, semantic queries, regression coverage, realistic failures, and mock limits. Use directly only for focused test-strategy, test-quality, behavioral-testing, UI-test, verification, regression-test, or implementation-detail testing requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist.
 ---
 
 # Review Test Quality
@@ -24,7 +24,7 @@ Review whether the available evidence establishes the changed behavior from the 
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr` invokes this skill, return an internal handoff with confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. For a coverage gap, name the regression the suite could miss. For a redundant test, cite the assertion and environment that already cover its behavior. Missing runtime, browser, or integration evidence belongs under verification gaps when the source does not establish a defect.
 

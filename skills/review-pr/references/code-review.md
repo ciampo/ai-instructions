@@ -11,7 +11,7 @@ How I review PRs, and how I expect AI to assist with reviews.
 
 ## Severity Normalization Contract
 
-Normalize every confirmed finding by concrete impact, affected scope, reachability or likelihood, and recovery or reversibility. The same evidence must receive the same severity regardless of whether the core review, a direct specialist, or the coordinator found it. Treat specialist labels as candidate input, not authority.
+Normalize every confirmed finding by concrete impact, affected scope, reachability or likelihood, and recovery or reversibility. The same evidence must receive the same severity regardless of whether the core review, a specialist method, or a delegated investigation found it. Treat specialist labels as candidate input, not authority.
 
 - **[critical]** — Must block merge because a reachable failure causes severe or hard-to-recover harm. Examples include an authorization bypass that permits destructive cross-account actions, sensitive-data exposure, unrecoverable data loss, or a broadly blocked core path.
 - **[major]** — Must block merge because the issue materially breaks correctness, accessibility, compatibility, or a supported user or consumer workflow without reaching critical impact. This includes losing persisted user state during a supported upgrade.

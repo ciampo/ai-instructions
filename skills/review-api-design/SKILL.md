@@ -1,6 +1,6 @@
 ---
 name: review-api-design
-description: Review a public component, library, or package API read-only for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use directly for focused API-design review requests about exports, types, props, callbacks, composition, or public contracts. Use review-compatibility for versions, upgrades, migrations, or persisted state. Do not use for general PR review, internal implementation review, or API implementation; review-pr may invoke it as a specialist. Never edit source, commit, or write remotely.
+description: Review a public component, library, or package API read-only for minimality, consistency, type safety, consumer ergonomics, and safe evolution. Use directly for focused API-design review requests about exports, types, props, callbacks, composition, or public contracts. Use review-compatibility for versions, upgrades, migrations, or persisted state. Do not use for general PR review, internal implementation review, or API implementation; review-pr may invoke it as a specialist.
 ---
 
 # Review API Design
@@ -28,7 +28,7 @@ Review the public contract from the consumer's perspective and report only mater
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
+When `review-pr` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write multiple findings to one portable Markdown artifact in the OS temporary directory and return its path.
 

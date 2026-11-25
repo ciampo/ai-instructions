@@ -23,6 +23,6 @@ When reviewing or auditing an existing update, inspect and report without modify
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal handoff. Preserve the supplied repository, base revision, head revision, and target audience; include the scope checked, old and target resolved versions, release and compatibility evidence, audit and build results, confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr` invokes this skill, return an internal handoff. Preserve the supplied repository, base revision, head revision, and target audience; include the scope checked, old and target resolved versions, release and compatibility evidence, audit and build results, confirmed findings, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, present the same evidence in the requested delivery format.

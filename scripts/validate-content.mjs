@@ -273,7 +273,7 @@ async function validateAgents( repoDir ) {
 }
 
 async function validateUniversalInstructions( repoDir ) {
-	const source = path.join( repoDir, 'AGENTS.md' );
+	const source = path.join( repoDir, 'instructions', 'core.md' );
 	const stats = await lstat( source );
 	if ( ! stats.isFile() ) {
 		throw new Error( `${ source }: canonical universal instructions must be a regular Markdown file.` );
@@ -313,6 +313,34 @@ export function assertRecentDate( value, source ) {
 	}
 }
 
+async function documentationFiles( repoDir ) {
+	const files = ( await entries( repoDir ) )
+		.filter( ( entry ) => entry.isFile() && entry.name.endsWith( '.md' ) )
+		.map( ( entry ) => entry.name );
+	const docs = ( await collectFiles( path.join( repoDir, 'docs' ) ) )
+		.filter( ( file ) => file.endsWith( '.md' ) )
+		.map( ( file ) => path.join( 'docs', file ) );
+	return [ ...files, ...docs ];
+}
+
+async function validateDocumentationLinks( repoDir ) {
+	for ( const relative of await documentationFiles( repoDir ) ) {
+		const source = path.join( repoDir, relative );
+		const content = await readFile( source, 'utf8' );
+		for ( const match of markdownProse( content ).matchAll( /\[[^\]]+\]\(([^)\s]+)\)/g ) ) {
+			const link = match[ 1 ].replace( /^<|>$/g, '' );
+			const linkPath = link.split( '#', 1 )[ 0 ];
+			if ( /^(?:https?:|mailto:)/.test( link ) || linkPath === '' ) {
+				continue;
+			}
+			const target = path.resolve( path.dirname( source ), linkPath );
+			if ( ! isInside( target, repoDir ) || ! await lstat( target ).catch( () => undefined ) ) {
+				throw new Error( `${ source }: link target does not exist: ${ link }.` );
+			}
+		}
+	}
+}
+
 async function validateReviewDates( repoDir, manifest ) {
 	assertRecentDate( manifest.lastReviewed, 'platforms/manifest.json lastReviewed' );
 	for ( const platform of manifest.platforms ) {
@@ -345,6 +373,7 @@ export async function validateContent( repoDir ) {
 		validateUniversalInstructions( repoDir ),
 	] );
 	await validateReviewDates( repoDir, manifest );
+	await validateDocumentationLinks( repoDir );
 	return { ...skills, agentCount, universal };
 }
 

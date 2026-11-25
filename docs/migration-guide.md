@@ -30,7 +30,7 @@ The current installer changes instruction scope and installs complete Agent Skil
 
 ### Universal instructions
 
-The installer now uses root [`AGENTS.md`](../AGENTS.md) as the single always-on source. Former technology, review, repository, and writing rules remain in discoverable skills. Updating removes the old managed per-file rules, refreshes the generated Cursor rule and Codex file, and creates managed `AGENTS.md` sidecars plus thin native wrappers for Claude, Copilot, and Google Antigravity CLI.
+The installer now uses [`instructions/core.md`](../instructions/core.md) as the single always-on source. Former technology, review, repository, and writing rules remain in discoverable skills. Updating removes the old managed per-file rules, refreshes the generated Cursor rule and Codex file, and creates managed `AGENTS.md` sidecars plus thin native wrappers for Claude, Copilot, and Google Antigravity CLI.
 
 User-authored rules are left untouched. A conflict reported by `check` requires a manual choice: keep the user file, merge its intent into the canonical source, or move it before rerunning update.
 
@@ -46,13 +46,13 @@ Copy-mode skill directories contain `.ai-instructions-managed`. Do not add that 
 
 ### Specialist reviews and retired agents
 
-Accessibility, public API design, compatibility, performance, security, blast radius, test quality, internationalization, documentation, and simplicity reviews use direct `review-*` skills. Simplicity is a mandatory baseline for ordinary, coordinated, and self-review PR passes; `review-coordinator` can organize the material additional lanes into one response when the host provides subagents, with a sequential fallback. The repository does not install custom-agent definitions for those capabilities.
+Accessibility, public API design, compatibility, performance, security, blast radius, test quality, internationalization, documentation, and simplicity reviews use direct `review-*` skills. Simplicity is a mandatory baseline for ordinary, coordinated, and self-review PR passes; `review-pr` organizes the material additional lanes into one response and can delegate when the host provides subagents, with a sequential fallback. The former `review-coordinator` skill remains as a deprecated compatibility route to `review-pr`. The repository does not install custom-agent definitions for those capabilities.
 
 During `update` or `remove`, the installer recognizes the former agent destinations on all five product surfaces and removes only repository-owned symlinks or files carrying a managed marker. User-authored agents and unknown files in the same directories are preserved. `--only agents` and the deprecated `--only personas` alias remain available for this cleanup during the compatibility window.
 
 ### Legacy product paths
 
-- **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. The generated user rule now derives from root `AGENTS.md`. User-owned files remain.
+- **Cursor**: managed skills under `~/.cursor/skills-cursor/` move to `~/.cursor/skills/`. The generated user rule now derives from `instructions/core.md`. User-owned files remain.
 - **Codex**: managed files under the former `~/.codex/instructions/` layout are removed. The current global file is `~/.codex/AGENTS.md`; `AGENTS.override.md` still takes precedence and is never modified.
 - **Claude Code**: update creates managed `~/.claude/AGENTS.md` and `~/.claude/CLAUDE.md`. The latter contains only `@AGENTS.md`, so add any user-owned Claude-specific guidance elsewhere instead of editing the managed wrapper.
 - **GitHub Copilot CLI**: update creates managed `~/.copilot/AGENTS.md` and a thin `~/.copilot/copilot-instructions.md` wrapper. The optional repository export remains explicit: run `./setup.sh update --copilot-concat <project>` to create project-root `AGENTS.md`. During this export, a repository-owned wrapper from an earlier export is removed to prevent duplicated instructions; user-owned `.github/copilot-instructions.md` files are preserved for Copilot-specific guidance.

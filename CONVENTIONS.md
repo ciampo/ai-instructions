@@ -54,6 +54,8 @@ Add a custom agent only when evaluation demonstrates value from context isolatio
 
 ## Universal Instructions
 
-`AGENTS.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills.
+`instructions/core.md` contains only product-neutral personal boundaries and defaults that apply in every session. Framework guidance, repository conventions, and procedures belong in skills. The installer writes this content into each product's native instruction file, and into a project `AGENTS.md` for an explicit `--copilot-concat` export.
+
+The root `AGENTS.md` is this repository's own project guidance. It is not distributed. [ADR 0008](docs/decisions/0008-separate-core-source-from-project-guidance.md) records why the two files are separate.
 
 The generated universal artifact must remain below 150 lines and 8 KB. `npm run content:check` enforces that budget along with skill frontmatter, bundled-reference, optional agent metadata, and manifest contracts.

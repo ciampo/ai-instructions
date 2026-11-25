@@ -1,6 +1,6 @@
 ---
 name: review-accessibility
-description: Review an interface or UI change read-only for explicit accessibility concerns, including WCAG, ARIA, keyboard, focus, screen readers, contrast, reflow, motion, and pointer targets. Verify findings from source and standards. Use directly for focused accessibility audits, not general PR review, implementation, or non-UI content unless accessibility is explicit. review-pr may invoke it as a specialist. Never edit source, commit, or write remotely.
+description: Review an interface or UI change read-only for explicit accessibility concerns, including WCAG, ARIA, keyboard, focus, screen readers, contrast, reflow, motion, and pointer targets. Verify findings from source and standards. Use directly for focused accessibility audits, not general PR review, implementation, or non-UI content unless accessibility is explicit. review-pr may invoke it as a specialist.
 ---
 
 # Review Accessibility
@@ -27,7 +27,7 @@ Review the scoped user experience deeply enough to find material accessibility r
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
+When `review-pr` invokes this skill as an internal specialist pass, return the scoped findings and verification gaps to that workflow as an internal handoff. Do not create a Markdown artifact or return a user-facing path; the invoking workflow owns the single synthesized deliverable.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return only the requested finding or findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory and return its path.
 

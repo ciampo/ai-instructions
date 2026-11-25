@@ -6,12 +6,13 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-The [modernization plan](modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [authority and approvals guide](docs/authority-and-approvals.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
+The [modernization plan](docs/history/modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [authority and approvals guide](docs/authority-and-approvals.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
 
 ## Structure
 
 ```text
-AGENTS.md             Small universal personal defaults and shared project artifact
+instructions/core.md   Small universal personal defaults; the installer derives every product file from it
+AGENTS.md              Project guidance for working on this repository; not distributed
 skills/*/SKILL.md      Standards-compliant workflows and references loaded on demand
 platforms/manifest.json  Tested product capabilities and destinations
 scripts/               Installer, format adapters, and documentation generator
@@ -23,7 +24,7 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 
 | File | What it covers |
 | --- | --- |
-| [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
+| [instructions/core.md](instructions/core.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
 
 The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost. Skill discovery metadata has a separate aggregate 12 KB budget because clients can load every description before selecting a skill.
 
@@ -37,7 +38,7 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [record-browser-video](skills/record-browser-video/SKILL.md) | browser videos; demos, bug reproductions, and PR evidence | Prefers supported native Chrome recording, reuses prepared sessions, and verifies saved video with existing-tool fallbacks |
 | [grill-me](skills/grill-me/SKILL.md) | "grill me"; interactive plan or design stress-test | Resolves known facts, then asks one dependency-ready decision question at a time until material gaps are closed |
 | [automattic-github-enterprise](skills/automattic-github-enterprise/SKILL.md) | `github.a8c.com` or Automattic GitHub Enterprise access | Applies the approved macOS/POSIX route and avoids sandbox authentication false negatives |
-| [review-pr](skills/review-pr/SKILL.md) | "review this PR"; panel, coordinated, or multi-lane PR review | Structured, read-only PR review and entry workflow |
+| [review-pr](skills/review-pr/SKILL.md) | "review this PR"; panel, coordinated, or multi-lane PR review | Structured, read-only PR review that selects specialists and delivers one rechecked response |
 | [review-accessibility](skills/review-accessibility/SKILL.md) | accessibility, WCAG, ARIA, keyboard, focus, or screen-reader audit | Read-only, source-verified accessibility review |
 | [review-api-design](skills/review-api-design/SKILL.md) | API design, exports, types, props, callbacks, or public-contract compatibility | Read-only, consumer-focused API review |
 | [review-compatibility](skills/review-compatibility/SKILL.md) | upgrade, migration, backward compatibility, persisted state, or wire format | Read-only, supported-state compatibility review |
@@ -48,7 +49,6 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [review-internationalization](skills/review-internationalization/SKILL.md) | i18n, localization, translation, locale, or RTL | Read-only, locale and translation review |
 | [review-documentation](skills/review-documentation/SKILL.md) | documentation, examples, JSDoc, comments, or developer experience | Read-only, source-verified documentation review |
 | [review-simplicity](skills/review-simplicity/SKILL.md) | every PR review; simplification, code removal, code bloat, duplication, or overengineering | Mandatory, read-only, deletion-first implementation review |
-| [review-coordinator](skills/review-coordinator/SKILL.md) | internal `review-pr` handoff or explicit `review-coordinator` invocation | One rechecked response from material specialist handoffs |
 | [self-review-pr](skills/self-review-pr/SKILL.md) | "self-review" | Independent PR self-review with the simplicity baseline and a no-subagent fallback |
 | [iterate-pr-review](skills/iterate-pr-review/SKILL.md) | repeated local agent review and fixes on an authored or explicitly owned PR | Bounded local review iterations with an evidence-based recap |
 | [unslop](skills/unslop/SKILL.md) | all writing; must always apply | Removes AI tells and adds human voice |
@@ -63,10 +63,11 @@ The generated universal artifact is regression-limited to 150 lines and 8 KB. Te
 | [prepare-release](skills/prepare-release/SKILL.md) | "prepare a release" | Local release preparation without remote publication |
 | [publish-release](skills/publish-release/SKILL.md) | "publish the release" | Explicitly authorized release publication |
 | [release-publish](skills/release-publish/SKILL.md) | legacy `release-publish` invocation | Deprecated compatibility route to the two release workflows |
+| [review-coordinator](skills/review-coordinator/SKILL.md) | legacy `review-coordinator` invocation | Deprecated compatibility route to `review-pr` |
 
 ### Specialist reviews
 
-Accessibility, API design, compatibility, performance, security, blast radius, test quality, internationalization, documentation, and simplicity reviews are direct skills. Simplicity is a mandatory baseline for every ordinary, coordinated, and self-review PR pass; the other specialist lanes remain conditional on material scope. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. The optional [review coordinator](docs/decisions/0006-review-coordinator.md) supports host-provided subagents for material additional lanes and rechecks one final response. The repository still bundles no custom agents.
+Accessibility, API design, compatibility, performance, security, blast radius, test quality, internationalization, documentation, and simplicity reviews are direct skills. Simplicity is a mandatory baseline for every ordinary, coordinated, and self-review PR pass; the other specialist lanes remain conditional on material scope. [ADR 0004](docs/decisions/0004-skill-first-specialists.md) established that their methods must remain canonical skills rather than duplicated agent prompts. `review-pr` selects the material lanes, sizes any delegation to host-provided subagents, and rechecks one final response ([ADR 0009](docs/decisions/0009-merge-review-coordination-into-review-pr.md)). The repository still bundles no custom agents.
 
 ## Conventions
 
@@ -188,7 +189,7 @@ These are living documents. In the default mode, portable skills are symlinked a
 
 Development requires Node.js 22 or newer and npm.
 
-The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), the coordinated-review MVP in [ADR 0006](docs/decisions/0006-review-coordinator.md), the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md), and the Antigravity/Gemini policy in [ADR 0007](docs/decisions/0007-antigravity-adapter-and-gemini-policy.md).
+The installer architecture and safety decisions are recorded in [ADR 0001](docs/decisions/0001-node-installer.md), the context-scoping decision in [ADR 0002](docs/decisions/0002-progressive-disclosure.md), the specialist execution decision in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), the coordinated-review MVP in [ADR 0006](docs/decisions/0006-review-coordinator.md) and its merge into `review-pr` in [ADR 0009](docs/decisions/0009-merge-review-coordination-into-review-pr.md), the shared artifact decision in [ADR 0005](docs/decisions/0005-agents-md-canonical-artifact.md), and the Antigravity/Gemini policy in [ADR 0007](docs/decisions/0007-antigravity-adapter-and-gemini-policy.md).
 
 ```bash
 npm ci

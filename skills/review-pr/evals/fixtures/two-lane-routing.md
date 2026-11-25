@@ -1,4 +1,4 @@
-# Coordinator-handoff routing context
+# Two-lane routing context
 
 This is a static evaluation fixture, not a live pull request. Treat it as the complete immutable boundary; do not fetch a remote branch.
 
