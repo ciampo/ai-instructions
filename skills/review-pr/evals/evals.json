@@ -40,6 +40,11 @@
       "id": "authored-pr-iteration",
       "prompt": "Iterate on my PR: perform an independent local agent review, address actionable feedback, and repeat until no actionable findings remain.",
       "shouldTrigger": false
+    },
+    {
+      "id": "implicit-multi-lane-review",
+      "prompt": "Review this pull request that changes an account-deletion authorization route, migrates persisted preferences, and replaces a settings-dialog regression test.",
+      "shouldTrigger": true
     }
   ],
   "outputCases": [
@@ -65,11 +70,11 @@
       "id": "ordinary-direct-specialist-routing",
       "prompt": "Review this pull request for the settings-dialog regression and provide one copy-pasteable response.",
       "context": "evals/fixtures/direct-specialist-routing.md",
-      "expectedOutcome": "One read-only review that keeps review-pr responsible for the ordinary direct-specialist path and final delivery.",
+      "expectedOutcome": "One read-only review that applies the single material specialist method in the current agent and owns final delivery.",
       "assertions": [
         "The response is a single synthesized review, not a separate specialist artifact.",
         "The review accepts the supplied complete immutable fixture as its evidence route and does not attempt remote lookup.",
-        "The review keeps this one-lane case on the ordinary review-pr delivery path because the mandatory simplicity pass does not trigger coordinator escalation.",
+        "The review keeps this one-lane case in the current agent without delegation because the mandatory simplicity pass does not count as an additional lane.",
         "It treats the behavioral test gap as a test-quality concern without claiming unobserved browser behavior."
       ]
     },
@@ -77,50 +82,51 @@
       "id": "direct-blast-radius-routing",
       "prompt": "Review this small shared-cache pull request, trace what it could break beyond the diff, and provide one evidence-backed response.",
       "context": "evals/fixtures/direct-blast-radius-routing.md",
-      "expectedOutcome": "One read-only review that delegates the materially uncertain indirect effect to review-blast-radius and synthesizes its executable evidence on the ordinary direct-specialist path.",
+      "expectedOutcome": "One read-only review that applies review-blast-radius to the materially uncertain indirect effect and synthesizes its executable evidence.",
       "assertions": [
-        "The review keeps this one-lane case on the ordinary review-pr path and loads review-blast-radius without escalating to the coordinator.",
+        "The review loads review-blast-radius for this one-lane case and applies it in the current agent without delegation.",
         "The specialist identifies deferred cleanup not deleting a replacement session as the safety hinge and runs the supplied focused probe.",
         "The final review synthesizes the observed failure into one confirmed finding with the reconnect sequence and replacement-session impact.",
         "The specialist does not create a competing review artifact or modify repository source."
       ]
     },
     {
-      "id": "coordinator-handoff-routing",
+      "id": "two-lane-review",
       "prompt": "Review this pull request with authorization and persisted-state migration changes, then provide one evidence-backed response.",
-      "context": "evals/fixtures/coordinator-handoff-routing.md",
-      "expectedOutcome": "One read-only review that hands the completed core result to the coordinator for the two material specialist lanes and receives its single final delivery.",
+      "context": "evals/fixtures/two-lane-routing.md",
+      "expectedOutcome": "One read-only review that applies the two material specialist methods, rechecks their candidates, and delivers one response.",
       "assertions": [
         "The final response declares one immutable fixture repository, base revision, head revision, and target audience.",
         "The response contains one deduplicated finding list rather than a panel transcript or competing reports.",
-        "The coordinator receives the completed mandatory simplicity handoff without counting it as one of the two material additional lanes.",
-        "The review maps authorization to security and persisted-state migration to compatibility, then loads review-simplicity followed by review-coordinator before PR lookup instead of only announcing the handoff or handling either lane directly.",
+        "The review applies the mandatory simplicity baseline without counting it as one of the two material additional lanes.",
+        "The review maps authorization to review-security and persisted-state migration to review-compatibility and loads both methods.",
         "Authorization and persisted-state evidence are assessed as separate material domains.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
     },
     {
-      "id": "explicit-panel-coordinator-handoff",
+      "id": "explicit-panel-review",
       "prompt": "Run a coordinated panel review of this PR with security, migration compatibility, and UI-test specialists, then give me one response.",
-      "context": "evals/fixtures/coordinator-handoff-routing.md",
-      "expectedOutcome": "One read-only panel review that enters through review-pr and completes the mandatory simplicity load before handing the pinned review to the coordinator.",
+      "context": "evals/fixtures/two-lane-routing.md",
+      "expectedOutcome": "One read-only panel review that stays in review-pr, uses only material lanes, and sizes any delegation from the remaining work.",
       "assertions": [
-        "The explicit panel request enters through review-pr rather than loading review-coordinator directly.",
-        "The review reads review-pr, then review-simplicity, then review-coordinator before the first action that accesses PR context and before loading any direct specialist.",
-        "The coordinator receives the completed core-review result and simplicity handoff, then owns remaining specialist routing and one final response.",
+        "The explicit panel request is handled by review-pr, which loads review-simplicity before it reads the PR context.",
+        "The review loads only the specialist methods that the fixture makes material and does not invent filler lanes to form a panel.",
+        "Any delegated investigation has a named unanswered question and bounded scope. A small cohesive change may stay in the current agent.",
+        "The response is one deduplicated review without a panel transcript, vote count, or separate specialist reports.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
     },
     {
-      "id": "late-discovered-coordinator-handoff",
+      "id": "late-discovered-lanes",
       "prompt": "Review this pull request and provide one evidence-backed response.",
-      "context": "evals/fixtures/coordinator-handoff-routing.md",
-      "expectedOutcome": "One read-only review that discovers two material specialist lanes during source inspection and hands the completed core result to the coordinator for its single final delivery.",
+      "context": "evals/fixtures/two-lane-routing.md",
+      "expectedOutcome": "One read-only review that discovers two material specialist lanes during source inspection, applies both methods, and delivers one response.",
       "assertions": [
         "The generic prompt loads review-simplicity before PR lookup without inventing specialist lanes from the request.",
-        "After pinned source inspection makes authorization and persisted-state migration material, the review loads review-coordinator before loading either direct specialist.",
-        "The coordinator receives the completed core-review result and mandatory simplicity handoff, then owns remaining specialist routing and the single final delivery.",
-        "Loading review-simplicity or review-coordinator does not itself spawn an agent. Any delegated work follows the coordinator's sizing decision rather than a one-agent-per-skill rule.",
+        "After pinned source inspection makes authorization and persisted-state migration material, the review loads review-security and review-compatibility.",
+        "The review rechecks both candidates against the pinned source and owns the single final delivery.",
+        "Loading a skill does not itself spawn an agent. Any delegated work follows the sizing rules rather than a one-agent-per-skill rule.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major]."
       ]
     },
@@ -128,9 +134,9 @@
       "id": "direct-authorization-severity-normalization",
       "prompt": "Review this self-contained authorization change and apply the shared severity contract to the confirmed finding.",
       "context": "evals/fixtures/direct-authorization-severity.md",
-      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
+      "expectedOutcome": "A review whose severity follows the evidence-based contract rather than the discovery path.",
       "assertions": [
-        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
+        "The review applies the single material specialist method in the current agent without delegation.",
         "The review accepts the supplied complete immutable fixture as its evidence route and does not attempt remote lookup.",
         "The reachable cross-account deletion is reported as [critical].",
         "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
@@ -140,9 +146,9 @@
       "id": "direct-persisted-state-severity-normalization",
       "prompt": "Review this self-contained supported-upgrade change and apply the shared severity contract to the confirmed finding.",
       "context": "evals/fixtures/direct-persisted-state-severity.md",
-      "expectedOutcome": "A direct-path review whose severity follows the evidence-based contract rather than the discovery path.",
+      "expectedOutcome": "A review whose severity follows the evidence-based contract rather than the discovery path.",
       "assertions": [
-        "The review stays on the direct review-pr synthesis path because only one additional specialist lane is material.",
+        "The review applies the single material specialist method in the current agent without delegation.",
         "The supported-upgrade persisted-state regression is reported as [major].",
         "The final severity is normalized from impact, scope, reachability, and recovery rather than copied from a specialist label."
       ]
@@ -218,6 +224,66 @@
         "It explicitly identifies unavailable review bodies, remaining threads, and PR conversation comments as a coverage limit instead of claiming all previous feedback was checked or addressed.",
         "It uses the supplied code to assess the accessible concern without trying unavailable evidence routes or treating missing discussion as no comments.",
         "It returns one concise report in chat with the assessment, prior-feedback status, and actions distinct, without writing files or posting to GitHub."
+      ]
+    },
+    {
+      "id": "small-overlapping-review-local",
+      "prompt": "Finish the Small cohesive change PR review from its completed core and simplicity handoffs. Return one response in chat only.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "The review finishes the cohesive review locally without duplicating completed work across specialist agents.",
+      "assertions": [
+        "No subagent is spawned despite host availability and the test, localization, documentation, and label-related scope.",
+        "The review uses the completed core and simplicity evidence without repeating those passes or treating each changed file as an independent investigation.",
+        "The response does not invent findings, unsupported browser claims, a panel transcript, or a delegation report."
+      ]
+    },
+    {
+      "id": "large-mechanical-review-local",
+      "prompt": "Finish the Large mechanical change PR review from its completed handoffs. Return one response in chat only.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "Thousands of changed lines do not cause automatic delegation when the mechanical change is already verified.",
+      "assertions": [
+        "The review distinguishes 4,000 changed lines of mechanical prose edits from substantive behavior changes.",
+        "No subagent is spawned solely because of the line count or 400-file scope.",
+        "The review reuses the supplied complete transformation checks without inventing runtime or dependency work."
+      ]
+    },
+    {
+      "id": "independent-work-allocation",
+      "prompt": "For the Independent verification work PR review handoff, describe which remaining investigations you would delegate and why, based on the supplied scope. This is an allocation assessment only; do not launch agents or run the hypothetical probes.",
+      "context": "evals/fixtures/delegation-scope.md",
+      "expectedOutcome": "A bounded allocation based on separate unanswered questions and available verification, without a blanket panel or claims that probes ran.",
+      "assertions": [
+        "The plan assigns separate bounded investigations for real middleware authorization and interrupted or retried persisted-state migration.",
+        "Test-quality and compatibility or security methods are combined with their relevant investigation instead of receiving separate agents for the same source graph.",
+        "The plan preserves the completed core and simplicity passes, identifies required evidence, and keeps new delegation decisions with the review.",
+        "No agents or probes run, and no security or data-loss finding is claimed as reproduced."
+      ]
+    },
+    {
+      "id": "small-diff-material-risk",
+      "prompt": "Review this small PR change set. Consider its size when choosing the review work, and return findings in chat only.",
+      "context": "evals/fixtures/multi-lane-pr.md",
+      "expectedOutcome": "The small source scope preserves deep security and migration checks without requiring a full panel.",
+      "assertions": [
+        "The review checks both cross-account deletion and supported upgrades despite the small source snippets.",
+        "The reachable cross-account deletion is [critical] and the supported-upgrade persisted-state regression is [major].",
+        "Any delegated investigation has a concrete remaining question or high-consequence assumption to check, rather than one agent per applicable skill.",
+        "The review does not fabricate diff counts that the fixture does not supply."
+      ]
+    },
+    {
+      "id": "coordinated-evidence-backed-review",
+      "prompt": "Coordinate a read-only review of this self-contained PR change set using the material specialist lanes.",
+      "context": "evals/fixtures/multi-lane-pr.md",
+      "expectedOutcome": "One rechecked review response that uses independent specialist handoffs without treating agreement as proof.",
+      "assertions": [
+        "The final response states one fixture repository, base revision, head revision, and target audience before its deduplicated findings.",
+        "The review includes the mandatory review-simplicity baseline in addition to the selected material specialist lanes.",
+        "The final response deduplicates evidence and keeps unproven concerns as verification gaps.",
+        "Each suggested GitHub comment uses one or two natural sentences, while severity, location, and necessary evidence stay in compact artifact metadata or optional details.",
+        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major], matching the direct review contract.",
+        "The response does not expose a panel transcript or vote count."
       ]
     }
   ]

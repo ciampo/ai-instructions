@@ -1,6 +1,6 @@
 ---
 name: review-simplicity
-description: Review an implementation or proposal read-only and deletion-first for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction. Use directly for review-only code-bloat, overengineering, code-removal, or complexity requests, and as the required baseline in review-pr, review-coordinator, and self-review-pr. Do not select it to simplify, refactor, implement, test, or commit changes; implementation workflows can apply its principles without loading it.
+description: Review an implementation or proposal read-only and deletion-first for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction. Use directly for review-only code-bloat, overengineering, code-removal, or complexity requests, and as the required baseline in review-pr and self-review-pr. Do not select it to simplify, refactor, implement, test, or commit changes; implementation workflows can apply its principles without loading it.
 ---
 
 # Review Simplicity
@@ -26,7 +26,7 @@ Find the smallest coherent way to achieve the required outcome. Prefer deleting 
 
 ## Output contract
 
-When `review-pr`, `review-coordinator`, `self-review-pr`, or the `iterate-pr-review` fallback invokes this mandatory baseline skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
+When `review-pr`, `self-review-pr`, or the `iterate-pr-review` fallback invokes this mandatory baseline skill, return an internal handoff with the scope checked, required invariants, confirmed deletion opportunities, verification gaps, and an explicit no-findings result when applicable. Do not create a separate review artifact.
 
 For direct use, `chat only` and `no artifact` select chat delivery. `do not write files` and `do not modify files` prohibit every local file write and also require chat delivery. In either chat mode, return the findings in chat and do not create or open a local file. Otherwise, write one portable Markdown artifact in the OS temporary directory. For each finding, describe the unnecessary machinery, its concrete cost, the smaller alternative, what can be removed, and the evidence that required behavior remains intact. Use `[critical]`, `[major]`, `[minor]`, or `[nit]` only when the impact supports that severity.
 

@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Merge review coordination into `review-pr`, which now selects specialist methods, sizes any delegation, and delivers one rechecked response. `review-coordinator` remains as a deprecated compatibility route. ADR 0009 supersedes ADR 0006. ([#142](https://github.com/ciampo/ai-instructions/pull/142))
 - Move the distributed always-on core to `instructions/core.md` and make root `AGENTS.md` project guidance for this repository, so a session in this checkout no longer loads the core twice. Installed files and destinations do not change; run `update` after pulling. ([#141](https://github.com/ciampo/ai-instructions/pull/141))
 - Remove a repeated authority sentence from eleven review-skill descriptions to free discovery-metadata budget. Each skill body still states the read-only boundary. ([#141](https://github.com/ciampo/ai-instructions/pull/141))
 - Check relative links in root and `docs/` Markdown files in `content:check`, move superseded plans to `docs/history/`, and cancel superseded pull-request CI runs. ([#141](https://github.com/ciampo/ai-instructions/pull/141))

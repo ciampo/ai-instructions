@@ -1,6 +1,6 @@
 # ADR 0006: Provide a Coordinated Review MVP
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR 0009](0009-merge-review-coordination-into-review-pr.md)
 - **Date:** 2026-07-24
 
 ## Context

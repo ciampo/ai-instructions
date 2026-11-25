@@ -4,12 +4,12 @@
     {
       "id": "explicit-panel-review",
       "prompt": "Run a coordinated panel review of this PR with security, migration compatibility, and UI-test specialists, then give me one response.",
-      "shouldTrigger": true
+      "shouldTrigger": false
     },
     {
       "id": "implicit-multi-lane-review",
       "prompt": "Review this pull request that changes an account-deletion authorization route, migrates persisted preferences, and replaces a settings-dialog regression test.",
-      "shouldTrigger": true
+      "shouldTrigger": false
     },
     {
       "id": "explicit-coordinator-invocation",
@@ -24,116 +24,15 @@
   ],
   "outputCases": [
     {
-      "id": "small-overlapping-review-local",
+      "id": "legacy-name-routes-to-review-pr",
       "prompt": "Use review-coordinator to finish the Small cohesive change review from its completed core and simplicity handoffs. Return one response in chat only.",
       "context": "evals/fixtures/delegation-scope.md",
-      "expectedOutcome": "The coordinator finishes the cohesive review locally without duplicating completed work across specialist agents.",
+      "expectedOutcome": "The legacy name routes to review-pr, which finishes the cohesive review locally and delivers one response.",
       "assertions": [
+        "The request routes to review-pr and returns one review in chat, not a separate coordinator report or local file.",
+        "The supplied completed core and simplicity evidence is used without repeating those passes.",
         "No subagent is spawned despite host availability and the test, localization, documentation, and label-related scope.",
-        "The coordinator uses the completed core and simplicity evidence without repeating those passes or treating each changed file as an independent investigation.",
         "The response does not invent findings, unsupported browser claims, a panel transcript, or a delegation report."
-      ]
-    },
-    {
-      "id": "large-mechanical-review-local",
-      "prompt": "Use review-coordinator to finish the Large mechanical change review from its completed handoffs. Return one response in chat only.",
-      "context": "evals/fixtures/delegation-scope.md",
-      "expectedOutcome": "Thousands of changed lines do not cause automatic delegation when the mechanical change is already verified.",
-      "assertions": [
-        "The coordinator distinguishes 4,000 changed lines of mechanical prose edits from substantive behavior changes.",
-        "No subagent is spawned solely because of the line count or 400-file scope.",
-        "The coordinator reuses the supplied complete transformation checks without inventing runtime or dependency work."
-      ]
-    },
-    {
-      "id": "independent-work-allocation",
-      "prompt": "Use review-coordinator for the Independent verification work handoff. Based on the supplied scope, describe which remaining investigations you would delegate and why. This is an allocation assessment only; do not launch agents or run the hypothetical probes.",
-      "context": "evals/fixtures/delegation-scope.md",
-      "expectedOutcome": "A bounded allocation based on separate unanswered questions and available verification, without a blanket panel or claims that probes ran.",
-      "assertions": [
-        "The plan assigns separate bounded investigations for real middleware authorization and interrupted or retried persisted-state migration.",
-        "Test-quality and compatibility or security methods are combined with their relevant investigation instead of receiving separate agents for the same source graph.",
-        "The plan preserves the completed core and simplicity passes, identifies required evidence, and keeps new delegation decisions with the coordinator.",
-        "No agents or probes run, and no security or data-loss finding is claimed as reproduced."
-      ]
-    },
-    {
-      "id": "small-diff-material-risk",
-      "prompt": "Use review-coordinator to review this small change set. Consider its size when choosing the review work, and return findings in chat only.",
-      "context": "evals/fixtures/multi-lane-pr.md",
-      "expectedOutcome": "The small source scope preserves deep security and migration checks without requiring a full panel.",
-      "assertions": [
-        "The review checks both cross-account deletion and supported upgrades despite the small source snippets.",
-        "The reachable cross-account deletion is [critical] and the supported-upgrade persisted-state regression is [major].",
-        "Any delegated investigation has a concrete remaining question or high-consequence assumption to check, rather than one agent per applicable skill.",
-        "The coordinator does not fabricate diff counts that the fixture does not supply."
-      ]
-    },
-    {
-      "id": "single-evidence-backed-review",
-      "prompt": "Coordinate a read-only review of this self-contained change set using the material specialist lanes.",
-      "context": "evals/fixtures/multi-lane-pr.md",
-      "expectedOutcome": "One rechecked review response that uses independent specialist handoffs without treating agreement as proof.",
-      "assertions": [
-        "The final response states one fixture repository, base revision, head revision, and target audience before its deduplicated findings.",
-        "The coordinator includes the mandatory review-simplicity baseline in addition to the selected material specialist lanes.",
-        "The final response deduplicates evidence and keeps unproven concerns as verification gaps.",
-        "Each suggested GitHub comment uses one or two natural sentences, while severity, location, and necessary evidence stay in compact artifact metadata or optional details.",
-        "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major], matching the direct review contract.",
-        "The response does not expose a panel transcript or vote count."
-      ]
-    },
-    {
-      "id": "severity-normalization",
-      "prompt": "Coordinate this self-contained review and apply the shared severity contract to the confirmed authorization and persisted-state findings.",
-      "context": "evals/fixtures/multi-lane-pr.md",
-      "expectedOutcome": "A deduplicated coordinated review whose severities match the direct review contract for materially equivalent evidence.",
-      "assertions": [
-        "The reachable cross-account deletion is reported as [critical].",
-        "The supported-upgrade persisted-state regression is reported as [major].",
-        "The final severities are normalized from impact, scope, reachability, and recovery rather than copied or voted from specialist labels."
-      ]
-    },
-    {
-      "id": "single-chat-only-review",
-      "prompt": "Coordinate the material review lanes and return one response in chat only. Do not create review artifacts or post anything.",
-      "context": "evals/fixtures/multi-lane-pr.md",
-      "expectedOutcome": "One synthesized review returned in chat without coordinator or specialist artifacts or GitHub writes.",
-      "assertions": [
-        "The coordinator returns one synthesized response directly in chat.",
-        "Neither the coordinator nor its specialist lanes create or open a local review document.",
-        "The workflow does not post comments, replies, or reviews to GitHub."
-      ]
-    },
-    {
-      "id": "previous-feedback-and-clear-actions",
-      "prompt": "Use review-coordinator to review this supplied PR snapshot and prepare one review document. Do not change code or post anything.",
-      "context": "evals/fixtures/previous-feedback.md",
-      "expectedOutcome": "One plain-language review that distinguishes new findings, earlier feedback still needing attention, and addressed concerns, with explicit actions and draft destinations.",
-      "assertions": [
-        "The report separates a short overall assessment, previous-feedback status, and a numbered set of actions with clearly marked copy-pasteable text. It does not repeat each finding in the overview.",
-        "It checks all supplied discussion sources and retains the open false-value concern as needing a change despite the author claiming it was fixed.",
-        "It identifies the open trimming concern as fixed in code, without calling it an outstanding code defect, and distinguishes any reply still needed.",
-        "It retains the null-name problem despite the resolved flag and treats the locale concern as addressed despite its outdated location.",
-        "It accounts for the unanswered numeric-ID question in the review body and the explained, accepted decision about the default in the PR conversation.",
-        "It reports the new numeric-ID lookup failure separately from previous feedback, with src/normalize.js:3 as its location, and does not invent links or code locations.",
-        "It links follow-ups to the supplied original discussions and does not draft duplicate new comments for concerns already raised. Any suggested reply adds useful information and uses the correct user role.",
-        "Visible explanations state concrete effects and next steps in plain language, without dense technical shorthand or investigation narration. Necessary identifiers, uncertainty, and severity remain accurate.",
-        "It keeps optional proof outside suggested comments and distinguishes required changes from verification or discussion actions.",
-        "It does not modify code, post comments or reviews, resolve threads, or claim that the current PR has no outstanding feedback."
-      ]
-    },
-    {
-      "id": "no-new-findings-partial-feedback",
-      "prompt": "Use review-coordinator to review this supplied PR snapshot in chat only. Do not change files or post anything.",
-      "context": "evals/fixtures/partial-feedback.md",
-      "expectedOutcome": "A partial review with no duplicate new finding that still flags the known outstanding concern and missing discussion access.",
-      "assertions": [
-        "It distinguishes no new findings from an outstanding previously raised false-value defect and retains that concern as a follow-up action.",
-        "It links discussion_r201 without inventing whether the thread is open or resolved, and does not draft a duplicate new finding.",
-        "It explicitly identifies unavailable review bodies, remaining threads, and PR conversation comments as a coverage limit instead of claiming all previous feedback was checked or addressed.",
-        "It uses the supplied code to assess the accessible concern without trying unavailable evidence routes or treating missing discussion as no comments.",
-        "It returns one concise report in chat with the assessment, prior-feedback status, and actions distinct, without writing files or posting to GitHub."
       ]
     }
   ]

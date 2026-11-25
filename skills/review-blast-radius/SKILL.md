@@ -58,7 +58,7 @@ facts instead of relying on a convincing explanation.
 
 ## Output contract
 
-When `review-pr` or `review-coordinator` invokes this skill, return an internal
+When `review-pr` invokes this skill, return an internal
 handoff with the immutable scope checked, changed behavior, each safety hinge,
 its strongest proof and observed result, confirmed candidate findings, cleared
 risks, verification gaps, and an explicit no-findings result when applicable.
