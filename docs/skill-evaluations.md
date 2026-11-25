@@ -88,6 +88,10 @@ node scripts/evals/run-output-evaluations.mjs --revision <sha> --model <id> --ou
 - `--model` is required, so a campaign never inherits a stale default. `--reasoning-effort` defaults to `xhigh` and `--service-tier` to `priority`.
 - `run-output-evaluations.mjs --verify-self` and `run-trigger-evaluations.mjs --verify-classifier` run the runners' self-checks without calling a model.
 
-Runner copies under `docs/evaluation-results/` belong to earlier campaigns. Keep them as provenance for those results. Do not add new copies.
+### Retention
+
+Do not commit runners, transcripts, or result archives. Record each campaign in the [results ledger](skill-evaluation-results.md) with the target revision, the runner's commit and invocation, the client and model, pass counts, every failure with its cause, and the limits of the run. Attach the sanitized result archive to the pull request when a reviewer needs the raw evidence.
+
+Earlier campaigns committed their runners and archives under `docs/evaluation-results/`. Those files were removed from the working tree and remain in Git history. The ledger links to them at a fixed commit.
 
 The [Agent Skills description guidance](https://agentskills.io/skill-creation/optimizing-descriptions) recommends realistic positive and near-miss negative prompts. Its [evaluation guidance](https://agentskills.io/skill-creation/evaluating-skills) recommends an isolated baseline and evidence-backed assertions.
