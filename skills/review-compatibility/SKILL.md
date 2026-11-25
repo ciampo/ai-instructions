@@ -1,6 +1,6 @@
 ---
 name: review-compatibility
-description: Review a change read-only for compatibility across supported versions, upgrades, persisted data, wire formats, configuration, integrations, and migrations. Use directly for focused backward-compatibility, deprecation, rollout, schema, or cross-version requests. Use review-api-design for public API shape. General PR reviews start with review-pr, which may invoke this specialist. Never edit source, commit, or write remotely.
+description: Review a change read-only for compatibility across supported versions, upgrades, persisted data, wire formats, configuration, integrations, and migrations. Use directly for focused backward-compatibility, deprecation, rollout, schema, or cross-version requests. Use review-api-design for public API shape. General PR reviews start with review-pr, which may invoke this specialist.
 ---
 
 # Review Compatibility

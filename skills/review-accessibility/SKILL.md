@@ -1,6 +1,6 @@
 ---
 name: review-accessibility
-description: Review an interface or UI change read-only for explicit accessibility concerns, including WCAG, ARIA, keyboard, focus, screen readers, contrast, reflow, motion, and pointer targets. Verify findings from source and standards. Use directly for focused accessibility audits, not general PR review, implementation, or non-UI content unless accessibility is explicit. review-pr may invoke it as a specialist. Never edit source, commit, or write remotely.
+description: Review an interface or UI change read-only for explicit accessibility concerns, including WCAG, ARIA, keyboard, focus, screen readers, contrast, reflow, motion, and pointer targets. Verify findings from source and standards. Use directly for focused accessibility audits, not general PR review, implementation, or non-UI content unless accessibility is explicit. review-pr may invoke it as a specialist.
 ---
 
 # Review Accessibility

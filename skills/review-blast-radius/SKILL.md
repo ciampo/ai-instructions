@@ -1,6 +1,6 @@
 ---
 name: review-blast-radius
-description: Review a change read-only for indirect breakage beyond the diff by tracing consumers, lifecycle timing, dependency behavior, serialized contracts, and downstream systems, then prove the safety-critical assumption with the strongest cheap executable check. Use directly for blast-radius, what-could-this-break, or distrusted-small-diff requests. General PR reviews start with review-pr, which may delegate this specialist. Do not use for implementation or generic test-quality review. Never edit source, commit, or write remotely.
+description: Review a change read-only for indirect breakage beyond the diff by tracing consumers, lifecycle timing, dependency behavior, serialized contracts, and downstream systems, then prove the safety-critical assumption with the strongest cheap executable check. Use directly for blast-radius, what-could-this-break, or distrusted-small-diff requests. General PR reviews start with review-pr, which may delegate this specialist. Do not use for implementation or generic test-quality review.
 ---
 
 # Review Blast Radius

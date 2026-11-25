@@ -1,6 +1,6 @@
 ---
 name: review-simplicity
-description: Review an implementation or proposal read-only and deletion-first for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction. Use directly for review-only code-bloat, overengineering, code-removal, or complexity requests, and as the required baseline in review-pr, review-coordinator, and self-review-pr. Do not select it to simplify, refactor, implement, test, or commit changes; implementation workflows can apply its principles without loading it. Never edit source, commit, or write remotely.
+description: Review an implementation or proposal read-only and deletion-first for unnecessary code, state, branches, indirection, dependencies, duplication, and speculative abstraction. Use directly for review-only code-bloat, overengineering, code-removal, or complexity requests, and as the required baseline in review-pr, review-coordinator, and self-review-pr. Do not select it to simplify, refactor, implement, test, or commit changes; implementation workflows can apply its principles without loading it.
 ---
 
 # Review Simplicity

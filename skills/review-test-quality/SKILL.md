@@ -1,6 +1,6 @@
 ---
 name: review-test-quality
-description: Review test and verification quality read-only, including user-observable UI behavior, semantic queries, regression coverage, realistic failures, and mock limits. Use directly only for focused test-strategy, test-quality, behavioral-testing, UI-test, verification, regression-test, or implementation-detail testing requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist. Never edit source, commit, or write remotely.
+description: Review test and verification quality read-only, including user-observable UI behavior, semantic queries, regression coverage, realistic failures, and mock limits. Use directly only for focused test-strategy, test-quality, behavioral-testing, UI-test, verification, regression-test, or implementation-detail testing requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist.
 ---
 
 # Review Test Quality

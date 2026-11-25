@@ -1,6 +1,6 @@
 ---
 name: review-documentation
-description: Review documentation, examples, API docs, migration guidance, or code comments read-only for accuracy, audience fit, maintainability, and clear writing. Use directly only for focused documentation, README, example, JSDoc, code-comment, migration-guide, developer-experience, or prose requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist. Never edit source, commit, or write remotely.
+description: Review documentation, examples, API docs, migration guidance, or code comments read-only for accuracy, audience fit, maintainability, and clear writing. Use directly only for focused documentation, README, example, JSDoc, code-comment, migration-guide, developer-experience, or prose requests. General, panel, coordinated, and multi-lane PR reviews start with review-pr, which may delegate this specialist.
 ---
 
 # Review Documentation

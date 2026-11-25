@@ -1,6 +1,6 @@
 ---
 name: review-security
-description: Review a change read-only for security and privacy risks involving untrusted input, authentication, authorization, secrets, sensitive data, injection, or server-side trust boundaries. Use directly for focused security, privacy, permissions, data exposure, XSS, credentials, or threat-model requests. Use audit-dependency-update for dependency audits. General PR reviews start with review-pr, which may invoke this specialist. Never edit source, commit, or write remotely.
+description: Review a change read-only for security and privacy risks involving untrusted input, authentication, authorization, secrets, sensitive data, injection, or server-side trust boundaries. Use directly for focused security, privacy, permissions, data exposure, XSS, credentials, or threat-model requests. Use audit-dependency-update for dependency audits. General PR reviews start with review-pr, which may invoke this specialist.
 ---
 
 # Review Security
