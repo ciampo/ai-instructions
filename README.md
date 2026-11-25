@@ -6,12 +6,13 @@ Personal AI agent instructions extracted from real interaction patterns. Coding 
 
 AI assistants work better when they know how you think. Rather than repeating preferences in every conversation, these files encode them once and are installed into each tool's native configuration format.
 
-The [modernization plan](modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [authority and approvals guide](docs/authority-and-approvals.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
+The [modernization plan](docs/history/modernization-plan.md) is retained as the historical architecture audit and decision trail. Active maintenance is tracked in [issue #49](https://github.com/ciampo/ai-instructions/issues/49), with the [authority and approvals guide](docs/authority-and-approvals.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [migration guide](docs/migration-guide.md), [compatibility policy](docs/compatibility-policy.md), [standards index](docs/standards-index.md), and [`AGENTS.md` interoperability decision](docs/decisions/0005-agents-md-canonical-artifact.md).
 
 ## Structure
 
 ```text
-AGENTS.md             Small universal personal defaults and shared project artifact
+instructions/core.md   Small universal personal defaults; the installer derives every product file from it
+AGENTS.md              Project guidance for working on this repository; not distributed
 skills/*/SKILL.md      Standards-compliant workflows and references loaded on demand
 platforms/manifest.json  Tested product capabilities and destinations
 scripts/               Installer, format adapters, and documentation generator
@@ -23,7 +24,7 @@ setup.sh               POSIX compatibility wrapper for the Node installer
 
 | File | What it covers |
 | --- | --- |
-| [AGENTS.md](AGENTS.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
+| [instructions/core.md](instructions/core.md) | Communication, task titles, verification, authority, safety, implementation, and delivery boundaries that apply in every session |
 
 The generated universal artifact is regression-limited to 150 lines and 8 KB. Technology-specific and repository-specific guidance lives in skills so unrelated sessions do not pay the context cost. Skill discovery metadata has a separate aggregate 12 KB budget because clients can load every description before selecting a skill.
 

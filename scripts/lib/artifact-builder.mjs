@@ -10,7 +10,7 @@ import { lstatSafe, SKILL_DIRECTORY_MARKER } from './files.mjs';
 import { resolveUserChildPath, resolveUserPath } from './manifest.mjs';
 
 export function createArtifactBuilder( { repoDir } ) {
-	const canonicalInstructionsPath = path.join( repoDir, 'AGENTS.md' );
+	const canonicalInstructionsPath = path.join( repoDir, 'instructions', 'core.md' );
 	const skillsDir = path.join( repoDir, 'skills' );
 	const agentsDir = path.join( repoDir, 'agents' );
 

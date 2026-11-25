@@ -200,7 +200,8 @@ async function createContentFixture( t, {
 			referenceContent
 		);
 	}
-	await writeFile( path.join( fixture, 'AGENTS.md' ), '# Core\n' );
+	await mkdir( path.join( fixture, 'instructions' ), { recursive: true } );
+	await writeFile( path.join( fixture, 'instructions', 'core.md' ), '# Core\n' );
 	await writeFile(
 		path.join( fixture, 'docs', 'standards-index.md' ),
 		`| Source | Affected guidance | Last reviewed |\n| --- | --- | --- |\n| [Example](https://example.com) | Example | ${ today } |\n`
@@ -285,7 +286,7 @@ test( 'manifest declares complete, current platform contracts', () => {
 } );
 
 test( 'CI workflow uses least privilege and immutable action references', async () => {
-	const source = await readFile( path.join( repoDir, '.github', 'workflows', 'lint.yml' ), 'utf8' );
+	const source = await readFile( path.join( repoDir, '.github', 'workflows', 'ci.yml' ), 'utf8' );
 	const sources = [ source, normalizedWithTrailingNewline( source ).replace( /\n/g, '\r\n' ) ];
 	for ( const candidate of sources ) {
 		const workflow = normalizedWithTrailingNewline( candidate );
@@ -530,7 +531,7 @@ test( 'managed file transactions restore an owned symlink after a later write fa
 	t.after( () => rm( directory, { recursive: true, force: true } ) );
 	const first = path.join( directory, 'AGENTS.md' );
 	const second = path.join( directory, 'copilot-instructions.md' );
-	const source = path.join( repoDir, 'AGENTS.md' );
+	const source = path.join( repoDir, 'instructions', 'core.md' );
 	const next = `${ managedMarker }\n# Next\n`;
 	await symlink( source, first );
 
@@ -792,6 +793,23 @@ test( 'content contracts allow a skill-only repository without an agents directo
 	assert.equal( result.agentCount, 0 );
 } );
 
+test( 'content contracts reject broken relative links in repository documentation', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await writeFile( path.join( fixture, 'docs', 'guide.md' ), 'Read [the plan](../missing-plan.md).\n' );
+
+	await assert.rejects(
+		validateContent( fixture ),
+		/guide\.md: link target does not exist: \.\.\/missing-plan\.md/
+	);
+} );
+
+test( 'content contracts accept valid relative links in repository documentation', async ( t ) => {
+	const { fixture } = await createContentFixture( t );
+	await writeFile( path.join( fixture, 'README.md' ), 'Read [the index](docs/standards-index.md#sources) or [a site](https://example.com).\n' );
+
+	await assert.doesNotReject( validateContent( fixture ) );
+} );
+
 test( 'content contracts validate links in bundled skill references', async ( t ) => {
 	const { fixture } = await createContentFixture( t, {
 		referenceContent: 'Read [the missing detail](missing.md).\n',
@@ -901,7 +919,7 @@ test( 'copied skill artifacts preserve source line endings', async ( t ) => {
 
 test( 'artifact building fails when required instructions are missing', async ( t ) => {
 	const { fixture } = await createContentFixture( t );
-	await rm( path.join( fixture, 'AGENTS.md' ) );
+	await rm( path.join( fixture, 'instructions', 'core.md' ) );
 
 	await assert.rejects(
 		createArtifactBuilder( { repoDir: fixture } ).buildArtifacts(
@@ -1270,7 +1288,7 @@ test( 'generated formats match their exact platform contracts', async ( t ) => {
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const instructionSource = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
 	);
 	assert.equal(
 		await readFile( destination( home, '.cursor/rules/core.mdc' ), 'utf8' ),
@@ -1382,7 +1400,7 @@ test( 'all platforms distribute complete skills and no current custom agents', a
 	}
 } );
 
-test( 'instruction adapters derive native wrappers from the canonical AGENTS.md', async ( t ) => {
+test( 'instruction adapters derive native wrappers from the canonical instruction source', async ( t ) => {
 	const home = await mkdtemp( path.join( os.tmpdir(), 'ai-instructions-agents-artifacts-' ) );
 	t.after( () => rm( home, { recursive: true, force: true } ) );
 	for ( const platform of manifest.platforms ) {
@@ -1392,7 +1410,7 @@ test( 'instruction adapters derive native wrappers from the canonical AGENTS.md'
 	runInstaller( home, [ '--agent', '*', '--copy', '--yes' ] );
 
 	const source = normalizedWithTrailingNewline(
-		await readFile( path.join( repoDir, 'AGENTS.md' ), 'utf8' )
+		await readFile( path.join( repoDir, 'instructions', 'core.md' ), 'utf8' )
 	);
 	const canonical = `${ managedMarker }\n${ source }`;
 	assert.equal( await readFile( destination( home, '.codex/AGENTS.md' ), 'utf8' ), canonical );

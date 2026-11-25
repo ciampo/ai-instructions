@@ -8,7 +8,7 @@ Implementation completed: 2026-07-22
 
 Discovery update: 2026-07-22. Gemini CLI no longer accepts individual Google AI Pro, Ultra, or free-tier OAuth. The existing Gemini adapter remains preview for its still-supported enterprise, Google Cloud, and paid API contexts; Google Antigravity CLI is a separate surface tracked in [issue #40](https://github.com/ciampo/ai-instructions/issues/40).
 
-The initial delivered architecture had a budget-constrained universal core, 17 standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. The specialist pilot retained accessibility, API-design, and performance reviews as direct skills and retired the duplicated custom-agent prompts. The current specialist MVP extends that direct-skill approach with the optional `review-coordinator`; product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](docs/platform-support.md), with current results in [`docs/discovery-evidence.md`](docs/discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
+The initial delivered architecture had a budget-constrained universal core, 17 standard Agent Skills with bundled references, a validated platform manifest, a modular Node installer, generated support documentation, atomic ownership-safe lifecycle operations, content budgets, and Linux/macOS/Windows CI coverage. The specialist pilot retained accessibility, API-design, and performance reviews as direct skills and retired the duplicated custom-agent prompts. The current specialist MVP extends that direct-skill approach with the optional `review-coordinator`; product discovery checks that cannot be automated are documented in [`docs/platform-support.md`](../platform-support.md), with current results in [`docs/discovery-evidence.md`](../discovery-evidence.md). All product tiers remain preview until that acceptance matrix passes.
 
 ## Current architecture and remaining work
 
@@ -28,7 +28,7 @@ Remaining work is acceptance and maintenance rather than another architecture mi
 3. keep normative standards and adapter evidence within their review windows;
 4. retain migration cleanup until the compatibility removal gates are met.
 
-The accepted specialist decision is recorded in [ADR 0004](docs/decisions/0004-skill-first-specialists.md). Optional catalogs, plugins, external skill managers, custom-agent adapters, and model-graded evaluation remain conditional work requiring measured need.
+The accepted specialist decision is recorded in [ADR 0004](../decisions/0004-skill-first-specialists.md). Optional catalogs, plugins, external skill managers, custom-agent adapters, and model-graded evaluation remain conditional work requiring measured need.
 
 ## Historical audit assessment (2026-07-20)
 
@@ -104,7 +104,7 @@ discover or apply those artifacts.
 
 ## Historical target architecture proposal
 
-The following is the original modernization target and audit record. Its proposed custom-agent source and adapter layer was superseded after the direct-skill comparison documented in [`docs/accessibility-review-pilot.md`](docs/accessibility-review-pilot.md); the current distribution contract is described above and in the platform-support guide.
+The following is the original modernization target and audit record. Its proposed custom-agent source and adapter layer was superseded after the direct-skill comparison documented in [`docs/accessibility-review-pilot.md`](../accessibility-review-pilot.md); the current distribution contract is described above and in the platform-support guide.
 
 ```text
 core/                         Small, product-neutral personal defaults
@@ -404,7 +404,7 @@ Exit criteria:
 
 ### Phase 1: Adopt canonical skill and agent formats
 
-Status: standard skills and bundled resources are complete. Native custom agents were initially implemented, then retired after the 2026-07-22 pilot demonstrated that direct skills preserved the capability with less drift. See [ADR 0004](docs/decisions/0004-skill-first-specialists.md).
+Status: standard skills and bundled resources are complete. Native custom agents were initially implemented, then retired after the 2026-07-22 pilot demonstrated that direct skills preserved the capability with less drift. See [ADR 0004](../decisions/0004-skill-first-specialists.md).
 
 1. Convert one representative workflow, `review-pr`, to a standard skill with
    bundled references.
@@ -515,4 +515,4 @@ The modernization is complete when:
 - normative standards claims include current primary sources and review dates;
 - README support claims are generated from tested configuration.
 
-Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, specialist pilot, and dependency gates are implemented. The remaining definition-of-done work is successful instruction and direct-skill discovery on current releases of every client named by the five product surfaces, plus the separate Google Antigravity CLI adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](docs/decisions/0003-native-distribution.md), the skill-first specialist model is accepted in [ADR 0004](docs/decisions/0004-skill-first-specialists.md), and legacy removal is governed by the [compatibility policy](docs/compatibility-policy.md).
+Current status: the architecture, lifecycle matrix, migration coverage, content budget, generated documentation, standards index, specialist pilot, and dependency gates are implemented. The remaining definition-of-done work is successful instruction and direct-skill discovery on current releases of every client named by the five product surfaces, plus the separate Google Antigravity CLI adapter in [issue #40](https://github.com/ciampo/ai-instructions/issues/40). Native distribution is intentionally deferred by [ADR 0003](../decisions/0003-native-distribution.md), the skill-first specialist model is accepted in [ADR 0004](../decisions/0004-skill-first-specialists.md), and legacy removal is governed by the [compatibility policy](../compatibility-policy.md).

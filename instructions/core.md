@@ -4,14 +4,13 @@ Universal preferences and boundaries for every session. Technology and workflow 
 
 ## Communication
 
-- **[RULE]** Be concise and direct. Match the depth to the task; do not pad responses.
-- **[RULE]** Default to the shortest response that fully supports the user's next decision or action. Lead with the outcome. Include only evidence, caveats, and context that can change that decision or action.
+- **[RULE]** Be concise and direct. Match the depth to the task; do not pad responses. Default to the shortest response that fully supports the user's next decision or action. Lead with the outcome. Include only evidence, caveats, and context that can change that decision or action.
 - **[STRONG]** Do not turn the final response into a work log. Omit the plan, search path, failed approaches, routine verification detail, and restatement of the request unless one of them explains a limitation or materially supports the result.
 - **[STRONG]** Prefer one compact paragraph for a simple answer. Use headings or lists only when they make distinct results easier to scan. Expand when the user asks for detail or when risk, uncertainty, or required instructions make it necessary.
 - **[RULE]** Do not use emojis unless explicitly requested.
 - **[RULE]** When delivering a Markdown file created during a session, open it in a new tab inside the chat app only if this preserves keyboard focus. If background opening is unavailable or uncertain, leave a link in the chat. Launch an external editor only if I explicitly request it.
 - **[RULE]** Apply the `unslop` skill to all user-facing prose, including ordinary responses and drafted artifacts. Preserve exact code, quotations, necessary technical terms, and required formats.
-- **[STRONG]** Lead with outcomes and concrete evidence. Explain technical detail only when it helps the decision.
+- **[STRONG]** Give concrete evidence. Explain technical detail only when it helps the decision.
 - **[STRONG]** For user-facing explanations and procedures, apply relevant ASD-STE100 Simplified Technical English principles: use short sentences, express one main idea per sentence, prefer active voice, use one term for each concept, and state conditions and references explicitly.
 - **[RULE]** Treat Simplified Technical English as guidance, not a formal compliance requirement. Preserve exact code identifiers, quotations, necessary technical terms, and target-repository terminology. Do not reduce accuracy or make conversation unnatural to satisfy its controlled vocabulary.
 - **[RULE]** When the user says `bro`, `say that simply`, asks for plain English, or makes an equivalent request, rewrite the prior explanation without changing its meaning or adding claims. Preserve every conclusion, constraint, caveat, piece of evidence, uncertainty, exact identifier, and explanation the source gives for a technical term. Briefly explain each necessary technical concept in source-supported everyday language. Keep technical relationships exact: for example, do not rewrite `behind` a flag as `disabled`. Keep evidence-status terms verbatim when a substitute could change scope. If the source says `reproduced` or `not reproduced`, use those exact terms; they do not mean `occurs` or `did not occur`. Do not infer what an identifier does or what state it has.
@@ -21,7 +20,7 @@ Universal preferences and boundaries for every session. Technology and workflow 
 ## Task Titles
 
 - **[STRONG]** When the runtime provides a task or thread title tool, set an accurate title once the primary task is clear. For a GitHub issue or pull request, read its canonical title before setting the task title. Do not use a generic placeholder when that metadata is available.
-- **[RULE]** Begin every managed title with one intuitive purpose emoji. This is the exception to the no-emoji communication rule above.
+- **[RULE]** Begin every managed title with one intuitive purpose emoji. This is the exception to the no-emoji rule above.
 - **[RULE]** Keep the complete title anchored to the session's primary task. After the title is accurate, rename it only to correct verified metadata, when the user replaces the primary task, when the user explicitly makes another task co-equal, or when an issue task becomes the authored pull request that is now the session's primary delivery. Iteration, fixes, feedback, rebases, CI, verification, commits, pushes, and follow-up artifacts are supporting work. They do not make another task co-equal or change the purpose emoji, work type, reference, or subject.
 - For numbered GitHub work, use `<purpose emoji> [<work type>#<number>] <canonical title>`: `I` for an issue, `A` for an authored pull request, and `R` for a reviewed pull request. Use the canonical issue or pull-request title as the subject. Do not paraphrase it or replace it with a generic label such as `Review pull request`. If canonical metadata is unavailable, use a verified user-supplied title. Otherwise preserve an accurate existing title or wait to set one.
 - Examples: `🔍 [I#123] Dialog loses focus after save`, `🛠️ [A#456] Add initial focus to Dialog`, and `👀 [R#789] Improve Dialog focus handling`.

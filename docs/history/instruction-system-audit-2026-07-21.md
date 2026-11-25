@@ -1,6 +1,6 @@
 # AI instruction system audit
 
-> **Superseded historical assessment (2026-07-21).** This document described the pre-modernization layout, including a 940-line always-on core, missing installed skills, distributed custom agents, and unresolved mutation boundaries. Those observations are not current. For the implemented architecture and remaining evidence-based work, use the [README](README.md), [platform support policy](docs/platform-support.md), [discovery evidence](docs/discovery-evidence.md), [compatibility policy](docs/compatibility-policy.md), and [issue #49](https://github.com/ciampo/ai-instructions/issues/49).
+> **Superseded historical assessment (2026-07-21).** This document described the pre-modernization layout, including a 940-line always-on core, missing installed skills, distributed custom agents, and unresolved mutation boundaries. Those observations are not current. For the implemented architecture and remaining evidence-based work, use the [README](../../README.md), [platform support policy](../platform-support.md), [discovery evidence](../discovery-evidence.md), [compatibility policy](../compatibility-policy.md), and [issue #49](https://github.com/ciampo/ai-instructions/issues/49).
 
 ## Historical context
 
@@ -19,9 +19,9 @@ The architecture migration is complete. Remaining work is limited to product acc
 
 The current authoritative records are:
 
-- [README.md](README.md) for the concise architecture overview and entry points;
-- [docs/discovery-evidence.md](docs/discovery-evidence.md) for product-level results and blockers;
-- [docs/platform-support.md](docs/platform-support.md) for support-tier procedures;
-- [docs/compatibility-policy.md](docs/compatibility-policy.md) for lifecycle-retention and removal gates;
+- [README.md](../../README.md) for the concise architecture overview and entry points;
+- [docs/discovery-evidence.md](../discovery-evidence.md) for product-level results and blockers;
+- [docs/platform-support.md](../platform-support.md) for support-tier procedures;
+- [docs/compatibility-policy.md](../compatibility-policy.md) for lifecycle-retention and removal gates;
 - [issue #49](https://github.com/ciampo/ai-instructions/issues/49) for remaining work, dependencies, and completion state; and
-- [docs/decisions/0004-skill-first-specialists.md](docs/decisions/0004-skill-first-specialists.md) for the specialist-execution decision.
+- [docs/decisions/0004-skill-first-specialists.md](../decisions/0004-skill-first-specialists.md) for the specialist-execution decision.
