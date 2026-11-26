@@ -30,12 +30,26 @@ Do not request or re-request Copilot review. Assess existing remote feedback, bu
 2. If a rebase was requested, refresh the base and remote head, replay the task branch, and verify it. Keep the rebased candidate local until final publication.
 3. Pin the local candidate separately from the remote PR head. For uncommitted fixes, record the working-tree diff and source contents as well as `HEAD`. Restart the affected review whenever the captured base or candidate source changes.
 4. Start the independent local review. Then assess existing PR feedback and earlier findings against that same candidate. Wait for the local review before consolidating results.
-5. Classify each concern as accepted, already fixed, stale, or declined with source evidence. Deduplicate overlaps. GitHub thread state and an author's reply do not prove whether an issue is fixed. Act only on real problems or required changes.
+5. Classify each concern as accepted, already fixed, stale, or declined with source evidence. Deduplicate overlaps. GitHub thread state and an author's reply do not prove whether an issue is fixed. Act only on real problems or required changes. Decline optional polish that affects no behavior or contract, and report it in the recap; it never opens a change round. Decline a finding that falls inside a recorded limit. Before any fix, check for [churn](#churn).
 6. Have `address-pr-feedback` apply and verify accepted fixes, then return to this loop's commit, evaluation, and publication gates. Commit only where authorized and run required evaluations against that exact commit. Review every changed candidate again, including uncommitted local-only fixes. Keep these rounds local.
 7. Converge only after the final candidate has a completed local review with no actionable findings, every known concern is accounted for, and required checks and evaluations pass. Recheck the base, candidate source, PR revisions, and accessible feedback. Publish only where authorized, then confirm the PR head matches the reviewed candidate. Review again if the base or source changed. Report local-only state and incomplete discussion access explicitly.
+
+## Churn
+
+Repeated fixes in one area are evidence about the approach, not only about each fix. Record every round's accepted findings by area: the function, component, or behavior that they concern. Count fixes that the PR's history and discussion already record for that area.
+
+Churn exists when a review finds another real problem in an area that was already fixed twice. Do not apply a third patch there. Treat an approach-level finding from a reviewer the same way, from step 2.
+
+1. Write the premise in one sentence: what every fix in that area assumed.
+2. Test the premise against the required behavior. Load `root-cause-solution` and compare three options: the current mechanism, a materially different one, and the current one with a stated limit.
+3. Act on the result:
+   - **Unrelated defects.** The findings share no cause, and the approach holds. Continue the loop.
+   - **Keep with a limit.** The remaining cases are outside the required behavior. State the limit where a reader and the next reviewer find it, keep a test for the supported scope, and decline later findings inside that limit.
+   - **Replace.** A different mechanism removes this class of finding. Apply it as one accepted fix when it keeps the PR's scope and public contract. Then review the new candidate.
+4. A limit that drops required behavior, or a replacement that changes the PR's scope or public contract, is the user's decision. Stop work on that area. Report the premise, the options, and a recommendation. Finish independent fixes elsewhere.
 
 ## Stop and report
 
 Wait only for a known pending local review or required check. If review evidence or verification remains unavailable, report the gap rather than claiming convergence. After the last allowed change, complete its final review-only pass; report remaining actionable findings without making another change round.
 
-Give a concise recap with the authority boundary, full base and candidate revisions, uncommitted diff identity when applicable, local review and existing-feedback results, accepted changes, verification, and stopping reason. Distinguish local candidates from the published PR head and completion from a round limit or blocker.
+Give a concise recap with the authority boundary, full base and candidate revisions, uncommitted diff identity when applicable, local review and existing-feedback results, accepted changes, each churn assessment with its premise and outcome, verification, and stopping reason. Distinguish local candidates from the published PR head and completion from a round limit or blocker.

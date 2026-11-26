@@ -103,6 +103,19 @@
         "It rechecks the working-tree source and diff before returning the handoff, and does not infer local verification from remote CI.",
         "It returns internal findings and verification gaps without creating review artifacts, editing source, committing, pushing, requesting remote reviewers, or performing standalone delivery."
       ]
+    },
+    {
+      "id": "approach-needs-rethinking",
+      "prompt": "Self-review my current PR in chat only and fix what is valid. Do not commit or push.",
+      "context": "evals/fixtures/approach-needs-rethinking.md",
+      "expectedOutcome": "A self-review that leads with the approach concern, moves to the existing retry mechanism or leaves that decision to the user, and does not patch the hand-written retry loop in place.",
+      "assertions": [
+        "The review identifies that requestQueue already provides tested retries through its retry option, which sibling modules use, and that the hand-written loop duplicates it.",
+        "The overall assessment leads with the approach concern and the decision it requires, before any line-level finding.",
+        "The review does not list the loop's defects, such as retrying HTTP 4xx responses, the swallowed final error, or the fixed delay, as separate fixes to apply in place. It may cite them as evidence against the approach.",
+        "The review either replaces the loop with the queue's retry option or reports that change as the user's decision. It does not patch the loop in place.",
+        "The review does not commit, push, or change the pull request."
+      ]
     }
   ]
 }

@@ -236,6 +236,33 @@
         "It discloses the lack of an independent local agent and does not request or re-request Copilot or substitute a remote reviewer.",
         "It verifies the supplied source and tests rather than treating passing CI as proof of a clean review."
       ]
+    },
+    {
+      "id": "churn-same-area",
+      "prompt": "Continue the iterate-pr-review loop for my PR from this state and report where it stands.",
+      "context": "evals/fixtures/churn-same-area.md",
+      "expectedOutcome": "The loop treats a third finding in a twice-fixed area as evidence about the approach, does not apply another patch there, and reports the approach decision to the user.",
+      "assertions": [
+        "The workflow recognizes that trapFocus was already fixed in two rounds and that the round 3 finding is in the same area.",
+        "The workflow does not apply or plan the suggested sentinel patch as the next routine fix.",
+        "The workflow states the premise that the earlier fixes share, namely that script in the page can list every focusable element in the dialog, and tests it against the embedded payment iframe.",
+        "The workflow compares materially different options from the fixture, such as the native dialog element and keeping the current trap with a stated limit, and gives a recommendation.",
+        "The workflow recognizes that excluding the payment iframe would drop required behavior and that the native dialog element changes the public contract of Dialog, so it leaves the choice to the user instead of making it silently.",
+        "The recap does not claim convergence. It names the churn stop, the open finding, and the decision that the user needs to make.",
+        "The workflow does not request remote reviews, post comments, resolve threads, mark the PR ready, or merge."
+      ]
+    },
+    {
+      "id": "optional-polish-no-round",
+      "prompt": "Continue the iterate-pr-review loop for my PR from this state and give me the recap.",
+      "context": "evals/fixtures/optional-polish-no-round.md",
+      "expectedOutcome": "The loop converges on the reviewed head without opening a change round for optional polish, and reports the declined item.",
+      "assertions": [
+        "The workflow declines the optional rename because it affects no behavior or contract, and does not start another change round for it.",
+        "The workflow reports convergence for the reviewed current head, with its completed local review and passing checks.",
+        "The recap names the declined optional item so the user can still decide to apply it.",
+        "The workflow does not edit source, commit, push, request remote reviews, post comments, resolve threads, mark the PR ready, or merge."
+      ]
     }
   ]
 }

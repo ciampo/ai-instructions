@@ -98,6 +98,20 @@
         "It reproduces the zero-limit defect, restores nullish defaulting in the local candidate, runs node --test test/iteration-limit.test.mjs in the supplied corpus, and reports the passing result.",
         "It returns the verified concern assessment and local fix to the parent gate without committing, pushing, requesting reviewers, or creating reply drafts or artifacts."
       ]
+    },
+    {
+      "id": "feedback-churn-same-mechanism",
+      "prompt": "Address the open feedback on my PR and draft the replies in chat only. Do not commit or push.",
+      "context": "evals/fixtures/feedback-churn-same-mechanism.md",
+      "expectedOutcome": "A feedback pass that assesses the hand-written date formatting once, replaces it with the platform formatter instead of adding two more special cases, and drafts replies that say so.",
+      "assertions": [
+        "The workflow recognizes that formatDate was already changed twice for earlier feedback and that both open comments target the same hand-written locale handling.",
+        "The workflow assesses the mechanism before it patches either comment, and does not add a de or es month table or an en-GB branch as separate fixes.",
+        "The workflow replaces, or proposes to replace when it cannot edit, the hand-written tables and branches with Intl.DateTimeFormat, which the sibling format-time.js already uses.",
+        "The workflow notes that the replacement keeps the formatDate( date, locale ) signature and the PR's scope, so it does not need a separate decision from the user.",
+        "The workflow covers the supported locales with tests or names that verification as still required, and does not claim checks passed that it did not run.",
+        "Each reply draft is short and says that the comment is resolved by the move to Intl.DateTimeFormat. The workflow does not post replies, resolve threads, commit, or push."
+      ]
     }
   ]
 }

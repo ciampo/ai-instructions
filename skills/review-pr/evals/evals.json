@@ -162,6 +162,16 @@
         "The workflow returns one synthesized review directly in chat.",
         "The main workflow and its internal specialist handoffs do not create or open local review documents.",
         "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
       ]
     },
     {
@@ -211,6 +221,16 @@
         "Visible explanations state concrete effects and next steps in plain language, without dense technical shorthand or investigation narration. Necessary identifiers, uncertainty, and severity remain accurate.",
         "It keeps optional proof outside suggested comments and distinguishes required changes from verification or discussion actions.",
         "It does not modify code, post comments or reviews, resolve threads, or claim that the current PR has no outstanding feedback."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
       ]
     },
     {
@@ -284,6 +304,90 @@
         "Each suggested GitHub comment uses one or two natural sentences, while severity, location, and necessary evidence stay in compact artifact metadata or optional details.",
         "The reachable cross-account deletion finding is [critical], and the supported-upgrade persisted-state finding is [major], matching the direct review contract.",
         "The response does not expose a panel transcript or vote count."
+      ]
+    },
+    {
+      "id": "approach-conflicts-with-decision",
+      "prompt": "Review this PR and return the review in chat only. Do not change code or post anything.",
+      "context": "evals/fixtures/approach-conflicts-with-decision.md",
+      "expectedOutcome": "A review that questions the approach before the code, leads with the conflict with the recorded decision and the existing mechanism, and defers line-level feedback on code that a change of approach would replace.",
+      "assertions": [
+        "The review reads the linked issue and identifies that the PR adds a per-button timer although the maintainer decision asks for TooltipGroup in Toolbar and rejects per-button timers.",
+        "The overall assessment leads with the approach concern and states the decision or change that the author needs to make, before any line-level finding.",
+        "The first action is a general PR comment about the approach, supported by evidence from the fixture such as the existing TooltipGroup, its use in MenuBar, or the regression recorded for #150.",
+        "The review does not present defects of the timer code, such as the uncleared timeout or the missing keyboard handling, as separate actions to fix in place. It may cite them as evidence against the approach.",
+        "The review says that the detailed review of the timer implementation is deferred until the approach is settled.",
+        "The review does not modify code or post to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
+      ]
+    },
+    {
+      "id": "problem-already-solved",
+      "prompt": "Review this PR and return the review in chat only. Do not change code or post anything.",
+      "context": "evals/fixtures/problem-already-solved.md",
+      "expectedOutcome": "A review that questions whether the change is needed, because a documented capability already solves the reported problem, before it reviews the implementation.",
+      "assertions": [
+        "The review checks the linked issue against the repository and identifies that the documented useDebouncedValue pattern already solves the reported problem.",
+        "The overall assessment leads with the question of whether the option is needed at all, and names the decision for the maintainers or the author, such as closing the PR in favor of the documented pattern or justifying a second debouncing path.",
+        "The review does not present the uncleared timeout, the missing effect dependency, or the missing tests as the main findings or as a list of fixes to apply. It may cite them as evidence that the option duplicates a tested mechanism.",
+        "The review says that the detailed review of the new option is deferred until the need for it is settled.",
+        "The review treats the absence of a maintainer decision on the issue as a fact and does not invent one."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
+      ]
+    },
+    {
+      "id": "settled-compromise-not-reopened",
+      "prompt": "Review this PR and return the review in chat only. Do not change code or post anything.",
+      "context": "evals/fixtures/settled-compromise.md",
+      "expectedOutcome": "A review that accepts the recorded compromise with its stated limit, does not reopen the decision, and completes the line-level review.",
+      "assertions": [
+        "The review does not request that the clamp move to usePagedQuery in this PR and does not present the local clamp as an approach problem.",
+        "Any mention of the approach is brief and treats it as an agreed compromise whose limit the PR already states and links to #300.",
+        "The review completes the line-level review and does not defer it.",
+        "The review reports that the PR drops the default of 25, so a saved view with no pageSize now sends NaN and the request fails. It locates the problem at the Math.min clamp in src/orders-list.js and asks to restore the default and test it.",
+        "The review does not modify code or post to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
+      ]
+    },
+    {
+      "id": "repeated-rounds-same-area",
+      "prompt": "The PR was updated. Do another round and return the review in chat only. Do not change code or post anything.",
+      "context": "evals/fixtures/repeated-rounds-same-area.md",
+      "expectedOutcome": "A third-round review that raises the repeated problems in one function once, as an approach concern, instead of adding more line-level comments for the author to patch.",
+      "assertions": [
+        "The review records the two earlier threads as addressed in code and does not reopen them.",
+        "The review identifies that buildQuery has a new problem after two rounds of fixes in the same function, namely that unset filters are sent as owner=undefined and status=null.",
+        "The review raises the pattern once as an approach concern. It names what the fixes share, which is the hand-built query serialization, and asks the author to use URLSearchParams with the existing appendDefined helper, or to justify the separate builder.",
+        "The review does not ask the author to patch buildQuery in place again, for example with a separate comment that only requests a null check.",
+        "The review uses the unset-filter failure as evidence for the concern and keeps its location, src/api/reports.js, outside the suggested comment text.",
+        "The review does not modify code or post to GitHub."
       ]
     }
   ]

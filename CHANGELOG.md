@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Make `review-pr` load `review-simplicity` when the pull request is already in context, read its review rules in every review, and check both before delivery. It now reads the snapshot procedure only when no complete snapshot is supplied. ([#151](https://github.com/ciampo/ai-instructions/pull/151))
+- Make `iterate-pr-review` stop patching an area that it already fixed twice. It writes down what the fixes assume, compares the mechanism with different ones, and then continues, keeps the mechanism with a stated limit, replaces it, or reports the decision. Optional polish no longer opens a change round. `review-pr` and `address-pr-feedback` apply the same rule to repeated review rounds. ([#150](https://github.com/ciampo/ai-instructions/pull/150))
+- Make `review-pr` and `self-review-pr` assess the premise and approach of a pull request before the detailed review. The review reads the linked issue and earlier decisions. When the approach needs rethinking, it leads with that concern and defers line-level feedback on code that the decision would replace. ([#149](https://github.com/ciampo/ai-instructions/pull/149))
 - Shorten the task-title, plain-language, and Simplified Technical English rules in the core without removing a rule. The core drops from 8,067 to 7,231 bytes of its 8,192-byte budget. ([#147](https://github.com/ciampo/ai-instructions/pull/147))
 - Add `scripts/evals/run-claude-ab.mjs`, a paired A/B runner that compares two revisions of the core and skills in isolated Claude Code sessions, and add behavior cases for the core in `instructions/evals/`. ([#146](https://github.com/ciampo/ai-instructions/pull/146))
 - Remove retained evaluation runners and result archives from the working tree, about 30 MB. They remain in Git history, and the results ledger links to them at a fixed commit. New campaigns record summaries only. ([#145](https://github.com/ciampo/ai-instructions/pull/145))
