@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #149 approach-first campaign passed all 63 assertions of its four new output cases, against 44 of 63 on main, with two control cases unchanged. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #150 review-churn campaign passed all 69 assertions of its four new output cases, against 47 of 69 on its base, with two control cases not worse. The PR #149 approach-first campaign passed all 63 assertions of its four new output cases, against 44 of 63 on main, with two control cases unchanged. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
 
 ## Retained artifacts
 
@@ -22,6 +22,40 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #150 review-churn campaign
+
+Revision `fcb39a2aa974e89dcb0a7793bfc2ceed45a84ce3` passed all 69 assertions of the four new output cases, in three trials each. Its stack base, PR #149 at `f1a0adfb6681600558debd1f53ab8a4546cfaec6`, passed 47 of the same 69.
+
+| Case | Base | PR |
+| --- | --- | --- |
+| `iterate-pr-review/churn-same-area` | 7/21 | 21/21 |
+| `address-pr-feedback/feedback-churn-same-mechanism` | 11/18 | 18/18 |
+| `review-pr/repeated-rounds-same-area` | 17/18 | 18/18 |
+| `iterate-pr-review/optional-polish-no-round` | 12/12 | 12/12 |
+| `iterate-pr-review/limit-reached-final-pass`, control | 9/9 | 9/9 |
+| `review-pr/previous-feedback-and-clear-actions`, control | 22/30 | 24/30 |
+
+On the base, the loop planned a third patch for the twice-fixed focus trap in all three trials, and in two of them it rejected the alternative without asking the user. With the PR, it stopped, stated what the fixes assume, compared the options, and left the contract decision to the user. Two cases show little or no change. The base already raised the repeated query-builder problem as an approach concern in two of three trials, and it already declined the optional rename.
+
+`scripts/evals/run-claude-ab.mjs` at commit `f6691b7a55b1d49194a0e1a52dcd5174d0a2c6c4` ran in Claude Code 2.1.323 with `sonnet` as the subject and `opus` as the grader:
+
+```bash
+node scripts/evals/run-claude-ab.mjs --base f1a0adfb6681600558debd1f53ab8a4546cfaec6 --head fcb39a2aa974e89dcb0a7793bfc2ceed45a84ce3 \
+  --suite skill:iterate-pr-review --suite skill:review-pr --suite skill:address-pr-feedback \
+  --case skill:iterate-pr-review/churn-same-area --case skill:iterate-pr-review/optional-polish-no-round \
+  --case skill:review-pr/repeated-rounds-same-area --case skill:address-pr-feedback/feedback-churn-same-mechanism \
+  --case skill:iterate-pr-review/limit-reached-final-pass --case skill:review-pr/previous-feedback-and-clear-actions \
+  --model sonnet --grader-model opus --trials 3 --output <summary.json>
+```
+
+Failures and limits:
+
+- The `previous-feedback-and-clear-actions` control failed six assertions with the PR and eight on the base. The cause is the one that the PR #149 campaign records.
+- The subject cannot edit files or run commands. The cases grade the decision and the recap, not an applied replacement or a real multi-round loop with fresh reviewers.
+- The subject did not load `iterate-pr-review` in two of three trials of the limit-reached control, on both revisions.
+- A later merge of PR #149 changed one sentence of `review-pr` and added two load checks. The churn instructions are the evaluated ones.
+- A model grades the assertions. One subject model ran. No trigger case ran, because no description changed.
 
 ## PR #149 approach-first review campaign
 
