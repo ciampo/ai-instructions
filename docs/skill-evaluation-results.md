@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #151 required-loads campaign raised the review-pr skill-load checks from 8 of 30 to 30 of 30, with assertions unchanged. The PR #150 review-churn campaign passed all 69 assertions of its four new output cases, against 47 of 69 on its base, with two control cases not worse. The PR #149 approach-first campaign passed all 63 assertions of its four new output cases, against 44 of 63 on main, with two control cases unchanged. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #151 required-loads campaign raised the review-pr skill-load checks on Sonnet from 3 of 40 to 38 of 40 and found no gap on Sol 6.2, with assertions unchanged on both. The PR #150 review-churn campaign passed all 69 assertions of its four new output cases, against 47 of 69 on its base, with two control cases not worse. The PR #149 approach-first campaign passed all 63 assertions of its four new output cases, against 44 of 63 on main, with two control cases unchanged. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
 
 ## Retained artifacts
 
@@ -25,39 +25,59 @@ Static checks or one successful prompt cannot produce a model-backed `pass` resu
 
 ## PR #151 required-loads campaign
 
-Revision `37e10693b38420997dd58729712f59a80b1ba2e5` passed all 30 skill-load checks in five `review-pr` output cases, in three trials each. Its stack base, PR #150 at `aea0b116672ad6c8ce908f24f1fd493fd3a6024c`, passed 8 of 30. Graded assertions did not change: 79 of 87 with the PR and 78 of 87 on the base.
+The gap is specific to the Sonnet subject. On the stack base, PR #150 at `aea0b116672ad6c8ce908f24f1fd493fd3a6024c`, Sonnet usually read the supplied context, loaded `review-pr`, and wrote the review in the next turn. Sol 6.2 at high effort loaded everything on the same base. The final revision, `e7ba234a7a0f011269895cb9b0bf90b5a5bf7997`, repairs Sonnet and changes nothing measurable for Sol. Graded assertions did not move on either model.
 
-| Measure, 15 trials | Base | PR |
-| --- | --- | --- |
-| Loaded `review-simplicity` | 4 | 15 |
-| Loaded `draft-review-comment` | 4 | 15 |
-| Read `references/code-review.md` | 2 | 15 |
-| Read `references/pr-snapshot.md` | 0 | 15 |
-| Assertions passed | 78/87 | 79/87 |
-| Response words, total | 5,382 | 6,387 |
-| Subject and grader cost | $1.86 | $2.40 |
+Five `review-pr` output cases ran in every arm: `approach-conflicts-with-decision`, `problem-already-solved`, `settled-compromise-not-reopened`, `chat-only-synthesized-review`, and `previous-feedback-and-clear-actions`. The skill-load columns are the runners' own records. The reference columns come from a count of read commands in the kept event streams. The denominators are the trials that loaded `review-pr`.
 
-On the base, the subject usually read the supplied context, loaded `review-pr`, and wrote the review in the next turn. The skill-load rows are the runner's deterministic checks. The reference rows come from a count of `Read` calls in the kept event streams, which the runner does not check.
+### Sonnet in Claude Code
 
-`scripts/evals/run-claude-ab.mjs` at commit `f6691b7a55b1d49194a0e1a52dcd5174d0a2c6c4` ran in Claude Code 2.1.323 with `sonnet` as the subject and `opus` as the grader:
+| Revision | Loaded `review-simplicity` | Loaded `draft-review-comment` | Read the review rules | Read the snapshot procedure |
+| --- | --- | --- | --- | --- |
+| Base `aea0b11`, two runs | 5/32 | 6/32 | 3/32 | 1/32 |
+| Step 1 sentence only, exploratory | 18/19 | 18/19 | 8/19 | 3/19 |
+| First wording `37e1069`, three runs | 51/52 | 51/52 | 51/52 | 51/52 |
+| Steps only `64c543f`, three runs | 51/57 | 49/57 | 51/57 | 0/57 |
+| Final, one run | 19/19 | 19/19 | 19/19 | 0/19 |
+
+- The step 1 sentence alone restores the skill loads. Step 1 said to read the baseline "before you read the PR", and the subject had always read the context first.
+- Step 2 asked for the review rules and the snapshot procedure together. With a supplied snapshot the procedure does not apply, and the subject skipped both. Separating them raised reads of the rules from 8 of 19 to 51 of 57 with no check.
+- The first wording added a check before delivery that also forced the snapshot procedure. The final revision keeps a check that names only the baseline and the rules.
+- In the paired run with `opus` as the grader, the base passed 104 of 116 assertions and the steps-only revision 106 of 116, at $2.42 and $2.84 for 20 trials. An earlier paired run of the first wording gave 78 and 79 of 87. The final revision ran against the steps-only revision with `haiku` as the grader, 98 and 99 of 116, at $2.97 and $2.94.
 
 ```bash
-node scripts/evals/run-claude-ab.mjs --base aea0b116672ad6c8ce908f24f1fd493fd3a6024c --head 37e10693b38420997dd58729712f59a80b1ba2e5 \
-  --suite skill:review-pr \
-  --case skill:review-pr/approach-conflicts-with-decision --case skill:review-pr/problem-already-solved \
-  --case skill:review-pr/settled-compromise-not-reopened --case skill:review-pr/chat-only-synthesized-review \
-  --case skill:review-pr/previous-feedback-and-clear-actions \
-  --model sonnet --grader-model opus --trials 3 --concurrency 6 --output <summary.json> --keep <dir>
+node scripts/evals/run-claude-ab.mjs --base aea0b116672ad6c8ce908f24f1fd493fd3a6024c --head 64c543feb17e68404e41ca9e7aa4a12b0cc6c7e1 \
+  --suite skill:review-pr --case skill:review-pr/<each of the five cases> \
+  --model sonnet --grader-model opus --trials 4 --concurrency 6 --output <summary.json> --keep <dir>
 ```
 
-An exploratory run with `haiku` as the grader compared this wording with a variant that also adds a separate section listing the three loads. The shorter wording loaded both skills and read both references in 20 of 20 trials. The variant did so in 19 of 20, and its one miss never loaded `review-pr`. The section was dropped.
+`scripts/evals/run-claude-ab.mjs` at commit `f6691b7a55b1d49194a0e1a52dcd5174d0a2c6c4` ran in Claude Code 2.1.323. The other Sonnet runs used the same invocation with other revisions, and `haiku` as the grader where the list above says so.
 
-Failures and limits:
+### Sol 6.2 in Codex
 
-- The loads cost about 19% more response words and about 29% more per trial in this run.
-- `settled-compromise-not-reopened` failed its location assertion in two trials with the PR and one on the base. The reviews described the defect correctly and cited a line number of the fixture file, not of the source.
-- `previous-feedback-and-clear-actions` failed six assertions with the PR and eight on the base, for the cause that the PR #149 campaign records.
-- One subject model ran. The load rate on other models and clients is not measured. No trigger case ran, because no description changed.
+| Revision, 15 trials each | Skills and review rules loaded | Read the snapshot procedure | Assertions | Uncached input tokens | Mean seconds |
+| --- | --- | --- | --- | --- | --- |
+| Base `aea0b11` | 15 | 15 | 84/87 | 452,509 | 55 |
+| First wording `37e1069` | 15 | 15 | 82/87 | 448,443 | 64 |
+| Steps only `64c543f` | 15 | 4 | 83/87 | 364,247 | 57 |
+| Final | 15 | 3 | 85/87 | 385,650 | 58 |
+
+Sol read the context before the skill in about half of the trials and still loaded everything on the base. Twelve of the 14 failed Sol assertions are in `previous-feedback-and-clear-actions`, across all arms, and concern report wording. The other two are the first assertion of `approach-conflicts-with-decision` with the first wording.
+
+```bash
+node scripts/evals/run-output-evaluations.mjs --revision <sha> --model gpt-6.2-sol --reasoning-effort high --service-tier default \
+  --case review-pr/<each of the five cases> --concurrency 5 --output <result.json>
+```
+
+`scripts/evals/run-output-evaluations.mjs` at commit `4882c73b363588dd3c9885df03039a09a968a9e1` ran three times for each revision in Codex CLI 0.171.0. The runner needs `rg` on `PATH`.
+
+### Limits
+
+- The final-revision runs used commit `d67360d8a74f5e2aae1e6f7e41afdcf918441afe`, which is not on the branch. Its `skills` tree, `04e1b689cd9165f4569c576600fb5d14be2525ef`, is identical to the tree of the final revision. Two exploratory Sonnet runs likewise used commits that a reworded commit message later replaced, with identical `skills` trees.
+- The evidence for the check before delivery is modest. In its own paired run the final revision scored 19 of 19 and the steps-only revision 19 of 20. The difference appears only when the runs are pooled: 51 of 57 without a check, and 70 of 71 with one.
+- Loading the baseline and the rules did not raise the graded assertions on these fixtures, which give the baseline nothing to find. The campaign measures compliance with the workflow, not review quality.
+- Every fixture supplies a complete snapshot. The live route, where the snapshot procedure is required, did not run.
+- `settled-compromise-not-reopened` still fails its location assertion in some Sonnet trials. The reviews describe the defect correctly and cite a line number of the fixture file.
+- Opus, Fable, and other clients did not run. No trigger case ran, because no description changed.
 
 ## PR #150 review-churn campaign
 
