@@ -54,7 +54,7 @@ Two earlier runs changed the instructions. At `18f1f2e97c3d1cc1498ac7c62d40993d6
 Failures and limits:
 
 - The `loads review-simplicity` check passed in 2 of 6 trials on both revisions. The subject often answers after it loads only `review-pr`. A sentence added to keep the baseline did not change that rate. This gap exists on main and remains open.
-- The nine failed control assertions are the same on both revisions. The subject cannot write the review document, so the grader does not see the report sections, locations, or thread links.
+- The `previous-feedback-and-clear-actions` control failed nine assertions on each revision. The subject cannot write the review document, so the grader does not see the report sections, locations, or thread links.
 - The subject cannot edit files, run commands, or use the network. A model grades the assertions. One subject model ran. No trigger case ran, because no description changed.
 
 ## PR #127 root-cause solution campaign
