@@ -8,6 +8,21 @@ How I review PRs, and how I expect AI to assist with reviews.
 - **[RULE]** Read the full diff, all modified source files, and their consumers before forming opinions.
 - **[STRONG]** Cross-reference against how other components/modules in the same codebase handle the same problem. Consistency is a first-class concern.
 - **[RULE]** Validate claims independently. Do not take PR descriptions at face value. Read the code and verify.
+- **[RULE]** Do not take the problem or the chosen approach as given. Assess [the premise and approach](#premise-and-approach) before the detailed review.
+
+## Premise and Approach
+
+Assess the idea before the implementation. A correct line-level review of the wrong change wastes the author's time and makes that change look closer to done.
+
+- **[RULE]** Establish the problem from sources other than the diff: the linked issue, earlier discussion and decisions, related or competing pull requests, and repository conventions. Use what the snapshot supplies. Report a missing source as a limit; do not guess its content.
+- Answer these questions in order, and stop at the first one that fails:
+  1. **Problem.** Is the problem real, current, and worth solving in this repository? Check whether the reported behavior is intended, already fixed, already covered by an existing capability, or already declined. Consider what no change would cost.
+  2. **Fit.** Does the change solve that problem, or only a symptom or a different problem?
+  3. **Approach.** Does the behavior belong to this owner and layer? Compare the approach with materially different ones: an existing mechanism, a smaller change, a fix at the cause, and no change. Weigh the constraints and decisions that the discussion records.
+- Give one verdict: **sound**, **acceptable with limits**, or **needs rethinking**. An approach with a known limit is acceptable when the limit is stated and the context justifies the compromise. Name the limit, and ask the author to state it when it is missing.
+- **[RULE]** Support the verdict with evidence: a contract, a consumer, a recorded decision, or an existing mechanism. A preference between equally valid approaches is not a concern. Do not reopen a decision that the discussion already settled unless new evidence changes it. Do not invent alternatives for a routine change with one established solution.
+- **[RULE]** When the verdict is **needs rethinking**, lead the review with that concern and the decision that the author needs to make. Do not continue the line-level review of code that the decision would replace. Keep only findings that survive a change of approach, and findings that show why the approach fails. Say that the detailed review is deferred.
+- Otherwise continue with the full review. Recheck the verdict when later evidence contradicts it.
 
 ## Severity Normalization Contract
 
@@ -60,15 +75,16 @@ To avoid noise, do not raise comments on:
 
 ## Review Priorities (in order)
 
-1. **Accessibility**: semantic HTML, accessible names, keyboard behavior, focus management, announcements, contrast, motion, zoom, and pointer targets. Use `review-accessibility` for the deeper method when UI or interaction changes make this domain material.
-2. **Consistency**: Does this follow established patterns across sibling modules and the broader codebase?
-3. **Simplicity**: Does the outcome require all of the new state, branches, wrappers, dependencies, and abstractions? Always use `review-simplicity` for a dedicated deletion-first baseline pass.
-4. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive? Use `review-api-design` when a public API is added or materially changed.
-5. **Test adequacy**. Check new and existing tests of the affected behavior. Which failure would each catch in its environment? If the change delegates that behavior to a dependency, check its relevant assertions and identify what can still break in the caller.
-6. **Blast radius**: What else in the codebase consumes the modified API/utility? Are those consumers affected?
-7. **Build, dependency, and performance correctness**: Missing or unused dependencies, `sideEffects` configuration, tree-shaking implications, critical-path loading, repeated runtime work, and CSS module versus global CSS distinctions. Use `review-performance` only when bundle, runtime, rendering, layout, or scale risks are material.
-8. **Documentation**: CHANGELOGs, JSDoc, README updates, Storybook stories.
-9. **Scope discipline**: Are there unrelated changes that should be in separate PRs?
+1. **Premise and approach**: Is this the right problem, and does the approach fit it? See [Premise and Approach](#premise-and-approach).
+2. **Accessibility**: semantic HTML, accessible names, keyboard behavior, focus management, announcements, contrast, motion, zoom, and pointer targets. Use `review-accessibility` for the deeper method when UI or interaction changes make this domain material.
+3. **Consistency**: Does this follow established patterns across sibling modules and the broader codebase?
+4. **Simplicity**: Does the outcome require all of the new state, branches, wrappers, dependencies, and abstractions? Always use `review-simplicity` for a dedicated deletion-first baseline pass.
+5. **API correctness**: Is the API surface minimal and aligned with upstream/conventions? Are types precise and expressive? Use `review-api-design` when a public API is added or materially changed.
+6. **Test adequacy**. Check new and existing tests of the affected behavior. Which failure would each catch in its environment? If the change delegates that behavior to a dependency, check its relevant assertions and identify what can still break in the caller.
+7. **Blast radius**: What else in the codebase consumes the modified API/utility? Are those consumers affected?
+8. **Build, dependency, and performance correctness**: Missing or unused dependencies, `sideEffects` configuration, tree-shaking implications, critical-path loading, repeated runtime work, and CSS module versus global CSS distinctions. Use `review-performance` only when bundle, runtime, rendering, layout, or scale risks are material.
+9. **Documentation**: CHANGELOGs, JSDoc, README updates, Storybook stories.
+10. **Scope discipline**: Are there unrelated changes that should be in separate PRs?
 
 Specialist skills deepen a relevant domain; they do not replace the complete core review. The main workflow verifies and deduplicates their findings before delivery.
 
