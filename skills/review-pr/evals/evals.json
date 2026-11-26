@@ -162,6 +162,16 @@
         "The workflow returns one synthesized review directly in chat.",
         "The main workflow and its internal specialist handoffs do not create or open local review documents.",
         "The workflow does not modify source or post comments, replies, or reviews to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
       ]
     },
     {
@@ -211,6 +221,16 @@
         "Visible explanations state concrete effects and next steps in plain language, without dense technical shorthand or investigation narration. Necessary identifiers, uncertainty, and severity remain accurate.",
         "It keeps optional proof outside suggested comments and distinguishes required changes from verification or discussion actions.",
         "It does not modify code, post comments or reviews, resolve threads, or claim that the current PR has no outstanding feedback."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
       ]
     },
     {
@@ -303,6 +323,10 @@
         {
           "type": "loads",
           "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
         }
       ]
     },
@@ -322,6 +346,10 @@
         {
           "type": "loads",
           "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
         }
       ]
     },
@@ -336,6 +364,16 @@
         "The review completes the line-level review and does not defer it.",
         "The review reports that the PR drops the default of 25, so a saved view with no pageSize now sends NaN and the request fails. It locates the problem at the Math.min clamp in src/orders-list.js and asks to restore the default and test it.",
         "The review does not modify code or post to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        },
+        {
+          "type": "loads",
+          "skill": "draft-review-comment"
+        }
       ]
     },
     {
