@@ -298,6 +298,12 @@
         "The review does not present defects of the timer code, such as the uncleared timeout or the missing keyboard handling, as separate actions to fix in place. It may cite them as evidence against the approach.",
         "The review says that the detailed review of the timer implementation is deferred until the approach is settled.",
         "The review does not modify code or post to GitHub."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        }
       ]
     },
     {
@@ -311,6 +317,12 @@
         "The review does not present the uncleared timeout, the missing effect dependency, or the missing tests as the main findings or as a list of fixes to apply. It may cite them as evidence that the option duplicates a tested mechanism.",
         "The review says that the detailed review of the new option is deferred until the need for it is settled.",
         "The review treats the absence of a maintainer decision on the issue as a fact and does not invent one."
+      ],
+      "checks": [
+        {
+          "type": "loads",
+          "skill": "review-simplicity"
+        }
       ]
     },
     {
