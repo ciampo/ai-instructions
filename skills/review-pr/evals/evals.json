@@ -325,6 +325,20 @@
         "The review reports that the PR drops the default of 25, so a saved view with no pageSize now sends NaN and the request fails. It locates the problem at the Math.min clamp in src/orders-list.js and asks to restore the default and test it.",
         "The review does not modify code or post to GitHub."
       ]
+    },
+    {
+      "id": "repeated-rounds-same-area",
+      "prompt": "The PR was updated. Do another round and return the review in chat only. Do not change code or post anything.",
+      "context": "evals/fixtures/repeated-rounds-same-area.md",
+      "expectedOutcome": "A third-round review that raises the repeated problems in one function once, as an approach concern, instead of adding more line-level comments for the author to patch.",
+      "assertions": [
+        "The review records the two earlier threads as addressed in code and does not reopen them.",
+        "The review identifies that buildQuery has a new problem after two rounds of fixes in the same function, namely that unset filters are sent as owner=undefined and status=null.",
+        "The review raises the pattern once as an approach concern. It names what the fixes share, which is the hand-built query serialization, and asks the author to use URLSearchParams with the existing appendDefined helper, or to justify the separate builder.",
+        "The review does not ask the author to patch buildQuery in place again, for example with a separate comment that only requests a null check.",
+        "The review uses the unset-filter failure as evidence for the concern and keeps its location, src/api/reports.js, outside the suggested comment text.",
+        "The review does not modify code or post to GitHub."
+      ]
     }
   ]
 }
