@@ -322,7 +322,7 @@
         "The review does not request that the clamp move to usePagedQuery in this PR and does not present the local clamp as an approach problem.",
         "Any mention of the approach is brief and treats it as an agreed compromise whose limit the PR already states and links to #300.",
         "The review completes the line-level review and does not defer it.",
-        "The review reports that the PR drops the default of 25, so a saved view with no pageSize now sends NaN and the request fails. It gives src/orders-list.js:6 as the location and asks to restore the default and test it.",
+        "The review reports that the PR drops the default of 25, so a saved view with no pageSize now sends NaN and the request fails. It locates the problem at the Math.min clamp in src/orders-list.js and asks to restore the default and test it.",
         "The review does not modify code or post to GitHub."
       ]
     }
