@@ -1,6 +1,6 @@
 # Skill Evaluation Results
 
-Status: partial overall. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
+Status: partial overall. The PR #149 approach-first campaign passed all 63 assertions of its four new output cases, against 44 of 63 on main, with two control cases unchanged. The PR #125 local-loop campaign passed all 57 corrected trigger attempts and all 24 attempts affected by its final discovery change. Its selected output results pass 33 of 45 cases and 171 of 193 assertions, with fixture, trace, grading, and model-execution limits retained. A separate observable host test completed the review-fix-review loop with two fresh reviewers. The PR #122 review-report campaign passed all eight changed-workflow output cases and all 56 assertions after one evaluation-led instruction fix. The PR #121 delegation-sizing campaign passed all six focused output cases, all 25 focused assertions, and all 36 affected trigger attempts. Its paired exact-trunk comparison found 60 equal common output assertions, one improvement, and no regressions; both revisions passed all 36 trigger attempts. Four common review-pr cases remain partial on both revisions because of internal-handoff observability, skill-load ordering, or artifact-format limits. The PR #119 cross-skill campaign passed all 12 focused trigger attempts, both focused output cases, and all 15 output assertions. The earlier PR #115 review-prose campaign passed every output case tied to the changed workflow bodies or API-design boundary fix and all 103 selected trigger cases across 309 attempts. Seven of 99 selected output cases remain partial because six immutable fixtures cannot perform required mutations and one unchanged workflow selected the wrong task-title purpose. A later paired accessibility comparison passed 3 of 3 attempts on both exact trunk and the pull-request revision. Copilot review was deferred at the user's request. The broader direct-versus-coordinated product comparison and Antigravity canary remain unverified.
 
 ## Retained artifacts
 
@@ -22,6 +22,40 @@ Each campaign must record:
 - follow-up links for accepted instruction failures.
 
 Static checks or one successful prompt cannot produce a model-backed `pass` result.
+
+## PR #149 approach-first review campaign
+
+Revision `bea40727c9f54277190caa392e63cbda3713e2b5` passed all 63 assertions of the four new output cases, in three trials each. Main at `aecc994bc0a0e62b0ba0d382b727c3b0fadb75b5` passed 44 of the same 63. Two unchanged control cases scored 30 of 39 on both revisions.
+
+| Case | Main | PR |
+| --- | --- | --- |
+| `review-pr/approach-conflicts-with-decision` | 9/18 | 18/18 |
+| `review-pr/problem-already-solved` | 8/15 | 15/15 |
+| `review-pr/settled-compromise-not-reopened` | 15/15 | 15/15 |
+| `self-review-pr/approach-needs-rethinking` | 12/15 | 15/15 |
+| `review-pr/chat-only-synthesized-review`, control | 9/9 | 9/9 |
+| `review-pr/previous-feedback-and-clear-actions`, control | 21/30 | 21/30 |
+
+On main, the reviews named the approach problem but anchored it to a line, listed the defects of the code as separate fixes, and did not defer the detailed review. The settled-compromise case guards the opposite failure. Neither revision reopened the recorded decision.
+
+`scripts/evals/run-claude-ab.mjs` at commit `f6691b7a55b1d49194a0e1a52dcd5174d0a2c6c4` ran in Claude Code 2.1.323 with `sonnet` as the subject and `opus` as the grader:
+
+```bash
+node scripts/evals/run-claude-ab.mjs --base origin/main --head bea40727c9f54277190caa392e63cbda3713e2b5 \
+  --suite skill:review-pr --suite skill:self-review-pr \
+  --case skill:review-pr/approach-conflicts-with-decision --case skill:review-pr/problem-already-solved \
+  --case skill:review-pr/settled-compromise-not-reopened --case skill:self-review-pr/approach-needs-rethinking \
+  --case skill:review-pr/previous-feedback-and-clear-actions --case skill:review-pr/chat-only-synthesized-review \
+  --model sonnet --grader-model opus --trials 3 --output <summary.json>
+```
+
+Two earlier runs changed the instructions. At `18f1f2e97c3d1cc1498ac7c62d40993d6e5ca2be`, six assertions failed because reviews led with the approach concern but still gave the defects of the replaced code their own actions. The rule now says that such a defect is evidence inside the concern. The same run failed the settled-compromise location assertion on both revisions, because both cited a wrong line for a defect that they described correctly. That assertion no longer requires the line number.
+
+Failures and limits:
+
+- The `loads review-simplicity` check passed in 2 of 6 trials on both revisions. The subject often answers after it loads only `review-pr`. A sentence added to keep the baseline did not change that rate. This gap exists on main and remains open.
+- The `previous-feedback-and-clear-actions` control failed nine assertions on each revision. The subject cannot write the review document, so the grader does not see the report sections, locations, or thread links.
+- The subject cannot edit files, run commands, or use the network. A model grades the assertions. One subject model ran. No trigger case ran, because no description changed.
 
 ## PR #127 root-cause solution campaign
 
